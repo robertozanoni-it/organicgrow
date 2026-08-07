@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
+<meta name="description" content="Organic Growth OS: controllo guidato, strategia SEO, inventario pagine e piano operativo in un’unica web app.">
+<meta name="application-name" content="Organic Growth OS">
 <title>Organic Growth OS</title>
 <style>
 :root{
@@ -223,85 +225,6 @@ radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--border) 60%,transparen
 
 
 
-/* V4.3 Typography Scale */
-html{font-size:17px}
-body{font-size:17px;line-height:1.5}
-button,input,select,textarea{font-size:16px}
-.btn{font-size:15px}
-.brand h1{font-size:17px}
-.brand p{font-size:13px}
-.sidebar summary{font-size:12px}
-.nav-btn{font-size:14px}
-.topbar h2{font-size:20px}
-.card h3{font-size:17px}
-.card h4{font-size:16px}
-.muted{font-size:14px}
-.badge{font-size:13px}
-.kpi-card .label{font-size:14px}
-.kpi-card .value{font-size:31px}
-.kpi-card .sub{font-size:13px}
-.section-head h3{font-size:18px}
-.field label{font-size:14px}
-table{font-size:14px}
-th{font-size:13px}
-td{font-size:14px}
-.page-intro h3{font-size:25px}
-.page-intro p{font-size:15px}
-.wizard-big{font-size:27px}
-.simple-card h3{font-size:27px}
-.simple-card .lead{font-size:17px}
-.guide-step{font-size:13px}
-.help-toggle{font-size:14px}
-.bulk-help{font-size:14px}
-.toast{font-size:14px}
-@media(max-width:800px){
-  html{font-size:16px}
-  body{font-size:16px}
-  .nav-btn{font-size:14px}
-  .topbar h2{font-size:19px}
-}
-
-
-/* V4.4 — ACCESSIBLE TYPOGRAPHY */
-html{font-size:18px!important}
-body{font-size:18px!important;line-height:1.58!important}
-button,input,select,textarea{font-size:17px!important;line-height:1.35!important}
-.btn{font-size:16px!important;padding:11px 14px!important}
-.brand h1{font-size:18px!important}
-.brand p{font-size:14px!important}
-.sidebar summary{font-size:13px!important}
-.nav-btn{font-size:16px!important;padding:11px 12px!important}
-.topbar h2{font-size:22px!important}
-#saveStatus{font-size:14px!important}
-.page-intro h3{font-size:28px!important}
-.page-intro p{font-size:17px!important}
-.card h3,.section-head h3{font-size:20px!important}
-.card h4{font-size:18px!important}
-.muted{font-size:15px!important}
-.badge{font-size:14px!important}
-.field label{font-size:15px!important}
-table{font-size:16px!important}
-th{font-size:14px!important}
-td{font-size:16px!important}
-.kpi-card .label{font-size:15px!important}
-.kpi-card .value{font-size:34px!important}
-.kpi-card .sub{font-size:14px!important}
-.wizard-big{font-size:30px!important}
-.simple-card h3{font-size:30px!important}
-.simple-card .lead{font-size:18px!important}
-.guide-step{font-size:14px!important}
-.help-toggle{font-size:15px!important}
-.bulk-help{font-size:15px!important}
-.toast{font-size:15px!important}
-.stage{font-size:14px!important}
-.node-pill{font-size:12px!important}
-@media(max-width:800px){
-  html,body{font-size:17px!important}
-  .nav-btn{font-size:15px!important}
-  .topbar h2{font-size:20px!important}
-}
-
-
 /* V4.4 — SMART SIMPLE WIZARD */
 .experience-switch{display:flex;gap:6px;padding:4px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
 .experience-switch button{border:0;background:transparent;color:var(--muted);padding:7px 10px;border-radius:9px;font-weight:800}
@@ -372,6 +295,71 @@ button,input,select,textarea{font-size:18px!important;line-height:1.45!important
   html,body{font-size:18px!important}.nav-btn{font-size:17px!important}.topbar h2{font-size:22px!important}
   .wz-title{font-size:31px!important}.scan-summary{grid-template-columns:1fr 1fr}
 }
+
+/* V4.6 — PRODUCT DESIGN SYSTEM + ACCESSIBILITY */
+:root{
+  --bg:#f7f8fb;--surface:#ffffff;--surface-alt:#f3f5f8;--text:#101828;--muted:#536176;
+  --border:#d5dbe5;--accent:#155eef;--success:#087a47;--warning:#a34f00;--danger:#b42318;--info:#026aa2;
+  --shadow:0 4px 16px rgba(16,24,40,.06);--focus:0 0 0 4px rgba(21,94,239,.22)
+}
+*{scrollbar-color:var(--border) transparent}
+body{overflow-x:hidden}
+body.overlay-open{overflow:hidden}
+button,input,select,textarea{min-height:44px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid var(--accent)!important;outline-offset:3px;box-shadow:var(--focus)
+}
+.btn{transition:background-color .16s,border-color .16s,color .16s,transform .16s;box-shadow:none}
+.btn:hover:not(:disabled){filter:none;border-color:#98a2b3;background:var(--surface-alt)}
+.btn.primary:hover:not(:disabled){background:#004eeb;border-color:#004eeb}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{cursor:not-allowed;opacity:.52;background:var(--surface-alt);color:var(--muted)}
+.btn.danger{border-color:color-mix(in srgb,var(--danger) 35%,var(--border))}
+.sidebar{width:auto;padding:20px 16px}.brand{padding:4px 8px 18px;border-bottom:1px solid var(--border)}
+.brand-mark{background:var(--accent);border-radius:50%;box-shadow:none}
+.project-switcher{padding:4px 4px 12px;margin-top:16px}
+.nav-btn{border-left:3px solid transparent;border-radius:8px}
+.nav-btn.active{background:color-mix(in srgb,var(--accent) 8%,var(--surface));color:var(--accent);border-left-color:var(--accent)}
+.nav-btn[aria-current="page"]{font-weight:800}
+.topbar{min-height:76px;background:color-mix(in srgb,var(--surface) 94%,transparent);padding:12px 24px}
+.content{padding:28px 32px 48px;max-width:1480px}
+.card,.wz-card{box-shadow:none;border-color:var(--border)}
+.hero-action{background:var(--surface);border:1px solid var(--border);box-shadow:none;padding:24px}
+.table-wrap{max-width:100%;overscroll-behavior-inline:contain;box-shadow:inset -10px 0 16px -18px rgba(16,24,40,.45)}
+th{z-index:1}.toolbar input{min-width:min(360px,100%)}
+.drawer{width:min(640px,100%);transition:transform .2s ease;visibility:hidden}
+.drawer.open{visibility:visible}.backdrop{backdrop-filter:blur(2px)}
+.toast{border-left:4px solid var(--accent)}
+.dashboard-command{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:center;padding:30px;border:1px solid var(--border);background:var(--surface);border-radius:18px}
+.dashboard-command h3{font-size:34px!important;line-height:1.16;margin:5px 0 10px;max-width:760px}
+.dashboard-command p{font-size:19px;margin:0;color:var(--muted);max-width:760px}
+.dashboard-command .btn{min-width:220px}
+.dashboard-label{font-weight:800;color:var(--muted);font-size:16px;text-transform:uppercase;letter-spacing:.055em}
+.status-panel{border:1px solid var(--border);border-radius:16px;padding:20px;background:var(--surface);min-width:0}
+.status-panel h3{margin:0 0 14px;font-size:21px!important}
+.status-main{display:flex;gap:14px;align-items:flex-start}.status-symbol{width:46px;height:46px;display:grid;place-items:center;border-radius:50%;background:var(--surface-alt);font-weight:900;flex:none}
+.status-symbol.good{background:color-mix(in srgb,var(--success) 12%,var(--surface));color:var(--success)}
+.status-symbol.warn{background:color-mix(in srgb,var(--warning) 12%,var(--surface));color:var(--warning)}
+.workflow-list{border:1px solid var(--border);border-radius:16px;background:var(--surface);overflow:hidden}
+.workflow-list h3{padding:20px 20px 14px;margin:0;font-size:22px!important}
+.workflow-row{display:grid;grid-template-columns:42px minmax(160px,.7fr) minmax(260px,1.4fr) auto;gap:14px;align-items:center;padding:14px 20px;border-top:1px solid var(--border)}
+.workflow-row.current{background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
+.step-index{width:32px;height:32px;border:1px solid var(--border);border-radius:50%;display:grid;place-items:center;font-weight:800}
+.workflow-row.done .step-index{background:var(--success);border-color:var(--success);color:white}.workflow-row.current .step-index{background:var(--accent);border-color:var(--accent);color:white}
+.state-text{font-weight:800;color:var(--muted)}.workflow-row.done .state-text{color:var(--success)}.workflow-row.current .state-text{color:var(--accent)}
+.form-help{font-size:16px;color:var(--muted)}.field-error{font-size:16px;color:var(--danger);font-weight:700}
+[aria-invalid="true"]{border-color:var(--danger)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 18%,transparent)}
+@media(max-width:1100px){
+  .dashboard-command{grid-template-columns:1fr}.dashboard-command .btn{justify-self:start}
+  .workflow-row{grid-template-columns:42px 1fr auto}.workflow-row .workflow-desc{grid-column:2/-1}
+}
+@media(max-width:800px){
+  .content{padding:20px 16px 40px}.topbar{padding:12px 14px}.dashboard-command{padding:22px}
+  .dashboard-command h3{font-size:29px!important}.dashboard-command .btn{width:100%;min-width:0}
+  .topbar-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.topbar-actions #globalSearch,.topbar-actions .experience-switch{grid-column:1/-1}
+  .experience-switch button{flex:1}.workflow-row{grid-template-columns:38px 1fr}.workflow-row .workflow-desc,.workflow-row .state-text{grid-column:2}
+  .scan-summary{grid-template-columns:1fr}.toolbar{display:grid;grid-template-columns:1fr}.toolbar input,.toolbar select,.toolbar .btn{width:100%}
+}
 </style>
 </head>
 <body>
@@ -379,11 +367,11 @@ button,input,select,textarea{font-size:18px!important;line-height:1.45!important
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Decision Operating System · V4.5</p></div>
+      <div><h1>Organic Growth OS</h1><p>Decision Operating System · V4.6</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
-      <button class="btn" id="newProjectBtn" title="Nuovo progetto">+</button>
+      <button class="btn" type="button" id="newProjectBtn" title="Nuovo progetto" aria-label="Crea un nuovo progetto">+</button>
     </div>
     <nav id="nav"></nav>
   </aside>
@@ -391,43 +379,43 @@ button,input,select,textarea{font-size:18px!important;line-height:1.45!important
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
-        <button class="btn mobile-menu" id="mobileMenuBtn" aria-label="Apri menu">☰</button>
+        <button class="btn mobile-menu" type="button" id="mobileMenuBtn" aria-label="Apri menu" aria-expanded="false" aria-controls="sidebar">☰</button>
         <div>
-          <h2 id="pageTitle">Dashboard</h2>
+          <h2 id="pageTitle" aria-live="polite">Dashboard</h2>
           <div class="muted" id="saveStatus" style="font-size:12px">Non ancora salvato</div>
         </div>
       </div>
       <div class="topbar-actions">
         <input id="globalSearch" placeholder="Cerca…" aria-label="Ricerca globale">
-        <div class="experience-switch" aria-label="Modalità esperienza">
-  <button id="guidedModeBtn">Guidata</button>
-  <button id="advancedModeBtn">Avanzata</button>
+        <div class="experience-switch" role="group" aria-label="Modalità esperienza">
+  <button type="button" id="guidedModeBtn" aria-pressed="true">Guidata</button>
+  <button type="button" id="advancedModeBtn" aria-pressed="false">Avanzata</button>
 </div>
-<button class="btn" id="modeBtn" title="Cambia modalità tecnica">Executive</button>
-        <button class="btn" id="themeBtn" aria-label="Cambia tema">◐</button>
-        <button class="btn primary" id="quickBtn">+ Nuovo</button>
+<button class="btn" type="button" id="modeBtn" title="Cambia modalità tecnica">Executive</button>
+        <button class="btn" type="button" id="themeBtn" aria-label="Cambia tema">◐</button>
+        <button class="btn primary" type="button" id="quickBtn">+ Nuovo</button>
       </div>
     </header>
     <div class="content" id="view"></div>
   </main>
 </div>
 
-<div class="backdrop" id="backdrop"></div>
-<aside class="drawer" id="drawer" aria-modal="true" role="dialog" aria-labelledby="drawerTitle">
+<div class="backdrop" id="backdrop" aria-hidden="true"></div>
+<aside class="drawer" id="drawer" aria-modal="true" role="dialog" aria-labelledby="drawerTitle" aria-hidden="true" tabindex="-1">
   <div class="drawer-head">
     <h3 id="drawerTitle">Dettaglio</h3>
-    <button class="btn" id="drawerClose" aria-label="Chiudi">✕</button>
+    <button class="btn" type="button" id="drawerClose" aria-label="Chiudi finestra">✕</button>
   </div>
   <div id="drawerBody"></div>
 </aside>
-<div class="toast-zone" id="toastZone" aria-live="polite"></div>
+<div class="toast-zone" id="toastZone" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 (() => {
 'use strict';
 
 const APP_KEY='organicGrowthOS.v4';
-const SCHEMA_VERSION=4;
+const SCHEMA_VERSION=5;
 const stages=['Research','Strategy','Architecture','Build','Validate','Index','Measure','Learn','Expand'];
 const navGroups={
   'Overview':['Dashboard','Guided Review','Next Best Actions'],
@@ -461,7 +449,7 @@ class StorageService{
   migrate(data){
     if(!data || typeof data!=='object') throw new Error('Backup non valido');
     if(!data.schemaVersion) data.schemaVersion=1;
-    const arrayKeys=['projects','pages','keywords','entities','clusters','contents','links','issues','opportunities','observations','risks','tasks','milestones','decisions','experiments','qualityGates','gscRecords','auditFindings','seoDebt','competitors','evidence','datasets','changeEvents','snapshots','falsePositives','activity'];
+    const arrayKeys=['projects','pages','keywords','entities','clusters','contents','links','redirects','migrations','issues','opportunities','observations','risks','tasks','milestones','decisions','experiments','qualityGates','gscRecords','auditFindings','seoDebt','competitors','evidence','datasets','changeEvents','snapshots','falsePositives','activity'];
     arrayKeys.forEach(k=>{ if(!Array.isArray(data[k])) data[k]=[]; });
     data.ui={activeView:'Dashboard',mode:'Executive',theme:'system',experienceMode:'guided',lastSaved:null,...(data.ui||{})};
     if(!Array.isArray(data.sourceReliability) || !data.sourceReliability.length){
@@ -512,7 +500,7 @@ function initialState(){
     ui:{activeView:'Dashboard',mode:'Executive',theme:'system',experienceMode:'guided',lastSaved:null},
     currentProjectId:p.id,
     projects:[p],
-    pages:[],keywords:[],entities:[],clusters:[],contents:[],links:[],issues:[],opportunities:[],
+    pages:[],keywords:[],entities:[],clusters:[],contents:[],links:[],redirects:[],migrations:[],issues:[],opportunities:[],
     observations:[],risks:[],tasks:[],milestones:[],decisions:[],experiments:[],qualityGates:[],
     gscRecords:[],auditFindings:[],seoDebt:[],competitors:[],evidence:[],datasets:[],changeEvents:[],snapshots:[],
     falsePositives:[],sourceReliability:[
@@ -603,6 +591,22 @@ function nextActions(){
   return actions.sort((a,b)=>b.score-a.score).slice(0,5);
 }
 
+function navLabel(item){
+  const labels={
+    Dashboard:'Panoramica','Guided Review':'Controllo guidato','Next Best Actions':'Prossime azioni',Project:'Configurazione progetto',
+    Pages:'Pagine del sito',Tasks:'Piano di lavoro',Settings:'Impostazioni',Keywords:'Parole chiave',Entities:'Entità',
+    'Strategy Canvas':'Strategia','Search Intent':'Intento di ricerca',Cannibalization:'Cannibalizzazione',Competitors:'Concorrenti',
+    'Topical Map':'Mappa tematica','Content Strategy':'Strategia contenuti','Content Briefs':'Brief contenuti',Architecture:'Architettura',
+    'Internal Links':'Link interni','On-Page':'SEO on-page','Structured Data':'Dati strutturati','Technical SEO':'SEO tecnica',
+    Redirects:'Redirect',Canonical:'Canonical',Indexation:'Indicizzazione',Migration:'Migrazione','Search Console':'Monitoraggio Search Console',
+    Opportunities:'Opportunità','Content Refresh':'Aggiornamento contenuti',Experiments:'Esperimenti',Issues:'Problemi',Milestones:'Traguardi',
+    'Quality Gates':'Controlli qualità','SEO Debt':'Debito SEO',Evidence:'Evidenze',Decisions:'Decisioni',Confidence:'Affidabilità',
+    Observations:'Osservazioni',Risks:'Rischi','False Positives':'Falsi positivi','Change Log':'Registro modifiche',Snapshots:'Istantanee',
+    Import:'Importa dati',Datasets:'Set di dati','Source Reliability':'Affidabilità fonti',Backup:'Backup','Demo Data':'Dati dimostrativi','System Check':'Controllo sistema'
+  };
+  return labels[item]||item;
+}
+
 function renderNav(){
   const nav=document.getElementById('nav'); nav.innerHTML='';
 
@@ -623,9 +627,11 @@ function renderNav(){
 
   Object.entries(groups).forEach(([group,items])=>{
     const d=document.createElement('details'); d.open=items.includes(state.ui.activeView)||group==='GUIDATO'||group==='Overview';
-    d.innerHTML=`<summary>${esc(group)}</summary>`;
+    const groupLabels={Overview:'Panoramica',Strategy:'Strategia',Authority:'Autorevolezza',Site:'Sito',Technical:'Tecnico',Performance:'Prestazioni',Execution:'Operatività',Intelligence:'Analisi',Data:'Dati',System:'Sistema'};
+    d.innerHTML=`<summary>${esc(groupLabels[group]||group)}</summary>`;
     items.forEach(item=>{
-      const b=document.createElement('button'); b.className='nav-btn'+(state.ui.activeView===item?' active':''); b.textContent=item==='Pages'?'Pagine del sito':item;
+      const b=document.createElement('button'); b.type='button'; b.className='nav-btn'+(state.ui.activeView===item?' active':''); b.textContent=navLabel(item);
+      if(state.ui.activeView===item)b.setAttribute('aria-current','page');
       b.onclick=()=>{ state.ui.activeView=item; render(); closeMobile(); };
       d.appendChild(b);
     }); nav.appendChild(d);
@@ -635,7 +641,7 @@ function renderProjectSelect(){
   const s=document.getElementById('projectSelect');
   s.innerHTML=state.projects.filter(p=>!p.archived).map(p=>`<option value="${p.id}" ${p.id===state.currentProjectId?'selected':''}>${esc(p.name)}</option>`).join('');
 }
-function setTitle(t){ document.getElementById('pageTitle').textContent=t; }
+function setTitle(t){const label=navLabel(t);document.getElementById('pageTitle').textContent=label;document.title=`${label} · Organic Growth OS`;}
 
 function dashboardView(){
   const p=currentProject(), s=scores(), acts=nextActions(), main=acts[0];
@@ -681,15 +687,16 @@ function dashboardView(){
       <div class="muted" style="margin-top:10px;font-size:12px">Gli score sono indicatori interni e spiegabili; non sono ranking factor di Google.</div>
     </div>`;
 }
-const kpi=(label,val)=>`<div class="card kpi-card"><div class="label">${label}</div><div class="value">${Number.isFinite(val)?val:'—'}</div><div class="progress"><span style="width:${Number.isFinite(val)?val:0}%"></span></div><div class="sub">${Number.isFinite(val)?'':'Dati insufficienti'}</div></div>`;
-const metric=(label,val)=>`<div class="metric-row"><div>${label}</div><div class="bar"><span style="width:${Number.isFinite(val)?val:0}%"></span></div><strong>${Number.isFinite(val)?val:'—'}</strong></div>`;
+const percentWidth=val=>Number.isFinite(Number(val))?Math.min(100,Math.max(0,Number(val))):0;
+const kpi=(label,val)=>`<div class="card kpi-card"><div class="label">${label}</div><div class="value">${Number.isFinite(val)?val:'—'}</div><div class="progress"><span style="width:${percentWidth(val)}%"></span></div><div class="sub">${Number.isFinite(val)?'':'Dati insufficienti'}</div></div>`;
+const metric=(label,val)=>`<div class="metric-row"><div>${label}</div><div class="bar"><span style="width:${percentWidth(val)}%"></span></div><strong>${Number.isFinite(val)?val:'—'}</strong></div>`;
 const statusLine=(label,val)=>`<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)"><span>${label}</span><strong>${val}</strong></div>`;
 
 function genericTableView(cfg){
   const rows=byProject(state[cfg.key]);
   return `<div class="section-head"><div><h3>${cfg.title}</h3><div class="muted">${cfg.help||''}</div></div><button class="btn primary" data-add="${cfg.key}">+ Aggiungi</button></div>
   <div class="toolbar"><input data-search-table="${cfg.key}" placeholder="Cerca"><span class="muted">${rows.length} record</span></div>
-  ${rows.length?`<div class="table-wrap"><table><thead><tr>${cfg.cols.map(c=>`<th>${c.label}</th>`).join('')}<th></th></tr></thead>
+  ${rows.length?`<div class="table-wrap" tabindex="0" role="region" aria-label="Tabella ${esc(cfg.title)}"><table><thead><tr>${cfg.cols.map(c=>`<th scope="col">${c.label}</th>`).join('')}<th scope="col">Azioni</th></tr></thead>
     <tbody>${rows.map(r=>`<tr>${cfg.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td><button class="btn" data-edit="${cfg.key}" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div>`:
     `<div class="card empty"><strong>Nessun dato</strong><p>${cfg.empty||'Aggiungi il primo record per iniziare.'}</p><button class="btn primary" data-add="${cfg.key}">Aggiungi</button></div>`}`;
 }
@@ -707,6 +714,9 @@ const configs={
  keywords:{title:'Keyword Intelligence',help:'Keyword, intent, cluster, target URL e metriche.',cols:[
    {key:'keyword',label:'Keyword'},{key:'intent',label:'Intent',type:'badge'},{key:'targetUrl',label:'Target URL'},{key:'position',label:'Pos.'},{key:'impressions',label:'Impr.'},{key:'priority',label:'Priority',type:'badge'}
  ]},
+ competitors:{title:'Concorrenti',help:'Concorrenti commerciali, organici e presenti nelle SERP.',cols:[{key:'name',label:'Concorrente'},{key:'domain',label:'Dominio'},{key:'type',label:'Tipo',type:'badge'},{key:'overlap',label:'Sovrapposizione'},{key:'status',label:'Stato',type:'badge'}]},
+ redirects:{title:'Redirect',help:'Mappatura degli inoltri e verifica della destinazione finale.',cols:[{key:'sourceUrl',label:'URL origine'},{key:'targetUrl',label:'URL destinazione'},{key:'statusCode',label:'HTTP'},{key:'hops',label:'Passaggi'},{key:'status',label:'Stato',type:'badge'}]},
+ migrations:{title:'Migrazione',help:'Mappatura vecchia-nuova URL e controllo successivo alla migrazione.',cols:[{key:'oldUrl',label:'Vecchia URL'},{key:'newUrl',label:'Nuova URL'},{key:'redirectStatus',label:'Redirect'},{key:'canonicalStatus',label:'Canonical'},{key:'status',label:'Stato',type:'badge'}]},
  entities:{title:'Entity Map',help:'Entità, relazioni e copertura.',cols:[{key:'name',label:'Entity'},{key:'entityType',label:'Type'},{key:'parent',label:'Parent'},{key:'coverage',label:'Coverage'},{key:'status',label:'Status',type:'badge'}]},
  issues:{title:'Issues',help:'Problemi verificabili, separati da opportunità e osservazioni.',cols:[{key:'title',label:'Issue'},{key:'severity',label:'Severity',type:'badge'},{key:'priority',label:'Priority',type:'badge'},{key:'status',label:'Status',type:'badge'},{key:'confidence',label:'Confidence'}]},
  opportunities:{title:'Opportunities',help:'Possibilità di crescita con impatto, effort e confidence.',cols:[{key:'title',label:'Opportunity'},{key:'type',label:'Type',type:'badge'},{key:'impact',label:'Impact'},{key:'effort',label:'Effort'},{key:'confidence',label:'Confidence'}]},
@@ -924,7 +934,7 @@ function snapshotsView(){
   if(!snaps.length) return genericTableView(configs.snapshots);
   const opts=snaps.map(s=>`<option value="${s.id}">${esc(s.name)} · ${fmtDate(s.createdAt)}</option>`).join('');
   return `<div class="section-head"><div><h3>Snapshots</h3><div class="muted">Confronta lo stato del progetto in due momenti diversi.</div></div><button class="btn primary" id="createSnapshot">Crea snapshot</button></div>
-  <div class="card"><div class="form-grid"><div class="field"><label>Snapshot A</label><select id="snapA">${opts}</select></div><div class="field"><label>Snapshot B</label><select id="snapB">${opts}</select></div></div><div style="margin-top:12px"><button class="btn" id="compareSnapshots">Confronta</button></div><div id="snapshotCompare" style="margin-top:16px"></div></div>
+  <div class="card"><div class="form-grid"><div class="field"><label for="snapA">Snapshot A</label><select id="snapA">${opts}</select></div><div class="field"><label for="snapB">Snapshot B</label><select id="snapB">${opts}</select></div></div><div style="margin-top:12px"><button class="btn" id="compareSnapshots">Confronta</button></div><div id="snapshotCompare" style="margin-top:16px" aria-live="polite"></div></div>
   <div style="height:16px"></div>${genericTableView(configs.snapshots)}`;
 }
 function compareSnapshots(){
@@ -956,9 +966,9 @@ function changeImpactView(){
 let pendingImport=null;
 function importViewV2(){
   return `<div class="grid two">
-    <div class="card"><h3>Import guidato</h3><p class="muted">1 Preview → 2 Validation → 3 Mapping automatico → 4 Change Preview → 5 Confirm.</p>
-      <div class="field"><label>File</label><input type="file" id="importFile" accept=".json,.csv,.tsv"></div>
-      <div class="field" style="margin-top:10px"><label>Destinazione</label><select id="importTarget">
+    <div class="card"><h3>Import guidato</h3><p class="muted">1 Anteprima → 2 Validazione → 3 Associazione campi → 4 Riepilogo modifiche → 5 Conferma.</p>
+      <div class="field"><label for="importFile">File</label><input type="file" id="importFile" accept=".json,.csv,.tsv" aria-describedby="importHelp"><div class="form-help" id="importHelp">Sono supportati JSON, CSV con virgola o punto e virgola e TSV.</div></div>
+      <div class="field" style="margin-top:10px"><label for="importTarget">Destinazione</label><select id="importTarget">
         <option value="pages">Pages</option><option value="keywords">Keywords</option><option value="issues">Issues</option><option value="opportunities">Opportunities</option><option value="gscRecords">Search Console</option><option value="links">Internal Links</option>
       </select></div>
       <div style="margin-top:12px"><button class="btn primary" id="doImportBtn">Analizza file</button></div>
@@ -1028,7 +1038,7 @@ function commitPendingImport(){
     state=storage.migrate(pendingImport.data);storage.save(state);pendingImport=null;toast('Backup ripristinato');render();return;
   }
   const {rows,target,file}=pendingImport;
-  rows.forEach(x=>state[target].push({id:uid('imp'),projectId:state.currentProjectId,...normalizeImportedRecord(target,x),createdAt:now(),updatedAt:now()}));
+  rows.forEach(x=>state[target].push({...normalizeImportedRecord(target,x),id:uid('imp'),projectId:state.currentProjectId,createdAt:now(),updatedAt:now()}));
   state.datasets.push({id:uid('dataset'),projectId:state.currentProjectId,name:file.name,source:'Import locale',type:target,importedAt:now(),records:rows.length,createdAt:now(),updatedAt:now()});
   commit(`Import confermato: ${file.name}`);runAutomationCycle(false);pendingImport=null;toast(`${rows.length} record importati`);state.ui.activeView=target==='gscRecords'?'Search Console':target==='links'?'Internal Links':({'pages':'Pages','keywords':'Keywords','issues':'Issues','opportunities':'Opportunities'}[target]||'Datasets');render();
 }
@@ -1047,9 +1057,9 @@ function strategyCanvasView(){
   ];
   return `<div class="section-head"><div><h3>Strategy Canvas</h3><div class="muted">Strategia prima dell'espansione: ogni campo alimenta decisioni e priorità.</div></div><span class="badge">${esc(sc.status||'PENDING')}</span></div>
   <div class="card"><form id="strategyCanvasForm" class="matrix">
-  ${fields.map(([k,l])=>`<div class="field"><label>${l}</label><textarea name="${k}">${esc(sc[k]||'')}</textarea></div>`).join('')}
-  <div class="field"><label>Status</label><select name="status"><option ${sc.status==='PENDING'?'selected':''}>PENDING</option><option ${sc.status==='VALIDATED'?'selected':''}>VALIDATED</option><option ${sc.status==='PARTIALLY VALIDATED'?'selected':''}>PARTIALLY VALIDATED</option><option ${sc.status==='REJECTED'?'selected':''}>REJECTED</option></select></div>
-  <div class="field"><label>Confidence</label><input name="confidence" type="number" min="0" max="100" value="${esc(sc.confidence??50)}"></div>
+  ${fields.map(([k,l])=>`<div class="field"><label for="strategy_${k}">${l}</label><textarea id="strategy_${k}" name="${k}">${esc(sc[k]||'')}</textarea></div>`).join('')}
+  <div class="field"><label for="strategyStatus">Status</label><select id="strategyStatus" name="status"><option ${sc.status==='PENDING'?'selected':''}>PENDING</option><option ${sc.status==='VALIDATED'?'selected':''}>VALIDATED</option><option ${sc.status==='PARTIALLY VALIDATED'?'selected':''}>PARTIALLY VALIDATED</option><option ${sc.status==='REJECTED'?'selected':''}>REJECTED</option></select></div>
+  <div class="field"><label for="strategyConfidence">Confidence</label><input id="strategyConfidence" name="confidence" type="number" min="0" max="100" value="${esc(sc.confidence??50)}"></div>
   <div class="field full"><button class="btn primary" type="submit">Salva Strategy Canvas</button></div>
   </form></div>`;
 }
@@ -1150,12 +1160,12 @@ function contentStrategyView(){
   return `<div class="section-head"><div><h3>Content Strategy</h3><div class="muted">Content matrix collegata a cluster, intent, keyword e priorità.</div></div><button class="btn primary" id="addContentBtn">+ Contenuto</button></div>
   <div class="grid three">${kpi('Content items',merged.length)}${kpi('Published',merged.filter(x=>x.status==='PUBLISHED').length)}${kpi('Needs update',merged.filter(x=>x.status==='UPDATE').length)}</div>
   <div style="height:16px"></div>
-  <div class="table-wrap"><table><thead><tr><th>Title</th><th>Type</th><th>Cluster</th><th>Keyword</th><th>Intent</th><th>Status</th><th>Priority</th></tr></thead><tbody>${merged.map(c=>`<tr><td>${esc(c.title||'—')}</td><td>${esc(c.contentType||'—')}</td><td>${esc(c.cluster||'—')}</td><td>${esc(c.keyword||'—')}</td><td>${esc(c.intent||'—')}</td><td><span class="badge">${esc(c.status||'IDEA')}</span></td><td>${esc(c.priority||'P3')}</td></tr>`).join('')}</tbody></table></div>`;
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Strategia dei contenuti"><table><thead><tr><th scope="col">Titolo</th><th scope="col">Tipo</th><th scope="col">Cluster</th><th scope="col">Keyword</th><th scope="col">Intento</th><th scope="col">Stato</th><th scope="col">Priorità</th></tr></thead><tbody>${merged.map(c=>`<tr><td>${esc(c.title||'—')}</td><td>${esc(c.contentType||'—')}</td><td>${esc(c.cluster||'—')}</td><td>${esc(c.keyword||'—')}</td><td>${esc(c.intent||'—')}</td><td><span class="badge">${esc(c.status||'IDEA')}</span></td><td>${esc(c.priority||'P3')}</td></tr>`).join('')}</tbody></table></div>`;
 }
 
 function addContentDrawer(){
   openDrawer('Nuovo contenuto',`<form id="contentForm" class="form-grid">
-  ${[['title','Title'],['url','URL'],['contentType','Content Type'],['cluster','Cluster'],['keyword','Keyword'],['intent','Intent'],['status','Status'],['priority','Priority'],['businessValue','Business Value'],['seoOpportunity','SEO Opportunity']].map(([n,l])=>`<div class="field"><label>${l}</label><input name="${n}"></div>`).join('')}
+  ${[['title','Titolo'],['url','URL'],['contentType','Tipo di contenuto'],['cluster','Cluster'],['keyword','Keyword'],['intent','Intento'],['status','Stato'],['priority','Priorità'],['businessValue','Valore di business'],['seoOpportunity','Opportunità SEO']].map(([n,l])=>`<div class="field"><label for="content_${n}">${l}</label><input id="content_${n}" name="${n}"></div>`).join('')}
   <div class="field full"><button class="btn primary" type="submit">Salva contenuto</button></div></form>`);
   document.getElementById('contentForm').onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target).entries());state.contents.push({id:uid('content'),projectId:state.currentProjectId,...data,createdAt:now(),updatedAt:now()});commit('Contenuto aggiunto');closeDrawer();render();toast('Contenuto salvato');};
 }
@@ -1200,9 +1210,9 @@ function openBriefDrawer(id=null){
   let c=id?state.contents.find(x=>x.id===id):null;
   const b=c?.brief||{};
   openDrawer(id?'Modifica Content Brief':'Nuovo Content Brief',`<form id="briefForm" class="form-grid">
-    ${[['targetKeyword','Target Keyword'],['intent','Intent'],['audience','Audience'],['problem','Problem'],['objective','Objective'],['recommendedTitle','Recommended Title'],['h1','H1'],['entities','Entities'],['internalLinks','Internal Links'],['cta','CTA'],['schema','Schema'],['sources','Sources'],['eeatRequirements','EEAT Requirements']].map(([n,l])=>`<div class="field ${['problem','objective','entities','internalLinks','sources','eeatRequirements'].includes(n)?'full':''}"><label>${l}</label>${['problem','objective','entities','internalLinks','sources','eeatRequirements'].includes(n)?`<textarea name="${n}">${esc(b[n]||'')}</textarea>`:`<input name="${n}" value="${esc(b[n]||'')}">`}</div>`).join('')}
-    <div class="field full"><label>Outline</label><textarea name="outline">${esc(b.outline||'')}</textarea></div>
-    <div class="field full"><label>Notes</label><textarea name="notes">${esc(b.notes||'')}</textarea></div>
+    ${[['targetKeyword','Keyword principale'],['intent','Intento'],['audience','Pubblico'],['problem','Problema'],['objective','Obiettivo'],['recommendedTitle','Titolo consigliato'],['h1','H1'],['entities','Entità'],['internalLinks','Link interni'],['cta','CTA'],['schema','Schema'],['sources','Fonti'],['eeatRequirements','Requisiti E-E-A-T']].map(([n,l])=>`<div class="field ${['problem','objective','entities','internalLinks','sources','eeatRequirements'].includes(n)?'full':''}"><label for="brief_${n}">${l}</label>${['problem','objective','entities','internalLinks','sources','eeatRequirements'].includes(n)?`<textarea id="brief_${n}" name="${n}">${esc(b[n]||'')}</textarea>`:`<input id="brief_${n}" name="${n}" value="${esc(b[n]||'')}">`}</div>`).join('')}
+    <div class="field full"><label for="brief_outline">Struttura</label><textarea id="brief_outline" name="outline">${esc(b.outline||'')}</textarea></div>
+    <div class="field full"><label for="brief_notes">Note</label><textarea id="brief_notes" name="notes">${esc(b.notes||'')}</textarea></div>
     <div class="field full"><button class="btn primary" type="submit">Salva brief</button></div>
   </form>`);
   document.getElementById('briefForm').onsubmit=e=>{
@@ -1406,7 +1416,7 @@ function loadControlledDemo(){
 function removeControlledDemo(){
   const demoTag='DEMO_RC5', pid=state.currentProjectId;
   if(!confirm('Rimuovere tutti i record demo controllati dal progetto corrente?'))return;
-  const arrays=['pages','keywords','links','issues','opportunities','observations','risks','tasks','milestones','decisions','experiments','qualityGates','gscRecords','auditFindings','seoDebt','competitors','evidence','datasets','changeEvents','snapshots','falsePositives','contents','entities','clusters'];
+  const arrays=['pages','keywords','links','redirects','migrations','issues','opportunities','observations','risks','tasks','milestones','decisions','experiments','qualityGates','gscRecords','auditFindings','seoDebt','competitors','evidence','datasets','changeEvents','snapshots','falsePositives','contents','entities','clusters'];
   arrays.forEach(k=>state[k]=state[k].filter(x=>!(x.projectId===pid&&x.demoTag===demoTag)));
   currentProject().isDemo=false;
   commit('Dati demo rimossi');toast('Dati demo rimossi');render();
@@ -1418,13 +1428,13 @@ function runReleaseCheck(){
   const add=(name,ok,detail)=>checks.push({name,ok,detail});
   add('Current project',!!p,'Progetto corrente risolvibile');
   add('Unique project IDs',new Set(state.projects.map(x=>x.id)).size===state.projects.length,'ID progetto univoci');
-  const collections=['pages','keywords','issues','tasks','decisions','evidence','datasets','links'];
+  const collections=['pages','keywords','entities','clusters','contents','links','redirects','migrations','issues','opportunities','observations','risks','tasks','milestones','decisions','experiments','qualityGates','gscRecords','auditFindings','seoDebt','competitors','evidence','datasets','changeEvents','snapshots','falsePositives','activity'];
   collections.forEach(k=>{
     const arr=state[k]||[];
     add(`${k}: projectId`,arr.every(x=>!!x.projectId),`${arr.length} record`);
     add(`${k}: unique IDs`,new Set(arr.map(x=>x.id)).size===arr.length,`${arr.length} record`);
   });
-  add('Current project isolation',collections.every(k=>(state[k]||[]).filter(x=>x.projectId===pid).every(x=>x.projectId===pid)),'Filtri project-scoped');
+  add('Current project isolation',collections.every(k=>(state[k]||[]).every(x=>state.projects.some(project=>project.id===x.projectId))), 'Ogni record appartiene a un progetto esistente');
   add('Local persistence',typeof localStorage!=='undefined','localStorage disponibile');
   add('Schema version',state.schemaVersion===SCHEMA_VERSION,`schema ${state.schemaVersion}`);
   add('Quality Gate engine',typeof qualityGateEvaluation==='function','Motore disponibile');
@@ -1432,7 +1442,10 @@ function runReleaseCheck(){
   add('Opportunity engine',typeof detectOpportunities==='function','Motore disponibile');
   add('Snapshot engine',typeof createSnapshot==='function','Motore disponibile');
   add('No false perfect score',scores().organic!==100 || [state.pages,state.keywords,state.links].some(a=>byProject(a).length>0),'Score non perfetto senza dati');
-  add('Active navigation visible',true,'Il gruppo attivo resta aperto');
+  const knownViews=new Set(nav.flatMap(group=>group.items));
+  add('Active navigation valid',knownViews.has(state.ui.activeView),`Vista attiva: ${state.ui.activeView}`);
+  const normalizedDomain=normalizeSiteDomain(p?.domain);
+  add('Project domain',!p?.domain||Boolean(normalizedDomain),p?.domain?'Dominio valido e normalizzabile':'Dominio non ancora configurato');
   add('Import normalization',typeof normalizeImportedRecord==='function','Normalizzazione import disponibile');
   return checks;
 }
@@ -1455,7 +1468,7 @@ function deleteCurrentProject(){
   const p=currentProject();
   if(!confirm(`Eliminare il progetto "${p.name}" e tutti i suoi dati locali?`))return;
   const pid=p.id;
-  const collections=['pages','keywords','entities','clusters','contents','links','issues','opportunities','observations','risks','tasks','milestones','decisions','experiments','qualityGates','gscRecords','auditFindings','seoDebt','competitors','evidence','datasets','changeEvents','snapshots','falsePositives','activity'];
+  const collections=['pages','keywords','entities','clusters','contents','links','redirects','migrations','issues','opportunities','observations','risks','tasks','milestones','decisions','experiments','qualityGates','gscRecords','auditFindings','seoDebt','competitors','evidence','datasets','changeEvents','snapshots','falsePositives','activity'];
   collections.forEach(k=>state[k]=(state[k]||[]).filter(x=>x.projectId!==pid));
   state.projects=state.projects.filter(x=>x.id!==pid);
   state.currentProjectId=state.projects[0].id;
@@ -1498,7 +1511,7 @@ function guidedReviewViewV2(){
 function projectViewV2(){
   const p=currentProject();
   const scan=p.websiteScan||{};
-  return `${pageIntro('Project Setup','Definisci il contesto del sito una sola volta. I dati qui alimentano strategia e priorità.',[p.stage||'Research',p.domain||'Dominio non impostato'])}
+  return `${pageIntro('Configurazione progetto','Definisci il contesto del sito una sola volta. I dati alimentano strategia e priorità.',[p.stage||'Research',p.domain||'Dominio non impostato'])}
   <div class="hero-action">
     <h3>Compilazione automatica dal sito</h3>
     <p>Inserisci il dominio e avvia l’analisi. Rileverò homepage, sitemap, pagine, title, meta description, H1, canonical, lingua, dati strutturati e problemi SEO verificabili.</p>
@@ -1514,22 +1527,23 @@ function projectViewV2(){
   </div>
   <div style="height:16px"></div>
   <div class="card"><form id="projectForm" class="form-grid">
-   ${field('name','Project Name',p.name)}
-   ${field('domain','Domain',p.domain)}
-   ${field('brand','Brand',p.brand)}
-   ${field('industry','Industry',p.industry)}
-   ${field('country','Country',p.country)}
-   ${field('language','Language',p.language)}
-   ${field('audience','Audience',p.audience)}
-   ${field('businessModel','Business Model',p.businessModel)}
-   ${field('revenueModel','Revenue Model',p.revenueModel)}
-   ${field('primaryConversion','Primary Conversion',p.primaryConversion)}
-   ${field('secondaryConversion','Secondary Conversion',p.secondaryConversion)}
-   ${selectField('stage','Project Stage',stages,p.stage)}
-   ${field('positioning','Positioning',p.positioning,true)}
-   ${field('usp','USP',p.usp,true)}
-   ${field('primarySeoGoal','Primary SEO Goal',p.primarySeoGoal,true)}
-   ${field('notes','Notes',p.notes,true)}
+   <div class="field"><label for="name">Nome progetto</label><input id="name" name="name" value="${esc(p.name)}" required aria-describedby="nameHelp"><div class="form-help" id="nameHelp">Un nome riconoscibile per identificare il progetto.</div></div>
+   <div class="field"><label for="domain">Dominio del sito</label><input id="domain" name="domain" type="url" inputmode="url" value="${esc(p.domain)}" placeholder="https://esempio.it" required aria-describedby="domainHelp domainError"><div class="form-help" id="domainHelp">Inserisci l’indirizzo completo, ad esempio https://esempio.it.</div><div class="field-error" id="domainError" hidden></div></div>
+   ${field('brand','Marchio',p.brand)}
+   ${field('industry','Settore',p.industry)}
+   ${field('country','Paese',p.country)}
+   ${field('language','Lingua',p.language)}
+   ${field('audience','Pubblico',p.audience)}
+   ${field('businessModel','Modello di business',p.businessModel)}
+   ${field('revenueModel','Modello di ricavo',p.revenueModel)}
+   ${field('primaryConversion','Conversione principale',p.primaryConversion)}
+   ${field('secondaryConversion','Conversione secondaria',p.secondaryConversion)}
+   ${selectField('stage','Fase del progetto',stages,p.stage)}
+   ${field('competitorsText','Concorrenti',p.competitorsText,true)}
+   ${field('positioning','Posizionamento',p.positioning,true)}
+   ${field('usp','Proposta distintiva',p.usp,true)}
+   ${field('primarySeoGoal','Obiettivo SEO principale',p.primarySeoGoal,true)}
+   ${field('notes','Note',p.notes,true)}
    <div class="field full form-actions"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">Salva progetto</button><button class="btn danger" type="button" id="deleteProjectBtn">Elimina progetto</button></div></div>
   </form></div>`;
 }
@@ -1537,8 +1551,8 @@ function projectViewV2(){
 function genericTableViewV2(cfg){
   const rows=byProject(state[cfg.key]);
   return `${pageIntro(cfg.title,cfg.help||'', [`${rows.length} record`])}
-  <div class="toolbar"><input data-search-table="${cfg.key}" placeholder="Cerca in ${esc(cfg.title.toLowerCase())}"><div class="spacer"></div><button class="btn primary" data-add="${cfg.key}">+ Aggiungi</button></div>
-  ${rows.length?`<div class="table-wrap"><table><thead><tr>${cfg.cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Azioni</th></tr></thead>
+  <div class="toolbar"><input data-search-table="${cfg.key}" aria-label="Cerca in ${esc(cfg.title.toLowerCase())}" placeholder="Cerca in ${esc(cfg.title.toLowerCase())}"><div class="spacer"></div><button class="btn primary" data-add="${cfg.key}">+ Aggiungi</button></div>
+  ${rows.length?`<div class="table-wrap" tabindex="0" role="region" aria-label="Tabella ${esc(cfg.title)}"><table><thead><tr>${cfg.cols.map(c=>`<th scope="col">${c.label}</th>`).join('')}<th scope="col">Azioni</th></tr></thead>
     <tbody>${rows.map(r=>`<tr data-table-row="${cfg.key}">${cfg.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td><button class="btn" data-edit="${cfg.key}" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div>`:
     `<div class="empty"><strong>Nessun dato</strong><p>${cfg.empty||'Aggiungi il primo record per iniziare.'}</p><button class="btn primary" data-add="${cfg.key}">Aggiungi il primo record</button></div>`}`;
 }
@@ -1877,12 +1891,12 @@ function pagesInventoryView(){
   </div>
   ${rows.length?`
     <div class="toolbar">
-      <input data-search-table="pages" placeholder="Cerca pagina o URL">
+      <input data-search-table="pages" aria-label="Cerca una pagina o un URL" placeholder="Cerca pagina o URL">
       <div class="spacer"></div>
       <span class="muted">${rows.length} record</span>
     </div>
-    <div class="table-wrap"><table><thead><tr>
-      ${configs.pages.cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Azioni</th>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Elenco delle pagine del sito"><table><thead><tr>
+      ${configs.pages.cols.map(c=>`<th scope="col">${c.label}</th>`).join('')}<th scope="col">Azioni</th>
     </tr></thead><tbody>
       ${rows.map(r=>`<tr data-table-row="pages">${configs.pages.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}
       <td><button class="btn" data-edit="pages" data-id="${r.id}">Apri</button></td></tr>`).join('')}
@@ -1947,21 +1961,21 @@ function openBulkPastePages(){
   openDrawer('Bulk Paste · Pagine del sito',`
     <form id="bulkPagesForm">
       <div class="field">
-        <label>Incolla URL o contenuto sitemap</label>
-        <textarea id="bulkPagesText" style="min-height:240px" placeholder="https://example.com/
+        <label for="bulkPagesText">Incolla URL o contenuto sitemap</label>
+        <textarea id="bulkPagesText" style="min-height:240px" aria-describedby="bulkPagesHelp" placeholder="https://example.com/
 https://example.com/pagina-1
 https://example.com/pagina-2
 
 Puoi anche incollare righe XML con <loc>URL</loc>."></textarea>
       </div>
-      <div class="bulk-help" style="margin-top:8px">
+      <div class="bulk-help" id="bulkPagesHelp" style="margin-top:8px">
         Accetta: un URL per riga, URL completi, path come <code>/pagina</code> e righe sitemap XML con <code>&lt;loc&gt;...&lt;/loc&gt;</code>.
         Gli URL duplicati vengono rimossi automaticamente.
       </div>
       <div style="margin-top:12px">
         <button class="btn" type="button" id="previewBulkPages">Anteprima</button>
       </div>
-      <div id="bulkPagesPreview" style="margin-top:12px"></div>
+      <div id="bulkPagesPreview" style="margin-top:12px" aria-live="polite"></div>
       <div class="form-actions">
         <button class="btn primary" type="submit">Importa pagine</button>
       </div>
@@ -2756,34 +2770,50 @@ function smartWizardView(){
 }
 
 function guidedDashboardView(){
+  const p=currentProject();
   const w=wizardState();
   const open=wizardChecks().filter(c=>!c.resolved()&&['CRITICAL','HIGH','MEDIUM'].includes(c.severity));
   const status=open.length===0?'Buono':'Richiede attenzione';
-  const cta=w.status==='paused'?'Riprendi controllo guidato':w.status==='in_progress'?'Continua controllo guidato':'Avvia controllo guidato';
+  const hasDomain=Boolean(normalizeSiteDomain(p.domain));
+  const cta=!hasDomain?'Configura il sito':w.status==='paused'?'Riprendi controllo guidato':w.status==='in_progress'?'Continua controllo guidato':'Avvia controllo guidato';
   const ctaId=w.status==='paused'?'wizardResumeDashboard':'';
+  const ctaTarget=!hasDomain?'Project':'Guided Review';
   const lastCheck=w.updatedAt?`Ultimo controllo: ${fmtTime(w.updatedAt)}`:'Nessun controllo eseguito';
+  const scan=p.websiteScan||{};
+  const steps=[
+    {title:'Sito e obiettivi',desc:'Dominio e informazioni principali del progetto.',done:hasDomain&&Boolean(p.strategyCanvas?.seoGoal)},
+    {title:'Pagine del sito',desc:'Sitemap e inventario delle URL rilevate.',done:byProject(state.pages).length>0},
+    {title:'Controllo SEO',desc:'Analisi dei segnali tecnici e on-page disponibili.',done:scan.status==='completed'},
+    {title:'Correzioni',desc:'Risoluzione verificata dei problemi prioritari.',done:open.length===0},
+    {title:'Monitoraggio',desc:'Dati Search Console per misurare i risultati.',done:byProject(state.gscRecords).length>0}
+  ];
+  let currentIndex=steps.findIndex(x=>!x.done);if(currentIndex<0)currentIndex=steps.length-1;
 
   return `${isDemoProject()?'<div class="demo-banner"><strong>DEMO MODE</strong><div class="muted">Il progetto contiene dati dimostrativi dichiarati.</div></div>':''}
-  ${pageIntro('Stato attuale','La modalità guidata mostra solo ciò che ti serve per decidere il prossimo passo.',[
-    `Stato: ${status}`,
-    `${open.length} problemi da controllare`,lastCheck
-  ])}
-  <div class="hero-action">
-    <div class="muted" style="font-weight:900">PROSSIMA AZIONE</div>
-    <h3>${open[0]?esc(open[0].title):'Esegui un controllo guidato'}</h3>
-    <p>${open[0]?esc(open[0].simple):'Ti guideremo passo dopo passo. Non sono necessarie conoscenze tecniche.'}</p>
-    <button class="btn primary" ${ctaId?`id="${ctaId}"`:'data-nav="Guided Review"'}>${cta}</button>
-  </div>
-  <div style="height:16px"></div>
-  <div class="card">
-    <h3>Come funziona</h3>
-    <div class="wz-steps">
-      <div class="wz-step"><div class="wz-step-num">1</div><div><strong>Analizzo</strong><div class="muted">Controllo i dati presenti senza modificare nulla.</div></div></div>
-      <div class="wz-step"><div class="wz-step-num">2</div><div><strong>Ti spiego</strong><div class="muted">Mostro prima il problema più importante in parole semplici.</div></div></div>
-      <div class="wz-step"><div class="wz-step-num">3</div><div><strong>Ti porto dove serve</strong><div class="muted">Un pulsante apre direttamente il modulo corretto.</div></div></div>
-      <div class="wz-step"><div class="wz-step-num">4</div><div><strong>Verifico</strong><div class="muted">Non considero risolto un problema finché il controllo non passa davvero.</div></div></div>
+  ${pageIntro('Panoramica',`${p.name}${p.domain?` · ${p.domain}`:''}`,[`Stato: ${status}`,`${open.length} problemi prioritari`,lastCheck])}
+  <section class="dashboard-command" aria-labelledby="nextActionTitle">
+    <div>
+      <div class="dashboard-label">Prossima azione</div>
+      <h3 id="nextActionTitle">${!hasDomain?'Inserisci il sito da analizzare':open[0]?esc(open[0].title):'Avvia un nuovo controllo guidato'}</h3>
+      <p>${!hasDomain?'Bastano il dominio e il nome del progetto: l’app proverà a compilare automaticamente le informazioni pubbliche disponibili.':open[0]?esc(open[0].simple):'Ti guideremo passo dopo passo. Non sono necessarie conoscenze tecniche.'}</p>
     </div>
-  </div>`;
+    <button class="btn primary" ${ctaId?`id="${ctaId}"`:`data-nav="${ctaTarget}"`}>${cta}</button>
+  </section>
+  <div style="height:18px"></div>
+  <div class="grid two">
+    <section class="status-panel" aria-labelledby="currentStatusTitle">
+      <h3 id="currentStatusTitle">Stato attuale</h3>
+      <div class="status-main"><div class="status-symbol ${open.length?'warn':'good'}" aria-hidden="true">${open.length?'!':'✓'}</div><div><strong>${status}</strong><div class="muted">${open.length?`${open.length} problemi richiedono ancora attenzione.`:'Nessun problema prioritario aperto nei dati disponibili.'}</div></div></div>
+    </section>
+    <section class="status-panel" aria-labelledby="scanStatusTitle">
+      <h3 id="scanStatusTitle">Analisi automatica</h3>
+      <div class="status-main"><div class="status-symbol ${scan.status==='completed'?'good':''}" aria-hidden="true">${scan.status==='completed'?'✓':'○'}</div><div><strong>${scan.status==='completed'?'Completata':'Da eseguire'}</strong><div class="muted">${scan.status==='completed'?`${scan.pagesAnalyzed||0} pagine analizzate · ${scan.safeFixes||0} correzioni sicure.`:'Inserisci il dominio e avvia il controllo guidato.'}</div></div></div>
+    </section>
+  </div>
+  <div style="height:18px"></div>
+  <section class="workflow-list" aria-labelledby="workflowTitle"><h3 id="workflowTitle">Il controllo guidato in 5 passaggi</h3>
+    ${steps.map((step,i)=>`<div class="workflow-row ${step.done?'done':i===currentIndex?'current':''}"><div class="step-index" aria-hidden="true">${step.done?'✓':i+1}</div><strong>${esc(step.title)}</strong><div class="workflow-desc muted">${esc(step.desc)}</div><div class="state-text">${step.done?'Completato':i===currentIndex?'Prossimo':'Da iniziare'}</div></div>`).join('')}
+  </section>`;
 }
 
 function simpleInfo(title,text){
@@ -2800,6 +2830,7 @@ function render(){
   else if(v==='Project') html=projectViewV2();
   else if(v==='Pages') html=pagesInventoryView();
   else if(v==='Keywords') html=genericTableViewV2(configs.keywords);
+  else if(v==='Competitors') html=genericTableViewV2(configs.competitors);
   else if(v==='Entities') html=genericTableViewV2(configs.entities);
   else if(v==='Issues') html=genericTableViewV2(configs.issues);
   else if(v==='Opportunities') html=opportunitiesView();
@@ -2828,7 +2859,9 @@ function render(){
   else if(v==='Architecture') html=architectureView();
   else if(v==='Canonical') html=canonicalView();
   else if(v==='Technical SEO') html=technicalSeoView();
+  else if(v==='Redirects') html=genericTableViewV2(configs.redirects);
   else if(v==='Indexation') html=indexationView();
+  else if(v==='Migration') html=genericTableViewV2(configs.migrations);
   else if(v==='Content Strategy') html=contentStrategyView();
   else if(v==='Content Briefs') html=contentBriefsView();
   else if(v==='On-Page') html=onPageView();
@@ -2871,26 +2904,26 @@ function moduleDescription(v){
 
 function sourceReliabilityView(){
  return `<div class="card"><div class="section-head"><div><h3>Source Reliability</h3><div class="muted">Affidabilità configurabile per origine dati.</div></div></div>
- <div class="table-wrap"><table><thead><tr><th>Source</th><th>Type</th><th>Reliability</th></tr></thead><tbody>
- ${state.sourceReliability.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.type)}</td><td><input type="number" min="0" max="100" value="${s.reliability}" data-src-rel="${s.id}"></td></tr>`).join('')}
+ <div class="table-wrap" tabindex="0" role="region" aria-label="Affidabilità delle fonti"><table><thead><tr><th scope="col">Fonte</th><th scope="col">Tipo</th><th scope="col">Affidabilità</th></tr></thead><tbody>
+ ${state.sourceReliability.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.type)}</td><td><label class="sr-only" for="sourceReliability_${s.id}">Affidabilità di ${esc(s.name)}</label><input id="sourceReliability_${s.id}" type="number" min="0" max="100" value="${s.reliability}" data-src-rel="${s.id}"></td></tr>`).join('')}
  </tbody></table></div></div>`;
 }
 function searchConsoleView(){
  const rows=byProject(state.gscRecords);
  return `<div class="section-head"><div><h3>Search Console</h3><div class="muted">Importa dati GSC senza mischiare periodi incompatibili.</div></div><button class="btn primary" data-nav="Import">Importa CSV</button></div>
- ${rows.length?`<div class="table-wrap"><table><thead><tr><th>Query</th><th>Page</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Position</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.query)}</td><td>${esc(r.page)}</td><td>${esc(r.clicks)}</td><td>${esc(r.impressions)}</td><td>${esc(r.ctr)}</td><td>${esc(r.position)}</td></tr>`).join('')}</tbody></table></div>`:`<div class="card empty"><strong>Nessun dato Search Console</strong><p>Importa un CSV per individuare opportunità basate su click, impression, CTR e posizione.</p><button class="btn primary" data-nav="Import">Importa dati</button></div>`}`;
+ ${rows.length?`<div class="table-wrap" tabindex="0" role="region" aria-label="Dati Search Console"><table><thead><tr><th scope="col">Query</th><th scope="col">Pagina</th><th scope="col">Click</th><th scope="col">Impression</th><th scope="col">CTR</th><th scope="col">Posizione</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.query)}</td><td>${esc(r.page)}</td><td>${esc(r.clicks)}</td><td>${esc(r.impressions)}</td><td>${esc(r.ctr)}</td><td>${esc(r.position)}</td></tr>`).join('')}</tbody></table></div>`:`<div class="card empty"><strong>Nessun dato Search Console</strong><p>Importa un CSV per individuare opportunità basate su click, impression, CTR e posizione.</p><button class="btn primary" data-nav="Import">Importa dati</button></div>`}`;
 }
 function settingsView(){
- return `<div class="card"><h3>Impostazioni</h3><p class="muted">Executive semplifica la lettura. Consultant mostra più dettagli tecnici. Tutti i dati restano nel browser locale finché non esporti un backup.</p><div class="form-grid">
- <div class="field"><label>Esperienza</label><select id="settingsExperience"><option value="guided" ${state.ui.experienceMode==='guided'?'selected':''}>Guidata (consigliata)</option><option value="advanced" ${state.ui.experienceMode==='advanced'?'selected':''}>Avanzata</option></select></div>
- <div class="field"><label>Mode</label><select id="settingsMode"><option ${state.ui.mode==='Executive'?'selected':''}>Executive</option><option ${state.ui.mode==='Consultant'?'selected':''}>Consultant</option></select></div>
- <div class="field"><label>Workflow</label><select id="settingsWorkflow"><option value="assisted" ${currentProject().workflowMode!=='automatic'?'selected':''}>Assistito (consigliato)</option><option value="automatic" ${currentProject().workflowMode==='automatic'?'selected':''}>Automatico</option></select></div>
- <div class="field"><label>Theme</label><select id="settingsTheme"><option ${state.ui.theme==='system'?'selected':''} value="system">System</option><option ${state.ui.theme==='light'?'selected':''} value="light">Light</option><option ${state.ui.theme==='dark'?'selected':''} value="dark">Dark</option></select></div>
+ return `<div class="card"><h3>Impostazioni</h3><p class="muted">La vista sintetica semplifica la lettura. La vista tecnica mostra più dettagli. Tutti i dati restano nel browser locale finché non esporti un backup.</p><div class="form-grid">
+ <div class="field"><label for="settingsExperience">Esperienza</label><select id="settingsExperience"><option value="guided" ${state.ui.experienceMode==='guided'?'selected':''}>Guidata (consigliata)</option><option value="advanced" ${state.ui.experienceMode==='advanced'?'selected':''}>Avanzata</option></select></div>
+ <div class="field"><label for="settingsMode">Livello di dettaglio</label><select id="settingsMode"><option value="Executive" ${state.ui.mode==='Executive'?'selected':''}>Sintetica</option><option value="Consultant" ${state.ui.mode==='Consultant'?'selected':''}>Tecnica</option></select></div>
+ <div class="field"><label for="settingsWorkflow">Workflow</label><select id="settingsWorkflow"><option value="assisted" ${currentProject().workflowMode!=='automatic'?'selected':''}>Assistito (consigliato)</option><option value="automatic" ${currentProject().workflowMode==='automatic'?'selected':''}>Automatico</option></select></div>
+ <div class="field"><label for="settingsTheme">Tema</label><select id="settingsTheme"><option ${state.ui.theme==='system'?'selected':''} value="system">Sistema</option><option ${state.ui.theme==='light'?'selected':''} value="light">Chiaro</option><option ${state.ui.theme==='dark'?'selected':''} value="dark">Scuro</option></select></div>
  </div></div>`;
 }
 
 function bindView(){
- document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{state.ui.activeView=b.dataset.nav; render();});
+ document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{state.ui.activeView=b.dataset.nav;render();window.scrollTo({top:0,behavior:'smooth'});});
  document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.add));
  document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.edit,b.dataset.id));
  document.querySelectorAll('[data-create-task-from-action]').forEach(b=>b.onclick=()=>{ 
@@ -2902,7 +2935,12 @@ function bindView(){
  });
  document.querySelectorAll('[data-monitor-action]').forEach(b=>b.onclick=()=>toast('Azione marcata per monitoraggio manuale.'));
  const pf=document.getElementById('projectForm');
- if(pf) pf.onsubmit=e=>{
+ if(pf){
+   const domainInput=pf.querySelector('#domain'),domainError=pf.querySelector('#domainError');
+   const clearDomainError=()=>{domainInput.removeAttribute('aria-invalid');domainError.hidden=true;domainError.textContent='';};
+   domainInput.addEventListener('input',clearDomainError);
+   domainInput.addEventListener('invalid',()=>{domainInput.setAttribute('aria-invalid','true');domainError.hidden=false;domainError.textContent='Inserisci un indirizzo completo e valido, ad esempio https://esempio.it.';});
+   pf.onsubmit=e=>{
    e.preventDefault();
    const p=currentProject(),previousDomain=normalizeSiteDomain(p.domain);
    new FormData(pf).forEach((v,k)=>p[k]=v);
@@ -2911,7 +2949,8 @@ function bindView(){
    commit('Progetto aggiornato');runAutomationCycle(false);toast('Progetto salvato');
    if(shouldAnalyze){toast('Dominio rilevato: avvio la compilazione automatica.');runWizardAnalysis();}
    else render();
- };
+   };
+ }
  const ib=document.getElementById('doImportBtn'); if(ib) ib.onclick=handleImportV2;
  const eb=document.getElementById('exportBackup'); if(eb) eb.onclick=()=>storage.export(state);
  const cs=document.getElementById('createSnapshot'); if(cs) cs.onclick=createSnapshot;
@@ -2975,6 +3014,9 @@ function drawerFields(key,rec={}){
  const common={pages:[
    ['pageName','Pagina'],['displayUrl','URL'],['pageType','Tipo'],['statusCode','HTTP'],['canonicalUrl','Canonical'],['expectedCanonical','Expected Canonical'],['primaryKeyword','Primary Keyword'],['intent','Intent'],['cluster','Cluster'],['parent','Parent'],['title','Title'],['meta','Meta'],['h1','H1'],['schema','Schema'],['indexable','Indexable'],['indexed','Indexed'],['sitemap','Sitemap'],['gscStatus','GSC Status'],['priority','Priority']
  ],keywords:[['keyword','Keyword'],['intent','Intent'],['secondaryIntent','Secondary Intent'],['expectedContentType','Expected Content Type'],['userProblem','User Problem'],['desiredOutcome','Desired Outcome'],['targetUrl','Target URL'],['position','Position'],['impressions','Impressions'],['priority','Priority']],
+ competitors:[['name','Concorrente'],['domain','Dominio'],['type','Tipo concorrente'],['overlap','Sovrapposizione'],['status','Stato'],['notes','Note']],
+ redirects:[['sourceUrl','URL origine'],['targetUrl','URL destinazione'],['statusCode','Codice HTTP'],['hops','Numero passaggi'],['status','Stato'],['notes','Note']],
+ migrations:[['oldUrl','Vecchia URL'],['newUrl','Nuova URL'],['redirectStatus','Stato redirect'],['canonicalStatus','Stato canonical'],['validation','Verifica'],['status','Stato'],['notes','Note']],
  issues:[['title','Issue'],['category','Category'],['url','URL'],['source','Source'],['severity','Severity'],['priority','Priority'],['status','Status'],['confidence','Confidence'],['whyNow','Why now']],
  opportunities:[['title','Opportunity'],['type','Type'],['impact','Impact'],['effort','Effort'],['confidence','Confidence'],['whyNow','Why now']],
  tasks:[['title','Task'],['priority','Priority'],['status','Status'],['owner','Owner'],['dueDate','Due Date'],['dependencies','Dependencies'],['description','Description']],
@@ -2997,6 +3039,7 @@ function drawerFields(key,rec={}){
    severity:['CRITICAL','HIGH','MEDIUM','LOW'],
    intent:['Informational','Navigational','Commercial Investigation','Transactional','Local'],
    status:['TODO','IN PROGRESS','BLOCKED','DONE','VERIFIED','OPEN','REVIEW','PASSED','NOT READY','PROPOSED','APPROVED','REJECTED','EXECUTED','VALIDATED'],
+   type:['Business','SEO','SERP','Technical'],
    pageType:['Homepage','Pillar','Hub','Category','Guide','Article','Recipe','Ingredient','Landing','Product','Service','FAQ','Legal','Other'],
    indexable:['true','false'],
    indexed:['true','false'],
@@ -3004,13 +3047,14 @@ function drawerFields(key,rec={}){
  };
  return common.map(([n,l])=>{
    const full=textareas.includes(n);
+   const controlId=`record_${key}_${n}`;
    let control='';
    if(selectMap[n]){
      const vals=[...new Set([rec[n],...selectMap[n]].filter(Boolean))];
-     control=`<select name="${n}">${vals.map(v=>`<option ${String(rec[n]||'')===String(v)?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
-   } else if(full) control=`<textarea name="${n}" placeholder="Inserisci informazioni utili e verificabili">${esc(rec[n]||'')}</textarea>`;
-   else control=`<input name="${n}" value="${esc(rec[n]??'')}" placeholder="${esc(l)}">`;
-   return `<div class="field ${full?'full':''}"><label>${l}</label>${control}</div>`;
+     control=`<select id="${controlId}" name="${n}">${vals.map(v=>`<option ${String(rec[n]||'')===String(v)?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
+   } else if(full) control=`<textarea id="${controlId}" name="${n}" placeholder="Inserisci informazioni utili e verificabili">${esc(rec[n]||'')}</textarea>`;
+   else control=`<input id="${controlId}" name="${n}" value="${esc(rec[n]??'')}" placeholder="${esc(l)}">`;
+   return `<div class="field ${full?'full':''}"><label for="${controlId}">${l}</label>${control}</div>`;
  }).join('');
 }
 function openRecordDrawer(key,id=null){
@@ -3027,14 +3071,29 @@ function openRecordDrawer(key,id=null){
  };
  const del=document.getElementById('deleteRecord'); if(del) del.onclick=()=>{ if(confirm('Eliminare questo record?')){state[key]=state[key].filter(x=>x.id!==id);commit(`${key} eliminato`);closeDrawer();render();}};
 }
-function openDrawer(title,body){document.getElementById('drawerTitle').textContent=title;document.getElementById('drawerBody').innerHTML=body;document.getElementById('drawer').classList.add('open');document.getElementById('backdrop').classList.add('show');}
-function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('backdrop').classList.remove('show');}
+let lastFocusedElement=null;
+function openDrawer(title,body,kind='generic'){
+  const drawer=document.getElementById('drawer'),backdrop=document.getElementById('backdrop');
+  lastFocusedElement=document.activeElement;
+  document.getElementById('drawerTitle').textContent=title;
+  document.getElementById('drawerBody').innerHTML=body;
+  drawer.dataset.kind=kind;drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');drawer.setAttribute('aria-modal',kind==='search'?'false':'true');
+  if(kind!=='search'){backdrop.classList.add('show');backdrop.setAttribute('aria-hidden','false');document.body.classList.add('overlay-open');}
+  if(kind!=='search')setTimeout(()=>{const target=drawer.querySelector('input:not([disabled]),select:not([disabled]),textarea:not([disabled]),button:not([disabled])');(target||drawer).focus();},0);
+}
+function closeDrawer(){
+  const drawer=document.getElementById('drawer'),backdrop=document.getElementById('backdrop');
+  drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');drawer.setAttribute('aria-modal','true');drawer.dataset.kind='';
+  if(!document.getElementById('sidebar').classList.contains('open')){backdrop.classList.remove('show');backdrop.setAttribute('aria-hidden','true');document.body.classList.remove('overlay-open');}
+  if(lastFocusedElement&&document.contains(lastFocusedElement))lastFocusedElement.focus();
+  lastFocusedElement=null;
+}
 
 
 function openLinkDrawer(){
   const pages=projectPages();
   const opts=pages.map(p=>`<option value="${esc(p.displayUrl||p.normalizedUrl||p.canonicalUrl||'')}">${esc(p.pageName||p.displayUrl||'Page')}</option>`).join('');
-  openDrawer('Nuovo internal link',`<form id="linkForm" class="form-grid"><div class="field"><label>Source</label><select name="source">${opts}</select></div><div class="field"><label>Target</label><select name="target">${opts}</select></div><div class="field"><label>Anchor</label><input name="anchor"></div><div class="field"><label>Status</label><select name="status"><option>OK</option><option>REDIRECT</option><option>NON_CANONICAL</option><option>BROKEN</option></select></div><div class="field full"><button class="btn primary" type="submit">Salva link</button></div></form>`);
+  openDrawer('Nuovo link interno',`<form id="linkForm" class="form-grid"><div class="field"><label for="linkSource">Pagina di origine</label><select id="linkSource" name="source">${opts}</select></div><div class="field"><label for="linkTarget">Pagina di destinazione</label><select id="linkTarget" name="target">${opts}</select></div><div class="field"><label for="linkAnchor">Testo del collegamento</label><input id="linkAnchor" name="anchor" required></div><div class="field"><label for="linkStatus">Stato</label><select id="linkStatus" name="status"><option>OK</option><option>REDIRECT</option><option>NON_CANONICAL</option><option>BROKEN</option></select></div><div class="field full"><button class="btn primary" type="submit">Salva link</button></div></form>`);
   document.getElementById('linkForm').onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target).entries());state.links.push({id:uid('link'),projectId:state.currentProjectId,...data,createdAt:now(),updatedAt:now()});commit('Internal link aggiunto');closeDrawer();render();toast('Link salvato');};
 }
 
@@ -3049,13 +3108,13 @@ async function handleImport(){
        return;
      }
      const arr=Array.isArray(data)?data:[data];
-     arr.forEach(x=>state[target].push({id:uid('imp'),projectId:state.currentProjectId,...x,createdAt:now(),updatedAt:now()}));
+     arr.forEach(x=>state[target].push({...x,id:uid('imp'),projectId:state.currentProjectId,createdAt:now(),updatedAt:now()}));
      commit(`Import JSON ${target}`); out.innerHTML=`<div class="callout">${arr.length} record importati.</div>`; render();
    }else{
      const sep=file.name.endsWith('.tsv')?'\t':',';
      const lines=text.split(/\r?\n/).filter(Boolean); const headers=lines.shift().split(sep).map(x=>x.trim());
      const rows=lines.map(line=>{const vals=parseDelimited(line,sep); const o={}; headers.forEach((h,i)=>o[h]=vals[i]??''); return o;});
-     rows.forEach(x=>state[target].push({id:uid('imp'),projectId:state.currentProjectId,...x,createdAt:now(),updatedAt:now()}));
+     rows.forEach(x=>state[target].push({...x,id:uid('imp'),projectId:state.currentProjectId,createdAt:now(),updatedAt:now()}));
      state.datasets.push({id:uid('dataset'),projectId:state.currentProjectId,name:file.name,source:'Import locale',type:target,importedAt:now(),records:rows.length,createdAt:now(),updatedAt:now()});
      commit(`Import ${file.name}`); out.innerHTML=`<div class="callout">${rows.length} record importati in ${esc(target)}.</div>`; render();
    }
@@ -3089,20 +3148,36 @@ function runSystemCheck(){
 }
 
 function setupTopbar(){
- document.getElementById('modeBtn').textContent=state.ui.mode;
+ const isGuided=state.ui.experienceMode==='guided';
+ document.getElementById('modeBtn').textContent=state.ui.mode==='Executive'?'Sintetica':'Tecnica';
+ document.getElementById('modeBtn').hidden=isGuided;
+ document.getElementById('quickBtn').hidden=isGuided;
  document.getElementById('saveStatus').textContent=state.ui.lastSaved?'Ultimo salvataggio: '+fmtTime(state.ui.lastSaved):'Non ancora salvato';
  const g=document.getElementById('guidedModeBtn'),a=document.getElementById('advancedModeBtn');
- if(g)g.classList.toggle('active',state.ui.experienceMode==='guided');
- if(a)a.classList.toggle('active',state.ui.experienceMode==='advanced');
+ if(g){g.classList.toggle('active',state.ui.experienceMode==='guided');g.setAttribute('aria-pressed',String(state.ui.experienceMode==='guided'));}
+ if(a){a.classList.toggle('active',state.ui.experienceMode==='advanced');a.setAttribute('aria-pressed',String(state.ui.experienceMode==='advanced'));}
+ const themeButton=document.getElementById('themeBtn');if(themeButton)themeButton.setAttribute('aria-label',`Tema attuale: ${state.ui.theme}. Cambia tema`);
 }
 function applyTheme(){
  const theme=state.ui.theme==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):state.ui.theme;
  document.documentElement.dataset.theme=theme;
 }
-function closeMobile(){document.getElementById('sidebar').classList.remove('open');}
+function openMobile(){
+ const sidebar=document.getElementById('sidebar'),backdrop=document.getElementById('backdrop'),button=document.getElementById('mobileMenuBtn');
+ sidebar.classList.add('open');button.setAttribute('aria-expanded','true');backdrop.classList.add('show');backdrop.setAttribute('aria-hidden','false');document.body.classList.add('overlay-open');
+}
+function closeMobile(){
+ const sidebar=document.getElementById('sidebar'),backdrop=document.getElementById('backdrop'),button=document.getElementById('mobileMenuBtn');
+ sidebar.classList.remove('open');button.setAttribute('aria-expanded','false');
+ if(!document.getElementById('drawer').classList.contains('open')){backdrop.classList.remove('show');backdrop.setAttribute('aria-hidden','true');document.body.classList.remove('overlay-open');}
+}
 function newProject(){
- const name=prompt('Nome del nuovo progetto:','Nuovo progetto'); if(!name)return;
- const p=emptyProject(name); state.projects.push(p); state.currentProjectId=p.id; state.ui.activeView='Project'; commit('Nuovo progetto creato'); render();
+ openDrawer('Nuovo progetto',`<form id="newProjectForm"><div class="field"><label for="newProjectName">Nome progetto</label><input id="newProjectName" name="name" value="Nuovo progetto" required autocomplete="off"></div><div class="field" style="margin-top:12px"><label for="newProjectDomain">Dominio del sito <span class="muted">(facoltativo)</span></label><input id="newProjectDomain" name="domain" type="url" placeholder="https://esempio.it"></div><div style="margin-top:18px"><button class="btn primary" type="submit">Crea progetto</button></div></form>`);
+ document.getElementById('newProjectForm').onsubmit=e=>{
+   e.preventDefault();const data=Object.fromEntries(new FormData(e.target).entries());
+   const p=emptyProject(String(data.name||'').trim()||'Nuovo progetto');p.domain=normalizeSiteDomain(data.domain)||'';
+   state.projects.push(p);state.currentProjectId=p.id;state.ui.activeView='Project';commit('Nuovo progetto creato');closeDrawer();render();toast('Progetto creato');
+ };
 }
 function quickActions(){
  openDrawer('Quick Actions',`<div class="grid">
@@ -3113,20 +3188,34 @@ function quickActions(){
 
 document.getElementById('projectSelect').onchange=e=>{state.currentProjectId=e.target.value;commit('Progetto cambiato');render();};
 document.getElementById('newProjectBtn').onclick=newProject;
-document.getElementById('drawerClose').onclick=closeDrawer; document.getElementById('backdrop').onclick=closeDrawer;
-document.getElementById('mobileMenuBtn').onclick=()=>document.getElementById('sidebar').classList.add('open');
+document.getElementById('drawerClose').onclick=closeDrawer;
+document.getElementById('backdrop').onclick=()=>{if(document.getElementById('drawer').classList.contains('open'))closeDrawer();else closeMobile();};
+document.getElementById('mobileMenuBtn').onclick=openMobile;
 document.getElementById('quickBtn').onclick=quickActions;
 document.getElementById('modeBtn').onclick=()=>{state.ui.mode=state.ui.mode==='Executive'?'Consultant':'Executive';commit('Modalità cambiata');setupTopbar();render();};
 document.getElementById('themeBtn').onclick=()=>{state.ui.theme=state.ui.theme==='dark'?'light':'dark';commit('Tema cambiato');applyTheme();};
 document.getElementById('globalSearch').oninput=e=>{
- const q=e.target.value.trim().toLowerCase(); if(q.length<2)return;
+ const q=e.target.value.trim().toLowerCase();
+ if(q.length<2){if(document.getElementById('drawer').dataset.kind==='search')closeDrawer();return;}
  const groups=[['Pages',byProject(state.pages),'pageName'],['Keywords',byProject(state.keywords),'keyword'],['Issues',byProject(state.issues),'title'],['Tasks',byProject(state.tasks),'title'],['Decisions',byProject(state.decisions),'title']];
  const hits=[]; groups.forEach(([type,arr,key])=>arr.forEach(r=>{if(JSON.stringify(r).toLowerCase().includes(q))hits.push({type,label:r[key]||r.title||r.name||r.id});}));
- if(hits.length) openDrawer('Ricerca globale',hits.slice(0,30).map(h=>`<button class="nav-btn" data-search-nav="${h.type}"><strong>${esc(h.label)}</strong><div class="muted">${h.type}</div></button>`).join(''));
+ openDrawer('Risultati della ricerca',hits.length?hits.slice(0,30).map(h=>`<button type="button" class="nav-btn" data-search-nav="${h.type}"><strong>${esc(h.label)}</strong><div class="muted">${esc(navLabel(h.type))}</div></button>`).join(''):`<div class="empty"><strong>Nessun risultato</strong><p>Prova con un termine diverso o più breve.</p></div>`,'search');
  document.querySelectorAll('[data-search-nav]').forEach(b=>b.onclick=()=>{state.ui.activeView=b.dataset.searchNav;closeDrawer();render();});
 };
 
 window.addEventListener('error',e=>{console.error('OGOS runtime error',e.error||e.message);});
+window.addEventListener('unhandledrejection',e=>{console.error('OGOS promise error',e.reason);toast('Si è verificato un errore inatteso. I dati già salvati restano disponibili.');});
+window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);state.ui.lastSaved=now();storage.save(state);});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'){
+   if(document.getElementById('drawer').classList.contains('open'))closeDrawer();
+   else if(document.getElementById('sidebar').classList.contains('open'))closeMobile();
+ }
+ if(e.key==='Tab'&&document.getElementById('drawer').classList.contains('open')){
+   const focusable=[...document.getElementById('drawer').querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent!==null);
+   if(focusable.length){const first=focusable[0],last=focusable[focusable.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+ }
+});
 runAutomationCycle(false);
 setupTopbar(); render();
 })();
