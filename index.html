@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS V5.5: correzioni automatiche sicure con anteprima, backup, verifica, annullamento e piano operativo approvabile.">
+<meta name="description" content="Organic Growth OS V5.6: flusso operativo a fasi numerate, wizard con passi progressivi e piano attività verificabile.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
 <title>Organic Growth OS</title>
@@ -493,6 +493,66 @@ html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="da
 html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:color-mix(in srgb,var(--muted) 85%,transparent)}
 html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,var(--text) 8%,var(--surface))}
 
+/* ============================================================
+   V5.6 — SIDEBAR A FASI NUMERATE
+   ============================================================ */
+#nav .nav-phase{margin:6px 0;border:1px solid transparent;border-radius:12px}
+#nav .nav-phase[open]{border-color:var(--border);background:color-mix(in srgb,var(--surface-alt) 55%,transparent)}
+#nav .nav-phase>summary{display:flex;align-items:center;gap:10px;padding:10px;list-style:none;cursor:pointer;text-transform:none;letter-spacing:0;font-size:13.5px;color:var(--text)}
+#nav .nav-phase>summary::-webkit-details-marker{display:none}
+#nav .nav-phase>summary:hover{background:var(--surface-alt);border-radius:12px}
+#nav .nav-phase>summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:12px}
+#nav .nav-phase-num{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--on-accent);font-weight:900;font-size:13px}
+#nav .nav-phase-system .nav-phase-num{background:var(--surface-alt);color:var(--muted);border:1px solid var(--border)}
+#nav .nav-phase-text{display:flex;flex-direction:column;min-width:0}
+#nav .nav-phase-title{font-weight:800;line-height:1.25}
+#nav .nav-phase-hint{font-size:11.8px;color:var(--muted);font-weight:600;line-height:1.3}
+#nav .nav-btn{display:grid;grid-template-columns:34px minmax(0,1fr) 18px;align-items:center;gap:8px;padding:9px 10px;margin:1px 0;font-size:14.6px;border-left:3px solid transparent}
+#nav .nav-num{font-variant-numeric:tabular-nums;font-size:12px;font-weight:800;color:var(--muted);text-align:right}
+#nav .nav-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#nav .nav-state{font-size:12px;font-weight:900;text-align:center}
+#nav .nav-btn.is-done .nav-num{color:var(--success)}
+#nav .nav-btn.is-done .nav-state{color:var(--success)}
+#nav .nav-btn.is-current{background:color-mix(in srgb,var(--accent) 9%,var(--surface));border-left-color:var(--accent)}
+#nav .nav-btn.is-current .nav-num,#nav .nav-btn.is-current .nav-state{color:var(--accent)}
+#nav .nav-btn.active{background:color-mix(in srgb,var(--accent) 14%,var(--surface));color:var(--accent);border-left-color:var(--accent);font-weight:800}
+#nav .nav-btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.nav-next-step{display:block;width:100%;text-align:left;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border));background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-radius:12px;padding:10px 12px;margin:4px 0 12px;color:inherit;min-height:44px}
+.nav-next-step:hover{border-color:var(--accent)}
+.nav-next-step:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.nav-next-label{display:block;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.nav-next-title{display:block;font-weight:800;font-size:14.4px;margin-top:2px}
+
+/* ============================================================
+   V5.6 — WIZARD A FASI CONTINUE
+   ============================================================ */
+.journey-flow-rail{display:flex;gap:8px;list-style:none;margin:0 0 20px;padding:0 0 6px;overflow:auto}
+.journey-flow-node{flex:1 1 0;min-width:132px}
+.journey-flow-node>button{width:100%;height:100%;display:grid;grid-template-columns:28px minmax(0,1fr);gap:9px;align-items:center;border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:10px;text-align:left;color:inherit;font:inherit;min-height:44px}
+.journey-flow-node>button:hover{border-color:var(--accent)}
+.journey-flow-node>button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.journey-flow-node .flow-num{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--surface-alt);color:var(--muted);font-weight:900;font-size:13px;border:1px solid var(--border)}
+.journey-flow-node .flow-label{font-size:13.4px;font-weight:750;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
+.journey-flow-node.done .flow-num{background:var(--success);color:#fff;border-color:var(--success)}
+.journey-flow-node.progress .flow-num,.journey-flow-node.verify .flow-num{background:var(--warning);color:#fff;border-color:var(--warning)}
+.journey-flow-node.is-active>button{border-color:var(--accent);border-width:2px;background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
+.journey-flow-node.is-active .flow-num{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.journey-global-progress{margin-top:14px;max-width:520px}
+.journey-global-progress .progress{margin-bottom:6px}
+.journey-phase-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent);font-size:12.4px;font-weight:850}
+.journey-step-scope{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.journey-step-scope .muted{font-weight:700}
+
+/* ============================================================
+   V5.6 — BOX ATTIVITA NUMERATE
+   ============================================================ */
+.task-box{border:1px solid var(--border);border-radius:18px;background:var(--surface-alt);padding:18px;margin-top:20px}
+.task-box-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.task-box-head h4{margin:0;font-size:19px}
+.task-box .task-plan-card{background:var(--surface)}
+.plan-state.blocked::before{background:var(--danger)}
+@media(max-width:760px){.journey-flow-node{min-width:118px}}
+
 </style>
 </head>
 <body>
@@ -500,7 +560,7 @@ html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,v
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.5</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.6</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -572,18 +632,30 @@ html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,v
 const APP_KEY='organicGrowthOS.v4';
 const SCHEMA_VERSION=5;
 const stages=['Research','Strategy','Architecture','Build','Validate','Index','Measure','Learn','Expand'];
-const navGroups={
-  'Overview':['Dashboard','Guided Review','Next Best Actions'],
-  'Strategy':['Project','Strategy Canvas','Competitors','Search Intent','Cannibalization'],
-  'Authority':['Keywords','Entities','Topical Map','Content Strategy','Content Briefs'],
-  'Site':['Pages','Architecture','Internal Links','On-Page','Structured Data'],
-  'Technical':['Technical SEO','Redirects','Canonical','Indexation','Migration'],
-  'Performance':['Search Console','Opportunities','Content Refresh','Experiments'],
-  'Execution':['Issues','Tasks','Milestones','Quality Gates','SEO Debt'],
-  'Intelligence':['Evidence','Decisions','Confidence','Observations','Risks','False Positives','Change Log','Snapshots'],
-  'Data':['Import','Datasets','Source Reliability','Backup'],
-  'System':['Settings','Demo Data','System Check']
-};
+/* ============================================================
+   FLUSSO OPERATIVO — la sidebar segue l'ordine reale di lavoro.
+   Ogni fase ha un numero; ogni voce eredita la numerazione (1.1, 1.2...).
+   ============================================================ */
+const navFlow=[
+  {n:1,label:'Avvio e panoramica',hint:'Da dove iniziare',items:['Dashboard','Guided Review']},
+  {n:2,label:'Prepara i dati',hint:'Dominio, pagine, import',items:['Project','Pages','Import','Search Console','Datasets','Source Reliability']},
+  {n:3,label:'Definisci la strategia',hint:'Cosa vuoi posizionare',items:['Strategy Canvas','Competitors','Search Intent','Keywords','Entities','Topical Map','Cannibalization']},
+  {n:4,label:'Controlla la tecnica',hint:'Cosa blocca il sito',items:['Technical SEO','Indexation','Canonical','Redirects','Structured Data','Migration']},
+  {n:5,label:'Migliora contenuti e struttura',hint:'Cosa riscrivere e collegare',items:['Architecture','Internal Links','On-Page','Content Strategy','Content Briefs','Content Refresh']},
+  {n:6,label:'Decidi le priorità',hint:'Cosa fare prima',items:['Issues','Opportunities','Next Best Actions','SEO Debt','Operational Plan']},
+  {n:7,label:'Esegui le attività',hint:'Il lavoro concreto',items:['Tasks','Milestones','Quality Gates','Experiments']},
+  {n:8,label:'Verifica e archivia',hint:'Prove, storico, report',items:['Change Log','Snapshots','Evidence','Decisions','Confidence','Observations','Risks','False Positives','Backup']},
+  {n:0,label:'Sistema',hint:'Configurazione app',items:['Settings','Demo Data','System Check']}
+];
+const navFlowGuided=[
+  {n:1,label:'Parti da qui',hint:'Panoramica e wizard',items:['Dashboard','Guided Review']},
+  {n:2,label:'Prepara i dati',hint:'Dominio, pagine, Search Console',items:['Project','Pages','Search Console']},
+  {n:3,label:'Piano e attività',hint:'Cosa fare, in ordine',items:['Operational Plan','Tasks']},
+  {n:4,label:'Report',hint:'Esporta e conserva',items:['Backup']},
+  {n:0,label:'Sistema',hint:'Configurazione app',items:['Settings']}
+];
+/* Compatibilita: alcune funzioni storiche (release check) leggono navGroups. */
+const navGroups=Object.fromEntries(navFlow.map(g=>[g.label,g.items]));
 
 const uid=(p='id')=>`${p}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
 const now=()=>new Date().toISOString();
@@ -756,7 +828,7 @@ function nextActions(){
 
 function navLabel(item){
   const labels={
-    Dashboard:'Dashboard','Guided Review':'Wizard disponibili','Operational Plan':'Piano operativo','Next Best Actions':'Prossime azioni',Project:'Configurazione progetto',
+    Dashboard:'Dashboard','Guided Review':'Percorso guidato','Operational Plan':'Piano operativo','Next Best Actions':'Prossime azioni',Project:'Configurazione progetto',
     Pages:'Pagine del sito',Tasks:'Attività',Settings:'Impostazioni',Keywords:'Parole chiave',Entities:'Entità',
     'Strategy Canvas':'Strategia','Search Intent':'Intento di ricerca',Cannibalization:'Cannibalizzazione',Competitors:'Concorrenti',
     'Topical Map':'Mappa tematica','Content Strategy':'Strategia contenuti','Content Briefs':'Brief contenuti',Architecture:'Architettura',
@@ -770,34 +842,74 @@ function navLabel(item){
   return labels[item]||item;
 }
 
+/* Stato di avanzamento per le voci che rappresentano un passo reale.
+   true = completato, false = ancora da fare, undefined = strumento libero. */
+function navStepSignals(){
+  const p=currentProject()||{};
+  const pages=byProject(state.pages),gsc=byProject(state.gscRecords),issues=byProject(state.issues),tasks=byProject(state.tasks);
+  const openIssues=issues.filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase())&&['CRITICAL','HIGH'].includes(String(i.severity||'').toUpperCase()));
+  const openTasks=tasks.filter(t=>!['DONE','VERIFIED','CLOSED'].includes(String(t.status||'TODO').toUpperCase()));
+  const scanned=String(p.websiteScan&&p.websiteScan.status||'')==='completed';
+  const signals={};
+  signals['Project']=Boolean(normalizeSiteDomain(p.domain));
+  signals['Pages']=pages.length>0;
+  signals['Search Console']=gsc.length>0;
+  signals['Guided Review']=scanned;
+  if(issues.length)signals['Issues']=openIssues.length===0;
+  if(pages.length)signals['Operational Plan']=openTasks.length===0;
+  if(tasks.length)signals['Tasks']=openTasks.length===0;
+  return signals;
+}
+function navStepCode(flow,item){
+  for(const group of flow){const i=group.items.indexOf(item);if(i>=0)return group.n?`${group.n}.${i+1}`:'';}
+  return '';
+}
 function renderNav(){
-  const nav=document.getElementById('nav'); nav.innerHTML='';
+  const nav=document.getElementById('nav'); if(!nav)return; nav.innerHTML='';
+  const guided=state.ui.experienceMode==='guided';
+  const flow=guided?navFlowGuided:navFlow;
+  const signals=navStepSignals();
 
-  const groups = state.ui.experienceMode==='guided'
-    ? {
-        'GUIDATO':['Dashboard','Operational Plan','Tasks'],
-        'DATI ESSENZIALI':['Pages','Search Console'],
-        'SISTEMA':['Settings']
-      }
-    : navGroups;
+  /* Il primo passo tracciato e non completato diventa il passo consigliato. */
+  let current='';
+  flow.forEach(group=>{ if(!group.n)return; group.items.forEach(item=>{ if(!current&&signals[item]===false)current=item; }); });
 
-  if(state.ui.experienceMode==='guided'){
+  if(guided){
     const note=document.createElement('div');
     note.className='guided-nav-note';
-    note.innerHTML='<strong>Modalità guidata</strong><div>Mostro solo le funzioni essenziali. Il wizard apre automaticamente gli strumenti avanzati quando servono.</div>';
+    note.innerHTML='<strong>Modalità guidata</strong><div>Segui i numeri dall’alto verso il basso: 1 → 2 → 3 → 4.</div>';
     nav.appendChild(note);
   }
 
-  Object.entries(groups).forEach(([group,items])=>{
-    const d=document.createElement('details'); d.open=items.includes(state.ui.activeView)||group==='GUIDATO'||group==='Overview';
-    const groupLabels={Overview:'Panoramica',Strategy:'Strategia',Authority:'Autorevolezza',Site:'Sito',Technical:'Tecnico',Performance:'Prestazioni',Execution:'Operatività',Intelligence:'Analisi',Data:'Dati',System:'Sistema'};
-    d.innerHTML=`<summary>${esc(groupLabels[group]||group)}</summary>`;
-    items.forEach(item=>{
-      const b=document.createElement('button'); b.type='button'; b.className='nav-btn'+(state.ui.activeView===item?' active':''); b.textContent=navLabel(item);
+  if(current){
+    const hint=document.createElement('button');
+    hint.type='button'; hint.className='nav-next-step';
+    hint.innerHTML=`<span class="nav-next-label">Prossimo passo consigliato</span><span class="nav-next-title">${esc(navStepCode(flow,current))} · ${esc(navLabel(current))}</span>`;
+    hint.onclick=()=>{ state.ui.activeView=current; render(); closeMobile(); };
+    nav.appendChild(hint);
+  }
+
+  flow.forEach(group=>{
+    const d=document.createElement('details');
+    d.className='nav-phase'+(group.n?'':' nav-phase-system');
+    d.open=group.items.includes(state.ui.activeView)||group.items.includes(current)||group.n===1;
+    const s=document.createElement('summary');
+    s.innerHTML=`<span class="nav-phase-num">${group.n?group.n:'⚙'}</span><span class="nav-phase-text"><span class="nav-phase-title">${esc(group.label)}</span><span class="nav-phase-hint">${esc(group.hint||'')}</span></span>`;
+    d.appendChild(s);
+    group.items.forEach((item,i)=>{
+      const b=document.createElement('button'); b.type='button';
+      const done=signals[item]===true, isCurrent=item===current;
+      b.className='nav-btn'+(state.ui.activeView===item?' active':'')+(done?' is-done':'')+(isCurrent?' is-current':'');
+      const code=group.n?`${group.n}.${i+1}`:'·';
+      b.innerHTML=`<span class="nav-num">${esc(code)}</span><span class="nav-text">${esc(navLabel(item))}</span><span class="nav-state" aria-hidden="true">${done?'✓':isCurrent?'▶':''}</span>`;
+      const stateLabel=done?' — completato':isCurrent?' — prossimo passo consigliato':'';
+      b.setAttribute('aria-label',`${code==='·'?'':code+' '}${navLabel(item)}${stateLabel}`);
+      if(stateLabel)b.title=`${navLabel(item)}${stateLabel}`;
       if(state.ui.activeView===item)b.setAttribute('aria-current','page');
       b.onclick=()=>{ state.ui.activeView=item; render(); closeMobile(); };
       d.appendChild(b);
-    }); nav.appendChild(d);
+    });
+    nav.appendChild(d);
   });
 }
 function renderProjectSelect(){
@@ -842,6 +954,7 @@ function dashboardView(){
         ${statusLine('SEO Debt',byProject(state.seoDebt).filter(d=>d.status!=='DONE').length)}
       </div>
     </div>
+    ${numberedTaskBox({limit:3,title:'Attività da fare, in ordine'})}
     <div style="height:16px"></div>
     <div class="card">
       <h3>Perché questi score?</h3>
@@ -916,7 +1029,7 @@ function selectField(name,label,opts,val){return `<div class="field"><label for=
 function normalizeTaskSteps(value){return Array.isArray(value)?value.filter(Boolean):String(value||'').split(/\r?\n/).map(step=>step.trim()).filter(Boolean);}
 function planStatusInfo(status){
   const key=String(status||'PROPOSED').toUpperCase();
-  const map={PROPOSED:['Da approvare','proposed'],TODO:['Da approvare','proposed'],APPROVED:['Approvata','approved'],'IN PROGRESS':['In corso','approved'],BLOCKED:['Bloccata','done'],DONE:['Da verificare','done'],VERIFIED:['Verificata','verified'],CLOSED:['Chiusa','verified']};
+  const map={PROPOSED:['Da approvare','proposed'],TODO:['Da approvare','proposed'],APPROVED:['Approvata','approved'],'IN PROGRESS':['In corso','approved'],BLOCKED:['Bloccata','blocked'],DONE:['Da verificare','done'],VERIFIED:['Verificata','verified'],CLOSED:['Chiusa','verified']};
   const value=map[key]||[key.toLowerCase().replace(/\b\w/g,char=>char.toUpperCase()),'proposed'];return {key,label:value[0],className:value[1]};
 }
 function operationalPlanItems(){
@@ -942,7 +1055,7 @@ function safeFixPanelView(){
 function operationalPlanView(){
   const items=operationalPlanItems(),verified=byProject(state.tasks).filter(task=>['VERIFIED','CLOSED'].includes(String(task.status||'').toUpperCase())),first=items[0],firstStatus=first?planStatusInfo(first.status):null;
   const firstAction=first?(firstStatus.key==='DONE'?`<button class="btn primary" data-plan-verify data-plan-id="${esc(first.id)}" data-plan-kind="${esc(first.kind)}">Verifica la priorità 1</button>`:['APPROVED','IN PROGRESS','BLOCKED'].includes(firstStatus.key)?`<button class="btn primary" data-nav="${esc(first.target)}">Continua la priorità 1</button>`:`<button class="btn primary" data-plan-approve data-plan-id="${esc(first.id)}" data-plan-kind="${esc(first.kind)}">Approva la priorità 1</button>`):'<button class="btn primary" data-nav="Dashboard">Torna ai wizard</button>';
-  return `${pageIntro('Piano operativo','Consulta, modifica, approva e verifica ogni attività direttamente nell’app.',[`${items.length} attività aperte`,`${verified.length} verificate`])}
+  return `${pageIntro('6.5 Piano operativo','Ultimo passo prima dell’esecuzione: consulta, modifica, approva e verifica ogni attività direttamente nell’app.',[`${items.length} attività aperte`,`${verified.length} verificate`])}
   ${safeFixPanelView()}
   <section class="dashboard-command" aria-labelledby="planNextTitle"><div><div class="dashboard-label">Prossima azione consigliata</div><h3 id="planNextTitle">${esc(first?.title||'Il piano è aggiornato')}</h3><p>${esc(first?.why||'Non risultano altre modifiche prioritarie con i dati disponibili.')}</p></div>${firstAction}</section>
   <div style="height:18px"></div>
@@ -2182,7 +2295,7 @@ function taskManagementViewV2(){
     return `<article class="task-plan-card ${index===0?'current':''}"><div class="task-order">${index+1}</div><div><div class="badges"><span class="badge ${t.priority==='P1'?'danger':t.priority==='P2'?'warning':''}">${esc(t.priority||'P3')}</span><span class="plan-state ${status.className}">${esc(status.label)}</span>${index===0?'<span class="badge info">DA FARE ADESSO</span>':'<span class="badge">PASSO SUCCESSIVO</span>'}</div><h4>${esc(t.title||'Attività')}</h4><p class="task-why">${esc(why)}</p>${steps.length?`<details ${index===0?'open':''}><summary>Passaggi da seguire</summary><ol class="task-steps">${steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol></details>`:''}<div class="task-check"><strong>Quando è completata</strong><div>${esc(t.acceptanceCriteria||finding?.simple||'Quando il risultato è stato verificato e lo stato passa a Completata.')}</div></div></div><div class="task-actions">${operationalPlanActions(planItem)}</div></article>`;
   };
   const completedTitle=t=>{const rule=systemTaskRules().find(r=>r.match(t));return rule?`Completato: ${rule.label}`:`Completato: ${t.title||'Attività'}`;};
-  return `${pageIntro('Piano operativo','Una sola priorità alla volta. Completa il primo passo, verifica il risultato e il sistema porterà in cima l’attività successiva.',[`${active.length} da fare`,`${completed.length} completate`])}
+  return `${pageIntro('7.1 Attività da eseguire','Una sola priorità alla volta, in ordine numerato. Completa la 1, verifica il risultato e il sistema porterà in cima l’attività successiva.',[`${active.length} da fare`,`${completed.length} completate`])}
   <div class="section-head"><div class="task-sync"><button class="btn" id="syncTasksNow">Aggiorna e verifica</button><span class="muted">${currentProject().tasksLastSyncedAt?`Aggiornato: ${fmtTime(currentProject().tasksLastSyncedAt)}`:'La sincronizzazione parte automaticamente.'}</span></div><div class="page-actions"><button class="btn" data-report-export>Scarica piano e report</button><button class="btn" data-nav="Guided Review">Apri wizard</button><button class="btn" data-add="tasks">+ Task manuale</button></div></div>
   ${active.length?`<div class="task-plan">${active.map(taskCard).join('')}</div>`:`<div class="card empty"><strong>Nessuna attività prioritaria aperta ✓</strong><p>Il piano è aggiornato con i dati disponibili. Puoi eseguire un nuovo controllo oppure scaricare il riepilogo.</p><button class="btn primary" data-nav="Guided Review">Nuovo controllo guidato</button></div>`}
   <div style="height:18px"></div><details class="card completed-history"><summary>Attività completate e verificate (${completed.length})</summary>${completed.length?completed.map(t=>`<div class="completed-row"><div><strong>${esc(completedTitle(t))}</strong><div class="muted">${esc(t.verifiedAt?`Verificata il ${fmtDate(t.verifiedAt)}`:'Completata')}</div></div><button class="btn" data-edit="tasks" data-id="${t.id}">Dettagli</button></div>`).join(''):'<div class="muted">Nessuna attività completata.</div>'}</details>`;
@@ -4001,6 +4114,38 @@ function guidedJourneyDefinitions(){
     ]}
   ];
 }
+/* ============================================================
+   V5.6 — Il wizard e' un unico flusso: le fasi sono numerate 1..N e
+   i passi hanno una numerazione continua che non riparte da 1.
+   ============================================================ */
+function journeyFlow(){
+  const journeys=guidedJourneyDefinitions();
+  let offset=0;
+  const withOffset=journeys.map((journey,index)=>{
+    const globalStart=offset; offset+=journey.steps.length;
+    return {...journey,phase:index+1,phaseCount:journeys.length,globalStart};
+  });
+  const globalTotal=offset;
+  return withOffset.map(journey=>({...journey,globalTotal}));
+}
+function journeyPhaseById(id){ return journeyFlow().find(journey=>journey.id===id)||null; }
+
+/* Box unico e riutilizzabile: le attivita da fare, con numero progressivo. */
+function numberedTaskBox(options={}){
+  const limit=Number(options.limit||5);
+  const items=operationalPlanItems();
+  const title=options.title||'Attività da fare, in ordine';
+  if(!items.length){
+    return `<section class="task-box"><div class="task-box-head"><h4>${esc(title)}</h4><span class="badge success">Nessuna attività aperta</span></div><div class="good-box"><strong>Il piano è aggiornato ✓</strong><div class="muted">Non risultano modifiche prioritarie con i dati attualmente disponibili.</div></div></section>`;
+  }
+  const shown=items.slice(0,limit);
+  const cards=shown.map((item,index)=>{
+    const status=planStatusInfo(item.status);
+    return `<article class="task-plan-card ${index===0?'current':''}"><div class="task-order">${index+1}</div><div><div class="badges"><span class="badge ${item.priority==='P1'?'danger':item.priority==='P2'?'warning':'info'}">${esc(item.priority)}</span><span class="plan-state ${status.className}">${esc(status.label)}</span>${index===0?'<span class="badge info">DA FARE ADESSO</span>':`<span class="badge">PASSO ${index+1}</span>`}</div><h4>${esc(item.title)}</h4><p class="task-why">${esc(item.why)}</p>${item.url?`<div class="journey-problem-url">${esc(item.url)}</div>`:''}${item.steps.length?`<details ${index===0?'open':''}><summary>Passaggi da seguire</summary><ol class="task-steps">${item.steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol></details>`:''}<div class="task-check"><strong>Quando è completata</strong><div>${esc(item.verification)}</div></div></div><div class="task-actions">${operationalPlanActions(item)}</div></article>`;
+  }).join('');
+  return `<section class="task-box"><div class="task-box-head"><h4>${esc(title)}</h4><span class="badge">${items.length} attività aperte</span></div><div class="task-plan">${cards}</div>${items.length>shown.length?`<div class="muted" style="margin-top:12px">Altre ${items.length-shown.length} attività sono nel piano completo.</div>`:''}<div class="plan-approval"><button class="btn primary" data-nav="Operational Plan">Apri il piano completo</button><button class="btn" data-nav="Tasks">Vedi tutte le attività</button></div></section>`;
+}
+
 function guidedJourneyIcon(name){
   const icons={
     settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V21h-4v-.08A1.7 1.7 0 0 0 8.97 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1.03H3v-4h.08A1.7 1.7 0 0 0 4.6 8.97a1.7 1.7 0 0 0-.34-1.88l-.06-.06L7.03 4.2l.06.06A1.7 1.7 0 0 0 8.97 4.6 1.7 1.7 0 0 0 10 3.05V3h4v.08a1.7 1.7 0 0 0 1.03 1.52 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06a1.7 1.7 0 0 0-.34 1.88A1.7 1.7 0 0 0 20.95 10H21v4h-.08A1.7 1.7 0 0 0 19.4 15Z"/>',
@@ -4022,20 +4167,36 @@ function guidedJourneyStatus(journey){
   const current=journey.steps[saved]?.done()&&firstOpen>=0?firstOpen:saved;
   return {label:started?'In corso':'Da iniziare',className:started?'progress':'todo',done,current};
 }
+function journeyFlowRail(activeId){
+  const journeys=journeyFlow().map(journey=>({...journey,status:guidedJourneyStatus(journey)}));
+  return `<ol class="journey-flow-rail" aria-label="Fasi del percorso operativo">${journeys.map(journey=>{
+    const status=journey.status,active=journey.id===activeId;
+    const label=`Fase ${journey.phase}: ${journey.title} — ${status.label}`;
+    return `<li class="journey-flow-node ${status.className} ${active?'is-active':''}"><button type="button" data-path-start="${esc(journey.id)}" aria-label="${esc(label)}" ${active?'aria-current="step"':''}><span class="flow-num" aria-hidden="true">${status.className==='done'?'✓':journey.phase}</span><span class="flow-label">${esc(journey.title)}</span></button></li>`;
+  }).join('')}</ol>`;
+}
 function guidedJourneyDashboard(){
-  const journeys=guidedJourneyDefinitions().map(journey=>({...journey,status:guidedJourneyStatus(journey)}));
-  const order={Alta:1,Consigliata:2,Opzionale:3};journeys.sort((a,b)=>(a.status.className==='done')-(b.status.className==='done')||(order[a.priority]||9)-(order[b.priority]||9));
+  /* Ordine di flusso, non di priorita': il percorso va letto 1 → N. */
+  const journeys=journeyFlow().map(journey=>({...journey,status:guidedJourneyStatus(journey)}));
+  const totalSteps=journeys.length?journeys[0].globalTotal:0;
+  const doneSteps=journeys.reduce((sum,journey)=>sum+journey.status.done,0);
+  const percent=totalSteps?Math.round(doneSteps/totalSteps*100):0;
   const next=journeys.find(journey=>journey.status.className!=='done');
-  return `<div class="journey-shell"><div class="journey-hero"><div><h3>Cosa vuoi fare oggi?</h3><p>Scegli un percorso. Ti mostrerò una sola azione alla volta, verificherò il risultato e indicherò automaticamente il passo successivo.</p></div>${next?`<button class="btn primary" data-path-start="${next.id}">Continua dalla priorità consigliata</button>`:'<button class="btn" data-report-export>Scarica il report finale</button>'}</div><div class="journey-grid">${journeys.map(journey=>{
-    const status=journey.status,cta=status.className==='done'?'Rivedi il percorso':status.className==='todo'?'Inizia il percorso':`Riprendi dal passo ${status.current+1}`;
-    return `<button type="button" class="journey-card ${journey===next?'recommended':''} ${status.className==='done'?'completed':''}" data-path-start="${journey.id}" aria-label="${esc(cta)}: ${esc(journey.title)}"><span class="journey-icon">${guidedJourneyIcon(journey.icon)}</span><span class="journey-card-body"><span class="badges"><span class="badge ${journey.priority==='Alta'?'danger':journey.priority==='Consigliata'?'info':''}">${esc(journey.priority)}</span></span><span role="heading" aria-level="4" class="journey-card-heading">${esc(journey.title)}</span><span class="journey-card-description">${esc(journey.description)}</span><span class="journey-meta"><span>${journey.steps.length} step</span><span>·</span><span>${esc(journey.duration)}</span></span><span class="journey-card-action"><span class="journey-status ${status.className}">${status.label}</span><span class="btn ${journey===next?'primary':''}">${esc(cta)}</span></span></span></button>`;
-  }).join('')}</div></div>`;
+  return `<div class="journey-shell"><div class="journey-hero"><div><h3>Percorso operativo in ${journeys.length} fasi</h3><p>Segui le fasi in ordine, dalla 1 alla ${journeys.length}. Ogni fase mostra una sola azione alla volta, verifica il risultato e alla fine ti porta alle attività da fare, numerate.</p><div class="journey-global-progress"><div class="progress"><span style="width:${percent}%"></span></div><div class="muted">${doneSteps} passi completati su ${totalSteps} (${percent}%)</div></div></div>${next?`<button class="btn primary" data-path-start="${next.id}">${next.status.className==='todo'?`Inizia la Fase ${next.phase}`:`Riprendi dalla Fase ${next.phase}`}</button>`:'<button class="btn primary" data-nav="Operational Plan">Vedi le attività da fare</button>'}</div>
+  ${journeyFlowRail('')}
+  <div class="journey-grid">${journeys.map(journey=>{
+    const status=journey.status;
+    const cta=status.className==='done'?'Rivedi la fase':status.className==='todo'?`Inizia la Fase ${journey.phase}`:`Riprendi dal passo ${journey.globalStart+status.current+1}`;
+    const from=journey.globalStart+1,to=journey.globalStart+journey.steps.length;
+    return `<button type="button" class="journey-card ${journey===next?'recommended':''} ${status.className==='done'?'completed':''}" data-path-start="${journey.id}" aria-label="${esc(cta)}: fase ${journey.phase}, ${esc(journey.title)}"><span class="journey-icon">${guidedJourneyIcon(journey.icon)}</span><span class="journey-card-body"><span class="badges"><span class="journey-phase-chip">Fase ${journey.phase} di ${journey.phaseCount}</span><span class="badge ${journey.priority==='Alta'?'danger':journey.priority==='Consigliata'?'info':''}">${esc(journey.priority)}</span></span><span role="heading" aria-level="4" class="journey-card-heading">${journey.phase}. ${esc(journey.title)}</span><span class="journey-card-description">${esc(journey.description)}</span><span class="journey-meta"><span>Passi ${from}–${to} di ${journey.globalTotal}</span><span>·</span><span>${esc(journey.duration)}</span></span><span class="journey-card-action"><span class="journey-status ${status.className}">${status.label} · ${status.done}/${journey.steps.length}</span><span class="btn ${journey===next?'primary':''}">${esc(cta)}</span></span></span></button>`;
+  }).join('')}</div>
+  ${numberedTaskBox({limit:3,title:'Attività già pronte da eseguire'})}</div>`;
 }
 function guidedPathExtra(journey,step,index){
   const pages=byProject(state.pages),issues=openPriorityIssues(),insights=keywordJourneyInsights(),plan=pageImprovementPlan();
   if(index===journey.steps.length-1&&step.done()){
-    const priorities=operationalPlanItems().slice(0,3),safe=safeAutomaticFixCandidates();
-    return `<div class="callout"><strong>Piano di lavoro aggiornato</strong><p class="muted">Il percorso è completato. Queste sono le prossime priorità da approvare, modificare ed eseguire.</p>${priorities.length?`<ol class="task-steps">${priorities.map(item=>`<li><strong>${esc(item.priority)} · ${esc(item.title)}</strong> — ${esc(planStatusInfo(item.status).label)}</li>`).join('')}</ol>`:'<div class="good-box"><strong>Nessuna attività prioritaria aperta.</strong></div>'}${safe.length?`<div class="good-box"><strong>${safe.length} correzioni locali possono essere automatizzate</strong><div class="muted">Nel piano vedrai l’anteprima completa prima dell’applicazione.</div></div>`:''}<button class="btn primary" data-nav="Operational Plan">Apri il piano completo</button></div>`;
+    const safe=safeAutomaticFixCandidates();
+    return `${safe.length?`<div class="good-box"><strong>${safe.length} correzioni locali possono essere automatizzate</strong><div class="muted">Nel piano vedrai l’anteprima completa prima dell’applicazione.</div></div>`:''}${numberedTaskBox({limit:5,title:'Fase completata — attività da fare, in ordine'})}`;
   }
   if(journey.id==='setup'&&step.id==='confirm')return `<div class="journey-data-grid"><div class="journey-data-card"><div class="value">${pages.length}</div>Pagine del sito</div><div class="journey-data-card"><div class="value">${byProject(state.keywords).length}</div>Keyword</div><div class="journey-data-card"><div class="value">${byProject(state.gscRecords).length}</div>Record Search Console</div></div>`;
   if(journey.id==='technical'&&step.id==='summary'){
@@ -4058,13 +4219,41 @@ function guidedPathExtra(journey,step,index){
   if(journey.id==='report')return `<div class="journey-data-grid"><div class="journey-data-card"><div class="value">${pages.length}</div>Pagine analizzate</div><div class="journey-data-card"><div class="value">${byProject(state.tasks).filter(task=>String(task.status||'').toUpperCase()==='VERIFIED').length}</div>Task verificate</div><div class="journey-data-card"><div class="value">${activeOpenTasks().length}</div>Task aperte</div></div>`;
   return '';
 }
-function guidedJourneyStepView(journey){
-  const record=guidedPathRecord(journey.id),status=guidedJourneyStatus(journey),index=Math.max(0,Math.min(record.current??status.current,journey.steps.length-1)),step=journey.steps[index],done=step.done();
+function guidedJourneyStepView(journeyInput){
+  /* Recupero i metadati di fase: numero della fase e offset globale dei passi. */
+  const flow=journeyPhaseById(journeyInput.id);
+  const journey=flow||{...journeyInput,phase:1,phaseCount:1,globalStart:0,globalTotal:journeyInput.steps.length};
+  const nextPhase=journeyFlow().find(item=>item.phase===journey.phase+1)||null;
+  const record=guidedPathRecord(journey.id),status=guidedJourneyStatus(journey);
+  const index=Math.max(0,Math.min(record.current??status.current,journey.steps.length-1));
+  const step=journey.steps[index],done=step.done();
+  const globalIndex=journey.globalStart+index+1;
+  const lastStep=index===journey.steps.length-1;
   const requirementClass=step.requirement==='Obbligatorio'?'required':step.requirement==='Consigliato'?'recommended':'optional';
+  const finishHtml=nextPhase
+    ?`<button class="btn primary" data-path-start="${esc(nextPhase.id)}">Vai alla Fase ${nextPhase.phase}: ${esc(nextPhase.title)}</button><button class="btn" data-nav="Operational Plan">Vedi le attività da fare</button>`
+    :'<button class="btn primary" data-nav="Operational Plan">Vedi le attività da fare</button><button class="btn" data-report-export>Scarica il report</button>';
   const actionHtml=done
-    ?(index<journey.steps.length-1?'<button class="btn primary" data-path-next>Passo successivo</button>':'<button class="btn primary" data-nav="Operational Plan">Vai al piano di lavoro</button>')
+    ?(lastStep?finishHtml:'<button class="btn primary" data-path-next>Passo successivo →</button>')
     :`${step.target?`<button class="btn primary" data-path-nav="${esc(step.target)}" data-path-ack="${esc(step.id)}">${esc(step.actionLabel)}</button>`:step.autoAction?`<button class="btn primary" data-path-action="${esc(step.autoAction)}">${esc(step.actionLabel)}</button>`:''}${step.skipLabel?`<button class="btn" data-path-skip="${esc(step.id)}">${esc(step.skipLabel)}</button>`:''}`;
-  return `<div class="journey-shell"><div class="journey-top"><button class="journey-back" data-path-dashboard>← Tutti i percorsi</button><div class="muted">Salvataggio automatico attivo</div></div><div class="journey-progress" style="--journey-steps:${journey.steps.length}">${journey.steps.map((item,i)=>`<button type="button" class="journey-progress-item ${item.done()?'done':i===index?'active':''}" data-path-step="${i}" ${i===index?'aria-current="step"':''}>${item.done()?'✓ ':''}${i+1}. ${esc(item.title.split(' ').slice(0,3).join(' '))}</button>`).join('')}</div><section class="journey-step-card"><div class="journey-step-number">Step ${index+1} di ${journey.steps.length} · ${esc(journey.title)}</div><h3>${esc(step.title)}</h3><p class="journey-step-lead">${esc(step.summary)}</p><div class="journey-requirement ${requirementClass}">${esc(step.requirement)}</div><div class="journey-explain"><div><strong>Perché è importante</strong><span class="muted">${esc(step.why)}</span></div><div><strong>Risultato atteso</strong><span class="muted">${esc(step.result)}</span></div></div>${guidedPathExtra(journey,step,index)}<div class="journey-main-action">${actionHtml}</div><div class="journey-footer-actions"><button class="btn" data-path-prev ${index===0?'disabled':''}>Indietro</button><div class="muted">${done?'Passo completato ✓':'Completa l’azione, poi verifica il risultato.'}</div></div></section></div>`;
+  const globalPercent=journey.globalTotal?Math.round((journey.globalStart+journey.steps.filter(item=>item.done()).length)/journey.globalTotal*100):0;
+  return `<div class="journey-shell">
+  <div class="journey-top"><button class="journey-back" data-path-dashboard>← Tutte le fasi</button><div class="muted">Salvataggio automatico attivo</div></div>
+  ${journeyFlowRail(journey.id)}
+  <div class="journey-global-progress"><div class="progress"><span style="width:${globalPercent}%"></span></div><div class="muted">Passo ${globalIndex} di ${journey.globalTotal} nel percorso completo</div></div>
+  <div style="height:16px"></div>
+  <div class="journey-progress" style="--journey-steps:${journey.steps.length}">${journey.steps.map((item,i)=>`<button type="button" class="journey-progress-item ${item.done()?'done':i===index?'active':''}" data-path-step="${i}" ${i===index?'aria-current="step"':''}>${item.done()?'✓ ':''}${journey.globalStart+i+1}. ${esc(item.title.split(' ').slice(0,3).join(' '))}</button>`).join('')}</div>
+  <section class="journey-step-card">
+    <div class="journey-step-scope"><span class="journey-phase-chip">Fase ${journey.phase} di ${journey.phaseCount} · ${esc(journey.title)}</span><span class="muted">Passo ${index+1} di ${journey.steps.length} in questa fase</span></div>
+    <div class="journey-step-number">Passo ${globalIndex} di ${journey.globalTotal}</div>
+    <h3>${esc(step.title)}</h3>
+    <p class="journey-step-lead">${esc(step.summary)}</p>
+    <div class="journey-requirement ${requirementClass}">${esc(step.requirement)}</div>
+    <div class="journey-explain"><div><strong>Perché è importante</strong><span class="muted">${esc(step.why)}</span></div><div><strong>Risultato atteso</strong><span class="muted">${esc(step.result)}</span></div></div>
+    ${guidedPathExtra(journey,step,index)}
+    <div class="journey-main-action">${actionHtml}</div>
+    <div class="journey-footer-actions"><button class="btn" data-path-prev ${index===0?'disabled':''}>← Indietro</button><div class="muted">${done?'Passo completato ✓':'Completa l’azione indicata, poi verifica il risultato.'}</div></div>
+  </section></div>`;
 }
 function smartWizardView(){
   const root=guidedPathsState(),journeys=guidedJourneyDefinitions();
@@ -4111,7 +4300,7 @@ async function handleGuidedPathAction(action){
   }
   if(action==='generate-keywords'){const added=backfillKeywordsFromPages();flag('generated');commit('Keyword generate dal percorso');toast(added?`${added} keyword proposte.`:'Le keyword disponibili sono già aggiornate.');render();return;}
   if(action==='open-keywords'){state.ui.activeView='Keywords';commit('Keyword aperte dal percorso');render();return;}
-  if(action==='analyze-content'){if(!byProject(state.pages).length){state.ui.activeView='Pages';commit('Pagine richieste dal percorso');render();toast('Aggiungi prima le pagine del sito.');return;}flag('analyzed');record.current++;commit('Analisi contenuti completata');render();return;}
+  if(action==='analyze-content'){if(!byProject(state.pages).length){state.ui.activeView='Pages';commit('Pagine richieste dal percorso');render();toast('Aggiungi prima le pagine del sito.');return;}flag('analyzed');record.current=Math.min(record.current+1,journey.steps.length-1);commit('Analisi contenuti completata');render();return;}
   if(action==='create-content-tasks'){const added=createContentTasksFromPlan();flag('tasks');commit('Task contenuti create');toast(`${added} nuove task create. Il sistema ha evitato i duplicati.`);render();return;}
   if(action==='create-keyword-tasks'){const added=createKeywordTasksFromInsights();flag('tasks');commit('Task keyword create');toast(`${added} nuove task keyword create.`);render();return;}
   if(action==='sync-tasks'){runAutomationCycle(false);flag('synced');commit('Piano operativo sincronizzato');render();return;}
@@ -4125,7 +4314,7 @@ async function handleGuidedPathAction(action){
     if(verifiable&&!finding.resolved()){task.status='TODO';task.completedAt='';task.updatedAt=now();record.lastMessage='La task non è ancora risolta: il controllo rileva ancora il problema.';toast(record.lastMessage);commit('Verifica task non superata');render();return;}
     task.status='VERIFIED';task.verifiedAt=now();task.updatedAt=now();flag('lastVerified');record.lastMessage='Risultato verificato correttamente.';commit(`Task verificata: ${task.title}`);toast('Risultato verificato. Possiamo passare alla prossima attività.');render();return;
   }
-  if(action==='next-task'){record.pendingTaskId='';record.flags.lastVerified=false;if(activeOpenTasks().length){record.current=1;toast('Ho ricalcolato la priorità e preparato la prossima task.');}else flag('completed');commit('Prossima task calcolata');render();return;}
+  if(action==='next-task'){record.pendingTaskId='';record.flags.lastVerified=false;if(activeOpenTasks().length){const back=journey.steps.findIndex(item=>item.id==='do-task');record.current=back>=0?back:Math.max(0,record.current-1);toast('Ho ricalcolato la priorità e preparato la prossima attività.');}else flag('completed');commit('Prossima task calcolata');render();return;}
   if(action==='download-report'){flag('downloaded');commit('Report aperto dal percorso');openReportExport();return;}
   const actions={
     'confirm-setup':['confirmed',null],'ack-technical-summary':['summary',null],'ack-technical-priorities':['priorities',null],
@@ -4165,11 +4354,9 @@ function guidedDashboardView(){
   const p=currentProject();
   const open=wizardChecks().filter(c=>!c.resolved()&&['CRITICAL','HIGH','MEDIUM'].includes(c.severity));
   const status=open.length===0?'Buono':'Richiede attenzione';
-  const hasDomain=Boolean(normalizeSiteDomain(p.domain));
-  const journeys=guidedJourneyDefinitions().map(journey=>({...journey,status:guidedJourneyStatus(journey)}));
-  const priorityOrder={Alta:1,Consigliata:2,Opzionale:3};journeys.sort((a,b)=>(a.status.className==='done')-(b.status.className==='done')||(priorityOrder[a.priority]||9)-(priorityOrder[b.priority]||9));
-  const nextJourney=journeys.find(journey=>journey.status.className!=='done')||journeys[0];
-  const cta=nextJourney?.status.className==='progress'||nextJourney?.status.className==='verify'?`Riprendi: ${nextJourney.title}`:'Apri i percorsi guidati';
+  const journeys=journeyFlow().map(journey=>({...journey,status:guidedJourneyStatus(journey)}));
+  const nextJourney=journeys.find(journey=>journey.status.className!=='done')||journeys[journeys.length-1];
+  const cta=nextJourney?.status.className==='progress'||nextJourney?.status.className==='verify'?`Riprendi la Fase ${nextJourney.phase}`:`Inizia la Fase ${nextJourney?.phase||1}`;
   const lastCheck=guidedPathsState().updatedAt?`Ultimo aggiornamento: ${fmtTime(guidedPathsState().updatedAt)}`:'Nessun percorso avviato';
   const scan=p.websiteScan||{};
 
@@ -4177,7 +4364,7 @@ function guidedDashboardView(){
   ${pageIntro('Panoramica',`${p.name}${p.domain?` · ${p.domain}`:''}`,[`Stato: ${status}`,`${open.length} problemi prioritari`,lastCheck])}
   <section class="dashboard-command" aria-labelledby="nextActionTitle">
     <div>
-      <div class="dashboard-label">Prossima azione</div>
+      <div class="dashboard-label">Prossima azione · Fase ${nextJourney?.phase||1} di ${nextJourney?.phaseCount||6}</div>
       <h3 id="nextActionTitle">${esc(nextJourney?.title||'Apri il controllo guidato')}</h3>
       <p>${esc(nextJourney?.description||'Scegli un percorso e completa una sola azione alla volta.')}</p>
     </div>
@@ -4281,8 +4468,8 @@ function moduleDescription(v){
    'Indexation':'Controllo indexable, robots, canonical, sitemap e stato GSC.',
    'Migration':'Mapping old→new URL e validazione post-migrazione.',
    'Content Refresh':'Decay, CTR/ranking/impression decline e raccomandazioni.',
-   'Strategy Canvas':'Obiettivi business e SEO, audience, positioning e hypothesis.',
-   'Content Briefs':'Brief operativi con outline, entity, linking, CTA e fonti.'
+   'Operational Plan':'Piano operativo: modifiche consigliate da approvare, eseguire e verificare.',
+   'Next Best Actions':'Le azioni con il rapporto impatto/impegno più favorevole.'
   }; return map[v]||'Modulo collegato al modello dati centrale.';
 }
 
