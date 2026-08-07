@@ -70,6 +70,32 @@ textarea{min-height:110px;resize:vertical}.form-grid{display:grid;grid-template-
 @media(max-width:800px){.app{display:block}.sidebar{position:fixed;left:0;top:0;z-index:40;width:280px;transform:translateX(-100%);transition:.2s}.sidebar.open{transform:none}.mobile-menu{display:inline-flex}.grid.kpi,.grid.three,.form-grid{grid-template-columns:1fr}.content{padding:16px}.topbar{padding:10px 12px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
+/* V4.1 Guided UX + Auto Verification */
+.guide-shell{max-width:980px;margin:0 auto}
+.guide-progress{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
+.guide-step{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:var(--surface-alt);font-size:12px;color:var(--muted)}
+.guide-step.done{color:var(--success)}.guide-step.active{background:var(--accent);color:#fff;font-weight:800}
+.guide-number{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--text) 8%,transparent);font-size:11px;font-weight:800}
+.simple-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px}
+.simple-card h3{font-size:24px;margin:0 0 8px}
+.simple-card .lead{font-size:15px;color:var(--muted);line-height:1.55}
+.explain-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.explain-tile{background:var(--surface-alt);border:1px solid var(--border);border-radius:14px;padding:14px}
+.explain-tile strong{display:block;margin-bottom:5px}
+.help-toggle{border:0;background:transparent;color:var(--accent);padding:0;font-weight:700}
+.help-panel{margin-top:10px;padding:12px;border-radius:12px;background:var(--surface-alt);border:1px solid var(--border)}
+.next-action-box{border:1px solid color-mix(in srgb,var(--accent) 35%,var(--border));background:color-mix(in srgb,var(--accent) 7%,var(--surface));border-radius:16px;padding:16px}
+.auto-verify{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:10px}
+.auto-verify .dot{width:9px;height:9px;border-radius:50%;background:var(--success)}
+.workflow-card{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
+.workflow-card+.workflow-card{margin-top:10px}
+.workflow-card.current{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
+.workflow-card.done{opacity:.82}
+.auto-badge{display:inline-flex;padding:4px 7px;border-radius:999px;background:color-mix(in srgb,var(--success) 12%,var(--surface));color:var(--success);font-size:11px;font-weight:800}
+.manual-badge{display:inline-flex;padding:4px 7px;border-radius:999px;background:var(--surface-alt);color:var(--muted);font-size:11px;font-weight:800}
+@media(max-width:800px){.explain-grid{grid-template-columns:1fr}.workflow-card{grid-template-columns:1fr}}
+
+
 /* RC6 UX/UI */
 .sidebar{padding:14px}
 .brand{padding:6px 4px 12px}
@@ -191,7 +217,7 @@ radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--border) 60%,transparen
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Decision Operating System · V4 Stable</p></div>
+      <div><h1>Organic Growth OS</h1><p>Decision Operating System · V4.1</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -819,7 +845,7 @@ function commitPendingImport(){
   const {rows,target,file}=pendingImport;
   rows.forEach(x=>state[target].push({id:uid('imp'),projectId:state.currentProjectId,...normalizeImportedRecord(target,x),createdAt:now(),updatedAt:now()}));
   state.datasets.push({id:uid('dataset'),projectId:state.currentProjectId,name:file.name,source:'Import locale',type:target,importedAt:now(),records:rows.length,createdAt:now(),updatedAt:now()});
-  commit(`Import confermato: ${file.name}`);pendingImport=null;toast(`${rows.length} record importati`);state.ui.activeView=target==='gscRecords'?'Search Console':target==='links'?'Internal Links':({'pages':'Pages','keywords':'Keywords','issues':'Issues','opportunities':'Opportunities'}[target]||'Datasets');render();
+  commit(`Import confermato: ${file.name}`);runAutomationCycle(false);pendingImport=null;toast(`${rows.length} record importati`);state.ui.activeView=target==='gscRecords'?'Search Console':target==='links'?'Internal Links':({'pages':'Pages','keywords':'Keywords','issues':'Issues','opportunities':'Opportunities'}[target]||'Datasets');render();
 }
 
 
@@ -1328,6 +1354,243 @@ function bindTableSearch(){
   });
 }
 
+
+function systemTaskRules(){
+  return [
+    {
+      key:'page_inventory',
+      match:t=>/page inventory|importa o aggiungi.*pagina|aggiungi.*page inventory/i.test(t.title||''),
+      label:'Page Inventory disponibile',
+      explanation:'Il sistema considera questa attività completata quando esiste almeno una pagina valida nel Page Inventory.',
+      test:()=>byProject(state.pages).some(p=>p.displayUrl||p.pageName),
+      verified:()=>byProject(state.pages).some(p=>(p.displayUrl||p.pageName)&&p.projectId===state.currentProjectId)
+    },
+    {
+      key:'strategy_canvas',
+      match:t=>/strategy canvas|strategia seo|definisci.*strateg/i.test(t.title||''),
+      label:'Strategia di base definita',
+      explanation:'È completata quando SEO Goal e Audience sono stati compilati e la strategia non è più in stato PENDING.',
+      test:()=>Boolean(currentProject()?.strategyCanvas?.seoGoal&&currentProject()?.strategyCanvas?.audience&&currentProject()?.strategyCanvas?.status!=='PENDING'),
+      verified:()=>Boolean(currentProject()?.strategyCanvas?.status==='VALIDATED')
+    },
+    {
+      key:'gsc_import',
+      match:t=>/search console|gsc|importa.*dati/i.test(t.title||''),
+      label:'Dati Search Console disponibili',
+      explanation:'È completata quando esiste almeno un record Search Console importato per il progetto.',
+      test:()=>byProject(state.gscRecords).length>0,
+      verified:()=>byProject(state.gscRecords).length>0&&byProject(state.datasets).some(d=>String(d.type||'').toLowerCase().includes('gsc')||String(d.source||'').toUpperCase().includes('SEARCH CONSOLE'))
+    },
+    {
+      key:'canonical',
+      match:t=>/canonical/i.test(t.title||''),
+      label:'Canonical senza finding aperti',
+      explanation:'È completata quando non risultano mismatch canonical noti dai dati disponibili.',
+      test:()=>canonicalOpenFindingsCount()===0,
+      verified:()=>canonicalOpenFindingsCount()===0&&byProject(state.pages).length>0
+    },
+    {
+      key:'internal_links',
+      match:t=>/internal link|link interni|collegamenti interni/i.test(t.title||''),
+      label:'Internal linking senza errori noti',
+      explanation:'È completata quando non risultano link broken, redirect o non-canonical nei dati importati.',
+      test:()=>byProject(state.links).length>0&&byProject(state.links).every(l=>!['BROKEN','REDIRECT','NON_CANONICAL'].includes(String(l.status||'').toUpperCase())),
+      verified:()=>byProject(state.links).length>0&&byProject(state.links).every(l=>String(l.status||'').toUpperCase()==='OK')
+    },
+    {
+      key:'p1_blockers',
+      match:t=>/blocker|p1|problemi critici/i.test(t.title||''),
+      label:'Nessun blocker P1 aperto',
+      explanation:'È completata quando non restano issue P1 aperte.',
+      test:()=>byProject(state.issues).filter(i=>i.priority==='P1'&&!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase())).length===0,
+      verified:()=>byProject(state.issues).filter(i=>i.priority==='P1'&&!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase())).length===0
+    }
+  ];
+}
+
+function canonicalOpenFindingsCount(){
+  let n=0;
+  byProject(state.pages).forEach(p=>{
+    if(!p.canonicalUrl)n++;
+    if(p.expectedCanonical&&p.canonicalUrl&&p.expectedCanonical!==p.canonicalUrl)n++;
+  });
+  byProject(state.links).forEach(l=>{
+    if(['NON_CANONICAL','REDIRECT'].includes(String(l.status||'').toUpperCase()))n++;
+  });
+  return n;
+}
+
+function autoVerifySystemTasks(silent=true){
+  let changed=0, verified=0;
+  const rules=systemTaskRules();
+  byProject(state.tasks).forEach(t=>{
+    const rule=rules.find(r=>r.match(t));
+    if(!rule)return;
+    t.systemGenerated=true;
+    t.verificationRule=rule.key;
+    const complete=rule.test();
+    const isVerified=rule.verified();
+    const old=t.status||'TODO';
+    if(isVerified && old!=='VERIFIED'){
+      t.status='VERIFIED'; t.verifiedAt=now(); t.updatedAt=now(); changed++; verified++;
+    } else if(complete && !['DONE','VERIFIED'].includes(old)){
+      t.status='DONE'; t.completedAt=now(); t.updatedAt=now(); changed++;
+    } else if(!complete && ['DONE','VERIFIED'].includes(old)){
+      t.status='TODO'; t.completedAt=''; t.verifiedAt=''; t.updatedAt=now(); changed++;
+    }
+  });
+  if(changed){
+    syncWorkflowFromGates(false);
+    if(!silent)toast(`${changed} task di sistema aggiornate automaticamente${verified?` · ${verified} verificate`:''}`);
+  }
+  return changed;
+}
+
+function workflowStageRules(){
+  const gates=qualityGateEvaluation();
+  const gate=name=>gates.find(g=>g.name===name)?.passed===true;
+  return [
+    {stage:'Research',ready:true,done:()=>Boolean(currentProject()?.domain||byProject(state.pages).length),explain:'Raccogli contesto, sito e dati iniziali.'},
+    {stage:'Strategy',ready:()=>true,done:()=>gate('STRATEGY READY'),explain:'Definisci obiettivi, audience e direzione SEO.'},
+    {stage:'Architecture',ready:()=>gate('STRATEGY READY'),done:()=>gate('ARCHITECTURE READY'),explain:'Organizza pagine, cluster e relazioni.'},
+    {stage:'Build',ready:()=>gate('ARCHITECTURE READY'),done:()=>gate('CONTENT READY'),explain:'Completa contenuti e struttura necessaria.'},
+    {stage:'Validate',ready:()=>gate('CONTENT READY'),done:()=>gate('PRE-INDEXATION'),explain:'Controlla problemi tecnici prima dell’indicizzazione.'},
+    {stage:'Index',ready:()=>gate('PRE-INDEXATION'),done:()=>gate('INDEXATION READY'),explain:'Verifica che Google possa indicizzare le pagine corrette.'},
+    {stage:'Measure',ready:()=>gate('INDEXATION READY'),done:()=>gate('MEASUREMENT READY'),explain:'Importa dati reali Search Console e misura i risultati.'},
+    {stage:'Learn',ready:()=>gate('MEASUREMENT READY'),done:()=>byProject(state.snapshots).length>=2||byProject(state.changeEvents).some(c=>c.result),explain:'Confronta prima/dopo e registra ciò che hai imparato.'},
+    {stage:'Expand',ready:()=>gate('EXPANSION READY'),done:()=>false,explain:'Espandi solo quando le fondamenta e i dati sono solidi.'}
+  ];
+}
+
+function suggestedWorkflowStage(){
+  const rules=workflowStageRules();
+  for(const r of rules){
+    if(typeof r.done==='function'&&!r.done()) return r.stage;
+  }
+  return 'Expand';
+}
+
+function syncWorkflowFromGates(notify=false){
+  const p=currentProject(); if(!p)return;
+  const suggested=suggestedWorkflowStage();
+  const currentIndex=stages.indexOf(p.stage);
+  const suggestedIndex=stages.indexOf(suggested);
+  p.suggestedStage=suggested;
+  if(p.workflowMode==='automatic' && suggestedIndex>=0 && suggestedIndex!==currentIndex){
+    p.stage=suggested;
+    p.updatedAt=now();
+    if(notify)toast(`Workflow aggiornato automaticamente: ${suggested}`);
+  }
+}
+
+function runAutomationCycle(notify=false){
+  autoVerifySystemTasks(true);
+  syncWorkflowFromGates(notify);
+}
+
+function explainTerm(term){
+  const dict={
+    'Impact':'Quanto può incidere sul risultato SEO o sul progetto.',
+    'Effort':'Quanto lavoro richiede: più è basso, più l’attività è rapida.',
+    'Confidence':'Quanto sono solidi i dati che supportano il consiglio.',
+    'Quality Gate':'Controllo che decide se una fase è pronta per la successiva.',
+    'Canonical':'URL che indica a Google quale versione della pagina considerare principale.',
+    'Indexation':'Stato che indica se Google può e ha inserito una pagina nel proprio indice.',
+    'Internal Linking':'Collegamenti tra pagine dello stesso sito usati per navigazione, struttura e distribuzione dei segnali.',
+    'P1':'Priorità massima: problema da affrontare prima delle attività meno importanti.'
+  };
+  return dict[term]||'';
+}
+
+function simplifiedGuidedReview(){
+  runAutomationCycle(false);
+  const acts=nextActions(), a=acts[0];
+  const rules=workflowStageRules();
+  const p=currentProject();
+  const current=p.stage||'Research', suggested=p.suggestedStage||suggestedWorkflowStage();
+  const currentRule=rules.find(r=>r.stage===current);
+  const idx=Math.max(0,stages.indexOf(current));
+
+  if(!a){
+    return `${pageIntro('Assistente guidato','Ti dice cosa fare, perché farlo e quando puoi passare alla fase successiva.')}
+    <div class="guide-shell">
+      <div class="simple-card">
+        <h3>Nessuna azione urgente</h3>
+        <p class="lead">Non ho abbastanza dati per proporti una nuova attività oppure i controlli attuali risultano soddisfatti.</p>
+        <div class="next-action-box"><strong>Prossimo passo consigliato</strong><div class="muted" style="margin-top:6px">Continua con la fase <b>${esc(suggested)}</b>.</div></div>
+      </div>
+    </div>`;
+  }
+
+  return `${pageIntro('Assistente guidato','Una sola decisione alla volta. Le attività verificabili vengono aggiornate automaticamente.',['Fase attuale: '+current,'Prossima suggerita: '+suggested])}
+  <div class="guide-shell">
+    <div class="guide-progress">${stages.map((st,i)=>`<div class="guide-step ${i<idx?'done':i===idx?'active':''}"><span class="guide-number">${i+1}</span>${st}</div>`).join('')}</div>
+
+    <div class="simple-card">
+      <div class="auto-verify"><span class="dot"></span>Controllo automatico attivo per task verificabili</div>
+      <h3>${esc(a.title)}</h3>
+      <p class="lead">${esc(a.why)}</p>
+
+      <div class="explain-grid">
+        <div class="explain-tile"><strong>Quanto conta?</strong><div>${a.impact}/100</div><button class="help-toggle" data-help-term="Impact">Cos'è?</button><div class="help-panel" hidden></div></div>
+        <div class="explain-tile"><strong>Quanto lavoro?</strong><div>${a.effort}</div><button class="help-toggle" data-help-term="Effort">Cos'è?</button><div class="help-panel" hidden></div></div>
+        <div class="explain-tile"><strong>Quanto è affidabile?</strong><div>${a.confidence}%</div><button class="help-toggle" data-help-term="Confidence">Cos'è?</button><div class="help-panel" hidden></div></div>
+      </div>
+
+      <div class="next-action-box">
+        <strong>Cosa fare adesso</strong>
+        <div class="muted" style="margin-top:6px">${esc(a.title)}</div>
+        <div class="wizard-actions" style="margin-top:12px">
+          <button class="btn primary" data-create-task-from-action="${esc(a.title)}">Crea il task</button>
+          <button class="btn" data-nav="${a.type==='ISSUE'?'Issues':a.type==='OPPORTUNITY'?'Opportunities':'Pages'}">Apri il punto da sistemare</button>
+        </div>
+      </div>
+
+      <div class="help-panel" style="margin-top:16px">
+        <strong>Quando sarà completato?</strong>
+        <div class="muted" style="margin-top:5px">Se il task è verificabile dai dati dell'app, Organic Growth OS lo porterà automaticamente a DONE e poi VERIFIED quando il criterio sarà realmente soddisfatto. Le attività che richiedono giudizio umano restano manuali.</div>
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+    <div class="card">
+      <div class="section-head"><div><h3>Workflow semplificato</h3><div class="muted">Non devi scegliere la fase “a intuito”: il sistema ti indica quando è pronta.</div></div>
+        <select id="workflowModeSelect"><option value="assisted" ${p.workflowMode!=='automatic'?'selected':''}>Assistito</option><option value="automatic" ${p.workflowMode==='automatic'?'selected':''}>Automatico</option></select>
+      </div>
+      ${rules.map(r=>{
+        const done=typeof r.done==='function'&&r.done(), ready=typeof r.ready==='function'?r.ready():r.ready;
+        const isCurrent=r.stage===current;
+        return `<div class="workflow-card ${done?'done':''} ${isCurrent?'current':''}">
+          <div><strong>${esc(r.stage)}</strong> ${done?'<span class="auto-badge">COMPLETATA</span>':ready?'<span class="manual-badge">PRONTA</span>':'<span class="manual-badge">NON PRONTA</span>'}<div class="muted" style="margin-top:5px">${esc(r.explain)}</div></div>
+          ${isCurrent?'<span class="badge info">FASE ATTUALE</span>':''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function taskManagementViewV2(){
+  runAutomationCycle(false);
+  const tasks=byProject(state.tasks);
+  const groups=['TODO','IN PROGRESS','BLOCKED','DONE','VERIFIED'];
+  const rules=systemTaskRules();
+  const htmlCols=groups.map(g=>`<div class="kanban-col"><strong>${g}</strong>${tasks.filter(t=>(t.status||'TODO')===g).map(t=>{
+    const dep=t.dependencies||'';
+    const blocked=dep&&!dependencySatisfied(dep);
+    const rule=rules.find(r=>r.match(t));
+    return `<div class="kanban-card"><strong>${esc(t.title||'Task')}</strong><div class="muted">${esc(t.priority||'P3')} · ${esc(t.owner||'No owner')}</div>
+      ${rule?`<div class="auto-verify"><span class="dot"></span>Verifica automatica<div><button class="help-toggle" data-task-rule="${rule.key}">Come funziona?</button></div></div>`:''}
+      ${dep?`<div class="node-pill">${blocked?'Blocked by':'Depends on'}: ${esc(dep)}</div>`:''}
+      <div style="margin-top:8px"><button class="btn" data-edit="tasks" data-id="${t.id}">Apri</button></div></div>`;
+  }).join('')}</div>`).join('');
+  const blocked=tasks.filter(t=>t.dependencies&&!dependencySatisfied(t.dependencies));
+  return `${pageIntro('Task','Le task verificabili vengono aggiornate automaticamente; quelle che richiedono valutazione restano manuali.',[`${tasks.length} task`])}
+  <div class="section-head"><div></div><button class="btn primary" data-add="tasks">+ Task</button></div>
+  <div class="kanban">${htmlCols}</div>
+  <div style="height:16px"></div>
+  <div class="card"><h3>Dipendenze</h3>${blocked.length?`<div class="dep-list">${blocked.map(t=>`<div class="dep-item"><div><strong>${esc(t.title)}</strong><div class="muted">Prima completa: ${esc(t.dependencies)}</div></div><span class="badge danger">BLOCCATA</span></div>`).join('')}</div>`:'<div class="empty">Nessuna dipendenza non soddisfatta.</div>'}</div>`;
+}
+
 function simpleInfo(title,text){
   return `<div class="card"><h3>${esc(title)}</h3><p class="muted">${esc(text)}</p><div class="callout">Modulo predisposto nel data model V4. Le funzioni che richiedono dati esterni devono essere alimentate tramite import: Organic Growth OS non simula crawl, SERP o API live.</div></div>`;
 }
@@ -1337,7 +1600,7 @@ function render(){
   const v=state.ui.activeView; setTitle(v);
   let html='';
   if(v==='Dashboard') html=state.ui.mode==='Executive'?executiveDashboardV2():dashboardView();
-  else if(v==='Guided Review') html=guidedReviewViewV2();
+  else if(v==='Guided Review') html=simplifiedGuidedReview();
   else if(v==='Next Best Actions') html=nextActionsView();
   else if(v==='Project') html=projectViewV2();
   else if(v==='Pages') html=genericTableViewV2(configs.pages);
@@ -1345,7 +1608,7 @@ function render(){
   else if(v==='Entities') html=genericTableViewV2(configs.entities);
   else if(v==='Issues') html=genericTableViewV2(configs.issues);
   else if(v==='Opportunities') html=opportunitiesView();
-  else if(v==='Tasks') html=taskManagementView();
+  else if(v==='Tasks') html=taskManagementViewV2();
   else if(v==='Milestones') html=genericTableViewV2(configs.milestones);
   
   else if(v==='Evidence') html=genericTableViewV2(configs.evidence);
@@ -1425,6 +1688,7 @@ function searchConsoleView(){
 function settingsView(){
  return `<div class="card"><h3>Impostazioni</h3><p class="muted">Executive semplifica la lettura. Consultant mostra più dettagli tecnici. Tutti i dati restano nel browser locale finché non esporti un backup.</p><div class="form-grid">
  <div class="field"><label>Mode</label><select id="settingsMode"><option ${state.ui.mode==='Executive'?'selected':''}>Executive</option><option ${state.ui.mode==='Consultant'?'selected':''}>Consultant</option></select></div>
+ <div class="field"><label>Workflow</label><select id="settingsWorkflow"><option value="assisted" ${currentProject().workflowMode!=='automatic'?'selected':''}>Assistito (consigliato)</option><option value="automatic" ${currentProject().workflowMode==='automatic'?'selected':''}>Automatico</option></select></div>
  <div class="field"><label>Theme</label><select id="settingsTheme"><option ${state.ui.theme==='system'?'selected':''} value="system">System</option><option ${state.ui.theme==='light'?'selected':''} value="light">Light</option><option ${state.ui.theme==='dark'?'selected':''} value="dark">Dark</option></select></div>
  </div></div>`;
 }
@@ -1434,12 +1698,15 @@ function bindView(){
  document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.add));
  document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.edit,b.dataset.id));
  document.querySelectorAll('[data-create-task-from-action]').forEach(b=>b.onclick=()=>{ 
-   const t={id:uid('task'),projectId:state.currentProjectId,title:b.dataset.createTaskFromAction,priority:'P2',status:'TODO',owner:'',dueDate:'',createdAt:now(),updatedAt:now()};
-   state.tasks.push(t); commit('Task creato dal Guided Review'); toast('Task creato'); state.ui.activeView='Tasks'; render();
+   const title=b.dataset.createTaskFromAction;
+   const existing=byProject(state.tasks).find(t=>String(t.title||'').toLowerCase()===String(title).toLowerCase()&&!['VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase()));
+   if(existing){toast('Questo task esiste già. Ti porto alla lista task.');state.ui.activeView='Tasks';render();return;}
+   const t={id:uid('task'),projectId:state.currentProjectId,title,priority:'P2',status:'TODO',owner:'',dueDate:'',systemGenerated:true,createdAt:now(),updatedAt:now()};
+   state.tasks.push(t); runAutomationCycle(false); commit('Task creato dal Guided Review'); toast('Task creato'); state.ui.activeView='Tasks'; render();
  });
  document.querySelectorAll('[data-monitor-action]').forEach(b=>b.onclick=()=>toast('Azione marcata per monitoraggio manuale.'));
  const pf=document.getElementById('projectForm');
- if(pf) pf.onsubmit=e=>{e.preventDefault(); const p=currentProject(); new FormData(pf).forEach((v,k)=>p[k]=v); commit('Progetto aggiornato'); render(); toast('Progetto salvato');};
+ if(pf) pf.onsubmit=e=>{e.preventDefault(); const p=currentProject(); new FormData(pf).forEach((v,k)=>p[k]=v); commit('Progetto aggiornato'); runAutomationCycle(false); render(); toast('Progetto salvato');};
  const ib=document.getElementById('doImportBtn'); if(ib) ib.onclick=handleImportV2;
  const eb=document.getElementById('exportBackup'); if(eb) eb.onclick=()=>storage.export(state);
  const cs=document.getElementById('createSnapshot'); if(cs) cs.onclick=createSnapshot;
@@ -1447,6 +1714,8 @@ function bindView(){
  document.querySelectorAll('[data-src-rel]').forEach(inp=>inp.onchange=()=>{const x=state.sourceReliability.find(s=>s.id===inp.dataset.srcRel); if(x)x.reliability=clamp(Number(inp.value)); commit('Source reliability aggiornata');});
  const sm=document.getElementById('settingsMode'); if(sm) sm.onchange=()=>{state.ui.mode=sm.value;commit('Modalità aggiornata');setupTopbar();render();};
  const st=document.getElementById('settingsTheme'); if(st) st.onchange=()=>{state.ui.theme=st.value;commit('Tema aggiornato');applyTheme();};
+ const sw=document.getElementById('settingsWorkflow'); if(sw) sw.onchange=()=>{currentProject().workflowMode=sw.value;syncWorkflowFromGates(true);commit('Workflow aggiornato');render();};
+
  const sf=document.getElementById('strategyCanvasForm'); if(sf) sf.onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(sf).entries());data.confidence=Number(data.confidence||50);currentProject().strategyCanvas={...(currentProject().strategyCanvas||{}),...data};commit('Strategy Canvas aggiornato');toast('Strategy Canvas salvato');render();};
  const ac=document.getElementById('addContentBtn'); if(ac) ac.onclick=addContentDrawer;
  const sq=document.getElementById('syncQualityGates'); if(sq) sq.onclick=syncQualityGates;
@@ -1458,6 +1727,10 @@ function bindView(){
  const rd=document.getElementById('removeDemoData'); if(rd) rd.onclick=removeControlledDemo;
  const dp=document.getElementById('deleteProjectBtn'); if(dp) dp.onclick=deleteCurrentProject;
  bindTableSearch();
+ document.querySelectorAll('[data-help-term]').forEach(b=>b.onclick=()=>{const p=b.parentElement.querySelector('.help-panel');p.hidden=!p.hidden;p.textContent=explainTerm(b.dataset.helpTerm);});
+ document.querySelectorAll('[data-task-rule]').forEach(b=>b.onclick=()=>{const rule=systemTaskRules().find(r=>r.key===b.dataset.taskRule);if(rule)toast(rule.explanation);});
+ const wm=document.getElementById('workflowModeSelect'); if(wm) wm.onchange=()=>{currentProject().workflowMode=wm.value;commit('Modalità workflow aggiornata');syncWorkflowFromGates(true);render();};
+
 
 
 
@@ -1520,7 +1793,7 @@ function openRecordDrawer(key,id=null){
      ['indexable','indexed','sitemap'].forEach(k=>{ if(data[k]!==undefined) data[k]=String(data[k]).toLowerCase()==='true'; });
    }
    if(id){ Object.assign(rec,data,{updatedAt:now()}); } else state[key].push({id:uid(key.slice(0,-1)||'rec'),projectId:state.currentProjectId,...data,createdAt:now(),updatedAt:now()});
-   commit(`${key} aggiornato`); closeDrawer(); render(); toast('Salvato');
+   commit(`${key} aggiornato`); runAutomationCycle(false); closeDrawer(); render(); toast('Salvato');
  };
  const del=document.getElementById('deleteRecord'); if(del) del.onclick=()=>{ if(confirm('Eliminare questo record?')){state[key]=state[key].filter(x=>x.id!==id);commit(`${key} eliminato`);closeDrawer();render();}};
 }
@@ -1575,7 +1848,7 @@ function createSnapshot(){
    pagesCount:byProject(state.pages).length,keywordsCount:byProject(state.keywords).length,
    createdAt:now(),updatedAt:now()
  });
- commit('Snapshot creato'); toast('Snapshot creato'); render();
+ commit('Snapshot creato'); runAutomationCycle(false); toast('Snapshot creato'); render();
 }
 function runSystemCheck(){
  const problems=[];
@@ -1621,6 +1894,7 @@ document.getElementById('globalSearch').oninput=e=>{
 };
 
 window.addEventListener('error',e=>{console.error('OGOS runtime error',e.error||e.message);});
+runAutomationCycle(false);
 setupTopbar(); render();
 })();
 </script>
