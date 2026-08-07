@@ -2157,8 +2157,12 @@ function wizardFindingObjects(){
   return ids.map(id=>all.find(x=>x.id===id)).filter(Boolean).filter(x=>!x.resolved());
 }
 
+function wizardRequiredFindings(){
+  return wizardFindingObjects().filter(x=>['CRITICAL','HIGH','MEDIUM'].includes(x.severity));
+}
+
 function wizardCurrentFinding(){
-  const active=wizardFindingObjects();
+  const active=wizardRequiredFindings();
   const w=wizardState();
   if(w.currentProblem>=active.length) w.currentProblem=Math.max(0,active.length-1);
   return active[w.currentProblem]||null;
@@ -2173,9 +2177,36 @@ function wizardGo(step){
 
 function wizardStartCorrections(){
   const w=wizardState();
+  if(!wizardRequiredFindings().length){
+    w.step='complete';
+    w.status='completed';
+    w.lastCompletedAt=now();
+    saveWizardState();
+    render();
+    return;
+  }
   w.step='correction';
   w.currentProblem=0;
   saveWizardState();
+  render();
+}
+
+function wizardPause(){
+  const w=wizardState();
+  w.status='paused';
+  w.pausedAt=now();
+  saveWizardState();
+  state.ui.activeView='Dashboard';
+  render();
+  toast('Controllo guidato in pausa. Potrai riprenderlo quando vuoi.');
+}
+
+function wizardResume(){
+  const w=wizardState();
+  w.status='in_progress';
+  if(w.step==='start') w.step='result';
+  saveWizardState();
+  state.ui.activeView='Guided Review';
   render();
 }
 
@@ -2193,11 +2224,10 @@ function wizardVerifyCurrent(){
 
   if(f.resolved()){
     // refresh the finding list and continue
-    const remaining=wizardFindingObjects().filter(x=>x.id!==f.id || !x.resolved());
     const fresh=wizardChecks().filter(c=>!c.resolved());
     w.findings=fresh.map(x=>x.id);
     w.currentProblem=0;
-    if(!fresh.length){
+    if(!wizardRequiredFindings().length){
       w.step='complete';
       w.status='completed';
       w.lastCompletedAt=now();
@@ -2215,7 +2245,7 @@ function wizardVerifyCurrent(){
 
 function wizardContinueAfterVerified(){
   const w=wizardState();
-  const remaining=wizardFindingObjects();
+  const remaining=wizardRequiredFindings();
   if(!remaining.length){
     w.step='complete'; w.status='completed'; w.lastCompletedAt=now();
   }else{
@@ -2227,7 +2257,7 @@ function wizardContinueAfterVerified(){
 function wizardRestart(){
   const p=currentProject();
   p.wizardState={
-    status:'not_started',step:'start',currentProblem:0,startedAt:null,updatedAt:null,lastCompletedAt:null,findings:[],summary:null
+    status:'not_started',step:'start',currentProblem:0,startedAt:null,updatedAt:null,lastCompletedAt:null,pausedAt:null,findings:[],summary:null
   };
   commit('Wizard riavviato');
   render();
@@ -2249,13 +2279,16 @@ function smartWizardView(){
   const w=wizardState();
   const p=currentProject();
   const active=wizardFindingObjects();
+  const required=wizardRequiredFindings();
   const f=wizardCurrentFinding();
-  const hasResume=w.status==='in_progress' && w.step!=='start';
+  const hasResume=w.status==='paused';
 
   let resume='';
   if(hasResume){
-    resume=`<div class="wz-resume"><strong>Puoi continuare da dove eri rimasto.</strong><div class="muted">Il wizard salva automaticamente il tuo avanzamento.</div></div>`;
+    resume=`<div class="wz-resume"><strong>Vuoi continuare da dove eri rimasto?</strong><div class="muted">Hai messo in pausa il controllo. Il tuo avanzamento è stato salvato automaticamente.</div><div class="wz-secondary"><button class="btn primary" id="wizardResume">Continua</button><button class="btn" id="wizardRestart">Ricomincia</button></div></div>`;
   }
+
+  if(hasResume) return `<div class="wz-shell">${wizardProgress(w.step)}${resume}</div>`;
 
   if(w.step==='start'){
     return `<div class="wz-shell">${resume}${wizardProgress('start')}
@@ -2267,7 +2300,7 @@ function smartWizardView(){
         <div class="wz-note wz-safe"><strong>Cosa succede se avvii il controllo?</strong><div class="muted">Non verrà modificato nulla nel sito. Organic Growth OS controllerà solo i dati salvati nell'app.</div></div>
 
         <div class="wz-primary"><button class="btn primary" id="wizardRunAnalysis">Avvia controllo</button></div>
-        <div class="wz-secondary"><button class="btn" id="wizardRestart">Ricomincia da zero</button></div>
+        <div class="wz-secondary"><button class="btn" id="wizardRestart">Ricomincia da zero</button><button class="btn" data-nav="Dashboard">Esci</button></div>
       </div>
     </div>`;
   }
@@ -2287,20 +2320,20 @@ function smartWizardView(){
           <div class="wz-status"><div class="num">${s.suggestions}</div><strong>suggerimenti</strong></div>
         </div>
 
-        ${active.length?`<div class="wz-note wz-warning"><strong>Da dove iniziamo?</strong><div class="muted">Partiamo automaticamente dal punto più importante: <b>${esc(active[0].title)}</b>.</div></div>`:''}
+        ${required.length?`<div class="wz-note wz-warning"><strong>Da dove iniziamo?</strong><div class="muted">Partiamo automaticamente dal punto più importante: <b>${esc(required[0].title)}</b>.</div></div>`:''}
 
-        <div class="wz-primary">${active.length?`<button class="btn primary" id="wizardStartCorrections">Inizia le correzioni</button>`:`<button class="btn primary" id="wizardCompleteNow">Completa controllo</button>`}</div>
-        <div class="wz-secondary"><button class="btn" id="wizardRestart">Nuovo controllo</button></div>
+        <div class="wz-primary">${required.length?`<button class="btn primary" id="wizardStartCorrections">Inizia le correzioni</button>`:`<button class="btn primary" id="wizardCompleteNow">Completa controllo</button>`}</div>
+        <div class="wz-secondary">${active.filter(x=>['LOW','INFO'].includes(x.severity)).length?`<button class="btn" data-nav="Search Console">Esamina i suggerimenti facoltativi</button>`:''}<button class="btn" id="wizardPause">Interrompi e riprendi più tardi</button></div>
       </div>
     </div>`;
   }
 
   if(w.step==='correction' && f){
-    const total=active.length;
+    const total=required.length;
     const num=Math.min(w.currentProblem+1,total);
     return `<div class="wz-shell">${wizardProgress('correction')}
       <div class="wz-card">
-        <div class="wz-eyebrow">Problema ${num} di ${total}</div>
+        <div class="wz-eyebrow">Passaggio 3 di 5 · Problema ${num} di ${total}</div>
         <div class="wz-title">${esc(f.title)}</div>
         <div class="wz-lead">${esc(f.simple)}</div>
 
@@ -2317,7 +2350,7 @@ function smartWizardView(){
         </div>
 
         <div class="wz-primary"><button class="btn primary" data-nav="${esc(f.target)}">${esc(f.actionLabel)}</button></div>
-        <div class="wz-secondary"><button class="btn" id="wizardVerify">Ho fatto — Verifica</button><button class="btn" id="wizardBackResult">Torna al riepilogo</button></div>
+        <div class="wz-secondary"><button class="btn" id="wizardVerify">Ho fatto — Verifica</button><button class="btn" id="wizardPause">Interrompi e riprendi più tardi</button><button class="btn" id="wizardBackResult">Torna al riepilogo</button></div>
         ${wizardTechnicalDetails(f)}
       </div>
     </div>`;
@@ -2330,6 +2363,7 @@ function smartWizardView(){
         <div class="wz-title wz-result-good">Problema risolto ✓</div>
         <div class="wz-lead">Abbiamo ricontrollato i dati e il controllo ora viene superato correttamente.</div>
         <div class="wz-primary"><button class="btn primary" id="wizardContinueVerified">Continua</button></div>
+        <div class="wz-secondary"><button class="btn" id="wizardPause">Interrompi e riprendi più tardi</button></div>
       </div>
     </div>`;
   }
@@ -2343,7 +2377,7 @@ function smartWizardView(){
 
         <div class="wz-note wz-warning"><strong>Cosa puoi fare adesso</strong><div class="muted">Riapri il modulo indicato, completa i passaggi e poi riprova la verifica.</div></div>
         <div class="wz-primary"><button class="btn primary" data-nav="${esc(f.target)}">Riapri: ${esc(f.actionLabel)}</button></div>
-        <div class="wz-secondary"><button class="btn" id="wizardVerify">Riprova verifica</button><button class="btn" id="wizardManualHelp">Rivedi i passaggi</button></div>
+        <div class="wz-secondary"><button class="btn" id="wizardVerify">Riprova verifica</button><button class="btn" id="wizardManualHelp">Rivedi i passaggi</button><button class="btn" id="wizardPause">Interrompi e riprendi più tardi</button></div>
         ${wizardTechnicalDetails(f)}
       </div>
     </div>`;
@@ -2371,18 +2405,20 @@ function guidedDashboardView(){
   const w=wizardState();
   const open=wizardChecks().filter(c=>!c.resolved()&&['CRITICAL','HIGH','MEDIUM'].includes(c.severity));
   const status=open.length===0?'Buono':'Richiede attenzione';
-  const cta=w.status==='in_progress'?'Continua controllo guidato':'Avvia controllo guidato';
+  const cta=w.status==='paused'?'Riprendi controllo guidato':w.status==='in_progress'?'Continua controllo guidato':'Avvia controllo guidato';
+  const ctaId=w.status==='paused'?'wizardResumeDashboard':'';
+  const lastCheck=w.updatedAt?`Ultimo controllo: ${fmtTime(w.updatedAt)}`:'Nessun controllo eseguito';
 
   return `${isDemoProject()?'<div class="demo-banner"><strong>DEMO MODE</strong><div class="muted">Il progetto contiene dati dimostrativi dichiarati.</div></div>':''}
   ${pageIntro('Stato attuale','La modalità guidata mostra solo ciò che ti serve per decidere il prossimo passo.',[
     `Stato: ${status}`,
-    `${open.length} problemi da controllare`
+    `${open.length} problemi da controllare`,lastCheck
   ])}
   <div class="hero-action">
     <div class="muted" style="font-weight:900">PROSSIMA AZIONE</div>
     <h3>${open[0]?esc(open[0].title):'Esegui un controllo guidato'}</h3>
     <p>${open[0]?esc(open[0].simple):'Ti guideremo passo dopo passo. Non sono necessarie conoscenze tecniche.'}</p>
-    <button class="btn primary" data-nav="Guided Review">${cta}</button>
+    <button class="btn primary" ${ctaId?`id="${ctaId}"`:'data-nav="Guided Review"'}>${cta}</button>
   </div>
   <div style="height:16px"></div>
   <div class="card">
@@ -2539,6 +2575,9 @@ function bindView(){
  const wsc=document.getElementById('wizardStartCorrections'); if(wsc) wsc.onclick=wizardStartCorrections;
  const wv=document.getElementById('wizardVerify'); if(wv) wv.onclick=wizardVerifyCurrent;
  const wcv=document.getElementById('wizardContinueVerified'); if(wcv) wcv.onclick=wizardContinueAfterVerified;
+ const wp=document.getElementById('wizardPause'); if(wp) wp.onclick=wizardPause;
+ const wres=document.getElementById('wizardResume'); if(wres) wres.onclick=wizardResume;
+ const wresDash=document.getElementById('wizardResumeDashboard'); if(wresDash) wresDash.onclick=wizardResume;
  const wbr=document.getElementById('wizardBackResult'); if(wbr) wbr.onclick=()=>wizardGo('result');
  const wmh=document.getElementById('wizardManualHelp'); if(wmh) wmh.onclick=()=>wizardGo('correction');
  const wcn=document.getElementById('wizardCompleteNow'); if(wcn) wcn.onclick=()=>{const w=wizardState();w.step='complete';w.status='completed';w.lastCompletedAt=now();saveWizardState();render();};
