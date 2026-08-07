@@ -4,20 +4,41 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS: controllo guidato, strategia SEO, inventario pagine e piano operativo in un’unica web app.">
+<meta name="description" content="Organic Growth OS V5.0: controllo guidato, compilazione automatica dal sito, strategia SEO e piano operativo in un’unica web app. Tema chiaro e scuro.">
 <meta name="application-name" content="Organic Growth OS">
+<meta name="theme-color" content="#f7f8fb">
 <title>Organic Growth OS</title>
+<script>
+/* Tema applicato prima del primo disegno: evita il lampo di bianco
+   quando l'utente ha scelto il tema scuro. */
+(function(){
+  try{
+    var stored=localStorage.getItem('organicGrowthOS.theme')||'system';
+    var dark=stored==='dark'||(stored==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.dataset.theme=dark?'dark':'light';
+    document.documentElement.style.colorScheme=dark?'dark':'light';
+  }catch(e){}
+})();
+</script>
 <style>
+/* ============================================================
+   DESIGN TOKENS — sorgente unica (chiaro).
+   Il tema scuro e' definito in fondo al foglio con
+   html[data-theme="dark"] per vincere sempre sulla cascata.
+   ============================================================ */
 :root{
-  --bg:#f5f7fb;--surface:#fff;--surface-alt:#f0f3f8;--text:#111827;--muted:#667085;
-  --border:#d9e0ea;--accent:#2563eb;--success:#0f9d58;--warning:#d97706;--danger:#dc2626;--info:#0ea5e9;
+  color-scheme:light;
+  --bg:#f7f8fb;--surface:#ffffff;--surface-alt:#f3f5f8;--text:#101828;--muted:#536176;
+  --border:#d5dbe5;--border-strong:#98a2b3;--border-control:#7a8494;
+  --accent:#155eef;--accent-hover:#004eeb;--on-accent:#ffffff;
+  --success:#087a47;--warning:#a34f00;--danger:#b42318;--info:#026aa2;
   --radius-sm:8px;--radius-md:12px;--radius-lg:18px;
   --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-7:32px;--space-8:40px;
-  --shadow:0 8px 30px rgba(15,23,42,.08);
-}
-[data-theme="dark"]{
-  --bg:#0d1117;--surface:#161b22;--surface-alt:#1d2430;--text:#eef2f7;--muted:#9aa4b2;
-  --border:#2a3441;--accent:#60a5fa;--shadow:0 8px 30px rgba(0,0,0,.28);
+  --shadow:0 4px 16px rgba(16,24,40,.06);
+  --shadow-lg:0 18px 48px rgba(16,24,40,.16);
+  --focus:0 0 0 4px color-mix(in srgb,var(--accent) 24%,transparent);
+  --scrim:rgba(16,24,40,.42);
+  --overlay-tint:rgba(16,24,40,.45);
 }
 *{box-sizing:border-box}
 html{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -29,7 +50,7 @@ a{color:inherit}
 .app{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh}
 .sidebar{position:sticky;top:0;height:100vh;background:var(--surface);border-right:1px solid var(--border);padding:18px;overflow:auto}
 .brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}
-.brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#7c3aed);display:grid;place-items:center;color:#fff;font-weight:800}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:var(--accent);display:grid;place-items:center;color:var(--on-accent);font-weight:800}
 .brand h1{font-size:16.8px;margin:0}.brand p{font-size:13.4px;color:var(--muted);margin:2px 0 0}
 .project-switcher{display:flex;gap:8px;margin-bottom:16px}
 .project-switcher select{width:100%}
@@ -41,8 +62,8 @@ a{color:inherit}
 .topbar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;gap:12px;align-items:center;justify-content:space-between}
 .topbar-left{display:flex;gap:10px;align-items:center;min-width:0}.topbar h2{font-size:20.2px;margin:0}
 .topbar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:9px 12px;border-radius:10px;font-weight:700}
-.btn:hover{filter:brightness(.98)}.btn.primary{background:var(--accent);border-color:var(--accent);color:white}.btn.danger{color:var(--danger)}
+.btn{border:1px solid var(--border-control);background:var(--surface);color:var(--text);padding:9px 12px;border-radius:10px;font-weight:700}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.btn.danger{color:var(--danger)}
 .content{padding:24px;max-width:1600px;margin:auto}
 .grid{display:grid;gap:16px}.grid.kpi{grid-template-columns:repeat(5,minmax(0,1fr))}.grid.two{grid-template-columns:1.3fr .7fr}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:18px}
@@ -57,11 +78,11 @@ a{color:inherit}
 .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.section-head h3{margin:0}.muted{color:var(--muted)}
 .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:12px}table{border-collapse:collapse;width:100%;min-width:760px;background:var(--surface)}th,td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}th{position:sticky;top:0;background:var(--surface-alt);font-size:13.4px;color:var(--muted)}tr:last-child td{border-bottom:0}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.toolbar input,.toolbar select{min-width:160px}
-input,select,textarea{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:9px 10px}
+input,select,textarea{border:1px solid var(--border-control);background:var(--surface);color:var(--text);border-radius:10px;padding:9px 10px}
 textarea{min-height:110px;resize:vertical}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:13.4px;font-weight:700}.field.full{grid-column:1/-1}
 .empty{padding:36px;text-align:center;color:var(--muted)}
 .progress{height:8px;background:var(--surface-alt);border-radius:999px;overflow:hidden}.progress > span{display:block;height:100%;background:var(--accent)}
-.drawer{position:fixed;inset:0 0 0 auto;width:min(560px,100%);background:var(--surface);border-left:1px solid var(--border);z-index:30;box-shadow:var(--shadow);padding:20px;overflow:auto;transform:translateX(100%);transition:.2s}.drawer.open{transform:none}.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.36);z-index:20;display:none}.backdrop.show{display:block}
+.drawer{position:fixed;inset:0 0 0 auto;width:min(560px,100%);background:var(--surface);border-left:1px solid var(--border);z-index:30;box-shadow:var(--shadow);padding:20px;overflow:auto;transform:translateX(100%);transition:.2s}.drawer.open{transform:none}.backdrop{position:fixed;inset:0;background:var(--scrim);z-index:20;display:none}.backdrop.show{display:block}
 .drawer-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:18px}
 .toast-zone{position:fixed;right:18px;bottom:18px;z-index:50;display:grid;gap:8px}.toast{background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);padding:12px 14px;border-radius:12px;max-width:360px}
 .callout{padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--surface-alt)}
@@ -87,7 +108,7 @@ textarea{min-height:110px;resize:vertical}.form-grid{display:grid;grid-template-
 .guide-shell{max-width:980px;margin:0 auto}
 .guide-progress{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
 .guide-step{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:var(--surface-alt);font-size:13.4px;color:var(--muted)}
-.guide-step.done{color:var(--success)}.guide-step.active{background:var(--accent);color:#fff;font-weight:800}
+.guide-step.done{color:var(--success)}.guide-step.active{background:var(--accent);color:var(--on-accent);font-weight:800}
 .guide-number{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--text) 8%,transparent);font-size:12.3px;font-weight:800}
 .simple-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px}
 .simple-card h3{font-size:26.9px;margin:0 0 8px}
@@ -133,15 +154,14 @@ textarea{min-height:110px;resize:vertical}.form-grid{display:grid;grid-template-
 .empty{border:1px dashed var(--border);border-radius:14px;background:var(--surface-alt)}
 .wizard-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .wizard-nav span{padding:6px 9px;border-radius:999px;background:var(--surface-alt);font-size:12.3px;color:var(--muted)}
-.wizard-nav span.active{background:var(--accent);color:#fff}
+.wizard-nav span.active{background:var(--accent);color:var(--on-accent)}
 .explain-box{border-left:3px solid var(--accent);padding:10px 12px;background:var(--surface-alt);border-radius:8px}
 .simple-toggle{display:flex;gap:8px;align-items:center}
 .simple-toggle input{width:auto}
 .toolbar{align-items:center}
 .toolbar .spacer{flex:1}
 .section-head{align-items:flex-start}
-.card{box-shadow:0 4px 18px rgba(15,23,42,.05)}
-[data-theme="dark"] .card{box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.card{box-shadow:var(--shadow)}
 @media(max-width:700px){
   .topbar-actions input{min-width:0;width:100%}
   .topbar-actions{width:100%}
@@ -226,9 +246,9 @@ radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--border) 60%,transparen
 
 
 /* V4.4 — SMART SIMPLE WIZARD */
-.experience-switch{display:flex;gap:6px;padding:4px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.experience-switch{display:flex;gap:6px;padding:4px;border:1px solid var(--border-control);border-radius:12px;background:var(--surface)}
 .experience-switch button{border:0;background:transparent;color:var(--muted);padding:7px 10px;border-radius:9px;font-weight:800}
-.experience-switch button.active{background:var(--accent);color:white}
+.experience-switch button.active{background:var(--accent);color:var(--on-accent)}
 .wz-shell{max-width:980px;margin:0 auto}
 .wz-head{margin-bottom:18px}
 .wz-eyebrow{font-size:14px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
@@ -236,7 +256,7 @@ radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--border) 60%,transparen
 .wz-lead{font-size:18px;color:var(--muted);line-height:1.6;max-width:820px}
 .wz-progress{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:18px 0 22px}
 .wz-progress-item{position:relative;padding:10px;border-radius:12px;background:var(--surface-alt);border:1px solid var(--border);font-size:14px;color:var(--muted);text-align:center}
-.wz-progress-item.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:800}
+.wz-progress-item.active{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:800}
 .wz-progress-item.done{border-color:color-mix(in srgb,var(--success) 45%,var(--border));color:var(--success)}
 .wz-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:var(--shadow)}
 .wz-card h3{font-size:26px!important;margin:0 0 8px}
@@ -254,7 +274,7 @@ radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--border) 60%,transparen
 .wz-example{margin-top:12px;padding:12px;border-radius:12px;background:var(--surface-alt);border:1px dashed var(--border)}
 .wz-steps{display:grid;gap:10px;margin:14px 0}
 .wz-step{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start}
-.wz-step-num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:white;font-weight:900}
+.wz-step-num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--on-accent);font-weight:900}
 .wz-tech{margin-top:14px}
 .wz-tech summary{cursor:pointer;color:var(--muted);font-weight:800}
 .wz-tech pre{white-space:pre-wrap;word-break:break-word;background:var(--surface-alt);padding:12px;border-radius:10px;font-size:13px}
@@ -297,11 +317,6 @@ button,input,select,textarea{font-size:18px!important;line-height:1.45!important
 }
 
 /* V4.6 — PRODUCT DESIGN SYSTEM + ACCESSIBILITY */
-:root{
-  --bg:#f7f8fb;--surface:#ffffff;--surface-alt:#f3f5f8;--text:#101828;--muted:#536176;
-  --border:#d5dbe5;--accent:#155eef;--success:#087a47;--warning:#a34f00;--danger:#b42318;--info:#026aa2;
-  --shadow:0 4px 16px rgba(16,24,40,.06);--focus:0 0 0 4px rgba(21,94,239,.22)
-}
 *{scrollbar-color:var(--border) transparent}
 body{overflow-x:hidden}
 body.overlay-open{overflow:hidden}
@@ -310,8 +325,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   outline:3px solid var(--accent)!important;outline-offset:3px;box-shadow:var(--focus)
 }
 .btn{transition:background-color .16s,border-color .16s,color .16s,transform .16s;box-shadow:none}
-.btn:hover:not(:disabled){filter:none;border-color:#98a2b3;background:var(--surface-alt)}
-.btn.primary:hover:not(:disabled){background:#004eeb;border-color:#004eeb}
+.btn:hover:not(:disabled){filter:none;border-color:var(--border-strong);background:var(--surface-alt)}
+.btn.primary:hover:not(:disabled){background:var(--accent-hover);border-color:var(--accent-hover)}
 .btn:active:not(:disabled){transform:translateY(1px)}
 .btn:disabled{cursor:not-allowed;opacity:.52;background:var(--surface-alt);color:var(--muted)}
 .btn.danger{border-color:color-mix(in srgb,var(--danger) 35%,var(--border))}
@@ -325,7 +340,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .content{padding:28px 32px 48px;max-width:1480px}
 .card,.wz-card{box-shadow:none;border-color:var(--border)}
 .hero-action{background:var(--surface);border:1px solid var(--border);box-shadow:none;padding:24px}
-.table-wrap{max-width:100%;overscroll-behavior-inline:contain;box-shadow:inset -10px 0 16px -18px rgba(16,24,40,.45)}
+.table-wrap{max-width:100%;overscroll-behavior-inline:contain;box-shadow:inset -10px 0 16px -18px var(--overlay-tint)}
 th{z-index:1}.toolbar input{min-width:min(360px,100%)}
 .drawer{width:min(640px,100%);transition:transform .2s ease;visibility:hidden}
 .drawer.open{visibility:visible}.backdrop{backdrop-filter:blur(2px)}
@@ -345,7 +360,7 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
 .workflow-row{display:grid;grid-template-columns:42px minmax(160px,.7fr) minmax(260px,1.4fr) auto;gap:14px;align-items:center;padding:14px 20px;border-top:1px solid var(--border)}
 .workflow-row.current{background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
 .step-index{width:32px;height:32px;border:1px solid var(--border);border-radius:50%;display:grid;place-items:center;font-weight:800}
-.workflow-row.done .step-index{background:var(--success);border-color:var(--success);color:white}.workflow-row.current .step-index{background:var(--accent);border-color:var(--accent);color:white}
+.workflow-row.done .step-index{background:var(--success);border-color:var(--success);color:#fff}.workflow-row.current .step-index{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .state-text{font-weight:800;color:var(--muted)}.workflow-row.done .state-text{color:var(--success)}.workflow-row.current .state-text{color:var(--accent)}
 .form-help{font-size:16px;color:var(--muted)}.field-error{font-size:16px;color:var(--danger);font-weight:700}
 [aria-invalid="true"]{border-color:var(--danger)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 18%,transparent)}
@@ -354,7 +369,7 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
 .clickable-card:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .wz-progress-item{width:100%;min-height:54px;cursor:pointer;font-family:inherit}
 .wz-progress-item:hover{border-color:var(--accent);color:var(--accent)}
-.wz-progress-item.active:hover{color:#fff}
+.wz-progress-item.active:hover{color:var(--on-accent)}
 .wz-status.clickable-card{appearance:none;color:inherit;text-align:left;font:inherit;width:100%}
 .wz-status.clickable-card::after{content:'Apri dettagli →';display:block;margin-top:10px;color:var(--accent);font-weight:800;font-size:15px}
 .task-sync{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -370,6 +385,96 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
   .experience-switch button{flex:1}.workflow-row{grid-template-columns:38px 1fr}.workflow-row .workflow-desc,.workflow-row .state-text{grid-column:2}
   .scan-summary{grid-template-columns:1fr}.toolbar{display:grid;grid-template-columns:1fr}.toolbar input,.toolbar select,.toolbar .btn{width:100%}
 }
+
+
+/* ============================================================
+   NUOVI COMPONENTI V5.0
+   ============================================================ */
+
+/* --- Overlay di analisi (visibile da qualsiasi schermata) --- */
+.scan-overlay{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:20px;background:var(--scrim);backdrop-filter:blur(3px)}
+.scan-overlay.show{display:flex}
+.scan-modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-lg);width:min(620px,100%);max-height:88vh;overflow:auto;padding:24px}
+.scan-modal h3{margin:0 0 6px;font-size:24px!important}
+.scan-modal .scan-lead{color:var(--muted);margin:0 0 16px}
+.scan-modal .scan-progress{margin:0 0 8px}
+.scan-bar{height:8px;border-radius:999px;background:var(--surface-alt);overflow:hidden;margin:14px 0 6px}
+.scan-bar>span{display:block;height:100%;width:0;background:var(--accent);transition:width .35s ease}
+.scan-foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.scan-log{margin-top:12px;max-height:150px;overflow:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface-alt);padding:10px;font-size:15px;color:var(--muted)}
+.scan-log div{padding:2px 0}
+.scan-log div.err{color:var(--danger)}
+.scan-log div.ok{color:var(--success)}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:ogos-spin .7s linear infinite;vertical-align:-2px}
+@keyframes ogos-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}}
+
+/* --- Badge campi compilati automaticamente --- */
+.field-flag{display:inline-flex;align-items:center;gap:5px;font-size:14px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:var(--surface-alt);color:var(--muted)}
+.field-flag.verified{color:var(--success);border-color:color-mix(in srgb,var(--success) 40%,var(--border));background:color-mix(in srgb,var(--success) 10%,var(--surface))}
+.field-flag.guessed{color:var(--warning);border-color:color-mix(in srgb,var(--warning) 40%,var(--border));background:color-mix(in srgb,var(--warning) 10%,var(--surface))}
+.field-head{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap}
+.field-head label{margin:0}
+.autofill-legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px;font-size:16px;color:var(--muted)}
+
+/* --- Pannello risultato compilazione --- */
+.fill-report{margin-top:16px;border:1px solid var(--border);border-radius:14px;background:var(--surface-alt);padding:16px}
+.fill-report ul{margin:8px 0 0;padding-left:20px}
+.fill-report li{margin:3px 0}
+
+/* --- Onboarding / primo avvio --- */
+.onboard{max-width:760px;margin:0 auto;text-align:center;padding:30px 24px;border:1px solid var(--border);border-radius:20px;background:var(--surface)}
+.onboard h3{font-size:32px!important;margin:0 0 10px}
+.onboard p{color:var(--muted);font-size:19px;margin:0 auto 20px;max-width:560px}
+.onboard form{display:grid;gap:12px;max-width:460px;margin:0 auto;text-align:left}
+.onboard .btn{width:100%}
+.onboard-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:26px;text-align:left}
+.onboard-steps div{border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--surface-alt)}
+.onboard-steps strong{display:block;margin-bottom:4px}
+@media(max-width:700px){.onboard-steps{grid-template-columns:1fr}}
+
+/* --- Guida in linea --- */
+.help-body h4{margin:18px 0 6px;font-size:19px}
+.help-body p,.help-body li{color:var(--muted);line-height:1.6}
+.help-body ol,.help-body ul{padding-left:22px;margin:6px 0}
+.help-body .kbd{border:1px solid var(--border);border-radius:6px;padding:1px 6px;background:var(--surface-alt);font-weight:700;color:var(--text)}
+
+/* --- Stato disabilitato/occupato --- */
+.is-busy{pointer-events:none;opacity:.65}
+.hint-inline{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--surface-alt);border:1px solid var(--border);color:var(--muted);font-size:16px}
+
+/* --- Diagnostica connessione --- */
+.diag-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);align-items:center}
+.diag-row:last-child{border-bottom:0}
+.diag-tag{font-weight:800;font-size:15px;padding:2px 8px;border-radius:999px;background:var(--surface-alt)}
+.diag-tag.ok{color:var(--success)}.diag-tag.ko{color:var(--danger)}
+
+/* ============================================================
+   TEMA SCURO — definito per ultimo, con specificita' maggiore
+   di :root (html[data-theme]) per non essere mai sovrascritto.
+   ============================================================ */
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0d1117;--surface:#161b22;--surface-alt:#1f2530;--text:#e9eef5;--muted:#a3b0c2;
+  --border:#2c3543;--border-strong:#48576b;--border-control:#657790;
+  --accent:#5b91ff;--accent-hover:#7aa6ff;--on-accent:#08152e;
+  --success:#3ecf8e;--warning:#f0a13c;--danger:#ff7b72;--info:#4cc2f1;
+  --shadow:0 4px 18px rgba(0,0,0,.35);
+  --shadow-lg:0 18px 48px rgba(0,0,0,.55);
+  --focus:0 0 0 4px color-mix(in srgb,var(--accent) 32%,transparent);
+  --scrim:rgba(2,6,14,.66);
+  --overlay-tint:rgba(0,0,0,.55);
+}
+html[data-theme="dark"] .topbar{background:color-mix(in srgb,var(--surface) 92%,transparent)}
+html[data-theme="dark"] .brand-mark{color:#08152e}
+html[data-theme="dark"] .workflow-row.done .step-index{color:#06231a}
+html[data-theme="dark"] .graph-canvas{background:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--border) 85%,transparent) 1px,transparent 0);background-size:22px 22px}
+html[data-theme="dark"] img,html[data-theme="dark"] .brand-mark{filter:none}
+html[data-theme="dark"] ::selection{background:color-mix(in srgb,var(--accent) 45%,transparent)}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:var(--surface-alt)}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:color-mix(in srgb,var(--muted) 85%,transparent)}
+html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,var(--text) 8%,var(--surface))}
+
 </style>
 </head>
 <body>
@@ -377,7 +482,7 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Decision Operating System · V4.8</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.0</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -402,6 +507,7 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
   <button type="button" id="advancedModeBtn" aria-pressed="false">Avanzata</button>
 </div>
 <button class="btn" type="button" id="modeBtn" title="Cambia modalità tecnica">Executive</button>
+        <button class="btn" type="button" id="helpBtn" aria-label="Apri la guida rapida" title="Guida rapida">?</button>
         <button class="btn" type="button" id="themeBtn" aria-label="Cambia tema">◐</button>
         <button class="btn primary" type="button" id="quickBtn">+ Nuovo</button>
       </div>
@@ -419,6 +525,26 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
   <div id="drawerBody"></div>
 </aside>
 <div class="toast-zone" id="toastZone" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<div class="scan-overlay" id="scanOverlay" role="dialog" aria-modal="true" aria-labelledby="scanOverlayTitle" aria-hidden="true">
+  <div class="scan-modal">
+    <h3 id="scanOverlayTitle">Analisi del sito in corso</h3>
+    <p class="scan-lead" id="scanOverlayLead">Leggo le informazioni pubbliche del sito e compilo i campi che posso verificare.</p>
+    <div class="scan-bar"><span id="scanOverlayBar"></span></div>
+    <div class="scan-progress" id="scanOverlayRows" aria-live="polite">
+      <div class="scan-row" data-scan-row="home"><div class="scan-icon">○</div><div class="scan-text">Homepage e informazioni principali</div></div>
+      <div class="scan-row" data-scan-row="sitemap"><div class="scan-icon">○</div><div class="scan-text">Ricerca della sitemap</div></div>
+      <div class="scan-row" data-scan-row="pages"><div class="scan-icon">○</div><div class="scan-text">Analisi delle pagine</div></div>
+      <div class="scan-row" data-scan-row="issues"><div class="scan-icon">○</div><div class="scan-text">Verifica di errori e priorità</div></div>
+      <div class="scan-row" data-scan-row="fill"><div class="scan-icon">○</div><div class="scan-text">Compilazione automatica dei campi</div></div>
+    </div>
+    <details class="wz-tech"><summary>Dettagli tecnici</summary><div class="scan-log" id="scanOverlayLog"></div></details>
+    <div class="scan-foot">
+      <button class="btn" type="button" id="scanCancelBtn">Annulla</button>
+      <button class="btn primary" type="button" id="scanCloseBtn" hidden>Chiudi e vedi i risultati</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (() => {
@@ -546,9 +672,17 @@ function commit(action='Aggiornamento'){
   },250);
 }
 function toast(msg){
-  const el=document.createElement('div'); el.className='toast'; el.textContent=msg;
-  document.getElementById('toastZone').appendChild(el);
-  setTimeout(()=>el.remove(),3200);
+  const zone=document.getElementById('toastZone');
+  if(!zone)return;
+  /* evita ripetizioni identiche e accumuli illeggibili */
+  const existing=[...zone.children];
+  if(existing.some(x=>x.textContent===String(msg)))return;
+  while(existing.length>=3)existing.shift().remove();
+  const el=document.createElement('div');
+  el.className='toast';
+  el.textContent=msg;
+  zone.appendChild(el);
+  setTimeout(()=>el.remove(),3600);
 }
 
 function severityWeight(s){ return ({CRITICAL:100,HIGH:75,MEDIUM:45,LOW:20}[s]||25); }
@@ -745,53 +879,20 @@ const configs={
  snapshots:{title:'Snapshots',help:'Fotografie storiche dello stato del progetto.',cols:[{key:'name',label:'Snapshot'},{key:'createdAt',label:'Date',type:'date'},{key:'reason',label:'Reason'},{key:'organicScore',label:'Growth Score'}]}
 };
 
-function projectView(){
-  const p=currentProject();
-  return `<div class="card"><div class="section-head"><div><h3>Project Setup</h3><div class="muted">Definisci contesto, obiettivi e modello di business.</div></div></div>
-  <form id="projectForm" class="form-grid">
-   ${field('name','Project Name',p.name)}
-   ${field('domain','Domain',p.domain)}
-   ${field('brand','Brand',p.brand)}
-   ${field('industry','Industry',p.industry)}
-   ${field('country','Country',p.country)}
-   ${field('language','Language',p.language)}
-   ${field('audience','Audience',p.audience)}
-   ${field('businessModel','Business Model',p.businessModel)}
-   ${field('revenueModel','Revenue Model',p.revenueModel)}
-   ${field('primaryConversion','Primary Conversion',p.primaryConversion)}
-   ${field('secondaryConversion','Secondary Conversion',p.secondaryConversion)}
-   ${selectField('stage','Project Stage',stages,p.stage)}
-   ${field('competitorsText','Competitors',p.competitorsText,true)}
-   ${field('positioning','Positioning',p.positioning,true)}
-   ${field('usp','USP',p.usp,true)}
-   ${field('primarySeoGoal','Primary SEO Goal',p.primarySeoGoal,true)}
-   ${field('notes','Notes',p.notes,true)}
-   <div class="field full"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">Salva progetto</button><button class="btn danger" type="button" id="deleteProjectBtn">Elimina progetto</button></div></div>
-  </form></div>`;
+function fieldFlag(name){
+  const origin=currentProject()?.autoFilled?.[name];
+  if(!origin)return '';
+  return origin==='site'
+    ? '<span class="field-flag verified" title="Valore letto dai contenuti pubblici del sito">\u2713 dal sito</span>'
+    : '<span class="field-flag guessed" title="Valore dedotto automaticamente: controllalo prima di usarlo">\u2192 da validare</span>';
 }
-function field(name,label,val,full=false){return `<div class="field ${full?'full':''}"><label for="${name}">${label}</label>${full?`<textarea id="${name}" name="${name}">${esc(val)}</textarea>`:`<input id="${name}" name="${name}" value="${esc(val)}">`}</div>`}
-function selectField(name,label,opts,val){return `<div class="field"><label for="${name}">${label}</label><select id="${name}" name="${name}">${opts.map(o=>`<option ${o===val?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`}
-
-function guidedReviewView(){
-  const acts=nextActions(), a=acts[0], s=scores();
-  if(!a) return `<div class="card empty"><strong>Nessuna azione prioritaria</strong><p>Il sistema non ha abbastanza dati per proporre una nuova azione.</p></div>`;
-  return `<div class="grid two">
-    <div class="card wizard-step">
-      <div class="muted">ANALIZZA → SPIEGA → CONSIGLIA → ESEGUI → VERIFICA → CONTINUA</div>
-      <div class="wizard-big">${esc(a.title)}</div>
-      <div class="callout"><strong>Cosa ho trovato</strong><div class="muted" style="margin-top:6px">${esc(a.why)}</div></div>
-      <div><strong>Perché conta</strong><p class="muted">Impact stimato ${a.impact}/100. Confidence ${a.confidence}%.</p></div>
-      <div><strong>Perché ora</strong><p class="muted">${a.priority==='P1'?'È una priorità che può bloccare attività successive.':'È tra le azioni con il miglior rapporto impatto/confidence/effort.'}</p></div>
-      <div class="badges"><span class="badge">${a.priority}</span><span class="badge">Impact ${a.impact}</span><span class="badge">Effort ${a.effort}</span><span class="badge info">Confidence ${a.confidence}%</span></div>
-      <div class="wizard-actions">
-        <button class="btn primary" data-create-task-from-action="${esc(a.title)}">Crea task</button>
-        <button class="btn" data-nav="${a.type==='ISSUE'?'Issues':a.type==='OPPORTUNITY'?'Opportunities':'Pages'}">Apri dettaglio</button>
-        <button class="btn" data-monitor-action="${esc(a.title)}">Monitora</button>
-      </div>
-    </div>
-    <div class="card"><h3>Stato progetto</h3>${metric('Technical',s.technical)}${metric('Architecture',s.arch)}${metric('Content',s.coverage)}${metric('Indexation',s.indexed)}</div>
+function field(name,label,val,full=false){
+  return `<div class="field ${full?'full':''}">
+    <div class="field-head"><label for="${name}">${label}</label>${fieldFlag(name)}</div>
+    ${full?`<textarea id="${name}" name="${name}" data-project-field="${name}">${esc(val)}</textarea>`:`<input id="${name}" name="${name}" data-project-field="${name}" value="${esc(val)}">`}
   </div>`;
 }
+function selectField(name,label,opts,val){return `<div class="field"><label for="${name}">${label}</label><select id="${name}" name="${name}">${opts.map(o=>`<option ${o===val?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`}
 
 function nextActionsView(){
   const acts=nextActions();
@@ -808,20 +909,6 @@ function activateNextAction(index){
   state.ui.activeView=target.view;
   commit(`Aperta azione consigliata: ${action.title}`);
   render();window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function importView(){
-  return `<div class="grid two">
-    <div class="card"><h3>Import JSON / CSV</h3><p class="muted">Per CSV usa un dataset semplice con intestazioni. Per un backup completo usa JSON.</p>
-      <input type="file" id="importFile" accept=".json,.csv,.tsv">
-      <div style="height:12px"></div><select id="importTarget">
-        <option value="pages">Pages</option><option value="keywords">Keywords</option><option value="issues">Issues</option><option value="opportunities">Opportunities</option><option value="gscRecords">Search Console</option>
-      </select>
-      <button class="btn primary" id="doImportBtn">Analizza e importa</button>
-      <div id="importResult" style="margin-top:14px"></div>
-    </div>
-    <div class="card"><h3>Import safety</h3><p class="muted">Il flusso applicato è: parse → validate → normalize → preview → commit. I dati JSON completi sostituiscono lo stato solo dopo conferma.</p></div>
-  </div>`;
 }
 
 function backupView(){
@@ -939,21 +1026,6 @@ function internalLinksView(){
   </div>`;
 }
 
-function taskManagementView(){
-  const tasks=byProject(state.tasks);
-  const groups=['TODO','IN PROGRESS','BLOCKED','DONE','VERIFIED'];
-  const htmlCols=groups.map(g=>`<div class="kanban-col"><strong>${g}</strong>${tasks.filter(t=>(t.status||'TODO')===g).map(t=>{
-    const dep=t.dependencies||'';
-    const blocked=dep && !dependencySatisfied(dep);
-    return `<div class="kanban-card"><strong>${esc(t.title||'Task')}</strong><div class="muted">${esc(t.priority||'P3')} · ${esc(t.owner||'No owner')}</div>${dep?`<div class="node-pill">${blocked?'Blocked by':'Depends on'}: ${esc(dep)}</div>`:''}<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
-        ${(()=>{const target=taskResolutionTarget(t);return `<button class="btn primary" data-nav="${target.view}">${target.label}</button><button class="btn" data-edit="tasks" data-id="${t.id}">Dettagli</button>`;})()}
-      </div></div>`;
-  }).join('')}</div>`).join('');
-  const blocked=tasks.filter(t=>t.dependencies&&!dependencySatisfied(t.dependencies));
-  return `<div class="section-head"><div><h3>Tasks & Dependencies</h3><div class="muted">DONE e VERIFIED restano distinti. Le dipendenze non bloccano tecnicamente, ma espongono il rischio.</div></div><button class="btn primary" data-add="tasks">+ Task</button></div>
-  <div class="kanban">${htmlCols}</div>
-  <div style="height:16px"></div><div class="card"><h3>Dependency Engine</h3>${blocked.length?`<div class="dep-list">${blocked.map(t=>`<div class="dep-item"><div><strong>${esc(t.title)}</strong><div class="muted">BLOCKED BY ${esc(t.dependencies)}</div></div><span class="badge danger">BLOCKED</span></div>`).join('')}</div>`:'<div class="empty">Nessuna dipendenza non soddisfatta.</div>'}</div>`;
-}
 function dependencySatisfied(dep){
   if(!dep) return true;
   const names=String(dep).split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
@@ -1556,30 +1628,21 @@ function pageIntro(title,desc,badges=[]){
   return `<div class="page-intro"><h3>${esc(title)}</h3><p>${esc(desc)}</p>${badges.length?`<div class="quick-summary">${badges.map(b=>`<span class="badge">${esc(b)}</span>`).join('')}</div>`:''}</div>`;
 }
 
-function guidedReviewViewV2(){
-  const acts=nextActions(), a=acts[0], s=scores();
-  if(!a) return `${pageIntro('Controllo guidato','Ti accompagna da un problema alla prossima azione senza dover scegliere il modulo giusto.')}<div class="card empty"><strong>Nessuna azione prioritaria</strong><p>Importa o aggiungi dati per iniziare.</p></div>`;
-  const step='CONSIGLIA';
-  return `${pageIntro('Controllo guidato','Analizza → Spiega → Consiglia → Esegui → Verifica → Continua',['1 azione alla volta'])}
-  <div class="wizard-nav"><span>Analizza</span><span>Spiega</span><span class="active">${step}</span><span>Esegui</span><span>Verifica</span><span>Continua</span></div>
-  <div class="grid two">
-    <div class="card wizard-step">
-      <div><span class="badge">${a.priority}</span></div>
-      <div class="wizard-big">${esc(a.title)}</div>
-      <div class="explain-box"><strong>In parole semplici</strong><div class="muted" style="margin-top:6px">${esc(a.why)}</div></div>
-      <div class="panel-list">
-        <div class="panel-item"><strong>Perché è importante</strong><div class="muted">Impatto stimato: ${a.impact}/100.</div></div>
-        <div class="panel-item"><strong>Quanto è affidabile il consiglio</strong><div class="muted">Confidence: ${a.confidence}%.</div></div>
-        <div class="panel-item"><strong>Quanto lavoro richiede</strong><div class="muted">Effort: ${a.effort}.</div></div>
-      </div>
-      <div class="wizard-actions">
-        <button class="btn primary" data-create-task-from-action="${esc(a.title)}">Crea il task consigliato</button>
-        <button class="btn" data-nav="${a.type==='ISSUE'?'Issues':a.type==='OPPORTUNITY'?'Opportunities':'Pages'}">Vedi il dettaglio</button>
-        <button class="btn" data-monitor-action="${esc(a.title)}">Monitora</button>
-      </div>
+function fillReportPanel(){
+  const report=state.ui.lastFillReport;
+  if(!report)return '';
+  const items=(report.filled||[]).slice(0,20)
+    .map(x=>`<li><strong>${esc(PROJECT_FIELD_LABELS[x.key]||x.key)}</strong> — ${x.origin==='site'?'letto dal sito':'dedotto, da validare'}</li>`).join('');
+  return `<div class="fill-report">
+    <strong>${report.filled?.length?`${report.filled.length} campi compilati automaticamente`:'Nessun campo da compilare: erano già tutti pieni'}</strong>
+    <div class="muted" style="margin-top:4px">${report.readable
+      ? `${report.pages||0} pagine lette · ${report.keywords||0} keyword rilevate${report.manual?' · dati inseriti manualmente':''}.`
+      : 'Il sito non è risultato leggibile dal browser: i valori provengono dal dominio e vanno controllati.'}</div>
+    ${items?`<ul>${items}</ul>`:''}
+    <div class="autofill-legend">
+      <span class="field-flag verified">\u2713 dal sito</span> valore verificato
+      <span class="field-flag guessed">\u2192 da validare</span> dedotto automaticamente
     </div>
-    <div class="card"><h3>Stato attuale</h3>${metric('Technical',s.technical)}${metric('Architecture',s.arch)}${metric('Content',s.coverage)}${metric('Indexation',s.indexed)}
-    <div class="muted" style="margin-top:10px;font-size:12px">Questi score servono a orientare le priorità interne e non rappresentano ranking factor di Google.</div></div>
   </div>`;
 }
 
@@ -1589,9 +1652,16 @@ function projectViewV2(){
   return `${pageIntro('Configurazione progetto','Definisci il contesto del sito una sola volta. I dati alimentano strategia e priorità.',[p.stage||'Research',p.domain||'Dominio non impostato'])}
   <div class="hero-action">
     <h3>Compilazione automatica dal sito</h3>
-    <p>Inserisci il dominio e avvia l’analisi. Rileverò homepage, sitemap, pagine, title, meta description, H1, canonical, lingua, dati strutturati e problemi SEO verificabili.</p>
-    <button class="btn primary" type="button" id="autoAnalyzeWebsite">Analizza e compila automaticamente</button>
-    ${!normalizeSiteDomain(p.domain)?'<div class="muted" style="margin-top:10px">Inserisci il dominio nel campo qui sotto: il pulsante lo salverà e compilerà subito i campi disponibili.</div>':''}
+    <p>Scrivi il dominio nel campo qui sotto e premi il pulsante. Leggo homepage, sitemap, pagine, title, meta description, H1, canonical, lingua e dati strutturati, poi compilo i campi vuoti.</p>
+    <div class="page-actions">
+      <button class="btn primary" type="button" id="autoAnalyzeWebsite">Analizza e compila automaticamente</button>
+      <button class="btn" type="button" id="refillEmptyFields">Ricompila solo i campi vuoti</button>
+      <button class="btn" type="button" id="manualSourceBtn">Inserisci i dati manualmente</button>
+      <button class="btn" type="button" id="connectionDiagBtn">Verifica connessione</button>
+    </div>
+    ${!normalizeSiteDomain(p.domain)?'<div class="hint-inline">Inserisci il dominio nel campo “Dominio del sito”: il pulsante lo salverà e compilerà subito i campi disponibili.</div>':''}
+    ${scan.status==='unreadable'||scan.status==='failed'?'<div class="hint-inline">L’ultima lettura automatica non è riuscita: il browser può essere bloccato dal sito. Usa “Inserisci i dati manualmente” oppure “Verifica connessione” per capire il motivo.</div>':''}
+    ${fillReportPanel()}
     ${scan.completedAt?`<div class="scan-summary">
       <div><strong>${scan.pagesFound||0}</strong><span>URL trovate</span></div>
       <div><strong>${scan.pagesAnalyzed||0}</strong><span>pagine analizzate</span></div>
@@ -1904,73 +1974,6 @@ function explainTerm(term){
   return dict[term]||'';
 }
 
-function simplifiedGuidedReview(){
-  runAutomationCycle(false);
-  const acts=nextActions(), a=acts[0];
-  const rules=workflowStageRules();
-  const p=currentProject();
-  const current=p.stage||'Research', suggested=p.suggestedStage||suggestedWorkflowStage();
-  const currentRule=rules.find(r=>r.stage===current);
-  const idx=Math.max(0,stages.indexOf(current));
-
-  if(!a){
-    return `${pageIntro('Assistente guidato','Ti dice cosa fare, perché farlo e quando puoi passare alla fase successiva.')}
-    <div class="guide-shell">
-      <div class="simple-card">
-        <h3>Nessuna azione urgente</h3>
-        <p class="lead">Non ho abbastanza dati per proporti una nuova attività oppure i controlli attuali risultano soddisfatti.</p>
-        <div class="next-action-box"><strong>Prossimo passo consigliato</strong><div class="muted" style="margin-top:6px">Continua con la fase <b>${esc(suggested)}</b>.</div></div>
-      </div>
-    </div>`;
-  }
-
-  return `${pageIntro('Assistente guidato','Una sola decisione alla volta. Le attività verificabili vengono aggiornate automaticamente.',['Fase attuale: '+current,'Prossima suggerita: '+suggested])}
-  <div class="guide-shell">
-    <div class="guide-progress">${stages.map((st,i)=>`<div class="guide-step ${i<idx?'done':i===idx?'active':''}"><span class="guide-number">${i+1}</span>${st}</div>`).join('')}</div>
-
-    <div class="simple-card">
-      <div class="auto-verify"><span class="dot"></span>Controllo automatico attivo per task verificabili</div>
-      <h3>${esc(a.title)}</h3>
-      <p class="lead">${esc(a.why)}</p>
-
-      <div class="explain-grid">
-        <div class="explain-tile"><strong>Quanto conta?</strong><div>${a.impact}/100</div><button class="help-toggle" data-help-term="Impact">Cos'è?</button><div class="help-panel" hidden></div></div>
-        <div class="explain-tile"><strong>Quanto lavoro?</strong><div>${a.effort}</div><button class="help-toggle" data-help-term="Effort">Cos'è?</button><div class="help-panel" hidden></div></div>
-        <div class="explain-tile"><strong>Quanto è affidabile?</strong><div>${a.confidence}%</div><button class="help-toggle" data-help-term="Confidence">Cos'è?</button><div class="help-panel" hidden></div></div>
-      </div>
-
-      <div class="next-action-box">
-        <strong>Cosa fare adesso</strong>
-        <div class="muted" style="margin-top:6px">${esc(a.title)}</div>
-        <div class="wizard-actions" style="margin-top:12px">
-          <button class="btn primary" data-create-task-from-action="${esc(a.title)}">Crea il task</button>
-          ${(()=>{const target=taskResolutionTarget(a.title);return `<button class="btn" data-nav="${target.view}">${target.label}</button>`;})()}
-        </div>
-      </div>
-
-      <div class="help-panel" style="margin-top:16px">
-        <strong>Quando sarà completato?</strong>
-        <div class="muted" style="margin-top:5px">Se il task è verificabile dai dati dell'app, Organic Growth OS lo porterà automaticamente a DONE e poi VERIFIED quando il criterio sarà realmente soddisfatto. Le attività che richiedono giudizio umano restano manuali.</div>
-      </div>
-    </div>
-
-    <div style="height:16px"></div>
-    <div class="card">
-      <div class="section-head"><div><h3>Workflow semplificato</h3><div class="muted">Non devi scegliere la fase “a intuito”: il sistema ti indica quando è pronta.</div></div>
-        <select id="workflowModeSelect"><option value="assisted" ${p.workflowMode!=='automatic'?'selected':''}>Assistito</option><option value="automatic" ${p.workflowMode==='automatic'?'selected':''}>Automatico</option></select>
-      </div>
-      ${rules.map(r=>{
-        const done=typeof r.done==='function'&&r.done(), ready=typeof r.ready==='function'?r.ready():r.ready;
-        const isCurrent=r.stage===current;
-        return `<div class="workflow-card ${done?'done':''} ${isCurrent?'current':''}">
-          <div><strong>${esc(r.stage)}</strong> ${done?'<span class="auto-badge">COMPLETATA</span>':ready?'<span class="manual-badge">PRONTA</span>':'<span class="manual-badge">NON PRONTA</span>'}<div class="muted" style="margin-top:5px">${esc(r.explain)}</div></div>
-          ${isCurrent?'<span class="badge info">FASE ATTUALE</span>':''}
-        </div>`;
-      }).join('')}
-    </div>
-  </div>`;
-}
-
 function taskManagementViewV2(){
   runAutomationCycle(false);
   const tasks=byProject(state.tasks);
@@ -1997,16 +2000,18 @@ function taskManagementViewV2(){
 
 function pagesInventoryView(){
   const rows=byProject(state.pages);
-  return `${pageIntro('Pagine del sito (Page Inventory)','Qui raccogli l’elenco delle pagine del sito. La sitemap non è questo elenco: puoi però usarla come sorgente per importare tutte le URL in pochi secondi.',[`${rows.length} pagine`])}
+  const hasDomain=Boolean(normalizeSiteDomain(currentProject().domain));
+  return `${pageIntro('Pagine del sito','L’elenco delle pagine che vogliamo analizzare. Puoi farlo rilevare automaticamente, importarlo da un file o incollarlo.',[`${rows.length} pagine`])}
   <div class="section-head">
     <div>
-      <div class="muted">Metodo più semplice: apri Bulk Paste e incolla gli URL della sitemap. Il sistema creerà l’elenco delle pagine del sito.</div>
+      <div class="muted">Il modo più rapido è “Rileva dal sito”: legge sitemap e link interni al posto tuo.</div>
+      ${hasDomain?'':'<div class="hint-inline">Per il rilevamento automatico serve prima il dominio: te lo chiederò al clic.</div>'}
     </div>
     <div class="page-actions">
-      <button class="btn primary" id="autoAnalyzePages" ${normalizeSiteDomain(currentProject().domain)?'':'disabled'}>Rileva dal sito</button>
-      <button class="btn" id="pagesImportCsv">Import CSV</button>
-      <button class="btn" id="pagesBulkPaste">Bulk Paste</button>
-      <button class="btn" data-add="pages">+ Add Page</button>
+      <button class="btn primary" id="autoAnalyzePages">Rileva dal sito</button>
+      <button class="btn" id="pagesImportCsv">Importa CSV</button>
+      <button class="btn" id="pagesBulkPaste">Incolla elenco URL</button>
+      <button class="btn" data-add="pages">+ Aggiungi pagina</button>
     </div>
   </div>
   ${rows.length?`
@@ -2024,26 +2029,12 @@ function pagesInventoryView(){
     `<div class="empty"><strong>Nessuna pagina ancora</strong>
       <p>Non serve inserirle una alla volta. Usa Import CSV oppure incolla l'elenco della sitemap.</p>
       <div class="page-actions" style="justify-content:center">
-        <button class="btn primary" id="autoAnalyzePages2" ${normalizeSiteDomain(currentProject().domain)?'':'disabled'}>Rileva automaticamente dal sito</button>
-        <button class="btn" id="pagesImportCsv2">Import CSV</button>
+        <button class="btn primary" id="autoAnalyzePages2">Rileva automaticamente dal sito</button>
+        <button class="btn" id="pagesImportCsv2">Importa CSV</button>
         <button class="btn" id="pagesBulkPaste2">Incolla sitemap / URL</button>
-        <button class="btn primary" data-add="pages">Aggiungi una pagina</button>
+        <button class="btn" data-add="pages">Aggiungi una pagina a mano</button>
       </div>
     </div>`}`;
-}
-
-function openPagesImportChoice(){
-  openDrawer('Importa pagine del sito',`
-    <div class="import-choice">
-      <button class="btn" id="choiceCsv"><strong>Import CSV</strong><small>Importa un file con URL e altri campi.</small></button>
-      <button class="btn" id="choicePaste"><strong>Bulk Paste</strong><small>Incolla URL, anche direttamente dalla sitemap.</small></button>
-      <button class="btn" id="choiceSingle"><strong>Add Page</strong><small>Aggiungi una singola pagina manualmente.</small></button>
-    </div>
-    <div class="help-panel"><strong>Consiglio</strong><div class="muted" style="margin-top:5px">Per siti con molte URL, Bulk Paste è il metodo più rapido se hai già la sitemap o un elenco di URL.</div></div>
-  `);
-  document.getElementById('choiceCsv').onclick=()=>{closeDrawer();state.ui.activeView='Import';render();setTimeout(()=>{const t=document.getElementById('importTarget');if(t)t.value='pages';},0);};
-  document.getElementById('choicePaste').onclick=()=>openBulkPastePages();
-  document.getElementById('choiceSingle').onclick=()=>openRecordDrawer('pages');
 }
 
 function extractUrlsFromText(text){
@@ -2075,6 +2066,148 @@ function normalizePageUrlForProject(url){
   }catch(e){
     return raw;
   }
+}
+
+/* ============================================================
+   RIPIEGO MANUALE — quando il browser non riesce a leggere il
+   sito, la persona puo' incollare il codice della homepage o
+   l'elenco degli URL: la pipeline di analisi resta la stessa.
+   ============================================================ */
+/** Punto d'ingresso unico per "Rileva dal sito", da qualunque schermata. */
+async function detectFromSiteFlow(){
+  if(state.ui.scanning){toast('Un’analisi è già in corso.');return;}
+  const domain=normalizeSiteDomain(currentProject()?.domain);
+  if(!domain){openDomainPrompt();return;}
+  const previousView=state.ui.activeView;
+  const result=await analyzeCurrentWebsite();
+  if(result){
+    state.ui.lastFillReport=result.fill?{...result.fill,readable:result.readable,pages:result.signals.length,keywords:result.keywordsAdded||0,at:now()}:null;
+  }
+  state.ui.activeView=previousView;
+  render();
+}
+
+/** Chiede il dominio quando manca, invece di lasciare un pulsante spento. */
+function openDomainPrompt(){
+  openDrawer('Qual è il sito da analizzare?',`
+    <form id="domainPromptForm">
+      <div class="field">
+        <label for="domainPromptInput">Indirizzo del sito</label>
+        <div class="form-help">Scrivilo per intero, ad esempio <strong>https://esempio.it</strong>. Se ometti https:// lo aggiungo io.</div>
+        <input id="domainPromptInput" type="text" inputmode="url" placeholder="https://esempio.it" autocomplete="url">
+      </div>
+      <div class="form-actions"><button class="btn primary" type="submit">Salva e analizza</button></div>
+    </form>
+  `);
+  const input=document.getElementById('domainPromptInput');
+  setTimeout(()=>input?.focus(),50);
+  document.getElementById('domainPromptForm').onsubmit=async e=>{
+    e.preventDefault();
+    const domain=normalizeSiteDomain(input.value);
+    if(!domain){toast('Indirizzo non valido. Esempio corretto: https://esempio.it');input.focus();return;}
+    currentProject().domain=domain;
+    commit('Dominio impostato');
+    closeDrawer();
+    await detectFromSiteFlow();
+  };
+}
+
+/** Ricompila i campi vuoti senza rifare l'intera scansione. */
+function refillEmptyFields(){
+  syncProjectFormIntoState();
+  const p=currentProject();
+  if(!normalizeSiteDomain(p.domain)){showDomainError('Serve prima il dominio, ad esempio https://esempio.it.');return;}
+  const signals=p.homeSignal?[{...p.homeSignal,isHome:true}]:[];
+  const urls=byProject(state.pages).map(x=>absoluteSiteUrl(x.displayUrl)).filter(Boolean);
+  const fill=autoFillProjectFields(signals,{urls});
+  state.ui.lastFillReport={...fill,readable:signals.length>0,pages:signals.length,keywords:byProject(state.keywords).length,at:now()};
+  commit('Campi vuoti ricompilati');
+  render();
+  toast(fill.filled.length?`${fill.filled.length} campi compilati.`:'Nessun campo vuoto da compilare.');
+}
+
+/** Diagnostica in linguaggio semplice: quale canale di lettura funziona? */
+async function openConnectionDiagnostics(){
+  const domain=normalizeSiteDomain(currentProject()?.domain);
+  if(!domain){showDomainError('Serve prima il dominio, ad esempio https://esempio.it.');return;}
+  openDrawer('Verifica connessione',`<p class="muted">Provo tutti i canali di lettura su <strong>${esc(domain)}</strong>. Serve solo a capire perché la lettura automatica riesce o no.</p><div id="diagOut"><div class="muted"><span class="spin"></span> Verifica in corso…</div></div>`);
+  const out=document.getElementById('diagOut');
+  const rows=[];
+  for(const reader of SITE_READERS){
+    let status,detail;
+    try{
+      const text=await rawFetch(reader.build(domain+'/'),reader.timeout);
+      const body=reader.extract(text);
+      if(!body||looksLikeBlockedPayload(body))throw new Error('risposta vuota o protetta');
+      status='ok';detail=`${Math.round(body.length/1024)} KB ricevuti`;
+    }catch(e){status='ko';detail=String(e?.message||e).slice(0,80);}
+    rows.push({label:reader.label,status,detail});
+    if(!document.getElementById('diagOut'))return;
+    out.innerHTML=rows.map(r=>`<div class="diag-row"><div><strong>${esc(r.label)}</strong><div class="muted" style="font-size:15px">${esc(r.detail)}</div></div><span class="diag-tag ${r.status}">${r.status==='ok'?'FUNZIONA':'BLOCCATO'}</span></div>`).join('')
+      +(rows.length<SITE_READERS.length?'<div class="muted" style="margin-top:10px"><span class="spin"></span> Continuo…</div>':'');
+  }
+  const working=rows.filter(r=>r.status==='ok');
+  out.innerHTML+=working.length
+    ? `<div class="good-box" style="margin-top:14px"><strong>Tutto a posto</strong><div class="muted">${working.length} canale/i disponibile/i. La lettura automatica può funzionare.</div></div>`
+    : `<div class="warning-box" style="margin-top:14px"><strong>Nessun canale disponibile</strong><div class="muted">Il sito o la rete bloccano la lettura automatica. Usa “Inserisci i dati manualmente”: il risultato è identico.</div><div style="margin-top:10px"><button class="btn primary" type="button" id="diagManualBtn">Inserisci i dati manualmente</button></div></div>`;
+  const manualBtn=document.getElementById('diagManualBtn');
+  if(manualBtn)manualBtn.onclick=openManualSourceDrawer;
+}
+
+function openManualSourceDrawer(){
+  const domain=normalizeSiteDomain(currentProject()?.domain)||'';
+  openDrawer('Inserisci i dati manualmente',`
+    <div class="callout" style="margin-bottom:14px">
+      <strong>Perché serve?</strong>
+      <div class="muted" style="margin-top:6px">Il browser, per motivi di sicurezza, non sempre può leggere i siti di altri domini. In quel caso puoi incollare tu il contenuto: l’analisi funziona esattamente allo stesso modo.</div>
+    </div>
+    <form id="manualSourceForm">
+      <div class="field">
+        <label for="manualHomeHtml">1. Codice HTML della homepage <span class="muted">(facoltativo)</span></label>
+        <div class="form-help">Apri il sito nel browser, premi <span class="kbd">Ctrl+U</span> (o <span class="kbd">Cmd+U</span>), seleziona tutto, copia e incolla qui.</div>
+        <textarea id="manualHomeHtml" style="min-height:150px" placeholder="&lt;!doctype html&gt;&lt;html&gt;…"></textarea>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label for="manualUrls">2. Elenco URL o sitemap <span class="muted">(facoltativo)</span></label>
+        <div class="form-help">Un URL per riga, oppure incolla direttamente il contenuto di sitemap.xml.</div>
+        <textarea id="manualUrls" style="min-height:130px" placeholder="${esc(domain||'https://esempio.it')}/
+${esc(domain||'https://esempio.it')}/servizi"></textarea>
+      </div>
+      <div class="form-actions"><button class="btn primary" type="submit">Analizza i dati incollati</button></div>
+    </form>
+  `);
+  document.getElementById('manualSourceForm').onsubmit=e=>{
+    e.preventDefault();
+    const html=document.getElementById('manualHomeHtml').value.trim();
+    const urlsText=document.getElementById('manualUrls').value.trim();
+    if(!html&&!urlsText){toast('Incolla almeno una delle due informazioni.');return;}
+    const p=currentProject();
+    const base=normalizeSiteDomain(p.domain)||'https://esempio.local';
+    const signals=[];
+    if(html){
+      try{signals.push({...pageSignalsFromHtml(html,base+'/'),isHome:true});}
+      catch(err){toast('Il codice incollato non è leggibile.');return;}
+    }
+    const urls=extractUrlsFromText(urlsText).map(u=>{try{return new URL(u,base+'/').href;}catch(err){return '';}}).filter(Boolean);
+    signals.forEach(upsertScannedPage);
+    urls.forEach(url=>{
+      const display=normalizePageUrlForProject(url);
+      if(!display||byProject(state.pages).some(x=>x.displayUrl===display))return;
+      state.pages.push({id:uid('page'),projectId:state.currentProjectId,pageName:guessPageNameFromUrl(display),displayUrl:display,normalizedUrl:display,pageType:display==='/'?'Homepage':'Other',indexable:true,source:'MANUALE',createdAt:now(),updatedAt:now()});
+    });
+    const keywordSignals=[...signals,...urls.map(url=>({url,title:guessPageNameFromUrl(normalizePageUrlForProject(url)),h1:''}))];
+    const keywordsAdded=detectKeywordsFromSignals(keywordSignals);
+    if(signals.length)replaceAutomaticScanIssues(signals,{home:signals[0],sitemapFound:urls.length>0});
+    const safeFixes=applySafeAutomaticDataFixes();
+    const fill=autoFillProjectFields(signals,{urls});
+    p.websiteScan={status:'completed',startedAt:now(),completedAt:now(),pagesFound:urls.length,pagesAnalyzed:signals.length,keywordsAdded,issuesFound:byProject(state.issues).filter(i=>i.autoScan).length,safeFixes,readable:true,manual:true,fieldsFilled:fill.filled.length};
+    state.ui.lastFillReport={...fill,readable:true,manual:true,pages:signals.length,keywords:keywordsAdded,at:now()};
+    commit('Dati inseriti manualmente e analizzati');
+    runAutomationCycle(false);
+    closeDrawer();
+    render();
+    toast(`Fatto: ${fill.filled.length} campi compilati, ${urls.length} URL e ${keywordsAdded} keyword aggiunte.`);
+  };
 }
 
 function openBulkPastePages(){
@@ -2166,25 +2299,100 @@ function absoluteSiteUrl(value){
   try{return new URL(String(value||'/'),domain+'/').href;}catch(e){return '';}
 }
 
-async function fetchTextWithTimeout(url,timeout=12000){
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),timeout);
-  try{
-    const response=await fetch(url,{signal:controller.signal,headers:{Accept:'text/html,application/xhtml+xml,application/xml,text/xml,text/plain;q=0.9,*/*;q=0.8'}});
-    if(!response.ok)throw new Error(`HTTP ${response.status}`);
-    return {text:await response.text(),source:'direct',status:response.status};
-  }finally{clearTimeout(timer);}
+/* ============================================================
+   MOTORE DI LETTURA DEL SITO (V5.0)
+   Il browser blocca le richieste cross-origin (CORS): senza una
+   catena di ripieghi la lettura automatica fallisce quasi sempre.
+   Qui proviamo: accesso diretto -> piu' servizi pubblici di sola
+   lettura -> ripiego manuale. L'ordine vincente viene ricordato.
+   ============================================================ */
+const SITE_READERS=[
+  {id:'direct',label:'accesso diretto',build:u=>u,extract:t=>t,timeout:11000},
+  {id:'allorigins-raw',label:'AllOrigins',build:u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,extract:t=>t,timeout:20000},
+  {id:'codetabs',label:'CodeTabs',build:u=>`https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`,extract:t=>t,timeout:20000},
+  {id:'corsproxy',label:'CorsProxy',build:u=>`https://corsproxy.io/?url=${encodeURIComponent(u)}`,extract:t=>t,timeout:20000},
+  {id:'allorigins-get',label:'AllOrigins (JSON)',build:u=>`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,extract:t=>{try{const j=JSON.parse(t);return typeof j.contents==='string'?j.contents:'';}catch(e){return '';}},timeout:22000}
+];
+
+const siteFetchCache=new Map();
+let scanAbort=null;
+
+function readerOrder(){
+  const preferred=state.ui?.preferredReader;
+  const list=[...SITE_READERS];
+  if(!preferred)return list;
+  const idx=list.findIndex(r=>r.id===preferred);
+  if(idx>0)list.unshift(list.splice(idx,1)[0]);
+  return list;
 }
 
-async function fetchPublicSiteText(url){
-  try{return await fetchTextWithTimeout(url);}catch(directError){
-    const proxy=`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+function rememberReader(id){
+  if(!state.ui)return;
+  if(state.ui.preferredReader!==id){state.ui.preferredReader=id;}
+}
+
+function looksLikeBlockedPayload(text){
+  const head=String(text||'').slice(0,600).toLowerCase();
+  if(!head.trim())return true;
+  return /just a moment|checking your browser|attention required|cf-browser-verification|enable javascript and cookies/.test(head);
+}
+
+async function rawFetch(url,timeout,signal){
+  const controller=new AbortController();
+  const onAbort=()=>controller.abort();
+  if(signal){ if(signal.aborted)throw new Error('Operazione annullata'); signal.addEventListener('abort',onAbort,{once:true}); }
+  const timer=setTimeout(()=>controller.abort(),timeout);
+  try{
+    const response=await fetch(url,{signal:controller.signal,redirect:'follow',headers:{Accept:'text/html,application/xhtml+xml,application/xml,text/xml,text/plain;q=0.9,*/*;q=0.8'}});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    return await response.text();
+  }finally{
+    clearTimeout(timer);
+    if(signal)signal.removeEventListener('abort',onAbort);
+  }
+}
+
+/**
+ * Legge un URL pubblico provando in sequenza tutti i canali disponibili.
+ * @returns {Promise<{text:string,source:string,readerLabel:string,url:string}>}
+ */
+async function fetchPublicSiteText(url,options={}){
+  const key=String(url);
+  if(siteFetchCache.has(key)){
+    const hit=siteFetchCache.get(key);
+    if(hit.error)throw new Error(hit.error);
+    return hit;
+  }
+  const signal=options.signal||scanAbort?.signal;
+  const attempts=[];
+  for(const reader of readerOrder()){
+    if(signal?.aborted)throw new Error('Operazione annullata');
     try{
-      const out=await fetchTextWithTimeout(proxy,18000);
-      return {...out,source:'public-fallback',directError:String(directError.message||directError)};
-    }catch(proxyError){
-      throw new Error(`Accesso bloccato dal sito o dal browser (${directError.message||directError}).`);
+      const raw=await rawFetch(reader.build(url),reader.timeout,signal);
+      const text=reader.extract(raw);
+      if(!text||looksLikeBlockedPayload(text)){throw new Error('risposta vuota o protetta');}
+      const out={text,source:reader.id==='direct'?'direct':'public-fallback',readerLabel:reader.label,url};
+      rememberReader(reader.id);
+      siteFetchCache.set(key,out);
+      return out;
+    }catch(e){
+      const msg=String(e?.message||e);
+      attempts.push(`${reader.label}: ${msg}`);
+      if(/annullata|aborted/i.test(msg)&&signal?.aborted)throw new Error('Operazione annullata');
     }
+  }
+  const message=`Nessun canale di lettura disponibile (${attempts.slice(0,3).join(' · ')})`;
+  siteFetchCache.set(key,{error:message});
+  throw new Error(message);
+}
+
+/** Verifica rapida: e' possibile leggere il sito dal browser? */
+async function probeSiteReadable(domain){
+  try{
+    const out=await fetchPublicSiteText(domain+'/');
+    return {ok:true,via:out.readerLabel,source:out.source};
+  }catch(e){
+    return {ok:false,error:String(e.message||e)};
   }
 }
 
@@ -2225,60 +2433,199 @@ function pageSignalsFromHtml(html,url){
   };
 }
 
-function inferProjectFieldsFromSignals(signal){
+/* ============================================================
+   COMPILAZIONE AUTOMATICA DEI CAMPI PROGETTO (V5.0)
+   Regola: si compilano SOLO i campi vuoti, mai si sovrascrive
+   quello che ha scritto la persona. Ogni campo compilato viene
+   marcato con la sua origine:
+     'site'     = ricavato da contenuti pubblici letti sul sito
+     'inferred' = dedotto (dominio, struttura URL) -> da validare
+   ============================================================ */
+
+const INDUSTRY_RULES=[
+  [/dentist|dent[ei]|odontoiatr|ortodon|igiene orale|implantolog/,'Odontoiatria'],
+  [/fisioterap|osteopat|riabilitazion/,'Fisioterapia e riabilitazione'],
+  [/psicolog|psicoterap|counseling/,'Psicologia e benessere mentale'],
+  [/avvocat|studio legale|notai|consulenza legale/,'Servizi legali'],
+  [/commercialist|fiscale|contabilit|paghe/,'Consulenza fiscale e contabile'],
+  [/\bseo\b|web design|marketing digitale|social media|comunicazione digitale|agenzia web/,'Marketing digitale'],
+  [/ricett|cucina|aliment|ingredient|ristorante|pizzeri|gastronom/,'Food e ristorazione'],
+  [/gioiell|orefic|collan|braccial|anelli|orolog/,'Gioielleria e accessori'],
+  [/yoga|pilates|palestra|fitness|personal train|benessere|spa\b|massagg/,'Benessere e attivit\u00e0 fisica'],
+  [/immobil|agenzia case|casa in vendita|affitt|residenz/,'Immobiliare'],
+  [/hotel|\bb&b\b|viaggi|turismo|vacanz|agriturism|camping/,'Turismo e ospitalit\u00e0'],
+  [/software|saas|applicazione|piattaforma|sviluppo web|informatic|cloud/,'Software e tecnologia'],
+  [/edil|ristrutturazion|impiant|idraulic|elettricist|serrament|infissi/,'Edilizia e impiantistica'],
+  [/abbigliament|moda|scarpe|boutique|sartori/,'Moda e abbigliamento'],
+  [/arredament|mobili|interior|cucine componibili/,'Arredamento e interior design'],
+  [/auto|officina|carrozzeri|pneumatic|concessionar/,'Automotive'],
+  [/scuola|corsi|formazion|accademia|master|lezioni/,'Formazione'],
+  [/veterinar|animali|toelettatur|pet\b/,'Servizi per animali'],
+  [/assicurazion|mutui|finanziament|prestit|banca/,'Servizi finanziari e assicurativi'],
+  [/fotograf|video|riprese|studio creativo/,'Fotografia e produzione video']
+];
+
+const TLD_LOCALE={
+  it:['Italia','it'], uk:['Regno Unito','en'], fr:['Francia','fr'], de:['Germania','de'],
+  es:['Spagna','es'], pt:['Portogallo','pt'], nl:['Paesi Bassi','nl'], be:['Belgio','nl'],
+  ch:['Svizzera','de'], at:['Austria','de'], us:['Stati Uniti','en'], ie:['Irlanda','en'],
+  se:['Svezia','sv'], pl:['Polonia','pl'], ro:['Romania','ro'], gr:['Grecia','el']
+};
+
+function titleCaseWords(value){
+  return String(value||'').split(/[\s_-]+/).filter(Boolean)
+    .map(w=>w.length<=3&&w===w.toUpperCase()?w:w.charAt(0).toUpperCase()+w.slice(1))
+    .join(' ');
+}
+
+function guessIndustryFrom(text){
+  const found=INDUSTRY_RULES.find(([rx])=>rx.test(text));
+  return found?found[1]:'';
+}
+
+/** Informazioni ricavabili dal solo dominio, sempre disponibili anche offline. */
+function domainSeed(){
+  const domain=normalizeSiteDomain(currentProject()?.domain);
+  if(!domain)return {};
+  let host='';
+  try{host=new URL(domain).hostname.replace(/^www\./i,'');}catch(e){return {};}
+  const parts=host.split('.');
+  const tld=parts.length>1?parts[parts.length-1].toLowerCase():'';
+  const secondLevel=parts.length>2&&['co','com','org','net','gov','ac'].includes(parts[parts.length-2])
+    ? parts[parts.length-3] : parts[parts.length-2]||parts[0];
+  const locale=TLD_LOCALE[tld]||null;
+  return {
+    host,
+    tld,
+    brand:titleCaseWords(String(secondLevel||'').replace(/[0-9]+/g,' ')),
+    country:locale?locale[0]:'',
+    language:locale?locale[1]:'',
+    keywordText:host.replace(/[.\-]/g,' ')
+  };
+}
+
+/**
+ * Compila i campi vuoti del progetto.
+ * @param {Array} signals segnali di pagina letti dal sito (puo' essere vuoto)
+ * @param {Object} meta   {urls:[], sitemapFound:bool}
+ * @returns {{filled:Array,fromSite:number,inferred:number}}
+ */
+function autoFillProjectFields(signals=[],meta={}){
   const p=currentProject();
-  const description=signal.meta||'';
-  const title=signal.title||'';
-  const combined=`${title} ${description}`.toLowerCase();
-  const setIfEmpty=(key,value)=>{if(value&&!String(p[key]||'').trim())p[key]=value;};
-  const titleBrand=title.split(/[|–—-]/)[0]?.trim();
-  setIfEmpty('brand',signal.siteName||titleBrand);
-  if((!p.name||p.name==='Nuovo progetto')&&(signal.siteName||titleBrand))p.name=signal.siteName||titleBrand;
-  setIfEmpty('language',(signal.lang||'').split('-')[0]);
-  if(/\.it(?::\d+)?$/i.test(new URL(normalizeSiteDomain(p.domain)).host))setIfEmpty('country','Italia');
-  setIfEmpty('positioning',description);
-  const audienceMatch=description.match(/\bper\s+(aziende|professionisti|famiglie|privati|imprese|studenti|bambini|genitori|ristoranti|negozi|ecommerce|e-commerce)\b/i);
-  if(audienceMatch)setIfEmpty('audience',audienceMatch[1][0].toUpperCase()+audienceMatch[1].slice(1));
-  const isCommerce=/acquista|shop|carrello|spedizione|prodotti/.test(combined);
-  const isService=/servizi|consulenza|studio|agenzia|professionist|prenota|appuntamento/.test(combined);
-  if(isCommerce)setIfEmpty('businessModel','E-commerce');
-  else if(isService)setIfEmpty('businessModel','Servizi');
-  else setIfEmpty('businessModel','Editoria / lead generation — da validare');
-  const industryRules=[
-    [/dent|odont|ortodon|igiene orale/,'Odontoiatria'],[/seo|web design|marketing digitale|social media/,'Marketing digitale'],
-    [/ricett|cucina|aliment|ingredient/,'Food e ricette'],[/gioiell|orefic|collan|braccial/,'Gioielleria'],
-    [/yoga|pilates|fitness|benessere/,'Benessere e attività fisica'],[/immobil|casa in vendita|affitto/,'Immobiliare'],
-    [/hotel|viaggi|turismo|vacanze/,'Turismo'],[/software|saas|applicazione|piattaforma/,'Software e tecnologia']
-  ];
-  const industry=industryRules.find(([rx])=>rx.test(combined))?.[1];
-  setIfEmpty('industry',industry||'Da validare in base all’offerta del sito');
-  setIfEmpty('audience',description?`Persone interessate a: ${description.slice(0,180)}`:'Pubblico da validare');
-  setIfEmpty('revenueModel',isCommerce?'Vendita diretta online':isService?'Acquisizione clienti tramite richieste di contatto':'Da validare');
-  setIfEmpty('primaryConversion',isCommerce?'Acquisto completato':isService?'Richiesta di contatto o prenotazione':'Azione principale da validare');
-  setIfEmpty('secondaryConversion',isCommerce?'Iscrizione newsletter o aggiunta al carrello':'Telefonata, email o iscrizione newsletter');
-  setIfEmpty('competitorsText','Da analizzare tramite risultati Google e concorrenti commerciali reali; non determinabile con certezza dal solo sito.');
-  setIfEmpty('primarySeoGoal',`Aumentare la visibilità organica qualificata di ${p.brand||p.name||'questo sito'}`);
-  setIfEmpty('usp',description?`Da validare: ${description}`:'Proposta distintiva da definire');
-  if(!p.notes)p.notes='Campi precompilati automaticamente da informazioni pubbliche del sito. Verificare le inferenze strategiche prima di approvarle.';
+  if(!p)return {filled:[],fromSite:0,inferred:0};
+  p.autoFilled=p.autoFilled||{};
+  const filled=[];
+  const set=(key,value,origin)=>{
+    const clean=String(value??'').trim();
+    if(!clean)return false;
+    if(String(p[key]??'').trim())return false;
+    p[key]=clean;
+    p.autoFilled[key]=origin;
+    filled.push({key,origin,value:clean});
+    return true;
+  };
+
+  const list=Array.isArray(signals)?signals.filter(Boolean):[];
+  const home=list.find(x=>x&&x.isHome)||list[0]||null;
+  const seed=domainSeed();
+  const urls=[...new Set([...(meta.urls||[]),...list.map(x=>x&&x.url).filter(Boolean)])];
+  const urlText=urls.join(' ').toLowerCase();
+  const corpus=[
+    home?.title,home?.meta,home?.siteName,
+    ...list.map(x=>x.title),...list.map(x=>x.h1),...list.map(x=>x.meta),
+    urls.map(u=>{try{return decodeURIComponent(new URL(u,'https://x.test').pathname).replace(/[\/\-_]+/g,' ');}catch(e){return '';}}).join(' '),
+    seed.keywordText
+  ].filter(Boolean).join(' ').toLowerCase();
+
+  const description=String(home?.meta||'').trim();
+  const title=String(home?.title||'').trim();
+  const titleBrand=title.split(/[|\u2013\u2014\u00b7-]/)[0]?.trim();
+
+  /* --- identita' --- */
+  const brand=home?.siteName||titleBrand||seed.brand;
+  set('brand',brand,home?.siteName||titleBrand?'site':'inferred');
+  if((!p.name||p.name==='Nuovo progetto')&&brand){
+    p.name=brand;p.autoFilled.name=home?.siteName?'site':'inferred';
+    filled.push({key:'name',origin:home?.siteName?'site':'inferred',value:brand});
+  }
+  set('language',(home?.lang||'').split('-')[0]||seed.language,home?.lang?'site':'inferred');
+  set('country',seed.country,'inferred');
+
+  /* --- modello di business, dedotto anche dalla struttura degli URL --- */
+  const commerceSignals=/acquist|shop|carrello|checkout|spedizion|prodott|negozio|store|catalogo|e-?commerce/;
+  const serviceSignals=/serviz|consulenz|studio|agenzia|professionist|prenot|appuntament|preventiv|contatt/;
+  const isCommerce=commerceSignals.test(corpus)||commerceSignals.test(urlText);
+  const isService=serviceSignals.test(corpus)||serviceSignals.test(urlText);
+  const evidence=list.length?'site':'inferred';
+  set('businessModel',isCommerce?'E-commerce':isService?'Servizi':'Da validare in base all\u2019offerta del sito',isCommerce||isService?evidence:'inferred');
+  set('revenueModel',isCommerce?'Vendita diretta online':isService?'Acquisizione clienti tramite richieste di contatto':'Da validare',isCommerce||isService?evidence:'inferred');
+  set('primaryConversion',isCommerce?'Acquisto completato':isService?'Richiesta di contatto o prenotazione':'Azione principale da validare',isCommerce||isService?evidence:'inferred');
+  set('secondaryConversion',isCommerce?'Iscrizione newsletter o aggiunta al carrello':'Telefonata, email o iscrizione newsletter','inferred');
+
+  /* --- settore --- */
+  const industry=guessIndustryFrom(corpus);
+  set('industry',industry||'Da validare in base all\u2019offerta del sito',industry?(list.length?'site':'inferred'):'inferred');
+
+  /* --- pubblico --- */
+  const audienceMatch=`${description} ${title}`.match(/\bper\s+(aziende|professionisti|famiglie|privati|imprese|studenti|bambini|genitori|ristoranti|negozi|e-?commerce|sportivi|anziani|donne|uomini)\b/i);
+  if(audienceMatch)set('audience',titleCaseWords(audienceMatch[1]),'site');
+  else if(description)set('audience',`Persone interessate a: ${description.slice(0,160)}`,'site');
+  else set('audience',industry?`Persone che cercano ${industry.toLowerCase()}${seed.country?` in ${seed.country}`:''}`:'Pubblico da validare','inferred');
+
+  /* --- posizionamento e obiettivi --- */
+  set('positioning',description,'site');
+  set('usp',description?`Da validare: ${description}`:'Proposta distintiva da definire',description?'site':'inferred');
+  set('primarySeoGoal',`Aumentare la visibilit\u00e0 organica qualificata di ${p.brand||p.name||'questo sito'}`,'inferred');
+  set('competitorsText','Da analizzare con i risultati Google e i concorrenti commerciali reali: non deducibile dal solo sito.','inferred');
+
+  if(!String(p.notes||'').trim()){
+    p.notes=list.length
+      ? 'Campi precompilati automaticamente dai contenuti pubblici del sito. Le voci contrassegnate come "da validare" vanno confermate.'
+      : 'Non e\u2019 stato possibile leggere il sito dal browser: i campi sono stati dedotti dal dominio e vanno validati.';
+    p.autoFilled.notes='inferred';
+    filled.push({key:'notes',origin:'inferred',value:p.notes});
+  }
+
+  /* --- strategy canvas --- */
   p.strategyCanvas=p.strategyCanvas||{};
-  if(!p.strategyCanvas.seoGoal)p.strategyCanvas.seoGoal=p.primarySeoGoal;
-  if(!p.strategyCanvas.audience&&p.audience)p.strategyCanvas.audience=p.audience;
-  if(!p.strategyCanvas.positioning&&p.positioning)p.strategyCanvas.positioning=p.positioning;
-  if(!p.strategyCanvas.valueProposition&&description)p.strategyCanvas.valueProposition=description;
-  if(!p.strategyCanvas.measurementPlan)p.strategyCanvas.measurementPlan='Search Console: click, impression, CTR e posizione. Analytics: sessioni organiche e conversioni.';
-  const strategyDefaults={
-    businessGoal:`Generare risultati misurabili tramite il sito — da validare in base al modello ${p.businessModel||'di business'}.`,
-    searchDemand:'Da misurare con Search Console e ricerca keyword: il sito pubblico non espone volumi di ricerca affidabili.',
-    competitiveLandscape:'Da completare con concorrenti reali e risultati Google: non deducibile con certezza dal solo sito.',
+  const canvas={
+    seoGoal:p.primarySeoGoal,
+    audience:p.audience,
+    positioning:p.positioning,
+    valueProposition:description||p.usp,
+    measurementPlan:'Search Console: click, impression, CTR e posizione. Analytics: sessioni organiche e conversioni.',
+    businessGoal:`Generare risultati misurabili tramite il sito \u2014 da validare in base al modello ${p.businessModel||'di business'}.`,
+    searchDemand:'Da misurare con Search Console e ricerca keyword: il sito pubblico non espone volumi affidabili.',
+    competitiveLandscape:'Da completare con concorrenti reali e risultati Google.',
     contentAdvantage:`Sviluppare contenuti coerenti con ${p.industry||'il settore'} e con i bisogni del pubblico rilevato.`,
     authorityStrategy:'Rafforzare esperienza, fonti, autorevolezza del brand e segnali di fiducia verificabili.',
     conversionStrategy:`Ottimizzare il percorso verso: ${p.primaryConversion||'la conversione principale'}.`,
-    strategicHypothesis:`Se il sito copre meglio gli intenti del pubblico e risolve le criticità tecniche, aumenteranno visibilità qualificata e ${p.primaryConversion||'conversioni'} — da validare con i dati.`
+    strategicHypothesis:`Se il sito copre meglio gli intenti del pubblico e risolve le criticit\u00e0 tecniche, aumenteranno visibilit\u00e0 qualificata e ${p.primaryConversion||'conversioni'} \u2014 da validare con i dati.`
   };
-  Object.entries(strategyDefaults).forEach(([key,value])=>{if(!p.strategyCanvas[key])p.strategyCanvas[key]=value;});
-  if(!p.strategyCanvas.status||p.strategyCanvas.status==='PENDING')p.strategyCanvas.status='PARTIALLY VALIDATED';
-  p.strategyCanvas.confidence=Math.max(Number(p.strategyCanvas.confidence||0),60);
+  Object.entries(canvas).forEach(([key,value])=>{if(!String(p.strategyCanvas[key]||'').trim()&&value)p.strategyCanvas[key]=value;});
+  if(!p.strategyCanvas.status||p.strategyCanvas.status==='PENDING')p.strategyCanvas.status=list.length?'PARTIALLY VALIDATED':'PENDING';
+  p.strategyCanvas.confidence=Math.max(Number(p.strategyCanvas.confidence||0),list.length?60:35);
+
+  return {
+    filled,
+    fromSite:filled.filter(x=>x.origin==='site').length,
+    inferred:filled.filter(x=>x.origin==='inferred').length
+  };
 }
+
+/** Compatibilita' con le versioni precedenti. */
+function inferProjectFieldsFromSignals(signal){
+  return autoFillProjectFields(signal?[{...signal,isHome:true}]:[],{});
+}
+
+const PROJECT_FIELD_LABELS={
+  name:'Nome progetto',domain:'Dominio',brand:'Marchio',industry:'Settore',country:'Paese',language:'Lingua',
+  audience:'Pubblico',businessModel:'Modello di business',revenueModel:'Modello di ricavo',
+  primaryConversion:'Conversione principale',secondaryConversion:'Conversione secondaria',
+  competitorsText:'Concorrenti',positioning:'Posizionamento',usp:'Proposta distintiva',
+  primarySeoGoal:'Obiettivo SEO principale',notes:'Note'
+};
+
 
 const keywordStopWords=new Set('a ad al alla alle allo ai agli anche che chi con da dal dalla dalle dei del della delle di e ed è gli ha il in la le lo ma nel nella nelle o per più se su tra un una uno the and for from with your our this that home homepage sito website ufficiale pagina'.split(/\s+/));
 function keywordFromSignal(signal){
@@ -2379,84 +2726,349 @@ function applySafeAutomaticDataFixes(){
   return fixed;
 }
 
+/* ============================================================
+   OVERLAY DI AVANZAMENTO — visibile da qualunque schermata,
+   cosi' l'utente vede sempre che l'analisi sta lavorando.
+   ============================================================ */
+const SCAN_STEPS=['home','sitemap','pages','issues','fill'];
+
+function scanOverlayEl(){return document.getElementById('scanOverlay');}
+
+function openScanOverlay(lead){
+  const el=scanOverlayEl();
+  if(!el)return;
+  el.querySelector('#scanOverlayLead').textContent=lead||'Leggo le informazioni pubbliche del sito e compilo i campi che posso verificare.';
+  el.querySelector('#scanOverlayLog').innerHTML='';
+  el.querySelector('#scanOverlayBar').style.width='0%';
+  el.querySelector('#scanCloseBtn').hidden=true;
+  el.querySelector('#scanCancelBtn').hidden=false;
+  el.querySelectorAll('[data-scan-row]').forEach(row=>{
+    row.className='scan-row';
+    row.querySelector('.scan-icon').textContent='○';
+  });
+  const labels={home:'Homepage e informazioni principali',sitemap:'Ricerca della sitemap',pages:'Analisi delle pagine',issues:'Verifica di errori e priorità',fill:'Compilazione automatica dei campi'};
+  el.querySelectorAll('[data-scan-row]').forEach(row=>{row.querySelector('.scan-text').textContent=labels[row.dataset.scanRow]||'';});
+  el.classList.add('show');
+  el.setAttribute('aria-hidden','false');
+  document.body.classList.add('overlay-open');
+  state.ui.scanning=true;
+  setScanButtonsBusy(true);
+}
+
+/* I pulsanti che avviano un'analisi restano spenti finche' la
+   scansione e' in corso: e' il segnale piu' chiaro che il sistema
+   sta gia' lavorando, e impedisce avvii sovrapposti. */
+const SCAN_TRIGGER_SELECTOR='#autoAnalyzeWebsite,#autoAnalyzePages,#autoAnalyzePages2,#wizardRunAnalysis,#refillEmptyFields,#manualSourceBtn,#connectionDiagBtn';
+function setScanButtonsBusy(busy){
+  document.querySelectorAll(SCAN_TRIGGER_SELECTOR).forEach(btn=>{
+    btn.disabled=busy;
+    btn.classList.toggle('is-busy',busy);
+    if(busy){
+      if(!btn.dataset.idleLabel)btn.dataset.idleLabel=btn.textContent;
+      if(btn.id==='autoAnalyzeWebsite'||btn.id==='autoAnalyzePages'||btn.id==='autoAnalyzePages2')
+        btn.innerHTML='<span class="spin"></span> Analisi in corso\u2026';
+    }else if(btn.dataset.idleLabel){
+      btn.textContent=btn.dataset.idleLabel;
+      delete btn.dataset.idleLabel;
+    }
+  });
+}
+
+function finishScanOverlay(summaryText){
+  const el=scanOverlayEl();
+  if(!el)return;
+  el.querySelector('#scanOverlayBar').style.width='100%';
+  if(summaryText)el.querySelector('#scanOverlayLead').textContent=summaryText;
+  el.querySelector('#scanCancelBtn').hidden=true;
+  const close=el.querySelector('#scanCloseBtn');
+  close.hidden=false;
+  close.focus();
+  state.ui.scanning=false;
+  setScanButtonsBusy(false);
+}
+
+function closeScanOverlay(){
+  const el=scanOverlayEl();
+  if(!el)return;
+  el.classList.remove('show');
+  el.setAttribute('aria-hidden','true');
+  if(!document.getElementById('drawer')?.classList.contains('open'))document.body.classList.remove('overlay-open');
+  state.ui.scanning=false;
+  setScanButtonsBusy(false);
+}
+
+function scanLog(message,kind=''){
+  const box=document.getElementById('scanOverlayLog');
+  if(!box)return;
+  const line=document.createElement('div');
+  if(kind)line.className=kind;
+  line.textContent=message;
+  box.appendChild(line);
+  box.scrollTop=box.scrollHeight;
+}
+
 function updateScanProgress(key,status,text){
-  const row=document.querySelector(`[data-scan-row="${key}"]`);
-  if(!row)return;
-  row.className=`scan-row ${status}`;
-  row.querySelector('.scan-icon').textContent=status==='done'?'✓':status==='failed'?'!':'○';
-  if(text)row.querySelector('.scan-text').textContent=text;
+  document.querySelectorAll(`[data-scan-row="${key}"]`).forEach(row=>{
+    row.className=`scan-row ${status}`;
+    const icon=row.querySelector('.scan-icon');
+    if(icon)icon.textContent=status==='done'?'✓':status==='failed'?'!':'○';
+    const label=row.querySelector('.scan-text');
+    if(label&&text)label.textContent=text;
+  });
+  const bar=document.getElementById('scanOverlayBar');
+  if(bar){
+    const index=SCAN_STEPS.indexOf(key);
+    if(index>=0){
+      const base=(index/SCAN_STEPS.length)*100;
+      const width=status==='running'?base+(50/SCAN_STEPS.length):((index+1)/SCAN_STEPS.length)*100;
+      bar.style.width=`${Math.min(100,Math.round(width))}%`;
+    }
+  }
+  if(text&&status!=='running')scanLog(text,status==='failed'?'err':'ok');
+}
+
+/* ============================================================
+   ANALISI DEL SITO (V5.0)
+   - progresso sempre visibile (overlay), da qualunque schermata
+   - annullabile
+   - non parte due volte in parallelo
+   - compila SEMPRE i campi possibili, anche se il sito non e'
+     leggibile dal browser (in quel caso deduce dal dominio)
+   ============================================================ */
+
+const MAX_PAGES_TO_ANALYZE=40;
+const SCAN_BATCH_SIZE=3;
+
+async function collectSitemapUrls(domain,result){
+  const candidates=[domain+'/sitemap.xml',domain+'/sitemap_index.xml',domain+'/wp-sitemap.xml',domain+'/sitemap-index.xml'];
+  const pageUrls=[],nested=[];
+
+  /* robots.txt indica spesso la sitemap reale */
+  try{
+    const robots=await fetchPublicSiteText(domain+'/robots.txt');
+    [...String(robots.text||'').matchAll(/^\s*sitemap:\s*(\S+)/gim)].forEach(m=>{
+      try{candidates.push(new URL(m[1],domain).href);}catch(e){}
+    });
+  }catch(e){/* robots.txt assente: non e' un errore bloccante */}
+
+  for(const candidate of [...new Set(candidates)]){
+    if(scanAbort?.signal.aborted)break;
+    try{
+      const response=await fetchPublicSiteText(candidate);
+      const urls=parseSitemapUrls(response.text,candidate);
+      if(!urls.length)continue;
+      result.sitemapFound=true;
+      urls.forEach(u=>/\.xml(?:\?|$)/i.test(u)?nested.push(u):pageUrls.push(u));
+    }catch(e){/* candidato assente */}
+  }
+
+  for(const sitemapUrl of [...new Set(nested)].slice(0,10)){
+    if(scanAbort?.signal.aborted)break;
+    try{
+      const response=await fetchPublicSiteText(sitemapUrl);
+      parseSitemapUrls(response.text,sitemapUrl).forEach(u=>{if(!/\.xml(?:\?|$)/i.test(u))pageUrls.push(u);});
+    }catch(e){}
+  }
+
+  const sameHost=u=>{
+    try{return new URL(u).hostname.replace(/^www\./,'')===new URL(domain).hostname.replace(/^www\./,'');}
+    catch(e){return false;}
+  };
+  return [...new Set(pageUrls)].filter(sameHost);
+}
+
+/** Ricava URL interne dai link della homepage quando manca la sitemap. */
+function urlsFromHomeLinks(home,domain){
+  if(!home||!Array.isArray(home.links))return [];
+  let host='';
+  try{host=new URL(domain).hostname.replace(/^www\./,'');}catch(e){return [];}
+  const out=[];
+  home.links.forEach(href=>{
+    try{
+      const u=new URL(href);
+      if(u.hostname.replace(/^www\./,'')!==host)return;
+      if(/\.(jpg|jpeg|png|gif|svg|webp|pdf|zip|mp4|css|js)$/i.test(u.pathname))return;
+      u.hash='';
+      out.push(u.href);
+    }catch(e){}
+  });
+  return [...new Set(out)];
 }
 
 async function analyzeCurrentWebsite(options={}){
+  if(state.ui.scanning&&!options.force){
+    toast('Un\u2019analisi \u00e8 gi\u00e0 in corso.');
+    return null;
+  }
   const p=currentProject();
   const domain=normalizeSiteDomain(p.domain);
-  if(!domain){toast('Inserisci prima il dominio del sito.');state.ui.activeView='Project';render();return null;}
+  if(!domain){
+    toast('Inserisci prima il dominio del sito, ad esempio https://esempio.it.');
+    state.ui.activeView='Project';
+    render();
+    return null;
+  }
   p.domain=domain;
+  siteFetchCache.clear();
+  scanAbort=new AbortController();
+  openScanOverlay(`Sto leggendo ${domain} e compilo automaticamente i campi verificabili.`);
+  scanLog(`Avvio analisi di ${domain}`);
+
   p.websiteScan={status:'running',startedAt:now(),pagesFound:0,pagesAnalyzed:0,issuesFound:0,usedFallback:false};
   commit('Analisi automatica del sito avviata');
-  if(options.showView!==false){state.ui.activeView='Guided Review';const w=wizardState();w.status='in_progress';w.step='analysis';render();}
 
-  const result={domain,sitemapFound:false,usedFallback:false,signals:[],errors:[]};
+  const result={domain,sitemapFound:false,usedFallback:false,readable:false,signals:[],errors:[],keywordsAdded:0,safeFixes:0,cancelled:false};
+  const aborted=()=>scanAbort?.signal.aborted;
+
   try{
-    updateScanProgress('home','running','Leggo la homepage e le informazioni principali…');
-    const homeResponse=await fetchPublicSiteText(domain+'/');
-    result.usedFallback=homeResponse.source==='public-fallback';
-    result.home=pageSignalsFromHtml(homeResponse.text,domain+'/');
-    result.signals.push(result.home);
-    inferProjectFieldsFromSignals(result.home);
-    updateScanProgress('home','done','Homepage letta: identità, lingua e descrizione rilevate.');
-  }catch(e){result.errors.push(e.message);updateScanProgress('home','failed','La homepage non consente la lettura automatica.');}
+    /* --- 1. Homepage --- */
+    updateScanProgress('home','running','Leggo la homepage\u2026');
+    try{
+      const homeResponse=await fetchPublicSiteText(domain+'/');
+      result.usedFallback=homeResponse.source==='public-fallback';
+      result.home={...pageSignalsFromHtml(homeResponse.text,domain+'/'),isHome:true};
+      result.signals.push(result.home);
+      result.readable=true;
+      /* memorizzato per poter ricompilare i campi anche senza rete */
+      p.homeSignal={url:result.home.url,title:result.home.title,meta:result.home.meta,h1:result.home.h1,lang:result.home.lang,siteName:result.home.siteName,isHome:true};
+      updateScanProgress('home','done',`Homepage letta tramite ${homeResponse.readerLabel}.`);
+    }catch(e){
+      result.errors.push(String(e.message||e));
+      updateScanProgress('home','failed','Homepage non leggibile dal browser (blocco CORS o sito protetto).');
+    }
+    if(aborted())throw new Error('__cancelled__');
 
-  updateScanProgress('sitemap','running','Cerco sitemap.xml e sitemap_index.xml…');
-  const candidates=[domain+'/sitemap.xml',domain+'/sitemap_index.xml',domain+'/wp-sitemap.xml'];
-  const pageUrls=[]; const nested=[];
-  const candidateResults=await Promise.all(candidates.map(async candidate=>{
-    try{return {candidate,response:await fetchPublicSiteText(candidate)};}catch(e){return null;}
-  }));
-  candidateResults.filter(Boolean).forEach(({candidate,response})=>{
-    result.usedFallback=result.usedFallback||response.source==='public-fallback';
-    const urls=parseSitemapUrls(response.text,candidate);
-    if(urls.length){result.sitemapFound=true;urls.forEach(u=>/\.xml(?:\?|$)/i.test(u)?nested.push(u):pageUrls.push(u));}
-  });
-  const nestedResults=await Promise.all([...new Set(nested)].slice(0,12).map(async sitemapUrl=>{
-    try{return {sitemapUrl,response:await fetchPublicSiteText(sitemapUrl)};}catch(e){return null;}
-  }));
-  nestedResults.filter(Boolean).forEach(({sitemapUrl,response})=>{
-    result.usedFallback=result.usedFallback||response.source==='public-fallback';
-    parseSitemapUrls(response.text,sitemapUrl).forEach(u=>{if(!/\.xml(?:\?|$)/i.test(u))pageUrls.push(u);});
-  });
-  const uniqueUrls=[...new Set(pageUrls)].filter(u=>{try{return new URL(u).hostname.replace(/^www\./,'')===new URL(domain).hostname.replace(/^www\./,'');}catch(e){return false;}});
-  updateScanProgress('sitemap',result.sitemapFound?'done':'failed',result.sitemapFound?`${uniqueUrls.length} URL trovate nella sitemap.`:'Sitemap non rilevata automaticamente.');
-  p.websiteScan.pagesFound=uniqueUrls.length;
+    /* --- 2. Sitemap --- */
+    let uniqueUrls=[];
+    if(result.readable){
+      updateScanProgress('sitemap','running','Cerco robots.txt e sitemap\u2026');
+      uniqueUrls=await collectSitemapUrls(domain,result);
+      if(!uniqueUrls.length){
+        const fromLinks=urlsFromHomeLinks(result.home,domain);
+        if(fromLinks.length){
+          uniqueUrls=fromLinks;
+          updateScanProgress('sitemap','done',`Sitemap non trovata: ho ricavato ${fromLinks.length} URL dai link della homepage.`);
+        }else{
+          updateScanProgress('sitemap','failed','Sitemap non rilevata e nessun link interno utilizzabile.');
+        }
+      }else{
+        updateScanProgress('sitemap','done',`${uniqueUrls.length} URL trovate nella sitemap.`);
+      }
+    }else{
+      updateScanProgress('sitemap','failed','Saltata: il sito non \u00e8 leggibile dal browser.');
+    }
+    p.websiteScan.pagesFound=uniqueUrls.length;
+    if(aborted())throw new Error('__cancelled__');
 
-  updateScanProgress('pages','running','Analizzo i dati SEO essenziali delle pagine…');
-  const toAnalyze=[...new Set([domain+'/',...uniqueUrls])].slice(0,30);
-  for(let i=0;i<toAnalyze.length;i+=4){
-    const batch=toAnalyze.slice(i,i+4);
-    const outputs=await Promise.all(batch.map(async url=>{
-      if(result.home&&url===domain+'/')return result.home;
-      try{const response=await fetchPublicSiteText(url);result.usedFallback=result.usedFallback||response.source==='public-fallback';return pageSignalsFromHtml(response.text,url);}catch(e){result.errors.push(`${url}: ${e.message}`);return null;}
-    }));
-    outputs.filter(Boolean).forEach(s=>{if(!result.signals.some(x=>x.url===s.url))result.signals.push(s);});
-    updateScanProgress('pages','running',`Analizzate ${Math.min(i+batch.length,toAnalyze.length)} di ${toAnalyze.length} pagine…`);
+    /* --- 3. Pagine --- */
+    if(result.readable){
+      const toAnalyze=[...new Set([domain+'/',...uniqueUrls])].slice(0,MAX_PAGES_TO_ANALYZE);
+      updateScanProgress('pages','running',`Analizzo ${toAnalyze.length} pagine\u2026`);
+      for(let i=0;i<toAnalyze.length;i+=SCAN_BATCH_SIZE){
+        if(aborted())throw new Error('__cancelled__');
+        const batch=toAnalyze.slice(i,i+SCAN_BATCH_SIZE);
+        const outputs=await Promise.all(batch.map(async url=>{
+          if(result.home&&url===domain+'/')return result.home;
+          try{
+            const response=await fetchPublicSiteText(url);
+            result.usedFallback=result.usedFallback||response.source==='public-fallback';
+            return pageSignalsFromHtml(response.text,url);
+          }catch(e){
+            result.errors.push(`${url}: ${e.message}`);
+            return null;
+          }
+        }));
+        outputs.filter(Boolean).forEach(sig=>{if(!result.signals.some(x=>x.url===sig.url))result.signals.push(sig);});
+        const done=Math.min(i+batch.length,toAnalyze.length);
+        updateScanProgress('pages','running',`Analizzate ${done} di ${toAnalyze.length} pagine\u2026`);
+        document.querySelectorAll('[data-scan-row="pages"] .scan-text').forEach(el=>{el.textContent=`Analizzate ${done} di ${toAnalyze.length} pagine\u2026`;});
+      }
+
+      result.signals.forEach(upsertScannedPage);
+      uniqueUrls.forEach(url=>{
+        const display=normalizePageUrlForProject(url);
+        if(!display)return;
+        if(byProject(state.pages).some(x=>x.displayUrl===display))return;
+        state.pages.push({
+          id:uid('page'),projectId:state.currentProjectId,pageName:guessPageNameFromUrl(display),
+          displayUrl:display,normalizedUrl:display,pageType:display==='/'?'Homepage':'Other',
+          sitemap:result.sitemapFound,indexable:true,source:'AUTO SITEMAP',createdAt:now(),updatedAt:now()
+        });
+      });
+
+      const keywordSignals=[
+        ...result.signals,
+        ...uniqueUrls.filter(url=>!result.signals.some(sig=>sig.url===url))
+          .map(url=>({url,title:guessPageNameFromUrl(normalizePageUrlForProject(url)),h1:''}))
+      ];
+      result.keywordsAdded=detectKeywordsFromSignals(keywordSignals);
+      updateScanProgress('pages','done',`${result.signals.length} pagine analizzate \u00b7 ${byProject(state.pages).length} pagine e ${result.keywordsAdded} keyword registrate.`);
+    }else{
+      updateScanProgress('pages','failed','Saltata: nessuna pagina leggibile.');
+    }
+    if(aborted())throw new Error('__cancelled__');
+
+    /* --- 4. Problemi --- */
+    updateScanProgress('issues','running','Verifico errori e priorit\u00e0\u2026');
+    result.safeFixes=applySafeAutomaticDataFixes();
+    if(result.readable){
+      replaceAutomaticScanIssues(result.signals,result);
+      const count=byProject(state.issues).filter(i=>i.autoScan).length;
+      updateScanProgress('issues','done',`${count} problemi verificabili rilevati.`);
+    }else{
+      updateScanProgress('issues','failed','Nessun controllo tecnico possibile senza accesso al sito.');
+    }
+
+    /* --- 5. Compilazione campi: avviene SEMPRE --- */
+    updateScanProgress('fill','running','Compilo i campi del progetto\u2026');
+    const fill=autoFillProjectFields(result.signals,{urls:uniqueUrls,sitemapFound:result.sitemapFound});
+    result.fill=fill;
+    updateScanProgress('fill','done',
+      fill.filled.length
+        ? `${fill.filled.length} campi compilati (${fill.fromSite} dal sito, ${fill.inferred} dedotti).`
+        : 'Tutti i campi erano gi\u00e0 compilati: nulla da sovrascrivere.');
+
+    p.websiteScan={
+      status:result.readable?'completed':'unreadable',
+      startedAt:p.websiteScan.startedAt,completedAt:now(),
+      pagesFound:uniqueUrls.length,pagesAnalyzed:result.signals.length,
+      keywordsAdded:result.keywordsAdded,
+      issuesFound:byProject(state.issues).filter(i=>i.autoScan).length,
+      safeFixes:result.safeFixes,usedFallback:result.usedFallback,readable:result.readable,
+      fieldsFilled:fill.filled.length,
+      errors:result.errors.slice(0,20)
+    };
+    commit(`Analisi automatica: ${result.signals.length} pagine, ${result.keywordsAdded} keyword, ${fill.filled.length} campi compilati`);
+    runAutomationCycle(false);
+
+    finishScanOverlay(result.readable
+      ? `Analisi completata: ${result.signals.length} pagine lette e ${fill.filled.length} campi compilati.`
+      : `Il sito non \u00e8 leggibile dal browser. Ho comunque compilato ${fill.filled.length} campi deducibili dal dominio.`);
+
+    if(!result.readable)scanLog('Suggerimento: usa "Inserisci i dati manualmente" per incollare il codice della homepage o l\u2019elenco degli URL.','err');
+    return result;
+
+  }catch(e){
+    if(String(e.message)==='__cancelled__'||aborted()){
+      result.cancelled=true;
+      p.websiteScan={...(p.websiteScan||{}),status:'cancelled',completedAt:now()};
+      commit('Analisi annullata');
+      finishScanOverlay('Analisi annullata. I dati gi\u00e0 raccolti sono stati mantenuti.');
+      return result;
+    }
+    console.error('Analisi del sito non riuscita',e);
+    result.errors.push(String(e.message||e));
+    p.websiteScan={...(p.websiteScan||{}),status:'failed',completedAt:now(),error:String(e.message||e)};
+    const fill=autoFillProjectFields([],{});
+    result.fill=fill;
+    updateScanProgress('fill','done',`${fill.filled.length} campi dedotti dal dominio.`);
+    commit('Analisi non riuscita: campi dedotti dal dominio');
+    finishScanOverlay('Analisi non riuscita. Ho compilato i campi deducibili dal dominio.');
+    return result;
+  }finally{
+    state.ui.scanning=false;
+    scanAbort=null;
   }
-  result.signals.forEach(upsertScannedPage);
-  uniqueUrls.forEach(url=>{
-    const display=normalizePageUrlForProject(url);
-    if(!byProject(state.pages).some(x=>x.displayUrl===display))state.pages.push({id:uid('page'),projectId:state.currentProjectId,pageName:guessPageNameFromUrl(display),displayUrl:display,normalizedUrl:display,pageType:'Other',sitemap:true,indexable:true,source:'AUTO SITEMAP',createdAt:now(),updatedAt:now()});
-  });
-  const keywordSignals=[...result.signals,...uniqueUrls.filter(url=>!result.signals.some(signal=>signal.url===url)).map(url=>({url,title:guessPageNameFromUrl(normalizePageUrlForProject(url)),h1:''}))];
-  result.keywordsAdded=detectKeywordsFromSignals(keywordSignals);
-  result.safeFixes=applySafeAutomaticDataFixes();
-  updateScanProgress('pages','done',`${result.signals.length} pagine analizzate; ${byProject(state.pages).length} pagine e ${result.keywordsAdded} nuove keyword registrate.`);
-
-  updateScanProgress('issues','running','Verifico errori e priorità…');
-  replaceAutomaticScanIssues(result.signals,result);
-  p.websiteScan={status:'completed',startedAt:p.websiteScan.startedAt,completedAt:now(),pagesFound:uniqueUrls.length,pagesAnalyzed:result.signals.length,keywordsAdded:result.keywordsAdded,issuesFound:byProject(state.issues).filter(i=>i.autoScan).length,safeFixes:result.safeFixes,usedFallback:result.usedFallback,errors:result.errors.slice(0,20)};
-  updateScanProgress('issues','done',`${p.websiteScan.issuesFound} problemi verificabili rilevati.`);
-  commit(`Analisi automatica completata: ${result.signals.length} pagine, ${result.keywordsAdded} keyword`);
-  runAutomationCycle(false);
-  return result;
 }
 
 
@@ -2668,7 +3280,13 @@ async function runWizardAnalysis(){
   render();
 
   if(normalizeSiteDomain(currentProject()?.domain)){
-    try{await analyzeCurrentWebsite({showView:false});}catch(e){
+    try{
+      const result=await analyzeCurrentWebsite();
+      if(result){
+        state.ui.lastFillReport=result.fill?{...result.fill,readable:result.readable,pages:result.signals.length,keywords:result.keywordsAdded||0,at:now()}:null;
+        if(result.cancelled){w.status='paused';w.pausedAt=now();saveWizardState();render();return;}
+      }
+    }catch(e){
       console.error('Analisi automatica non completata',e);
       currentProject().websiteScan={...(currentProject().websiteScan||{}),status:'failed',completedAt:now(),error:String(e.message||e)};
     }
@@ -3146,20 +3764,51 @@ function settingsView(){
  </div></div>`;
 }
 
-async function analyzeProjectForm(){
+/** Salva quanto scritto nel form senza perdere nulla, poi avvia l'analisi. */
+function syncProjectFormIntoState(){
   const form=document.getElementById('projectForm');
-  if(!form)return;
-  if(!form.reportValidity())return;
+  if(!form)return false;
   const p=currentProject();
-  new FormData(form).forEach((value,key)=>p[key]=value);
-  p.domain=normalizeSiteDomain(p.domain)||String(p.domain||'').trim();
-  if(!normalizeSiteDomain(p.domain)){toast('Inserisci un dominio valido, ad esempio https://esempio.it.');return;}
+  new FormData(form).forEach((value,key)=>{
+    const clean=String(value);
+    if(p[key]!==clean&&p.autoFilled)delete p.autoFilled[key];
+    p[key]=clean;
+  });
+  return true;
+}
+
+function showDomainError(message){
+  const input=document.getElementById('domain');
+  const box=document.getElementById('domainError');
+  if(input){input.setAttribute('aria-invalid','true');input.focus();}
+  if(box){box.hidden=false;box.textContent=message;}
+  toast(message);
+}
+
+async function analyzeProjectForm(){
+  if(state.ui.scanning){toast('Un’analisi è già in corso.');return;}
+  syncProjectFormIntoState();
+  const p=currentProject();
+  const domain=normalizeSiteDomain(p.domain);
+  if(!domain){
+    showDomainError('Serve un indirizzo completo, ad esempio https://esempio.it.');
+    return;
+  }
+  p.domain=domain;
+  if(!String(p.name||'').trim())p.name='Nuovo progetto';
   commit('Progetto salvato prima dell’analisi automatica');
-  toast('Analizzo il sito e compilo i campi verificabili…');
-  const result=await analyzeCurrentWebsite({showView:false});
+  const result=await analyzeCurrentWebsite();
+  if(!result)return;
+  state.ui.lastFillReport=result.fill?{
+    ...result.fill,
+    readable:result.readable,
+    pages:result.signals.length,
+    keywords:result.keywordsAdded||0,
+    at:now()
+  }:null;
   runAutomationCycle(false);
-  state.ui.activeView='Project';render();
-  if(result)toast(`Compilazione completata: ${result.signals.length} pagine e ${result.keywordsAdded||0} keyword rilevate.`);
+  state.ui.activeView='Project';
+  render();
 }
 
 function bindView(){
@@ -3221,8 +3870,20 @@ function bindView(){
  bindTableSearch();
  const wr=document.getElementById('wizardRunAnalysis'); if(wr) wr.onclick=runWizardAnalysis;
  const aaw=document.getElementById('autoAnalyzeWebsite'); if(aaw) aaw.onclick=analyzeProjectForm;
- const aap=document.getElementById('autoAnalyzePages'); if(aap) aap.onclick=runWizardAnalysis;
- const aap2=document.getElementById('autoAnalyzePages2'); if(aap2) aap2.onclick=runWizardAnalysis;
+ const ref=document.getElementById('refillEmptyFields'); if(ref) ref.onclick=refillEmptyFields;
+ const man=document.getElementById('manualSourceBtn'); if(man) man.onclick=openManualSourceDrawer;
+ const diag=document.getElementById('connectionDiagBtn'); if(diag) diag.onclick=openConnectionDiagnostics;
+ document.querySelectorAll('#autoAnalyzePages,#autoAnalyzePages2').forEach(b=>b.onclick=detectFromSiteFlow);
+ /* se la persona modifica un campo compilato in automatico, l'etichetta non ha piu' senso */
+ document.querySelectorAll('[data-project-field]').forEach(input=>{
+   input.addEventListener('input',()=>{
+     const p=currentProject();
+     if(p.autoFilled&&p.autoFilled[input.dataset.projectField]){
+       delete p.autoFilled[input.dataset.projectField];
+       input.closest('.field')?.querySelector('.field-flag')?.remove();
+     }
+   });
+ });
  const wsc=document.getElementById('wizardStartCorrections'); if(wsc) wsc.onclick=wizardStartCorrections;
  const wv=document.getElementById('wizardVerify'); if(wv) wv.onclick=wizardVerifyCurrent;
  const wcv=document.getElementById('wizardContinueVerified'); if(wcv) wcv.onclick=wizardContinueAfterVerified;
@@ -3344,29 +4005,6 @@ function openLinkDrawer(){
   document.getElementById('linkForm').onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target).entries());state.links.push({id:uid('link'),projectId:state.currentProjectId,...data,createdAt:now(),updatedAt:now()});commit('Internal link aggiunto');closeDrawer();render();toast('Link salvato');};
 }
 
-async function handleImport(){
- const file=document.getElementById('importFile').files[0]; if(!file){toast('Seleziona un file');return;}
- const text=await file.text(); const out=document.getElementById('importResult'), target=document.getElementById('importTarget').value;
- try{
-   if(file.name.toLowerCase().endsWith('.json')){
-     const data=JSON.parse(text);
-     if(data.schemaVersion && data.projects){
-       if(confirm('Questo sembra un backup completo. Sostituire lo stato corrente?')){state=storage.migrate(data);storage.save(state);render();toast('Backup importato');}
-       return;
-     }
-     const arr=Array.isArray(data)?data:[data];
-     arr.forEach(x=>state[target].push({...x,id:uid('imp'),projectId:state.currentProjectId,createdAt:now(),updatedAt:now()}));
-     commit(`Import JSON ${target}`); out.innerHTML=`<div class="callout">${arr.length} record importati.</div>`; render();
-   }else{
-     const sep=file.name.endsWith('.tsv')?'\t':',';
-     const lines=text.split(/\r?\n/).filter(Boolean); const headers=lines.shift().split(sep).map(x=>x.trim());
-     const rows=lines.map(line=>{const vals=parseDelimited(line,sep); const o={}; headers.forEach((h,i)=>o[h]=vals[i]??''); return o;});
-     rows.forEach(x=>state[target].push({...x,id:uid('imp'),projectId:state.currentProjectId,createdAt:now(),updatedAt:now()}));
-     state.datasets.push({id:uid('dataset'),projectId:state.currentProjectId,name:file.name,source:'Import locale',type:target,importedAt:now(),records:rows.length,createdAt:now(),updatedAt:now()});
-     commit(`Import ${file.name}`); out.innerHTML=`<div class="callout">${rows.length} record importati in ${esc(target)}.</div>`; render();
-   }
- }catch(e){out.innerHTML=`<div class="callout" style="border-color:var(--danger)">Errore import: ${esc(e.message)}</div>`;}
-}
 function parseDelimited(line,sep){
  const out=[]; let cur='',q=false;
  for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++;}else q=!q;}else if(c===sep&&!q){out.push(cur.trim());cur='';}else cur+=c;}out.push(cur.trim());return out;
@@ -3403,11 +4041,38 @@ function setupTopbar(){
  const g=document.getElementById('guidedModeBtn'),a=document.getElementById('advancedModeBtn');
  if(g){g.classList.toggle('active',state.ui.experienceMode==='guided');g.setAttribute('aria-pressed',String(state.ui.experienceMode==='guided'));}
  if(a){a.classList.toggle('active',state.ui.experienceMode==='advanced');a.setAttribute('aria-pressed',String(state.ui.experienceMode==='advanced'));}
- const themeButton=document.getElementById('themeBtn');if(themeButton)themeButton.setAttribute('aria-label',`Tema attuale: ${state.ui.theme}. Cambia tema`);
+ const themeButton=document.getElementById('themeBtn');
+ if(themeButton){
+   const label=THEME_LABELS[state.ui.theme]||'Automatico';
+   themeButton.textContent=THEME_ICONS[state.ui.theme]||'◐';
+   themeButton.setAttribute('aria-label',`Tema: ${label}. Tocca per cambiare`);
+   themeButton.setAttribute('title',`Tema: ${label}`);
+ }
 }
+const THEME_LABELS={system:'Automatico',light:'Chiaro',dark:'Scuro'};
+const THEME_ICONS={system:'◐',light:'☀',dark:'☾'};
+let systemThemeQuery=null;
+
+function resolvedTheme(){
+  if(state.ui.theme==='dark'||state.ui.theme==='light')return state.ui.theme;
+  return systemThemeQuery?.matches?'dark':'light';
+}
+
 function applyTheme(){
- const theme=state.ui.theme==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):state.ui.theme;
- document.documentElement.dataset.theme=theme;
+  const theme=resolvedTheme();
+  document.documentElement.dataset.theme=theme;
+  document.documentElement.style.colorScheme=theme;
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.setAttribute('content',theme==='dark'?'#0d1117':'#f7f8fb');
+  try{localStorage.setItem('organicGrowthOS.theme',state.ui.theme);}catch(e){}
+}
+
+function initTheme(){
+  try{systemThemeQuery=matchMedia('(prefers-color-scheme: dark)');}catch(e){systemThemeQuery=null;}
+  const onChange=()=>{if(state.ui.theme==='system'){applyTheme();setupTopbar();}};
+  if(systemThemeQuery?.addEventListener)systemThemeQuery.addEventListener('change',onChange);
+  else if(systemThemeQuery?.addListener)systemThemeQuery.addListener(onChange);
+  applyTheme();
 }
 function openMobile(){
  const sidebar=document.getElementById('sidebar'),backdrop=document.getElementById('backdrop'),button=document.getElementById('mobileMenuBtn');
@@ -3429,6 +4094,43 @@ function newProject(){
    if(data.autoStart==='yes')await runWizardAnalysis();
  };
 }
+function openHelpDrawer(){
+  openDrawer('Guida rapida',`<div class="help-body">
+    <p>Organic Growth OS ti accompagna passo dopo passo. Non servono conoscenze tecniche: a ogni schermata c’è una sola azione principale, evidenziata in blu.</p>
+
+    <h4>1. Da dove si comincia</h4>
+    <ol>
+      <li>Apri <strong>Configurazione progetto</strong> e scrivi l’indirizzo del sito.</li>
+      <li>Premi <strong>Analizza e compila automaticamente</strong>.</li>
+      <li>Controlla i campi contrassegnati come <span class="field-flag guessed">\u2192 da validare</span>.</li>
+    </ol>
+
+    <h4>2. Cosa significano le etichette</h4>
+    <p><span class="field-flag verified">\u2713 dal sito</span> il valore è stato letto davvero dalle pagine pubbliche.<br>
+    <span class="field-flag guessed">\u2192 da validare</span> è una deduzione ragionevole: confermala o correggila.</p>
+
+    <h4>3. Se la lettura automatica non riesce</h4>
+    <p>Il browser, per sicurezza, non può sempre leggere siti di altri domini. In quel caso:</p>
+    <ul>
+      <li><strong>Verifica connessione</strong> ti dice quale canale è bloccato.</li>
+      <li><strong>Inserisci i dati manualmente</strong> ti fa incollare il codice della homepage (<span class="kbd">Ctrl+U</span> sul sito) o l’elenco degli URL: il risultato è identico.</li>
+    </ul>
+
+    <h4>4. Le tre modalità</h4>
+    <ul>
+      <li><strong>Guidata</strong>: solo l’essenziale, consigliata a chi inizia.</li>
+      <li><strong>Avanzata</strong>: tutti i moduli professionali.</li>
+      <li><strong>Tema</strong>: automatico, chiaro o scuro, con il pulsante accanto a questo.</li>
+    </ul>
+
+    <h4>5. I tuoi dati</h4>
+    <p>Restano nel browser di questo computer. Usa <strong>Backup</strong> per esportare un file e non perderli.</p>
+
+    <h4>Scorciatoie</h4>
+    <p><span class="kbd">Esc</span> chiude finestre e pannelli.</p>
+  </div>`,'help');
+}
+
 function quickActions(){
  openDrawer('Quick Actions',`<div class="grid">
  <button class="btn" data-quick="pages">+ Pagina</button><button class="btn" data-quick="keywords">+ Keyword</button><button class="btn" data-quick="issues">+ Problema</button><button class="btn" data-quick="tasks">+ Task</button><button class="btn" data-quick="milestones">+ Milestone</button><button class="btn" data-quick="snap">Crea snapshot</button>
@@ -3443,22 +4145,47 @@ document.getElementById('backdrop').onclick=()=>{if(document.getElementById('dra
 document.getElementById('mobileMenuBtn').onclick=openMobile;
 document.getElementById('quickBtn').onclick=quickActions;
 document.getElementById('modeBtn').onclick=()=>{state.ui.mode=state.ui.mode==='Executive'?'Consultant':'Executive';commit('Modalità cambiata');setupTopbar();render();};
-document.getElementById('themeBtn').onclick=()=>{state.ui.theme=state.ui.theme==='dark'?'light':'dark';commit('Tema cambiato');applyTheme();};
+document.getElementById('themeBtn').onclick=()=>{
+  const cycle={system:'light',light:'dark',dark:'system'};
+  state.ui.theme=cycle[state.ui.theme]||'light';
+  commit('Tema cambiato');
+  applyTheme();
+  setupTopbar();
+  toast(`Tema: ${THEME_LABELS[state.ui.theme]}`);
+};
+let searchTimer=null;
 document.getElementById('globalSearch').oninput=e=>{
- const q=e.target.value.trim().toLowerCase();
+ const value=e.target.value;
+ clearTimeout(searchTimer);
+ searchTimer=setTimeout(()=>runGlobalSearch(value),220);
+};
+function runGlobalSearch(value){
+ const q=String(value||'').trim().toLowerCase();
  if(q.length<2){if(document.getElementById('drawer').dataset.kind==='search')closeDrawer();return;}
  const groups=[['Pages',byProject(state.pages),'pageName'],['Keywords',byProject(state.keywords),'keyword'],['Issues',byProject(state.issues),'title'],['Tasks',byProject(state.tasks),'title'],['Decisions',byProject(state.decisions),'title']];
  const hits=[]; groups.forEach(([type,arr,key])=>arr.forEach(r=>{if(JSON.stringify(r).toLowerCase().includes(q))hits.push({type,label:r[key]||r.title||r.name||r.id});}));
  openDrawer('Risultati della ricerca',hits.length?hits.slice(0,30).map(h=>`<button type="button" class="nav-btn" data-search-nav="${h.type}"><strong>${esc(h.label)}</strong><div class="muted">${esc(navLabel(h.type))}</div></button>`).join(''):`<div class="empty"><strong>Nessun risultato</strong><p>Prova con un termine diverso o più breve.</p></div>`,'search');
  document.querySelectorAll('[data-search-nav]').forEach(b=>b.onclick=()=>{state.ui.activeView=b.dataset.searchNav;closeDrawer();render();});
-};
+}
 
 window.addEventListener('error',e=>{console.error('OGOS runtime error',e.error||e.message);});
-window.addEventListener('unhandledrejection',e=>{console.error('OGOS promise error',e.reason);toast('Si è verificato un errore inatteso. I dati già salvati restano disponibili.');});
+window.addEventListener('unhandledrejection',e=>{
+  const reason=String(e.reason?.message||e.reason||'');
+  console.error('OGOS promise error',e.reason);
+  /* i fallimenti di rete durante la lettura del sito sono previsti e
+     gia' comunicati nell'overlay: non vanno segnalati come errori */
+  if(/annullata|aborted|Nessun canale|HTTP \d+|Failed to fetch|NetworkError|risposta vuota/i.test(reason))return;
+  toast('Si è verificato un errore inatteso. I dati già salvati restano disponibili.');
+});
 window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);state.ui.lastSaved=now();storage.save(state);});
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){
-   if(document.getElementById('drawer').classList.contains('open'))closeDrawer();
+   const overlay=document.getElementById('scanOverlay');
+   if(overlay?.classList.contains('show')){
+     if(scanAbort)scanAbort.abort();
+     else {closeScanOverlay();render();}
+   }
+   else if(document.getElementById('drawer').classList.contains('open'))closeDrawer();
    else if(document.getElementById('sidebar').classList.contains('open'))closeMobile();
  }
  if(e.key==='Tab'&&document.getElementById('drawer').classList.contains('open')){
@@ -3466,8 +4193,30 @@ document.addEventListener('keydown',e=>{
    if(focusable.length){const first=focusable[0],last=focusable[focusable.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
  }
 });
+/* --- avvio --- */
+document.getElementById('scanCancelBtn').onclick=()=>{
+  if(scanAbort){scanAbort.abort();scanLog('Annullamento richiesto…','err');}
+  else closeScanOverlay();
+};
+document.getElementById('scanCloseBtn').onclick=()=>{closeScanOverlay();render();};
+document.getElementById('helpBtn').onclick=openHelpDrawer;
+
+initTheme();
+state.ui.scanning=false;
 runAutomationCycle(false);
 setupTopbar(); render();
+
+/* Superficie di ispezione per i test automatici. Non viene mai
+   esposta in produzione: si attiva solo se l'harness imposta
+   window.__OGOS_DEBUG__ prima del caricamento dello script. */
+if(window.__OGOS_DEBUG__){
+  window.__OGOS__={
+    get state(){return state;},
+    currentProject,byProject,wizardState,render,
+    analyzeCurrentWebsite,autoFillProjectFields,domainSeed,
+    normalizeSiteDomain,fetchPublicSiteText,detectFromSiteFlow
+  };
+}
 })();
 </script>
 </body>
