@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS V5.1: controllo guidato, import Search Console robusto, compilazione automatica dal sito e piano operativo prioritario scaricabile.">
+<meta name="description" content="Organic Growth OS V5.2: wizard SEO a percorsi, task sequenziali, verifica dei risultati e report operativo scaricabile.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
 <title>Organic Growth OS</title>
@@ -104,7 +104,7 @@ textarea{min-height:110px;resize:vertical}.form-grid{display:grid;grid-template-
 @media(max-width:700px){.import-choice{grid-template-columns:1fr}.page-actions{width:100%}.page-actions .btn{flex:1}}
 
 
-/* V4.1 Guided UX + Auto Verification */
+/* V5.2 Guided UX + Auto Verification */
 .guide-shell{max-width:980px;margin:0 auto}
 .guide-progress{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
 .guide-step{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:var(--surface-alt);font-size:13.4px;color:var(--muted)}
@@ -388,7 +388,7 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
 
 
 /* ============================================================
-   NUOVI COMPONENTI V5.1
+   NUOVI COMPONENTI V5.2
    ============================================================ */
 
 /* --- Overlay di analisi (visibile da qualsiasi schermata) --- */
@@ -443,11 +443,20 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
 .is-busy{pointer-events:none;opacity:.65}
 .hint-inline{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--surface-alt);border:1px solid var(--border);color:var(--muted);font-size:16px}
 
-/* V5.1 — piano operativo leggibile e sequenziale */
+/* V5.2 — piano operativo leggibile e sequenziale */
 .task-plan{display:grid;gap:14px}.task-plan-card{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:16px;align-items:start;border:1px solid var(--border);border-radius:16px;background:var(--surface);padding:18px}
 .task-plan-card.current{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 5%,var(--surface))}.task-order{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--surface-alt);font-weight:900}.task-plan-card.current .task-order{background:var(--accent);color:var(--on-accent)}
 .task-plan-card h4{font-size:19px;margin:0 0 6px}.task-why{color:var(--muted);margin:0 0 10px}.task-steps{margin:8px 0 0;padding-left:22px}.task-steps li{margin:5px 0}.task-check{margin-top:10px;padding:10px 12px;border-left:3px solid var(--success);background:var(--surface-alt);border-radius:8px}.completed-history summary{font-weight:800;cursor:pointer;padding:6px 0}.completed-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border)}
 @media(max-width:760px){.task-plan-card{grid-template-columns:44px minmax(0,1fr)}.task-plan-card>.task-actions{grid-column:1/-1}.task-actions .btn{width:100%}.completed-row{display:block}}
+
+/* V5.2 — Wizard a percorsi */
+.journey-shell{max-width:1180px;margin:0 auto}.journey-hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;margin-bottom:24px}.journey-hero h3{font-size:34px;line-height:1.15;margin:0 0 8px}.journey-hero p{max-width:760px;margin:0;color:var(--muted)}
+.journey-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.journey-card{position:relative;display:grid;grid-template-columns:56px minmax(0,1fr);gap:16px;border:1px solid var(--border);border-radius:20px;background:var(--surface);padding:22px;text-align:left;color:inherit;box-shadow:var(--shadow);min-height:230px}.journey-card:hover{border-color:var(--accent);transform:translateY(-1px)}.journey-card.recommended{border-width:2px;border-color:color-mix(in srgb,var(--accent) 55%,var(--border))}.journey-card.completed{opacity:.88}.journey-icon{width:52px;height:52px;border-radius:15px;background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent);display:grid;place-items:center}.journey-icon svg{width:27px;height:27px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}.journey-card h4{font-size:21px;line-height:1.25;margin:2px 0 8px}.journey-card p{color:var(--muted);margin:0 0 16px}.journey-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}.journey-card-body{display:flex;flex-direction:column;min-width:0}.journey-card-action{margin-top:18px;display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--accent);font-weight:850}.journey-status{font-weight:800}.journey-status.todo{color:var(--muted)}.journey-status.progress,.journey-status.verify{color:var(--warning)}.journey-status.done{color:var(--success)}
+.journey-top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}.journey-back{border:0;background:transparent;color:var(--accent);padding:8px 0;font-weight:800}.journey-progress{display:grid;grid-template-columns:repeat(var(--journey-steps),minmax(70px,1fr));gap:8px;margin-bottom:20px;overflow:auto}.journey-progress-item{min-width:78px;padding:10px 8px;border:1px solid var(--border);border-radius:11px;background:var(--surface-alt);color:var(--muted);text-align:center;font-size:15px;font-weight:750}.journey-progress-item.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.journey-progress-item.done{color:var(--success);border-color:color-mix(in srgb,var(--success) 45%,var(--border))}
+.journey-step-card{border:1px solid var(--border);border-radius:22px;background:var(--surface);padding:28px;box-shadow:var(--shadow)}.journey-step-number{color:var(--accent);font-weight:850;margin-bottom:8px}.journey-step-card h3{font-size:30px;line-height:1.2;margin:0 0 10px}.journey-step-lead{font-size:19px;color:var(--muted);max-width:850px;margin:0}.journey-explain{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}.journey-explain>div{padding:16px;border:1px solid var(--border);border-radius:14px;background:var(--surface-alt)}.journey-explain strong{display:block;margin-bottom:5px}.journey-main-action{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}.journey-main-action .btn.primary{min-width:220px}.journey-footer-actions{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}.journey-requirement{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-weight:800}.journey-requirement.required{color:var(--danger)}.journey-requirement.recommended{color:var(--warning)}.journey-requirement.optional{color:var(--muted)}
+.journey-data-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:20px}.journey-data-card{border:1px solid var(--border);border-radius:15px;background:var(--surface-alt);padding:16px}.journey-data-card .value{font-size:28px;font-weight:900;margin-bottom:4px}.journey-problem-list{display:grid;gap:12px;margin-top:20px}.journey-problem{border:1px solid var(--border);border-radius:15px;padding:16px;background:var(--surface-alt)}.journey-problem h4{font-size:18px;margin:0 0 6px}.journey-problem p{margin:5px 0;color:var(--muted)}.journey-problem-url{overflow-wrap:anywhere;color:var(--accent);font-weight:700}.journey-empty{margin-top:20px;border:1px dashed var(--border);border-radius:15px;padding:20px;background:var(--surface-alt)}
+@media(max-width:840px){.journey-grid{grid-template-columns:1fr}.journey-hero{display:block}.journey-hero .btn{margin-top:14px;width:100%}.journey-explain{grid-template-columns:1fr}.journey-data-grid{grid-template-columns:1fr}.journey-step-card{padding:20px}.journey-step-card h3{font-size:26px}}
+@media(max-width:520px){.journey-card{grid-template-columns:46px minmax(0,1fr);padding:17px}.journey-icon{width:44px;height:44px}.journey-card-action{display:block}.journey-card-action .journey-status{display:block;margin-bottom:8px}.journey-main-action .btn,.journey-footer-actions .btn{width:100%}}
 
 /* --- Diagnostica connessione --- */
 .diag-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);align-items:center}
@@ -488,7 +497,7 @@ html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,v
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.1</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.2</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -2404,7 +2413,7 @@ function absoluteSiteUrl(value){
 }
 
 /* ============================================================
-   MOTORE DI LETTURA DEL SITO (V5.1)
+   MOTORE DI LETTURA DEL SITO (V5.2)
    Il browser blocca le richieste cross-origin (CORS): senza una
    catena di ripieghi la lettura automatica fallisce quasi sempre.
    Qui proviamo: accesso diretto -> piu' servizi pubblici di sola
@@ -2538,7 +2547,7 @@ function pageSignalsFromHtml(html,url){
 }
 
 /* ============================================================
-   COMPILAZIONE AUTOMATICA DEI CAMPI PROGETTO (V5.1)
+   COMPILAZIONE AUTOMATICA DEI CAMPI PROGETTO (V5.2)
    Regola: si compilano SOLO i campi vuoti, mai si sovrascrive
    quello che ha scritto la persona. Ogni campo compilato viene
    marcato con la sua origine:
@@ -2954,7 +2963,7 @@ function updateScanProgress(key,status,text){
 }
 
 /* ============================================================
-   ANALISI DEL SITO (V5.1)
+   ANALISI DEL SITO (V5.2)
    - progresso sempre visibile (overlay), da qualunque schermata
    - annullabile
    - non parte due volte in parallelo
@@ -3594,7 +3603,7 @@ function wizardTechnicalDetails(f){
   return `<details class="wz-tech"><summary>Mostra dettagli tecnici</summary><pre>${esc(f.technical||'Nessun dettaglio aggiuntivo.')}</pre></details>`;
 }
 
-function smartWizardView(){
+function legacySmartWizardView(){
   const w=wizardState();
   const p=currentProject();
   const active=wizardFindingObjects();
@@ -3737,35 +3746,278 @@ function smartWizardView(){
   </div>`;
 }
 
+/* ============================================================
+   WIZARD A PERCORSI — V5.2
+   Ogni percorso mostra un solo obiettivo per schermata e salva
+   automaticamente avanzamento, salti facoltativi e verifiche.
+   ============================================================ */
+function guidedPathsState(){
+  const p=currentProject();
+  p.guidedPaths=p.guidedPaths||{activeId:'',paths:{},updatedAt:null};
+  p.guidedPaths.paths=p.guidedPaths.paths||{};
+  return p.guidedPaths;
+}
+function guidedPathRecord(id){
+  const root=guidedPathsState();
+  root.paths[id]=root.paths[id]||{current:0,startedAt:null,updatedAt:null,flags:{},skipped:{},lastMessage:''};
+  root.paths[id].flags=root.paths[id].flags||{};root.paths[id].skipped=root.paths[id].skipped||{};
+  return root.paths[id];
+}
+function pathFlag(pathId,key){return Boolean(guidedPathRecord(pathId).flags[key]);}
+function pathSkipped(pathId,key){return Boolean(guidedPathRecord(pathId).skipped[key]);}
+function activeOpenTasks(){return byProject(state.tasks).filter(task=>!['DONE','VERIFIED','CLOSED'].includes(String(task.status||'TODO').toUpperCase()));}
+function openPriorityIssues(){return byProject(state.issues).filter(issue=>!['VERIFIED','CLOSED'].includes(String(issue.status||'').toUpperCase())&&['CRITICAL','HIGH'].includes(String(issue.severity||'').toUpperCase()));}
+function mappedKeywords(){return byProject(state.keywords).filter(keyword=>keyword.keyword&&keyword.targetUrl);}
+function pageImprovementPlan(){
+  const pages=byProject(state.pages),titleCounts={};
+  pages.forEach(page=>{const title=String(page.title||'').trim().toLowerCase();if(title)titleCounts[title]=(titleCounts[title]||0)+1;});
+  return pages.map(page=>{
+    const actions=[];
+    if(!page.title)actions.push('Aggiungi un title chiaro e specifico.');
+    if(page.title&&titleCounts[String(page.title).trim().toLowerCase()]>1)actions.push('Differenzia il title dalle altre pagine.');
+    if(!page.h1)actions.push('Aggiungi un H1 coerente con l’argomento principale.');
+    if(!page.meta)actions.push('Scrivi una meta description utile e orientata al clic.');
+    if(!page.canonicalUrl)actions.push('Verifica o aggiungi la URL canonical.');
+    if(page.indexable===false)actions.push('Controlla se il blocco di indicizzazione è intenzionale.');
+    if(!page.primaryKeyword)actions.push('Assegna una keyword o un intento principale.');
+    const priority=page.indexable===false||!page.title||!page.h1?'Alta':actions.length>=3?'Consigliata':'Opzionale';
+    return {page,actions,priority,score:(priority==='Alta'?100:priority==='Consigliata'?60:20)+actions.length};
+  }).filter(item=>item.actions.length).sort((a,b)=>b.score-a.score);
+}
+function keywordJourneyInsights(){
+  const keywords=byProject(state.keywords),pages=byProject(state.pages);
+  const unmapped=keywords.filter(keyword=>keyword.keyword&&!keyword.targetUrl);
+  const pagesWithout=pages.filter(page=>!page.primaryKeyword&&!keywords.some(keyword=>keyword.targetUrl&&[page.displayUrl,page.normalizedUrl,page.canonicalUrl].includes(keyword.targetUrl)));
+  const groups={};keywords.filter(keyword=>keyword.keyword&&keyword.targetUrl).forEach(keyword=>{const key=String(keyword.keyword).trim().toLowerCase();(groups[key]||(groups[key]=[])).push(keyword);});
+  const cannibalizations=Object.entries(groups).filter(([,items])=>new Set(items.map(item=>item.targetUrl)).size>1).map(([keyword,items])=>({keyword,items}));
+  return {unmapped,pagesWithout,cannibalizations};
+}
+function guidedJourneyDefinitions(){
+  const p=currentProject(),pages=byProject(state.pages),gsc=byProject(state.gscRecords),datasets=byProject(state.datasets),keywords=byProject(state.keywords),issues=openPriorityIssues(),tasks=activeOpenTasks(),insights=keywordJourneyInsights();
+  const validImports=datasets.length===0||datasets.every(dataset=>Number(dataset.records||0)>0);
+  return [
+    {id:'setup',icon:'settings',title:'Configura il progetto',description:'Prepara dominio, pagine e dati necessari prima dell’analisi.',duration:'circa 8 minuti',priority:(!p.domain||!pages.length)?'Alta':'Consigliata',steps:[
+      {id:'domain',title:'Inserisci o verifica il sito',summary:'Controlliamo qual è il dominio principale del progetto.',why:'Il dominio permette di riconoscere le URL corrette ed evitare import associati al sito sbagliato.',result:'Il progetto sarà collegato al sito corretto.',requirement:'Obbligatorio',target:'Project',actionLabel:p.domain?'Verifica il dominio':'Inserisci il dominio',done:()=>Boolean(normalizeSiteDomain(p.domain))},
+      {id:'pages',title:'Aggiungi le pagine del sito',summary:'Importa una sitemap, un Page Inventory oppure rileva automaticamente le URL.',why:'Senza l’elenco delle pagine non possiamo stabilire cosa analizzare e migliorare.',result:'Vedrai tutte le pagine disponibili nel progetto.',requirement:'Obbligatorio',target:'Pages',actionLabel:pages.length?'Controlla le pagine':'Aggiungi pagine del sito',done:()=>pages.length>0},
+      {id:'gsc',title:'Collega i dati Search Console',summary:'Importa uno o più file CSV se Search Console ha già raccolto dati.',why:'Click, impressioni e query rendono le priorità più affidabili. Puoi continuare anche senza questi dati.',result:'Le opportunità saranno basate su dati reali di ricerca.',requirement:'Consigliato',target:'Search Console',actionLabel:gsc.length?'Controlla i dati importati':'Importa Search Console',skipLabel:'Continua senza Search Console',done:()=>gsc.length>0||pathSkipped('setup','gsc')},
+      {id:'validate',title:'Verifica i file importati',summary:validImports?'I file registrati contengono righe dati valide.':'Uno o più file non contengono righe utilizzabili.',why:'Un file vuoto o letto con colonne errate non deve influenzare l’analisi.',result:'Useremo soltanto dati che hanno superato il controllo.',requirement:'Obbligatorio',target:'Import',actionLabel:validImports?'Rivedi gli import':'Correggi gli import',done:()=>pages.length>0&&validImports},
+      {id:'confirm',title:'Conferma la configurazione',summary:`Il progetto contiene ${pages.length} pagine, ${keywords.length} keyword e ${gsc.length} record Search Console.`,why:'La conferma chiude la preparazione e rende chiaro cosa entrerà nell’analisi.',result:'Potrai avviare il controllo tecnico con una base dati ordinata.',requirement:'Obbligatorio',autoAction:'confirm-setup',actionLabel:'Conferma e completa',done:()=>pathFlag('setup','confirmed')}
+    ]},
+    {id:'technical',icon:'scan',title:'Controlla la SEO tecnica',description:'Trova errori tecnici e affronta prima quelli che possono bloccare il sito.',duration:'circa 10 minuti',priority:issues.length?'Alta':'Consigliata',steps:[
+      {id:'scan',title:'Avvia la scansione',summary:'Leggiamo le pagine pubbliche senza modificare il sito.',why:'La scansione aggiorna title, H1, canonical, indicizzabilità e problemi verificabili.',result:'Otterrai un riepilogo semplice e aggiornato.',requirement:'Obbligatorio',autoAction:'scan-site',actionLabel:p.websiteScan?.status==='completed'?'Ripeti la scansione':'Avvia scansione',done:()=>p.websiteScan?.status==='completed'},
+      {id:'summary',title:'Guarda il riepilogo',summary:`Sono disponibili ${pages.length} pagine e ${byProject(state.issues).length} segnalazioni.`,why:'Prima dei dettagli serve capire la dimensione generale del controllo.',result:'Saprai quante pagine sono sane e quante richiedono attenzione.',requirement:'Obbligatorio',autoAction:'ack-technical-summary',actionLabel:'Ho capito il riepilogo',done:()=>pathFlag('technical','summary')},
+      {id:'priorities',title:'Esamina i problemi prioritari',summary:issues.length?`Ci sono ${issues.length} problemi ad alta priorità.`:'Non risultano problemi tecnici ad alta priorità.',why:'Mostriamo prima ciò che può incidere maggiormente su scansione, indicizzazione o comprensione della pagina.',result:'Avrai un ordine di intervento chiaro.',requirement:'Obbligatorio',autoAction:'ack-technical-priorities',actionLabel:issues.length?'Mostra i problemi':'Continua',done:()=>pathFlag('technical','priorities')||issues.length===0},
+      {id:'instructions',title:'Apri le istruzioni del problema',summary:'Ogni problema include causa, impatto, URL e azione consigliata.',why:'Non devi interpretare da solo termini o dati tecnici.',result:'Saprai esattamente cosa modificare e su quali pagine.',requirement:'Obbligatorio',target:'Issues',actionLabel:issues.length?'Apri istruzioni':'Rivedi tutti i controlli',done:()=>issues.length===0||pathFlag('technical','instructions')},
+      {id:'resolve',title:'Completa le correzioni',summary:issues.length?`${issues.length} problemi richiedono ancora una correzione o una decisione.`:'Le priorità tecniche risultano risolte.',why:'Una segnalazione non diventa risolta soltanto perché è stata aperta.',result:'I problemi corretti passeranno alla verifica.',requirement:'Obbligatorio',target:'Issues',actionLabel:issues.length?'Continua le correzioni':'Continua',done:()=>issues.length===0},
+      {id:'verify',title:'Verifica di nuovo',summary:'Ripetiamo il controllo prima di dichiarare il percorso completato.',why:'La verifica evita falsi stati di successo.',result:'Riceverai conferma oppure nuove istruzioni.',requirement:'Obbligatorio',autoAction:'verify-technical',actionLabel:'Verifica adesso',done:()=>pathFlag('technical','verified')&&issues.length===0}
+    ]},
+    {id:'content',icon:'pages',title:'Migliora pagine e contenuti',description:'Scopri quali pagine migliorare, perché e in quale ordine.',duration:'circa 12 minuti',priority:pages.length?'Consigliata':'Alta',steps:[
+      {id:'analyze',title:'Analizza pagine e contenuti',summary:'Controlliamo title, H1, meta description, canonical, keyword e indicizzabilità.',why:'Questi elementi aiutano Google e le persone a capire il contenuto della pagina.',result:'Otterrai una lista ordinata di pagine da migliorare.',requirement:'Obbligatorio',autoAction:'analyze-content',actionLabel:'Analizza le pagine',done:()=>pages.length>0&&pathFlag('content','analyzed')},
+      {id:'priority-pages',title:'Guarda le pagine prioritarie',summary:`Sono state individuate ${pageImprovementPlan().length} pagine con possibili miglioramenti.`,why:'Partiamo dalle pagine con più problemi verificabili.',result:'Saprai quale pagina affrontare per prima.',requirement:'Obbligatorio',autoAction:'ack-content-pages',actionLabel:'Mostra le pagine',done:()=>pathFlag('content','pages')||pageImprovementPlan().length===0},
+      {id:'improvement',title:'Apri il piano della prima pagina',summary:'Il piano unisce problema, opportunità, intento e azioni suggerite.',why:'Una lista generica non basta: ogni pagina richiede istruzioni contestuali.',result:'Avrai una mini-procedura concreta per la pagina.',requirement:'Obbligatorio',target:'Pages',actionLabel:'Apri piano di miglioramento',done:()=>pageImprovementPlan().length===0||pathFlag('content','reviewed')},
+      {id:'tasks',title:'Trasforma i suggerimenti in task',summary:'Creiamo attività operative soltanto dai problemi realmente rilevati.',why:'Le analisi diventano utili quando producono un lavoro ordinato e verificabile.',result:'Le task compariranno nel Piano operativo.',requirement:'Obbligatorio',autoAction:'create-content-tasks',actionLabel:'Crea task consigliate',done:()=>pathFlag('content','tasks')},
+      {id:'next-page',title:'Passa alla pagina successiva',summary:'Quando una pagina è completata, proponiamo automaticamente la successiva.',why:'Mantieni il focus su un elemento alla volta.',result:'Il percorso continuerà senza farti scegliere tra decine di funzioni.',requirement:'Obbligatorio',autoAction:'complete-content',actionLabel:'Completa il percorso',done:()=>pathFlag('content','completed')}
+    ]},
+    {id:'keywords',icon:'keyword',title:'Organizza keyword e opportunità',description:'Collega keyword e pagine, trova vuoti e possibili sovrapposizioni.',duration:'circa 10 minuti',priority:keywords.length&&mappedKeywords().length?'Consigliata':'Alta',steps:[
+      {id:'import',title:'Aggiungi o rileva le keyword',summary:'Puoi importarle oppure generare una prima proposta dalle pagine esistenti.',why:'Le keyword danno un focus alle pagine, ma non inventiamo volumi o posizioni.',result:'Avrai keyword tracciabili con origine dichiarata.',requirement:'Obbligatorio',autoAction:pages.length?'generate-keywords':'open-keywords',target:'Keywords',actionLabel:pages.length?'Rileva keyword dalle pagine':'Aggiungi keyword',done:()=>keywords.length>0},
+      {id:'mapping',title:'Collega keyword e pagine',summary:`${mappedKeywords().length} keyword su ${keywords.length} hanno una pagina target.`,why:'Ogni keyword principale dovrebbe avere una destinazione chiara.',result:'Saprai quale pagina deve rispondere a ogni ricerca.',requirement:'Obbligatorio',target:'Keywords',actionLabel:'Controlla le associazioni',done:()=>keywords.length>0&&mappedKeywords().length===keywords.length},
+      {id:'unmapped',title:'Controlla le keyword senza pagina',summary:`${insights.unmapped.length} keyword non hanno ancora una pagina target.`,why:'Una keyword senza destinazione non può diventare un’attività concreta.',result:'Potrai assegnarla a una pagina o creare un piano contenuto.',requirement:'Obbligatorio',target:'Keywords',actionLabel:insights.unmapped.length?'Assegna a una pagina':'Continua',done:()=>insights.unmapped.length===0},
+      {id:'pages-without',title:'Controlla le pagine senza keyword',summary:`${insights.pagesWithout.length} pagine non hanno una keyword principale collegata.`,why:'Una pagina senza focus può sovrapporsi ad altre o risultare poco chiara.',result:'Potrai definire intento e priorità della pagina.',requirement:'Consigliato',target:'Pages',actionLabel:insights.pagesWithout.length?'Apri le pagine':'Continua',skipLabel:'Rimanda questo controllo',done:()=>insights.pagesWithout.length===0||pathSkipped('keywords','pages-without')},
+      {id:'cannibalization',title:'Verifica possibili cannibalizzazioni',summary:`${insights.cannibalizations.length} keyword risultano collegate a più URL.`,why:'Più pagine sullo stesso intento possono competere tra loro.',result:'Potrai confrontare, differenziare, unire o scegliere la pagina principale.',requirement:'Consigliato',target:'Keywords',actionLabel:insights.cannibalizations.length?'Confronta pagine':'Continua',done:()=>pathFlag('keywords','cannibalization')||insights.cannibalizations.length===0},
+      {id:'keyword-tasks',title:'Crea le attività consigliate',summary:'Trasformiamo soltanto i vuoti e le sovrapposizioni ancora presenti in task.',why:'Il piano deve dire cosa fare, non limitarsi a mostrare dati.',result:'Le attività keyword entreranno nel Piano operativo.',requirement:'Obbligatorio',autoAction:'create-keyword-tasks',actionLabel:'Crea task keyword',done:()=>pathFlag('keywords','tasks')}
+    ]},
+    {id:'tasks',icon:'tasks',title:'Segui il piano operativo',description:'Completa una task alla volta, verifica il risultato e passa alla successiva.',duration:'variabile',priority:tasks.some(task=>task.priority==='P1'||task.priority==='P2')?'Alta':'Consigliata',steps:[
+      {id:'sync',title:'Aggiorna il piano',summary:'Sincronizziamo problemi, suggerimenti approvati e task già completate.',why:'Il piano deve riflettere sempre lo stato reale del progetto.',result:'Vedrai soltanto le attività ancora utili.',requirement:'Obbligatorio',autoAction:'sync-tasks',actionLabel:'Aggiorna il piano',done:()=>pathFlag('tasks','synced')},
+      {id:'priority',title:'Conferma la priorità',summary:tasks.length?`La prima attività utile è “${tasks.sort((a,b)=>String(a.priority).localeCompare(String(b.priority)))[0]?.title||'Attività'}”.`:'Non risultano attività aperte.',why:'Bloccanti e alta priorità vengono prima dei miglioramenti facoltativi.',result:'Saprai sempre da quale task iniziare.',requirement:'Obbligatorio',autoAction:'ack-task-priority',actionLabel:tasks.length?'Mostra la prima task':'Continua',done:()=>pathFlag('tasks','priority')||tasks.length===0},
+      {id:'do-task',title:'Completa la task corrente',summary:'Segui le istruzioni mostrate senza aprire funzioni non necessarie.',why:'Una sola attività alla volta riduce errori e dispersione.',result:'La task passerà allo stato “Da verificare”.',requirement:'Obbligatorio',autoAction:'complete-current-task',actionLabel:tasks.length?'Segna come completata':'Nessuna task aperta',done:()=>Boolean(guidedPathRecord('tasks').pendingTaskId)||tasks.length===0},
+      {id:'verify-task',title:'Verifica il risultato',summary:'Controlliamo che il problema sia realmente risolto prima di chiudere la task.',why:'L’esecuzione di un’azione non garantisce da sola il risultato.',result:'La task sarà verificata oppure tornerà tra le attività da completare.',requirement:'Obbligatorio',autoAction:'verify-current-task',actionLabel:'Verifica adesso',done:()=>pathFlag('tasks','lastVerified')||tasks.length===0},
+      {id:'next-task',title:'Vai alla prossima attività',summary:activeOpenTasks().length?'Il piano contiene ancora attività da affrontare.':'Tutte le attività disponibili risultano completate.',why:'Il sistema ricalcola la priorità dopo ogni verifica.',result:'Vedrai automaticamente il prossimo passo più utile.',requirement:'Obbligatorio',autoAction:'next-task',actionLabel:activeOpenTasks().length?'Mostra la prossima task':'Completa il percorso',done:()=>pathFlag('tasks','completed')}
+    ]},
+    {id:'report',icon:'report',title:'Verifica e scarica il report',description:'Controlla risultati, problemi aperti e priorità successive.',duration:'circa 5 minuti',priority:'Opzionale',steps:[
+      {id:'completed',title:'Rivedi ciò che è stato completato',summary:`${byProject(state.tasks).filter(task=>['DONE','VERIFIED'].includes(String(task.status||'').toUpperCase())).length} task risultano completate o verificate.`,why:'Il riepilogo rende visibile il lavoro già svolto.',result:'Avrai una traccia chiara dei progressi.',requirement:'Consigliato',autoAction:'ack-report-completed',actionLabel:'Rivedi i risultati',done:()=>pathFlag('report','completed')},
+      {id:'open',title:'Controlla cosa rimane aperto',summary:`${activeOpenTasks().length} task e ${openPriorityIssues().length} problemi prioritari risultano ancora aperti.`,why:'Il report deve distinguere chiaramente fatto, da verificare e ancora da fare.',result:'Eviterai di considerare terminato un lavoro incompleto.',requirement:'Obbligatorio',autoAction:'ack-report-open',actionLabel:'Mostra ciò che rimane',done:()=>pathFlag('report','open')},
+      {id:'verification',title:'Controlla i risultati da verificare',summary:`${byProject(state.tasks).filter(task=>String(task.status||'').toUpperCase()==='DONE').length} task attendono una verifica finale.`,why:'Le attività non verificate restano separate dai successi confermati.',result:'Saprai quali controlli ripetere.',requirement:'Obbligatorio',autoAction:'ack-report-verification',actionLabel:'Controlla le verifiche',done:()=>pathFlag('report','verification')},
+      {id:'next',title:'Leggi le prossime priorità',summary:'Il piano viene ordinato usando gravità, impatto e dati disponibili.',why:'Il report deve concludersi con un’indicazione operativa.',result:'Saprai esattamente cosa affrontare dopo.',requirement:'Obbligatorio',autoAction:'ack-report-next',actionLabel:'Mostra le priorità',done:()=>pathFlag('report','next')},
+      {id:'download',title:'Scarica il report completo',summary:'Esporta stato, pagine, problemi, task e piano consigliato.',why:'Puoi conservare, condividere o usare il report come piano di lavoro.',result:'Otterrai un documento HTML/PDF oppure i dati CSV.',requirement:'Consigliato',autoAction:'download-report',actionLabel:'Scarica report completo',done:()=>pathFlag('report','downloaded')}
+    ]}
+  ];
+}
+function guidedJourneyIcon(name){
+  const icons={
+    settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V21h-4v-.08A1.7 1.7 0 0 0 8.97 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1.03H3v-4h.08A1.7 1.7 0 0 0 4.6 8.97a1.7 1.7 0 0 0-.34-1.88l-.06-.06L7.03 4.2l.06.06A1.7 1.7 0 0 0 8.97 4.6 1.7 1.7 0 0 0 10 3.05V3h4v.08a1.7 1.7 0 0 0 1.03 1.52 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06a1.7 1.7 0 0 0-.34 1.88A1.7 1.7 0 0 0 20.95 10H21v4h-.08A1.7 1.7 0 0 0 19.4 15Z"/>',
+    scan:'<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="11" cy="11" r="4"/><path d="m14 14 3 3"/>',
+    pages:'<path d="M4 4h12v16H4z"/><path d="M8 8h8M8 12h8M8 16h5M16 7h4v13H8"/>',
+    keyword:'<circle cx="8" cy="15" r="4"/><path d="m11 12 8-8M15 8l3 3M17 6l3 3"/>',
+    tasks:'<path d="M9 5h11M9 12h11M9 19h11"/><path d="m3 5 1 1 2-2M3 12l1 1 2-2M3 19l1 1 2-2"/>',
+    report:'<path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5M9 13h6M9 17h6M9 9h2"/>'
+  };
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[name]||icons.tasks}</svg>`;
+}
+function guidedJourneyStatus(journey){
+  const record=guidedPathRecord(journey.id),done=journey.steps.filter(step=>step.done()).length;
+  if(done===journey.steps.length)return {label:'Completato',className:'done',done,current:journey.steps.length-1};
+  const verify=journey.id==='tasks'&&Boolean(record.pendingTaskId)&&!pathFlag('tasks','lastVerified');
+  if(verify)return {label:'Da verificare',className:'verify',done,current:Math.max(0,journey.steps.findIndex(step=>step.id==='verify-task'))};
+  const started=Boolean(record.startedAt||done),firstOpen=journey.steps.findIndex(step=>!step.done());
+  const saved=Math.max(0,Math.min(record.current??0,journey.steps.length-1));
+  const current=journey.steps[saved]?.done()&&firstOpen>=0?firstOpen:saved;
+  return {label:started?'In corso':'Da iniziare',className:started?'progress':'todo',done,current};
+}
+function guidedJourneyDashboard(){
+  const journeys=guidedJourneyDefinitions().map(journey=>({...journey,status:guidedJourneyStatus(journey)}));
+  const order={Alta:1,Consigliata:2,Opzionale:3};journeys.sort((a,b)=>(a.status.className==='done')-(b.status.className==='done')||(order[a.priority]||9)-(order[b.priority]||9));
+  const next=journeys.find(journey=>journey.status.className!=='done');
+  return `<div class="journey-shell"><div class="journey-hero"><div><h3>Cosa vuoi fare oggi?</h3><p>Scegli un percorso. Ti mostrerò una sola azione alla volta, verificherò il risultato e indicherò automaticamente il passo successivo.</p></div>${next?`<button class="btn primary" data-path-start="${next.id}">Continua dalla priorità consigliata</button>`:'<button class="btn" data-report-export>Scarica il report finale</button>'}</div><div class="journey-grid">${journeys.map(journey=>{
+    const status=journey.status,cta=status.className==='done'?'Rivedi il percorso':status.className==='todo'?'Inizia il percorso':`Riprendi dal passo ${status.current+1}`;
+    return `<article class="journey-card ${journey===next?'recommended':''} ${status.className==='done'?'completed':''}"><div class="journey-icon">${guidedJourneyIcon(journey.icon)}</div><div class="journey-card-body"><div class="badges"><span class="badge ${journey.priority==='Alta'?'danger':journey.priority==='Consigliata'?'info':''}">${esc(journey.priority)}</span></div><h4>${esc(journey.title)}</h4><p>${esc(journey.description)}</p><div class="journey-meta"><span>${journey.steps.length} step</span><span>·</span><span>${esc(journey.duration)}</span></div><div class="journey-card-action"><span class="journey-status ${status.className}">${status.label}</span><button class="btn ${journey===next?'primary':''}" data-path-start="${journey.id}">${esc(cta)}</button></div></div></article>`;
+  }).join('')}</div></div>`;
+}
+function guidedPathExtra(journey,step,index){
+  const pages=byProject(state.pages),issues=openPriorityIssues(),insights=keywordJourneyInsights(),plan=pageImprovementPlan();
+  if(journey.id==='setup'&&step.id==='confirm')return `<div class="journey-data-grid"><div class="journey-data-card"><div class="value">${pages.length}</div>Pagine del sito</div><div class="journey-data-card"><div class="value">${byProject(state.keywords).length}</div>Keyword</div><div class="journey-data-card"><div class="value">${byProject(state.gscRecords).length}</div>Record Search Console</div></div>`;
+  if(journey.id==='technical'&&step.id==='summary'){
+    const all=byProject(state.issues),healthy=Math.max(0,pages.length-new Set(all.map(issue=>issue.url).filter(Boolean)).size);
+    return `<div class="journey-data-grid"><div class="journey-data-card"><div class="value">${pages.length}</div>Pagine analizzate</div><div class="journey-data-card"><div class="value">${issues.length}</div>Problemi prioritari</div><div class="journey-data-card"><div class="value">${healthy}</div>Pagine senza problemi noti</div></div>`;
+  }
+  if(journey.id==='technical'&&['priorities','instructions','resolve'].includes(step.id))return issues.length?`<div class="journey-problem-list">${issues.slice(0,6).map(issue=>`<article class="journey-problem"><div class="badges"><span class="badge danger">${esc(issue.severity||issue.priority||'Alta')}</span><span class="badge">${esc(issue.status||'OPEN')}</span></div><h4>${esc(issue.title||'Problema tecnico')}</h4><p><strong>Perché conta:</strong> ${esc(issue.whyNow||'Può ostacolare la scansione, l’indizzazione o la comprensione della pagina.')}</p>${issue.url?`<div class="journey-problem-url">${esc(issue.url)}</div>`:''}<div class="page-actions" style="margin-top:12px"><button class="btn primary" data-nav="Issues">Apri istruzioni</button><button class="btn" data-issue-resolve="${issue.id}">Segna come risolto</button><button class="btn" data-issue-verify="${issue.id}">Verifica di nuovo</button><button class="btn" data-edit="issues" data-id="${issue.id}">Dettagli</button></div></article>`).join('')}</div>`:'<div class="journey-empty"><strong>Nessun problema prioritario aperto</strong><p class="muted">Puoi passare alla verifica.</p></div>';
+  if(journey.id==='content'&&['priority-pages','improvement'].includes(step.id))return plan.length?`<div class="journey-problem-list">${plan.slice(0,5).map((item,i)=>`<article class="journey-problem"><div class="badges"><span class="badge ${item.priority==='Alta'?'danger':'warning'}">${esc(item.priority)}</span>${i===0?'<span class="badge info">PRIMA PAGINA</span>':''}</div><h4>${esc(item.page.pageName||item.page.title||item.page.displayUrl||'Pagina')}</h4><div class="journey-problem-url">${esc(item.page.displayUrl||item.page.normalizedUrl||'')}</div><p><strong>Cosa migliorare:</strong></p><ul class="task-steps">${item.actions.map(action=>`<li>${esc(action)}</li>`).join('')}</ul><button class="btn primary" data-edit="pages" data-id="${item.page.id}">Apri piano di miglioramento</button></article>`).join('')}</div>`:'<div class="journey-empty"><strong>Nessun miglioramento verificabile rilevato</strong><p class="muted">Le pagine disponibili non presentano campi mancanti tra quelli controllati.</p></div>';
+  if(journey.id==='keywords'&&['unmapped','pages-without','cannibalization'].includes(step.id)){
+    if(step.id==='unmapped')return insights.unmapped.length?`<div class="journey-problem-list">${insights.unmapped.slice(0,8).map(keyword=>`<article class="journey-problem"><h4>Keyword senza pagina dedicata</h4><p>${esc(keyword.keyword)}</p><button class="btn primary" data-edit="keywords" data-id="${keyword.id}">Assegna a una pagina</button></article>`).join('')}</div>`:'<div class="journey-empty"><strong>Tutte le keyword hanno una pagina target</strong></div>';
+    if(step.id==='pages-without')return insights.pagesWithout.length?`<div class="journey-problem-list">${insights.pagesWithout.slice(0,8).map(page=>`<article class="journey-problem"><h4>Pagina senza keyword principale</h4><p>${esc(page.pageName||page.displayUrl)}</p><button class="btn primary" data-edit="pages" data-id="${page.id}">Definisci il focus</button></article>`).join('')}</div>`:'<div class="journey-empty"><strong>Tutte le pagine hanno un focus collegato</strong></div>';
+    return insights.cannibalizations.length?`<div class="journey-problem-list">${insights.cannibalizations.slice(0,6).map(group=>`<article class="journey-problem"><h4>Possibile cannibalizzazione</h4><p>Keyword: <strong>${esc(group.keyword)}</strong></p><p>${esc(group.items.map(item=>item.targetUrl).join(' · '))}</p><button class="btn primary" data-nav="Keywords">Confronta pagine</button></article>`).join('')}</div>`:'<div class="journey-empty"><strong>Nessuna sovrapposizione evidente</strong></div>';
+  }
+  if(journey.id==='tasks'&&['priority','do-task','verify-task','next-task'].includes(step.id)){
+    const record=guidedPathRecord('tasks'),pending=byProject(state.tasks).find(task=>task.id===record.pendingTaskId),task=pending||activeOpenTasks().sort((a,b)=>String(a.priority||'P3').localeCompare(String(b.priority||'P3')))[0];
+    if(!task)return '<div class="journey-empty"><strong>Nessuna task aperta</strong><p class="muted">Il piano è aggiornato con i dati disponibili.</p></div>';
+    const finding=wizardChecks().find(item=>item.id===task.wizardFindingId),steps=finding?.steps||task.steps||[];
+    return `<article class="journey-problem"><div class="badges"><span class="badge ${task.priority==='P1'?'danger':'warning'}">${esc(task.priority||'P3')}</span><span class="badge">${esc(task.status||'TODO')}</span></div><h4>${esc(task.title||'Attività')}</h4><p><strong>Perché:</strong> ${esc(finding?.why||task.why||task.description||'Attività presente nel piano operativo.')}</p>${task.targetView?`<p><strong>Pagina o modulo:</strong> ${esc(navLabel(task.targetView))}</p>`:''}${steps.length?`<ol class="task-steps">${steps.map(item=>`<li>${esc(item)}</li>`).join('')}</ol>`:''}${step.id==='do-task'&&task.targetView?`<button class="btn" data-nav="${esc(task.targetView)}">Apri il modulo collegato</button>`:''}</article>`;
+  }
+  if(journey.id==='report')return `<div class="journey-data-grid"><div class="journey-data-card"><div class="value">${pages.length}</div>Pagine analizzate</div><div class="journey-data-card"><div class="value">${byProject(state.tasks).filter(task=>String(task.status||'').toUpperCase()==='VERIFIED').length}</div>Task verificate</div><div class="journey-data-card"><div class="value">${activeOpenTasks().length}</div>Task aperte</div></div>`;
+  return '';
+}
+function guidedJourneyStepView(journey){
+  const record=guidedPathRecord(journey.id),status=guidedJourneyStatus(journey),index=Math.max(0,Math.min(record.current??status.current,journey.steps.length-1)),step=journey.steps[index],done=step.done();
+  const requirementClass=step.requirement==='Obbligatorio'?'required':step.requirement==='Consigliato'?'recommended':'optional';
+  const actionHtml=done
+    ?(index<journey.steps.length-1?'<button class="btn primary" data-path-next>Passo successivo</button>':'<button class="btn primary" data-path-dashboard>Torna a tutti i percorsi</button>')
+    :`${step.target?`<button class="btn primary" data-path-nav="${esc(step.target)}" data-path-ack="${esc(step.id)}">${esc(step.actionLabel)}</button>`:step.autoAction?`<button class="btn primary" data-path-action="${esc(step.autoAction)}">${esc(step.actionLabel)}</button>`:''}${step.skipLabel?`<button class="btn" data-path-skip="${esc(step.id)}">${esc(step.skipLabel)}</button>`:''}`;
+  return `<div class="journey-shell"><div class="journey-top"><button class="journey-back" data-path-dashboard>← Tutti i percorsi</button><div class="muted">Salvataggio automatico attivo</div></div><div class="journey-progress" style="--journey-steps:${journey.steps.length}">${journey.steps.map((item,i)=>`<button type="button" class="journey-progress-item ${item.done()?'done':i===index?'active':''}" data-path-step="${i}" ${i===index?'aria-current="step"':''}>${item.done()?'✓ ':''}${i+1}. ${esc(item.title.split(' ').slice(0,3).join(' '))}</button>`).join('')}</div><section class="journey-step-card"><div class="journey-step-number">Step ${index+1} di ${journey.steps.length} · ${esc(journey.title)}</div><h3>${esc(step.title)}</h3><p class="journey-step-lead">${esc(step.summary)}</p><div class="journey-requirement ${requirementClass}">${esc(step.requirement)}</div><div class="journey-explain"><div><strong>Perché è importante</strong><span class="muted">${esc(step.why)}</span></div><div><strong>Risultato atteso</strong><span class="muted">${esc(step.result)}</span></div></div>${guidedPathExtra(journey,step,index)}<div class="journey-main-action">${actionHtml}</div><div class="journey-footer-actions"><button class="btn" data-path-prev ${index===0?'disabled':''}>Indietro</button><div class="muted">${done?'Passo completato ✓':'Completa l’azione, poi verifica il risultato.'}</div></div></section></div>`;
+}
+function smartWizardView(){
+  const root=guidedPathsState(),journeys=guidedJourneyDefinitions();
+  const journey=journeys.find(item=>item.id===root.activeId);
+  return journey?guidedJourneyStepView(journey):guidedJourneyDashboard();
+}
+
+function openGuidedJourney(id){
+  const journey=guidedJourneyDefinitions().find(item=>item.id===id);if(!journey)return;
+  const root=guidedPathsState(),record=guidedPathRecord(id);root.activeId=id;record.startedAt=record.startedAt||now();
+  if(record.current>=journey.steps.length)record.current=journey.steps.length-1;
+  const first=journey.steps.findIndex(step=>!step.done());
+  if(first>=0&&journey.steps[record.current]?.done())record.current=first;
+  record.updatedAt=root.updatedAt=now();commit(`Percorso guidato avviato: ${journey.title}`);render();window.scrollTo({top:0,behavior:'smooth'});
+}
+function showGuidedJourneyDashboard(){guidedPathsState().activeId='';guidedPathsState().updatedAt=now();commit('Dashboard percorsi aperta');render();window.scrollTo({top:0,behavior:'smooth'});}
+function setGuidedJourneyStep(index){
+  const root=guidedPathsState(),journey=guidedJourneyDefinitions().find(item=>item.id===root.activeId);if(!journey)return;
+  const target=Math.max(0,Math.min(Number(index),journey.steps.length-1)),current=guidedPathRecord(journey.id).current;
+  if(target>current&&!journey.steps.slice(0,target).every(step=>step.done())){toast('Completa prima il passo corrente.');return;}
+  guidedPathRecord(journey.id).current=target;guidedPathRecord(journey.id).updatedAt=now();commit('Passo del percorso aggiornato');render();window.scrollTo({top:0,behavior:'smooth'});
+}
+function advanceGuidedJourney(){
+  const root=guidedPathsState(),journey=guidedJourneyDefinitions().find(item=>item.id===root.activeId);if(!journey)return;
+  const record=guidedPathRecord(journey.id),step=journey.steps[record.current];
+  if(!step.done()){toast('Il risultato non è ancora verificato. Completa l’azione indicata.');return;}
+  record.current=Math.min(record.current+1,journey.steps.length-1);record.updatedAt=root.updatedAt=now();commit('Passo verificato');render();window.scrollTo({top:0,behavior:'smooth'});
+}
+function createContentTasksFromPlan(){
+  let added=0;pageImprovementPlan().slice(0,12).forEach(item=>{const autoKey=`content:${item.page.id}`;if(byProject(state.tasks).some(task=>task.autoKey===autoKey))return;state.tasks.push({id:uid('task'),projectId:state.currentProjectId,autoKey,systemGenerated:true,title:`Migliora: ${item.page.pageName||item.page.displayUrl}`,description:item.actions.join(' '),why:'Pagina individuata dall’analisi dei campi SEO disponibili.',steps:item.actions,targetView:'Pages',linkedUrl:item.page.displayUrl||item.page.normalizedUrl||'',priority:item.priority==='Alta'?'P2':'P3',status:'TODO',createdAt:now(),updatedAt:now()});added++;});return added;
+}
+function createKeywordTasksFromInsights(){
+  const insights=keywordJourneyInsights();let added=0;
+  insights.unmapped.slice(0,12).forEach(keyword=>{const autoKey=`keyword-unmapped:${keyword.id}`;if(byProject(state.tasks).some(task=>task.autoKey===autoKey))return;state.tasks.push({id:uid('task'),projectId:state.currentProjectId,autoKey,systemGenerated:true,title:`Assegna una pagina a “${keyword.keyword}”`,description:'La keyword non ha ancora una pagina target.',why:'Serve una destinazione chiara per trasformare la keyword in un’attività SEO.',steps:['Apri Keyword Intelligence.','Scegli una pagina esistente oppure pianifica un nuovo contenuto.','Salva e verifica che la Target URL sia compilata.'],targetView:'Keywords',priority:'P2',status:'TODO',createdAt:now(),updatedAt:now()});added++;});
+  insights.cannibalizations.slice(0,8).forEach(group=>{const autoKey=`keyword-cannibalization:${group.keyword}`;if(byProject(state.tasks).some(task=>task.autoKey===autoKey))return;state.tasks.push({id:uid('task'),projectId:state.currentProjectId,autoKey,systemGenerated:true,title:`Confronta le pagine per “${group.keyword}”`,description:'La stessa keyword è collegata a più URL.',why:'Le pagine potrebbero competere tra loro.',steps:['Confronta intento e contenuto delle URL.','Scegli se differenziare, unire o indicare una pagina principale.','Aggiorna il mapping e verifica.'],targetView:'Keywords',priority:'P2',status:'TODO',createdAt:now(),updatedAt:now()});added++;});return added;
+}
+async function handleGuidedPathAction(action){
+  const root=guidedPathsState(),journey=guidedJourneyDefinitions().find(item=>item.id===root.activeId);if(!journey)return;const record=guidedPathRecord(journey.id);
+  const flag=(key,value=true)=>{record.flags[key]=value;record.updatedAt=root.updatedAt=now();};
+  if(action==='scan-site'||action==='verify-technical'){
+    if(!normalizeSiteDomain(currentProject().domain)){state.ui.activeView='Project';commit('Dominio richiesto dal percorso');render();toast('Inserisci prima il dominio del sito.');return;}
+    try{await analyzeCurrentWebsite({force:true});if(action==='verify-technical'&&openPriorityIssues().length===0)flag('verified');record.current=Math.min(record.current+1,journey.steps.length-1);commit('Scansione del percorso completata');render();}catch(e){toast(`Scansione non completata: ${e.message||e}`);}return;
+  }
+  if(action==='generate-keywords'){const added=backfillKeywordsFromPages();flag('generated');commit('Keyword generate dal percorso');toast(added?`${added} keyword proposte.`:'Le keyword disponibili sono già aggiornate.');render();return;}
+  if(action==='open-keywords'){state.ui.activeView='Keywords';commit('Keyword aperte dal percorso');render();return;}
+  if(action==='analyze-content'){if(!byProject(state.pages).length){state.ui.activeView='Pages';commit('Pagine richieste dal percorso');render();toast('Aggiungi prima le pagine del sito.');return;}flag('analyzed');record.current++;commit('Analisi contenuti completata');render();return;}
+  if(action==='create-content-tasks'){const added=createContentTasksFromPlan();flag('tasks');commit('Task contenuti create');toast(`${added} nuove task create. Il sistema ha evitato i duplicati.`);render();return;}
+  if(action==='create-keyword-tasks'){const added=createKeywordTasksFromInsights();flag('tasks');commit('Task keyword create');toast(`${added} nuove task keyword create.`);render();return;}
+  if(action==='sync-tasks'){runAutomationCycle(false);flag('synced');commit('Piano operativo sincronizzato');render();return;}
+  if(action==='complete-current-task'){
+    const task=activeOpenTasks().sort((a,b)=>String(a.priority||'P3').localeCompare(String(b.priority||'P3')))[0];if(!task){flag('completed');render();return;}
+    task.status='DONE';task.completedAt=now();task.updatedAt=now();record.pendingTaskId=task.id;record.flags.lastVerified=false;record.current=Math.min(record.current+1,journey.steps.length-1);commit(`Task completata: ${task.title}`);toast('Task completata. Ora verifichiamo il risultato.');render();return;
+  }
+  if(action==='verify-current-task'){
+    const task=byProject(state.tasks).find(item=>item.id===record.pendingTaskId);if(!task){flag('lastVerified');render();return;}
+    const finding=wizardChecks().find(item=>item.id===task.wizardFindingId),verifiable=Boolean(finding);
+    if(verifiable&&!finding.resolved()){task.status='TODO';task.completedAt='';task.updatedAt=now();record.lastMessage='La task non è ancora risolta: il controllo rileva ancora il problema.';toast(record.lastMessage);commit('Verifica task non superata');render();return;}
+    task.status='VERIFIED';task.verifiedAt=now();task.updatedAt=now();flag('lastVerified');record.lastMessage='Risultato verificato correttamente.';commit(`Task verificata: ${task.title}`);toast('Risultato verificato. Possiamo passare alla prossima attività.');render();return;
+  }
+  if(action==='next-task'){record.pendingTaskId='';record.flags.lastVerified=false;if(activeOpenTasks().length){record.current=1;toast('Ho ricalcolato la priorità e preparato la prossima task.');}else flag('completed');commit('Prossima task calcolata');render();return;}
+  if(action==='download-report'){flag('downloaded');commit('Report aperto dal percorso');openReportExport();return;}
+  const actions={
+    'confirm-setup':['confirmed',null],'ack-technical-summary':['summary',null],'ack-technical-priorities':['priorities',null],
+    'ack-content-pages':['pages',null],'complete-content':['completed',null],'ack-cannibalization':['cannibalization',null],
+    'ack-task-priority':['priority',null],'ack-report-completed':['completed',null],'ack-report-open':['open',null],
+    'ack-report-verification':['verification',null],'ack-report-next':['next',null]
+  };
+  if(actions[action]){flag(actions[action][0]);commit('Passo del percorso confermato');render();return;}
+}
+
+function guidedPathNavigate(target,stepId){
+  const root=guidedPathsState(),journey=guidedJourneyDefinitions().find(item=>item.id===root.activeId),record=journey?guidedPathRecord(journey.id):null;
+  if(record&&stepId==='instructions')record.flags.instructions=true;
+  if(record&&journey?.id==='content'&&stepId==='improvement')record.flags.reviewed=true;
+  if(record&&journey?.id==='keywords'&&stepId==='cannibalization')record.flags.cannibalization=true;
+  if(record){record.updatedAt=root.updatedAt=now();}
+  state.ui.activeView=target;commit(`Modulo aperto dal percorso: ${navLabel(target)}`);render();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function skipGuidedPathStep(stepId){
+  const root=guidedPathsState(),journey=guidedJourneyDefinitions().find(item=>item.id===root.activeId);if(!journey)return;const record=guidedPathRecord(journey.id);record.skipped[stepId]=true;record.current=Math.min(record.current+1,journey.steps.length-1);record.updatedAt=root.updatedAt=now();commit('Passo facoltativo saltato');render();
+}
+
+function markGuidedIssueResolved(id){
+  const issue=byProject(state.issues).find(item=>item.id===id);if(!issue)return;
+  issue.status='DONE';issue.completedAt=now();issue.updatedAt=now();commit(`Problema segnato da verificare: ${issue.title}`);toast('Correzione registrata. Il problema resta da verificare.');render();
+}
+async function verifyGuidedIssue(id){
+  const issue=byProject(state.issues).find(item=>item.id===id);if(!issue)return;
+  if(!issue.autoScan){issue.status='DONE';issue.updatedAt=now();commit('Verifica manuale richiesta');toast('Questo problema non è verificabile automaticamente: resta “Da verificare” finché non aggiungi un’evidenza o aggiorni i dati.');render();return;}
+  if(!normalizeSiteDomain(currentProject().domain)){toast('Inserisci il dominio prima di ripetere la verifica.');return;}
+  const signature={title:issue.title,url:issue.url};
+  try{await analyzeCurrentWebsite({force:true});const stillOpen=byProject(state.issues).some(item=>item.autoScan&&item.title===signature.title&&item.url===signature.url&&!['VERIFIED','CLOSED'].includes(String(item.status||'').toUpperCase()));if(stillOpen)toast('La verifica rileva ancora il problema. Non è stato chiuso.');else toast('Problema non più rilevato: verifica superata.');render();}catch(e){toast(`Verifica non completata: ${e.message||e}`);}
+}
+
 function guidedDashboardView(){
   const p=currentProject();
-  const w=wizardState();
   const open=wizardChecks().filter(c=>!c.resolved()&&['CRITICAL','HIGH','MEDIUM'].includes(c.severity));
   const status=open.length===0?'Buono':'Richiede attenzione';
   const hasDomain=Boolean(normalizeSiteDomain(p.domain));
-  const cta=!hasDomain?'Configura il sito':w.status==='paused'?'Riprendi controllo guidato':w.status==='in_progress'?'Continua controllo guidato':'Avvia controllo guidato';
-  const ctaId=w.status==='paused'?'wizardResumeDashboard':'';
-  const ctaTarget=!hasDomain?'Project':'Guided Review';
-  const lastCheck=w.updatedAt?`Ultimo controllo: ${fmtTime(w.updatedAt)}`:'Nessun controllo eseguito';
+  const journeys=guidedJourneyDefinitions().map(journey=>({...journey,status:guidedJourneyStatus(journey)}));
+  const priorityOrder={Alta:1,Consigliata:2,Opzionale:3};journeys.sort((a,b)=>(a.status.className==='done')-(b.status.className==='done')||(priorityOrder[a.priority]||9)-(priorityOrder[b.priority]||9));
+  const nextJourney=journeys.find(journey=>journey.status.className!=='done')||journeys[0];
+  const cta=nextJourney?.status.className==='progress'||nextJourney?.status.className==='verify'?`Riprendi: ${nextJourney.title}`:'Apri i percorsi guidati';
+  const lastCheck=guidedPathsState().updatedAt?`Ultimo aggiornamento: ${fmtTime(guidedPathsState().updatedAt)}`:'Nessun percorso avviato';
   const scan=p.websiteScan||{};
-  const steps=[
-    {title:'Sito e obiettivi',desc:'Dominio e informazioni principali del progetto.',done:hasDomain&&Boolean(p.strategyCanvas?.seoGoal)},
-    {title:'Pagine del sito',desc:'Sitemap e inventario delle URL rilevate.',done:byProject(state.pages).length>0},
-    {title:'Controllo SEO',desc:'Analisi dei segnali tecnici e on-page disponibili.',done:scan.status==='completed'},
-    {title:'Correzioni',desc:'Risoluzione verificata dei problemi prioritari.',done:open.length===0},
-    {title:'Monitoraggio',desc:'Dati Search Console per misurare i risultati.',done:byProject(state.gscRecords).length>0}
-  ];
-  let currentIndex=steps.findIndex(x=>!x.done);if(currentIndex<0)currentIndex=steps.length-1;
 
   return `${isDemoProject()?'<div class="demo-banner"><strong>DEMO MODE</strong><div class="muted">Il progetto contiene dati dimostrativi dichiarati.</div></div>':''}
   ${pageIntro('Panoramica',`${p.name}${p.domain?` · ${p.domain}`:''}`,[`Stato: ${status}`,`${open.length} problemi prioritari`,lastCheck])}
   <section class="dashboard-command" aria-labelledby="nextActionTitle">
     <div>
       <div class="dashboard-label">Prossima azione</div>
-      <h3 id="nextActionTitle">${!hasDomain?'Inserisci il sito da analizzare':open[0]?esc(open[0].title):'Avvia un nuovo controllo guidato'}</h3>
-      <p>${!hasDomain?'Bastano il dominio e il nome del progetto: l’app proverà a compilare automaticamente le informazioni pubbliche disponibili.':open[0]?esc(open[0].simple):'Ti guideremo passo dopo passo. Non sono necessarie conoscenze tecniche.'}</p>
+      <h3 id="nextActionTitle">${esc(nextJourney?.title||'Apri il controllo guidato')}</h3>
+      <p>${esc(nextJourney?.description||'Scegli un percorso e completa una sola azione alla volta.')}</p>
     </div>
-    <button class="btn primary" ${ctaId?`id="${ctaId}"`:`data-nav="${ctaTarget}"`}>${cta}</button>
+    <button class="btn primary" data-nav="Guided Review">${esc(cta)}</button>
   </section>
   <div style="height:18px"></div>
   <div class="grid two">
@@ -3779,13 +4031,13 @@ function guidedDashboardView(){
     </section>
   </div>
   <div style="height:18px"></div>
-  <section class="workflow-list" aria-labelledby="workflowTitle"><h3 id="workflowTitle">Il controllo guidato in 5 passaggi</h3>
-    ${steps.map((step,i)=>`<div class="workflow-row ${step.done?'done':i===currentIndex?'current':''}"><div class="step-index" aria-hidden="true">${step.done?'✓':i+1}</div><strong>${esc(step.title)}</strong><div class="workflow-desc muted">${esc(step.desc)}</div><div class="state-text">${step.done?'Completato':i===currentIndex?'Prossimo':'Da iniziare'}</div></div>`).join('')}
+  <section class="workflow-list" aria-labelledby="workflowTitle"><h3 id="workflowTitle">I tuoi percorsi guidati</h3>
+    ${journeys.map((journey,i)=>`<div class="workflow-row ${journey.status.className==='done'?'done':journey===nextJourney?'current':''}"><div class="step-index" aria-hidden="true">${journey.status.className==='done'?'✓':i+1}</div><strong>${esc(journey.title)}</strong><div class="workflow-desc muted">${esc(journey.description)}</div><div class="state-text">${esc(journey.status.label)}</div></div>`).join('')}
   </section><div style="height:18px"></div><div class="section-head"><div><strong>Riepilogo del progetto</strong><div class="muted">Scarica problemi, keyword, attività, pagine e opportunità del progetto corrente.</div></div><button class="btn" data-report-export>Scarica report</button></div>`;
 }
 
 function simpleInfo(title,text){
-  return `<div class="card"><h3>${esc(title)}</h3><p class="muted">${esc(text)}</p><div class="callout">Modulo predisposto nel data model V4. Le funzioni che richiedono dati esterni devono essere alimentate tramite import: Organic Growth OS non simula crawl, SERP o API live.</div></div>`;
+  return `<div class="card"><h3>${esc(title)}</h3><p class="muted">${esc(text)}</p><div class="callout">Le funzioni che richiedono dati esterni devono essere alimentate tramite import: Organic Growth OS non inventa crawl, SERP o risultati API.</div></div>`;
 }
 
 function render(){
@@ -3867,7 +4119,7 @@ function moduleDescription(v){
    'Content Refresh':'Decay, CTR/ranking/impression decline e raccomandazioni.',
    'Strategy Canvas':'Obiettivi business e SEO, audience, positioning e hypothesis.',
    'Content Briefs':'Brief operativi con outline, entity, linking, CTA e fonti.'
-  }; return map[v]||'Modulo V4 collegato al data model centrale.';
+  }; return map[v]||'Modulo collegato al modello dati centrale.';
 }
 
 function sourceReliabilityView(){
@@ -3939,6 +4191,16 @@ async function analyzeProjectForm(){
 
 function bindView(){
  document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{state.ui.activeView=b.dataset.nav;render();window.scrollTo({top:0,behavior:'smooth'});});
+ document.querySelectorAll('[data-path-start]').forEach(button=>button.onclick=()=>openGuidedJourney(button.dataset.pathStart));
+ document.querySelectorAll('[data-path-dashboard]').forEach(button=>button.onclick=showGuidedJourneyDashboard);
+ document.querySelectorAll('[data-path-step]').forEach(button=>button.onclick=()=>setGuidedJourneyStep(button.dataset.pathStep));
+ document.querySelectorAll('[data-path-next]').forEach(button=>button.onclick=advanceGuidedJourney);
+ document.querySelectorAll('[data-path-prev]').forEach(button=>button.onclick=()=>{const root=guidedPathsState(),journey=guidedJourneyDefinitions().find(item=>item.id===root.activeId);if(journey)setGuidedJourneyStep(guidedPathRecord(journey.id).current-1);});
+ document.querySelectorAll('[data-path-nav]').forEach(button=>button.onclick=()=>guidedPathNavigate(button.dataset.pathNav,button.dataset.pathAck));
+ document.querySelectorAll('[data-path-skip]').forEach(button=>button.onclick=()=>skipGuidedPathStep(button.dataset.pathSkip));
+ document.querySelectorAll('[data-path-action]').forEach(button=>button.onclick=()=>handleGuidedPathAction(button.dataset.pathAction));
+ document.querySelectorAll('[data-issue-resolve]').forEach(button=>button.onclick=()=>markGuidedIssueResolved(button.dataset.issueResolve));
+ document.querySelectorAll('[data-issue-verify]').forEach(button=>button.onclick=()=>verifyGuidedIssue(button.dataset.issueVerify));
  document.querySelectorAll('[data-next-action]').forEach(card=>{const open=()=>activateNextAction(card.dataset.nextAction);card.onclick=open;card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}};});
  document.querySelectorAll('[data-task-nav]').forEach(button=>button.onclick=()=>{state.ui.activeView=button.dataset.taskNav;render();window.scrollTo({top:0,behavior:'smooth'});});
  document.querySelectorAll('[data-wizard-tab]').forEach(button=>button.onclick=()=>navigateWizardTab(button.dataset.wizardTab));
