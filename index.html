@@ -1,0 +1,1628 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Organic Growth OS</title>
+<style>
+:root{
+  --bg:#f5f7fb;--surface:#fff;--surface-alt:#f0f3f8;--text:#111827;--muted:#667085;
+  --border:#d9e0ea;--accent:#2563eb;--success:#0f9d58;--warning:#d97706;--danger:#dc2626;--info:#0ea5e9;
+  --radius-sm:8px;--radius-md:12px;--radius-lg:18px;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-7:32px;--space-8:40px;
+  --shadow:0 8px 30px rgba(15,23,42,.08);
+}
+[data-theme="dark"]{
+  --bg:#0d1117;--surface:#161b22;--surface-alt:#1d2430;--text:#eef2f7;--muted:#9aa4b2;
+  --border:#2a3441;--accent:#60a5fa;--shadow:0 8px 30px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+html{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{margin:0;background:var(--bg);color:var(--text);min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{color:inherit}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.app{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;background:var(--surface);border-right:1px solid var(--border);padding:18px;overflow:auto}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#7c3aed);display:grid;place-items:center;color:#fff;font-weight:800}
+.brand h1{font-size:15px;margin:0}.brand p{font-size:12px;color:var(--muted);margin:2px 0 0}
+.project-switcher{display:flex;gap:8px;margin-bottom:16px}
+.project-switcher select{width:100%}
+.sidebar details{margin:8px 0}
+.sidebar summary{font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:800;text-transform:uppercase;padding:8px 10px}
+.nav-btn{width:100%;border:0;background:transparent;color:var(--text);text-align:left;padding:10px 12px;border-radius:10px;margin:2px 0}
+.nav-btn:hover,.nav-btn.active{background:var(--surface-alt)}
+.main{min-width:0}
+.topbar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.topbar-left{display:flex;gap:10px;align-items:center;min-width:0}.topbar h2{font-size:18px;margin:0}
+.topbar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:9px 12px;border-radius:10px;font-weight:700}
+.btn:hover{filter:brightness(.98)}.btn.primary{background:var(--accent);border-color:var(--accent);color:white}.btn.danger{color:var(--danger)}
+.content{padding:24px;max-width:1600px;margin:auto}
+.grid{display:grid;gap:16px}.grid.kpi{grid-template-columns:repeat(5,minmax(0,1fr))}.grid.two{grid-template-columns:1.3fr .7fr}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:18px}
+.card h3{margin:0 0 12px;font-size:15px}.card h4{margin:0 0 8px}
+.kpi-card .label{color:var(--muted);font-size:12px}.kpi-card .value{font-size:28px;font-weight:800;margin-top:6px}.kpi-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
+.hero-action{padding:22px;border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface));border:1px solid color-mix(in srgb,var(--accent) 30%,var(--border))}
+.hero-action h3{font-size:20px;margin:0 0 8px}.hero-action p{color:var(--muted);margin:0 0 14px;max-width:900px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}.badge{display:inline-flex;align-items:center;padding:5px 8px;border:1px solid var(--border);border-radius:999px;font-size:12px;background:var(--surface-alt)}
+.badge.success{color:var(--success)}.badge.warning{color:var(--warning)}.badge.danger{color:var(--danger)}.badge.info{color:var(--info)}
+.workflow{display:grid;grid-template-columns:repeat(9,minmax(90px,1fr));gap:8px;overflow:auto;padding-bottom:4px}
+.stage{border:1px solid var(--border);background:var(--surface-alt);padding:10px;border-radius:12px;text-align:center;font-size:12px}.stage.current{outline:2px solid var(--accent)}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.section-head h3{margin:0}.muted{color:var(--muted)}
+.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:12px}table{border-collapse:collapse;width:100%;min-width:760px;background:var(--surface)}th,td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}th{position:sticky;top:0;background:var(--surface-alt);font-size:12px;color:var(--muted)}tr:last-child td{border-bottom:0}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.toolbar input,.toolbar select{min-width:160px}
+input,select,textarea{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:9px 10px}
+textarea{min-height:110px;resize:vertical}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;font-weight:700}.field.full{grid-column:1/-1}
+.empty{padding:36px;text-align:center;color:var(--muted)}
+.progress{height:8px;background:var(--surface-alt);border-radius:999px;overflow:hidden}.progress > span{display:block;height:100%;background:var(--accent)}
+.drawer{position:fixed;inset:0 0 0 auto;width:min(560px,100%);background:var(--surface);border-left:1px solid var(--border);z-index:30;box-shadow:var(--shadow);padding:20px;overflow:auto;transform:translateX(100%);transition:.2s}.drawer.open{transform:none}.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.36);z-index:20;display:none}.backdrop.show{display:block}
+.drawer-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:18px}
+.toast-zone{position:fixed;right:18px;bottom:18px;z-index:50;display:grid;gap:8px}.toast{background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);padding:12px 14px;border-radius:12px;max-width:360px}
+.callout{padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--surface-alt)}
+.wizard-step{display:grid;gap:14px}.wizard-big{font-size:24px;font-weight:800}.wizard-actions{display:flex;gap:8px;flex-wrap:wrap}
+.metric-row{display:grid;grid-template-columns:180px 1fr 48px;align-items:center;gap:10px;margin:10px 0}.metric-row .bar{height:8px;background:var(--surface-alt);border-radius:999px;overflow:hidden}.metric-row .bar span{display:block;height:100%;background:var(--accent)}
+.mobile-menu{display:none}
+@media(max-width:1100px){.grid.kpi{grid-template-columns:repeat(2,1fr)}.grid.two{grid-template-columns:1fr}.app{grid-template-columns:240px minmax(0,1fr)}}
+@media(max-width:800px){.app{display:block}.sidebar{position:fixed;left:0;top:0;z-index:40;width:280px;transform:translateX(-100%);transition:.2s}.sidebar.open{transform:none}.mobile-menu{display:inline-flex}.grid.kpi,.grid.three,.form-grid{grid-template-columns:1fr}.content{padding:16px}.topbar{padding:10px 12px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* RC6 UX/UI */
+.sidebar{padding:14px}
+.brand{padding:6px 4px 12px}
+.brand-mark{width:42px;height:42px}
+.nav-btn{display:flex;align-items:center;gap:8px;font-size:13px;padding:9px 10px}
+.nav-btn.active{font-weight:800}
+.topbar{min-height:64px}
+.topbar-actions input{min-width:220px}
+.page-intro{margin-bottom:16px}
+.page-intro h3{font-size:22px;margin:0 0 4px}
+.page-intro p{margin:0;color:var(--muted)}
+.quick-summary{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.compact-card{padding:14px}
+.form-grid .field input,.form-grid .field select,.form-grid .field textarea{width:100%}
+.form-grid .field textarea{min-height:90px}
+.form-actions{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--surface) 25%);padding-top:18px;margin-top:8px}
+.table-wrap table tbody tr:hover{background:color-mix(in srgb,var(--accent) 4%,var(--surface))}
+.table-wrap td{font-size:13px}
+.table-wrap th{font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;background:var(--muted)}
+.status-dot.ok{background:var(--success)}.status-dot.warn{background:var(--warning)}.status-dot.bad{background:var(--danger)}
+.empty{border:1px dashed var(--border);border-radius:14px;background:var(--surface-alt)}
+.wizard-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.wizard-nav span{padding:6px 9px;border-radius:999px;background:var(--surface-alt);font-size:11px;color:var(--muted)}
+.wizard-nav span.active{background:var(--accent);color:#fff}
+.explain-box{border-left:3px solid var(--accent);padding:10px 12px;background:var(--surface-alt);border-radius:8px}
+.simple-toggle{display:flex;gap:8px;align-items:center}
+.simple-toggle input{width:auto}
+.toolbar{align-items:center}
+.toolbar .spacer{flex:1}
+.section-head{align-items:flex-start}
+.card{box-shadow:0 4px 18px rgba(15,23,42,.05)}
+[data-theme="dark"] .card{box-shadow:0 4px 18px rgba(0,0,0,.18)}
+@media(max-width:700px){
+  .topbar-actions input{min-width:0;width:100%}
+  .topbar-actions{width:100%}
+  .topbar{align-items:flex-start;flex-direction:column}
+  .section-head{flex-direction:column}
+  .section-head>button,.section-head>div+button{width:100%}
+}
+
+
+.release-note{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.qa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.qa-item{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--surface)}
+.qa-item strong{display:block;margin-bottom:5px}
+.qa-pass{color:var(--success)}.qa-warn{color:var(--warning)}.qa-fail{color:var(--danger)}
+.demo-banner{border:1px solid color-mix(in srgb,var(--info) 35%,var(--border));background:color-mix(in srgb,var(--info) 7%,var(--surface));padding:12px;border-radius:12px;margin-bottom:16px}
+@media(max-width:800px){.qa-grid{grid-template-columns:1fr}}
+
+
+.brief-preview{white-space:pre-wrap;background:var(--surface-alt);border:1px solid var(--border);border-radius:12px;padding:14px;min-height:220px}
+.health-list{display:grid;gap:8px}
+.health-item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.health-item:last-child{border-bottom:0}
+.confidence-meter{display:flex;align-items:center;gap:10px}
+.confidence-meter .bar{height:8px;flex:1;background:var(--surface-alt);border-radius:999px;overflow:hidden}
+.confidence-meter .bar span{display:block;height:100%;background:var(--accent)}
+.decision-card{border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--surface);margin-bottom:12px}
+.decision-card .why{margin-top:10px;padding:10px;background:var(--surface-alt);border-radius:10px}
+.schema-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.schema-box{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--surface-alt)}
+.refresh-table{display:grid;gap:10px}
+.refresh-item{border:1px solid var(--border);border-radius:12px;padding:12px}
+.executive-strip{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px}
+.executive-strip .mini{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px}
+.executive-strip .mini strong{font-size:24px;display:block;margin-top:4px}
+@media(max-width:1000px){.executive-strip{grid-template-columns:1fr 1fr}.schema-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.executive-strip,.schema-grid{grid-template-columns:1fr}}
+
+
+.matrix{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.panel-list{display:grid;gap:10px}
+.panel-item{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--surface)}
+.panel-item .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.score-ring{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--score)*1%),var(--surface-alt) 0);position:relative}
+.score-ring:after{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--surface)}
+.score-ring strong{position:relative;z-index:1;font-size:22px}
+.intent-grid{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:10px;overflow:auto}
+.intent-box{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--surface-alt)}
+.arch-tree{display:grid;gap:8px}
+.arch-node{border-left:3px solid var(--accent);padding:8px 10px;background:var(--surface-alt);border-radius:8px}
+.arch-children{margin-left:24px;display:grid;gap:6px}
+.diff-row{display:grid;grid-template-columns:160px 1fr 1fr 1fr;gap:8px;align-items:start;padding:8px 0;border-bottom:1px solid var(--border)}
+.diff-row:last-child{border-bottom:0}
+.warning-box{border:1px solid color-mix(in srgb,var(--warning) 45%,var(--border));background:color-mix(in srgb,var(--warning) 8%,var(--surface));border-radius:12px;padding:12px}
+.danger-box{border:1px solid color-mix(in srgb,var(--danger) 45%,var(--border));background:color-mix(in srgb,var(--danger) 8%,var(--surface));border-radius:12px;padding:12px}
+.good-box{border:1px solid color-mix(in srgb,var(--success) 45%,var(--border));background:color-mix(in srgb,var(--success) 8%,var(--surface));border-radius:12px;padding:12px}
+@media(max-width:900px){.matrix{grid-template-columns:1fr}.diff-row{grid-template-columns:1fr}.intent-grid{grid-template-columns:repeat(5,220px)}}
+
+
+.graph-shell{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.graph-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.graph-canvas{width:100%;min-height:460px;display:block;background:
+radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--border) 60%,transparent) 1px,transparent 0);background-size:22px 22px}
+.node-card{position:absolute;min-width:150px;max-width:210px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:var(--shadow);font-size:12px}
+.node-card strong{display:block;margin-bottom:4px}
+.node-pill{display:inline-flex;padding:3px 6px;border-radius:999px;background:var(--surface-alt);font-size:10px;margin-top:5px}
+.split-panels{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.stat-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border-bottom:0}
+.compare-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center}
+.compare-box{border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--surface-alt)}
+.delta{font-weight:800}
+.delta.pos{color:var(--success)}.delta.neg{color:var(--danger)}
+.import-preview{max-height:320px;overflow:auto;border:1px solid var(--border);border-radius:12px}
+.import-preview table{min-width:900px}
+.kanban{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:12px;overflow:auto}
+.kanban-col{background:var(--surface-alt);border:1px solid var(--border);border-radius:14px;padding:10px;min-height:180px}
+.kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;margin:8px 0}
+.dep-list{display:grid;gap:8px}
+.dep-item{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border:1px solid var(--border);border-radius:12px;padding:10px}
+@media(max-width:900px){.split-panels,.compare-grid{grid-template-columns:1fr}.compare-grid>div:nth-child(2){display:none}.kanban{grid-template-columns:repeat(4,260px)}}
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
+    <div class="brand">
+      <div class="brand-mark">OG</div>
+      <div><h1>Organic Growth OS</h1><p>Decision Operating System · V4 Stable</p></div>
+    </div>
+    <div class="project-switcher">
+      <select id="projectSelect" aria-label="Progetto corrente"></select>
+      <button class="btn" id="newProjectBtn" title="Nuovo progetto">+</button>
+    </div>
+    <nav id="nav"></nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="btn mobile-menu" id="mobileMenuBtn" aria-label="Apri menu">☰</button>
+        <div>
+          <h2 id="pageTitle">Dashboard</h2>
+          <div class="muted" id="saveStatus" style="font-size:12px">Non ancora salvato</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <input id="globalSearch" placeholder="Cerca…" aria-label="Ricerca globale">
+        <button class="btn" id="modeBtn" title="Cambia modalità">Executive</button>
+        <button class="btn" id="themeBtn" aria-label="Cambia tema">◐</button>
+        <button class="btn primary" id="quickBtn">+ Nuovo</button>
+      </div>
+    </header>
+    <div class="content" id="view"></div>
+  </main>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+<aside class="drawer" id="drawer" aria-modal="true" role="dialog" aria-labelledby="drawerTitle">
+  <div class="drawer-head">
+    <h3 id="drawerTitle">Dettaglio</h3>
+    <button class="btn" id="drawerClose" aria-label="Chiudi">✕</button>
+  </div>
+  <div id="drawerBody"></div>
+</aside>
+<div class="toast-zone" id="toastZone" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+const APP_KEY='organicGrowthOS.v4';
+const SCHEMA_VERSION=4;
+const stages=['Research','Strategy','Architecture','Build','Validate','Index','Measure','Learn','Expand'];
+const navGroups={
+  'Overview':['Dashboard','Guided Review','Next Best Actions'],
+  'Strategy':['Project','Strategy Canvas','Competitors','Search Intent','Cannibalization'],
+  'Authority':['Keywords','Entities','Topical Map','Content Strategy','Content Briefs'],
+  'Site':['Pages','Architecture','Internal Links','On-Page','Structured Data'],
+  'Technical':['Technical SEO','Redirects','Canonical','Indexation','Migration'],
+  'Performance':['Search Console','Opportunities','Content Refresh','Experiments'],
+  'Execution':['Issues','Tasks','Milestones','Quality Gates','SEO Debt'],
+  'Intelligence':['Evidence','Decisions','Confidence','Observations','Risks','False Positives','Change Log','Snapshots'],
+  'Data':['Import','Datasets','Source Reliability','Backup'],
+  'System':['Settings','Demo Data','System Check']
+};
+
+const uid=(p='id')=>`${p}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
+const now=()=>new Date().toISOString();
+const clamp=(n,a=0,b=100)=>Math.max(a,Math.min(b,n));
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const fmtDate=s=>s?new Date(s).toLocaleDateString('it-IT'):'—';
+const fmtTime=s=>s?new Date(s).toLocaleTimeString('it-IT'):'—';
+
+class StorageService{
+  load(){
+    try{
+      const raw=localStorage.getItem(APP_KEY);
+      if(!raw) return null;
+      const data=JSON.parse(raw);
+      return this.migrate(data);
+    }catch(e){ console.error(e); return null; }
+  }
+  migrate(data){
+    if(!data || typeof data!=='object') throw new Error('Backup non valido');
+    if(!data.schemaVersion) data.schemaVersion=1;
+    const arrayKeys=['projects','pages','keywords','entities','clusters','contents','links','issues','opportunities','observations','risks','tasks','milestones','decisions','experiments','qualityGates','gscRecords','auditFindings','seoDebt','competitors','evidence','datasets','changeEvents','snapshots','falsePositives','activity'];
+    arrayKeys.forEach(k=>{ if(!Array.isArray(data[k])) data[k]=[]; });
+    data.ui={activeView:'Dashboard',mode:'Executive',theme:'system',lastSaved:null,...(data.ui||{})};
+    if(!Array.isArray(data.sourceReliability) || !data.sourceReliability.length){
+      data.sourceReliability=[
+        {id:uid('src'),name:'First Party',type:'FIRST PARTY',reliability:95},
+        {id:uid('src'),name:'Search Console',type:'SEARCH CONSOLE',reliability:95},
+        {id:uid('src'),name:'Crawler',type:'CRAWLER',reliability:85},
+        {id:uid('src'),name:'Third Party Tool',type:'THIRD PARTY TOOL',reliability:65},
+        {id:uid('src'),name:'Manual',type:'MANUAL',reliability:85},
+        {id:uid('src'),name:'Inferred',type:'INFERRED',reliability:40}
+      ];
+    }
+    data.schemaVersion=SCHEMA_VERSION;
+    return data;
+  }
+  save(state){
+    try{
+      localStorage.setItem(APP_KEY,JSON.stringify(state));
+      return true;
+    }catch(e){
+      toast('Spazio locale insufficiente o salvataggio non riuscito.');
+      return false;
+    }
+  }
+  export(state){
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=`organic-growth-os-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click(); URL.revokeObjectURL(a.href);
+  }
+}
+const storage=new StorageService();
+
+function emptyProject(name='Nuovo progetto'){
+  const pid=uid('project');
+  return {
+    id:pid, projectId:pid, name, domain:'', brand:'', industry:'', country:'Italia', language:'it',
+    audience:'', businessModel:'', revenueModel:'', primaryConversion:'', secondaryConversion:'',
+    competitorsText:'', positioning:'', usp:'', primarySeoGoal:'', notes:'',
+    stage:'Research', createdAt:now(), updatedAt:now(), archived:false
+  };
+}
+
+function initialState(){
+  const p=emptyProject('Nuovo progetto');
+  return {
+    schemaVersion:SCHEMA_VERSION,
+    ui:{activeView:'Dashboard',mode:'Executive',theme:'system',lastSaved:null},
+    currentProjectId:p.id,
+    projects:[p],
+    pages:[],keywords:[],entities:[],clusters:[],contents:[],links:[],issues:[],opportunities:[],
+    observations:[],risks:[],tasks:[],milestones:[],decisions:[],experiments:[],qualityGates:[],
+    gscRecords:[],auditFindings:[],seoDebt:[],competitors:[],evidence:[],datasets:[],changeEvents:[],snapshots:[],
+    falsePositives:[],sourceReliability:[
+      {id:uid('src'),name:'First Party',type:'FIRST PARTY',reliability:95},
+      {id:uid('src'),name:'Search Console',type:'SEARCH CONSOLE',reliability:95},
+      {id:uid('src'),name:'Crawler',type:'CRAWLER',reliability:85},
+      {id:uid('src'),name:'Third Party Tool',type:'THIRD PARTY TOOL',reliability:65},
+      {id:uid('src'),name:'Manual',type:'MANUAL',reliability:85},
+      {id:uid('src'),name:'Inferred',type:'INFERRED',reliability:40}
+    ],
+    activity:[]
+  };
+}
+
+let state=storage.load()||initialState();
+if(!state.projects?.length){ const p=emptyProject(); state.projects=[p]; state.currentProjectId=p.id; }
+const byProject=(arr)=>(Array.isArray(arr)?arr:[]).filter(x=>x.projectId===state.currentProjectId);
+const currentProject=()=>state.projects.find(p=>p.id===state.currentProjectId)||state.projects[0];
+
+let saveTimer=null;
+function commit(action='Aggiornamento'){
+  const p=currentProject();
+  if(p) p.updatedAt=now();
+  state.activity.unshift({id:uid('act'),projectId:state.currentProjectId,title:action,date:now()});
+  state.activity=state.activity.slice(0,300);
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    state.ui.lastSaved=now();
+    if(storage.save(state)){
+      const el=document.getElementById('saveStatus');
+      if(el) el.textContent='Ultimo salvataggio: '+fmtTime(state.ui.lastSaved);
+    }
+  },250);
+}
+function toast(msg){
+  const el=document.createElement('div'); el.className='toast'; el.textContent=msg;
+  document.getElementById('toastZone').appendChild(el);
+  setTimeout(()=>el.remove(),3200);
+}
+
+function severityWeight(s){ return ({CRITICAL:100,HIGH:75,MEDIUM:45,LOW:20}[s]||25); }
+function priorityWeight(s){ return ({P1:100,P2:75,P3:45,P4:20}[s]||25); }
+
+function confidenceFor(item){
+  let score=50;
+  if(item.sourceReliability!=null) score+=(Number(item.sourceReliability)-50)*.3;
+  if(item.evidenceIds?.length) score+=Math.min(25,item.evidenceIds.length*8);
+  if(item.verified) score+=15;
+  if(item.contradictory) score-=25;
+  return clamp(Math.round(score));
+}
+
+function scores(){
+  const pages=byProject(state.pages), issues=byProject(state.issues), links=byProject(state.links), kws=byProject(state.keywords), audit=byProject(state.auditFindings);
+  const technicalFindings=[...issues.filter(i=>String(i.category||'').toLowerCase()==='technical'),...audit];
+  const critical=technicalFindings.filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase())&&['CRITICAL','HIGH'].includes(String(i.severity||'').toUpperCase())).length;
+  const technical=(pages.length||technicalFindings.length)?clamp(100-critical*9-technicalFindings.filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase())).length*3):null;
+  const indexed=pages.length?Math.round(pages.filter(p=>p.indexed===true||String(p.gscStatus||'').toUpperCase()==='INDEXED').length/pages.length*100):null;
+  const arch=pages.length?clamp(100-(pages.filter(p=>!p.parent&&p.pageType!=='Homepage').length*3)):null;
+  const linkHealth=links.length?clamp(100-links.filter(l=>['BROKEN','REDIRECT','NON_CANONICAL'].includes(String(l.status||'').toUpperCase())).length*6):null;
+  const coverage=kws.length?Math.round(kws.filter(k=>k.targetUrl).length/kws.length*100):null;
+  const topicalParts=[coverage,arch,linkHealth,indexed].filter(Number.isFinite);
+  const topical=topicalParts.length>=2?Math.round(topicalParts.reduce((a,b)=>a+b,0)/topicalParts.length):null;
+  const eeat=null;
+  const organicParts=[technical,indexed,arch,coverage,topical,linkHealth].filter(Number.isFinite);
+  const organic=organicParts.length>=2?Math.round(organicParts.reduce((a,b)=>a+b,0)/organicParts.length):null;
+  return {organic,technical,indexed,arch,coverage,topical,linkHealth,eeat};
+}
+
+function nextActions(){
+  const actions=[];
+  const openIssues=byProject(state.issues).filter(i=>!['VERIFIED','CLOSED'].includes(i.status));
+  openIssues.forEach(i=>{
+    const conf=i.confidence??confidenceFor(i);
+    const impact=severityWeight(i.severity);
+    const effort=Number(i.effort||2);
+    const pri=Math.round((impact*(conf/100)*(i.urgency||1.2)*(i.businessValue||1.1))/Math.max(1,effort));
+    actions.push({type:'ISSUE',id:i.id,title:i.title||i.issue||'Issue SEO',why:i.whyNow||'Problema aperto con impatto sul progetto.',impact,effort,confidence:conf,score:pri,priority:i.priority||'P2'});
+  });
+  byProject(state.opportunities).filter(o=>o.status!=='DONE').forEach(o=>{
+    const conf=o.confidence??confidenceFor(o), impact=Number(o.impact||55), effort=Number(o.effort||2);
+    actions.push({type:'OPPORTUNITY',id:o.id,title:o.title||o.type,why:o.whyNow||'Opportunità rilevante per la crescita organica.',impact,effort,confidence:conf,score:Math.round(impact*(conf/100)/Math.max(1,effort)),priority:o.priority||'P3'});
+  });
+  if(!byProject(state.pages).length) actions.push({type:'SETUP',title:'Importa o aggiungi il Page Inventory',why:'Senza inventario pagine il sistema non può valutare architettura, indicizzazione e linking.',impact:90,effort:2,confidence:100,score:45,priority:'P1'});
+  else if(!byProject(state.keywords).length) actions.push({type:'SETUP',title:'Aggiungi Keyword Intelligence',why:'Serve per collegare intent, cluster e target URL alle pagine esistenti.',impact:70,effort:2,confidence:95,score:33,priority:'P2'});
+  const p1Blockers=actions.filter(a=>a.type==='ISSUE'&&a.priority==='P1');
+  if(p1Blockers.length) return p1Blockers.sort((a,b)=>b.score-a.score).slice(0,5);
+  return actions.sort((a,b)=>b.score-a.score).slice(0,5);
+}
+
+function renderNav(){
+  const nav=document.getElementById('nav'); nav.innerHTML='';
+  Object.entries(navGroups).forEach(([group,items])=>{
+    const d=document.createElement('details'); d.open=items.includes(state.ui.activeView)||group==='Overview';
+    d.innerHTML=`<summary>${esc(group)}</summary>`;
+    items.forEach(item=>{
+      const b=document.createElement('button'); b.className='nav-btn'+(state.ui.activeView===item?' active':''); b.textContent=item;
+      b.onclick=()=>{ state.ui.activeView=item; render(); closeMobile(); };
+      d.appendChild(b);
+    }); nav.appendChild(d);
+  });
+}
+function renderProjectSelect(){
+  const s=document.getElementById('projectSelect');
+  s.innerHTML=state.projects.filter(p=>!p.archived).map(p=>`<option value="${p.id}" ${p.id===state.currentProjectId?'selected':''}>${esc(p.name)}</option>`).join('');
+}
+function setTitle(t){ document.getElementById('pageTitle').textContent=t; }
+
+function dashboardView(){
+  const p=currentProject(), s=scores(), acts=nextActions(), main=acts[0];
+  return `${isDemoProject()?'<div class="demo-banner"><strong>DEMO MODE</strong><div class="muted">Il progetto contiene dati dimostrativi dichiarati.</div></div>':''}
+    <div class="section-head"><div><h3>${esc(p.name)}</h3><div class="muted">${esc(p.domain||'Dominio non impostato')} · Stage: ${esc(p.stage)}</div></div>
+      <button class="btn primary" data-nav="Guided Review">Avvia controllo guidato</button></div>
+    <div class="grid kpi">
+      ${kpi('Organic Growth',s.organic)}
+      ${kpi('Technical Health',s.technical)}
+      ${kpi('Architecture',s.arch)}
+      ${kpi('Content Coverage',s.coverage)}
+      ${kpi('Indexation',s.indexed)}
+    </div>
+    <div style="height:16px"></div>
+    <div class="hero-action">
+      <div class="muted" style="font-size:12px;font-weight:800;letter-spacing:.08em">NEXT BEST ACTION</div>
+      <h3>${esc(main?.title||'Nessuna azione critica')}</h3>
+      <p>${esc(main?.why||'Il progetto non presenta al momento azioni prioritarie note.')}</p>
+      ${main?`<div class="badges">
+        <span class="badge">${esc(main.priority)}</span><span class="badge">Impact ${main.impact}</span>
+        <span class="badge">Effort ${main.effort}</span><span class="badge info">Confidence ${main.confidence}%</span>
+      </div><div style="margin-top:14px"><button class="btn primary" data-nav="${main.type==='ISSUE'?'Issues':main.type==='OPPORTUNITY'?'Opportunities':'Pages'}">Apri attività</button></div>`:''}
+    </div>
+    <div style="height:16px"></div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Workflow</h3>
+        <div class="workflow">${stages.map(st=>`<div class="stage ${p.stage===st?'current':''}">${st}${stages.indexOf(st)<stages.indexOf(p.stage)?' ✓':''}</div>`).join('')}</div>
+      </div>
+      <div class="card">
+        <h3>Stato operativo</h3>
+        ${statusLine('Blockers',byProject(state.issues).filter(i=>i.status!=='VERIFIED'&&i.priority==='P1').length)}
+        ${statusLine('Critical Issues',byProject(state.issues).filter(i=>i.status!=='VERIFIED'&&i.severity==='CRITICAL').length)}
+        ${statusLine('Opportunities',byProject(state.opportunities).filter(o=>o.status!=='DONE').length)}
+        ${statusLine('SEO Debt',byProject(state.seoDebt).filter(d=>d.status!=='DONE').length)}
+      </div>
+    </div>
+    <div style="height:16px"></div>
+    <div class="card">
+      <h3>Perché questi score?</h3>
+      ${metric('Technical',s.technical)}${metric('Architecture',s.arch)}${metric('Internal Linking',s.linkHealth)}
+      ${metric('Content Coverage',s.coverage)}${metric('Topical Authority',s.topical)}${metric('EEAT',s.eeat)}
+      <div class="muted" style="margin-top:10px;font-size:12px">Gli score sono indicatori interni e spiegabili; non sono ranking factor di Google.</div>
+    </div>`;
+}
+const kpi=(label,val)=>`<div class="card kpi-card"><div class="label">${label}</div><div class="value">${Number.isFinite(val)?val:'—'}</div><div class="progress"><span style="width:${Number.isFinite(val)?val:0}%"></span></div><div class="sub">${Number.isFinite(val)?'':'Dati insufficienti'}</div></div>`;
+const metric=(label,val)=>`<div class="metric-row"><div>${label}</div><div class="bar"><span style="width:${Number.isFinite(val)?val:0}%"></span></div><strong>${Number.isFinite(val)?val:'—'}</strong></div>`;
+const statusLine=(label,val)=>`<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)"><span>${label}</span><strong>${val}</strong></div>`;
+
+function genericTableView(cfg){
+  const rows=byProject(state[cfg.key]);
+  return `<div class="section-head"><div><h3>${cfg.title}</h3><div class="muted">${cfg.help||''}</div></div><button class="btn primary" data-add="${cfg.key}">+ Aggiungi</button></div>
+  <div class="toolbar"><input data-search-table="${cfg.key}" placeholder="Cerca"><span class="muted">${rows.length} record</span></div>
+  ${rows.length?`<div class="table-wrap"><table><thead><tr>${cfg.cols.map(c=>`<th>${c.label}</th>`).join('')}<th></th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>${cfg.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td><button class="btn" data-edit="${cfg.key}" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div>`:
+    `<div class="card empty"><strong>Nessun dato</strong><p>${cfg.empty||'Aggiungi il primo record per iniziare.'}</p><button class="btn primary" data-add="${cfg.key}">Aggiungi</button></div>`}`;
+}
+function formatCell(v,c,r){
+  if(c.type==='date') return fmtDate(v);
+  if(c.type==='bool') return v===true?'Sì':v===false?'No':'—';
+  if(c.type==='badge') return `<span class="badge">${esc(v||'—')}</span>`;
+  return esc(v??'—');
+}
+
+const configs={
+ pages:{title:'Page Inventory',help:'Inventario centrale di URL, stato, canonical, intent e indicizzazione.',empty:'Importa o aggiungi le pagine del sito.',cols:[
+   {key:'pageName',label:'Pagina'},{key:'displayUrl',label:'URL'},{key:'pageType',label:'Tipo',type:'badge'},{key:'statusCode',label:'HTTP'},{key:'indexable',label:'Indexable',type:'bool'},{key:'indexed',label:'Indexed',type:'bool'}
+ ]},
+ keywords:{title:'Keyword Intelligence',help:'Keyword, intent, cluster, target URL e metriche.',cols:[
+   {key:'keyword',label:'Keyword'},{key:'intent',label:'Intent',type:'badge'},{key:'targetUrl',label:'Target URL'},{key:'position',label:'Pos.'},{key:'impressions',label:'Impr.'},{key:'priority',label:'Priority',type:'badge'}
+ ]},
+ entities:{title:'Entity Map',help:'Entità, relazioni e copertura.',cols:[{key:'name',label:'Entity'},{key:'entityType',label:'Type'},{key:'parent',label:'Parent'},{key:'coverage',label:'Coverage'},{key:'status',label:'Status',type:'badge'}]},
+ issues:{title:'Issues',help:'Problemi verificabili, separati da opportunità e osservazioni.',cols:[{key:'title',label:'Issue'},{key:'severity',label:'Severity',type:'badge'},{key:'priority',label:'Priority',type:'badge'},{key:'status',label:'Status',type:'badge'},{key:'confidence',label:'Confidence'}]},
+ opportunities:{title:'Opportunities',help:'Possibilità di crescita con impatto, effort e confidence.',cols:[{key:'title',label:'Opportunity'},{key:'type',label:'Type',type:'badge'},{key:'impact',label:'Impact'},{key:'effort',label:'Effort'},{key:'confidence',label:'Confidence'}]},
+ tasks:{title:'Tasks',help:'Azioni operative collegate a issue, decisioni e milestone.',cols:[{key:'title',label:'Task'},{key:'priority',label:'Priority',type:'badge'},{key:'status',label:'Status',type:'badge'},{key:'owner',label:'Owner'},{key:'dueDate',label:'Due',type:'date'}]},
+ milestones:{title:'Milestones',help:'Obiettivi, dipendenze, progress e criteri di accettazione.',cols:[{key:'name',label:'Milestone'},{key:'status',label:'Status',type:'badge'},{key:'progress',label:'Progress'},{key:'targetDate',label:'Target',type:'date'}]},
+ decisions:{title:'Decisions',help:'Decisioni, evidenze, alternative, risultato e learning.',cols:[{key:'title',label:'Decision'},{key:'status',label:'Status',type:'badge'},{key:'priority',label:'Priority',type:'badge'},{key:'confidence',label:'Confidence'},{key:'result',label:'Result'}]},
+ evidence:{title:'Evidence',help:'Fatti osservati: una evidenza non è automaticamente un problema.',cols:[{key:'claim',label:'Claim'},{key:'observedValue',label:'Observed'},{key:'source',label:'Source',type:'badge'},{key:'freshness',label:'Freshness',type:'badge'},{key:'confidence',label:'Confidence'}]},
+ datasets:{title:'Datasets',help:'Origine, periodo, freschezza e affidabilità dei dataset.',cols:[{key:'name',label:'Dataset'},{key:'source',label:'Source'},{key:'type',label:'Type',type:'badge'},{key:'importedAt',label:'Imported',type:'date'},{key:'records',label:'Records'}]},
+ experiments:{title:'Experiments',help:'Ipotesi, baseline, modifica, osservazione e learning.',cols:[{key:'hypothesis',label:'Hypothesis'},{key:'status',label:'Status',type:'badge'},{key:'startDate',label:'Start',type:'date'},{key:'result',label:'Result'},{key:'confidence',label:'Confidence'}]},
+ observations:{title:'Observations',help:'Informazioni rilevanti che non richiedono automaticamente un task.',cols:[{key:'title',label:'Observation'},{key:'status',label:'Status',type:'badge'},{key:'confidence',label:'Confidence'}]},
+ risks:{title:'Risks',help:'Condizioni che potrebbero generare un problema.',cols:[{key:'title',label:'Risk'},{key:'severity',label:'Severity',type:'badge'},{key:'status',label:'Status',type:'badge'},{key:'confidence',label:'Confidence'}]},
+ seoDebt:{title:'SEO Debt',help:'Problemi accumulati nel tempo e rischio del rinvio.',cols:[{key:'title',label:'Debt'},{key:'severity',label:'Severity',type:'badge'},{key:'age',label:'Age'},{key:'effort',label:'Effort'},{key:'status',label:'Status',type:'badge'}]},
+ qualityGates:{title:'Quality Gates',help:'Gate verificabili prima del passaggio alla fase successiva.',cols:[{key:'name',label:'Gate'},{key:'status',label:'Status',type:'badge'},{key:'owner',label:'Owner'},{key:'passedAt',label:'Passed',type:'date'}]},
+ falsePositives:{title:'False Positives',help:'Storico dei finding già valutati.',cols:[{key:'finding',label:'Finding'},{key:'tool',label:'Tool'},{key:'assessment',label:'Assessment',type:'badge'},{key:'date',label:'Date',type:'date'}]},
+ changeEvents:{title:'Change Log',help:'Modifiche importanti e relativo impatto osservato.',cols:[{key:'title',label:'Change'},{key:'type',label:'Type',type:'badge'},{key:'date',label:'Date',type:'date'},{key:'result',label:'Result',type:'badge'}]},
+ snapshots:{title:'Snapshots',help:'Fotografie storiche dello stato del progetto.',cols:[{key:'name',label:'Snapshot'},{key:'createdAt',label:'Date',type:'date'},{key:'reason',label:'Reason'},{key:'organicScore',label:'Growth Score'}]}
+};
+
+function projectView(){
+  const p=currentProject();
+  return `<div class="card"><div class="section-head"><div><h3>Project Setup</h3><div class="muted">Definisci contesto, obiettivi e modello di business.</div></div></div>
+  <form id="projectForm" class="form-grid">
+   ${field('name','Project Name',p.name)}
+   ${field('domain','Domain',p.domain)}
+   ${field('brand','Brand',p.brand)}
+   ${field('industry','Industry',p.industry)}
+   ${field('country','Country',p.country)}
+   ${field('language','Language',p.language)}
+   ${field('audience','Audience',p.audience)}
+   ${field('businessModel','Business Model',p.businessModel)}
+   ${field('revenueModel','Revenue Model',p.revenueModel)}
+   ${field('primaryConversion','Primary Conversion',p.primaryConversion)}
+   ${field('secondaryConversion','Secondary Conversion',p.secondaryConversion)}
+   ${selectField('stage','Project Stage',stages,p.stage)}
+   ${field('positioning','Positioning',p.positioning,true)}
+   ${field('usp','USP',p.usp,true)}
+   ${field('primarySeoGoal','Primary SEO Goal',p.primarySeoGoal,true)}
+   ${field('notes','Notes',p.notes,true)}
+   <div class="field full"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">Salva progetto</button><button class="btn danger" type="button" id="deleteProjectBtn">Elimina progetto</button></div></div>
+  </form></div>`;
+}
+function field(name,label,val,full=false){return `<div class="field ${full?'full':''}"><label for="${name}">${label}</label>${full?`<textarea id="${name}" name="${name}">${esc(val)}</textarea>`:`<input id="${name}" name="${name}" value="${esc(val)}">`}</div>`}
+function selectField(name,label,opts,val){return `<div class="field"><label for="${name}">${label}</label><select id="${name}" name="${name}">${opts.map(o=>`<option ${o===val?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`}
+
+function guidedReviewView(){
+  const acts=nextActions(), a=acts[0], s=scores();
+  if(!a) return `<div class="card empty"><strong>Nessuna azione prioritaria</strong><p>Il sistema non ha abbastanza dati per proporre una nuova azione.</p></div>`;
+  return `<div class="grid two">
+    <div class="card wizard-step">
+      <div class="muted">ANALIZZA → SPIEGA → CONSIGLIA → ESEGUI → VERIFICA → CONTINUA</div>
+      <div class="wizard-big">${esc(a.title)}</div>
+      <div class="callout"><strong>Cosa ho trovato</strong><div class="muted" style="margin-top:6px">${esc(a.why)}</div></div>
+      <div><strong>Perché conta</strong><p class="muted">Impact stimato ${a.impact}/100. Confidence ${a.confidence}%.</p></div>
+      <div><strong>Perché ora</strong><p class="muted">${a.priority==='P1'?'È una priorità che può bloccare attività successive.':'È tra le azioni con il miglior rapporto impatto/confidence/effort.'}</p></div>
+      <div class="badges"><span class="badge">${a.priority}</span><span class="badge">Impact ${a.impact}</span><span class="badge">Effort ${a.effort}</span><span class="badge info">Confidence ${a.confidence}%</span></div>
+      <div class="wizard-actions">
+        <button class="btn primary" data-create-task-from-action="${esc(a.title)}">Crea task</button>
+        <button class="btn" data-nav="${a.type==='ISSUE'?'Issues':a.type==='OPPORTUNITY'?'Opportunities':'Pages'}">Apri dettaglio</button>
+        <button class="btn" data-monitor-action="${esc(a.title)}">Monitora</button>
+      </div>
+    </div>
+    <div class="card"><h3>Stato progetto</h3>${metric('Technical',s.technical)}${metric('Architecture',s.arch)}${metric('Content',s.coverage)}${metric('Indexation',s.indexed)}</div>
+  </div>`;
+}
+
+function nextActionsView(){
+  const acts=nextActions();
+  return `<div class="section-head"><div><h3>Next Best Actions</h3><div class="muted">Priorità spiegabili basate sui dati disponibili.</div></div></div>
+  ${acts.map((a,i)=>`<div class="card" style="margin-bottom:12px"><div class="section-head"><div><strong>${i+1}. ${esc(a.title)}</strong><div class="muted">${esc(a.why)}</div></div><span class="badge">${a.priority}</span></div>
+  <div class="badges"><span class="badge">Impact ${a.impact}</span><span class="badge">Effort ${a.effort}</span><span class="badge info">Confidence ${a.confidence}%</span><span class="badge">Score ${a.score}</span></div></div>`).join('')||'<div class="card empty">Nessuna azione disponibile.</div>'}`;
+}
+
+function importView(){
+  return `<div class="grid two">
+    <div class="card"><h3>Import JSON / CSV</h3><p class="muted">Per CSV usa un dataset semplice con intestazioni. Per un backup completo usa JSON.</p>
+      <input type="file" id="importFile" accept=".json,.csv,.tsv">
+      <div style="height:12px"></div><select id="importTarget">
+        <option value="pages">Pages</option><option value="keywords">Keywords</option><option value="issues">Issues</option><option value="opportunities">Opportunities</option><option value="gscRecords">Search Console</option>
+      </select>
+      <button class="btn primary" id="doImportBtn">Analizza e importa</button>
+      <div id="importResult" style="margin-top:14px"></div>
+    </div>
+    <div class="card"><h3>Import safety</h3><p class="muted">Il flusso applicato è: parse → validate → normalize → preview → commit. I dati JSON completi sostituiscono lo stato solo dopo conferma.</p></div>
+  </div>`;
+}
+
+function backupView(){
+  return `<div class="grid two">
+    <div class="card"><h3>Backup & Recovery</h3><p class="muted">Esporta tutti i progetti e i relativi dati locali.</p>
+      <button class="btn primary" id="exportBackup">Esporta backup JSON</button>
+      <button class="btn" id="createSnapshot">Crea snapshot progetto</button>
+    </div>
+    <div class="card"><h3>Integrità</h3><p class="muted">Esegui un controllo dei dati locali e delle relazioni principali.</p><button class="btn" id="runSystemCheck">Run System Check</button><div id="systemCheckOut" style="margin-top:12px"></div></div>
+  </div>`;
+}
+
+
+function projectPages(){ return byProject(state.pages); }
+function pageByUrl(url){ return projectPages().find(p=>p.displayUrl===url||p.normalizedUrl===url||p.canonicalUrl===url); }
+
+function topicalMapView(){
+  const pages=projectPages();
+  const clusters=byProject(state.clusters);
+  const contents=byProject(state.contents);
+  const grouped={};
+  pages.forEach(p=>{
+    const c=p.cluster||'Senza cluster';
+    (grouped[c]||(grouped[c]=[])).push(p);
+  });
+  const names=Object.keys(grouped);
+  const width=1100, rootX=550, rootY=42;
+  let svg=`<svg class="graph-canvas" viewBox="0 0 ${width} ${Math.max(500,160+names.length*120)}" role="img" aria-label="Topical map">`;
+  svg+=`<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>`;
+  svg+=`<rect x="${rootX-115}" y="${rootY}" width="230" height="64" rx="14" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/><text x="${rootX}" y="${rootY+28}" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="800">${esc(currentProject().name)}</text><text x="${rootX}" y="${rootY+48}" text-anchor="middle" fill="var(--muted)" font-size="11">PROJECT</text>`;
+  names.forEach((name,i)=>{
+    const y=145+i*120, cx=250;
+    svg+=`<path d="M ${rootX} ${rootY+64} C ${rootX} ${y-30}, ${cx+110} ${y-30}, ${cx+110} ${y}" fill="none" stroke="var(--border)" stroke-width="2"/>`;
+    svg+=`<rect x="${cx}" y="${y}" width="220" height="56" rx="12" fill="var(--surface)" stroke="var(--border)"/><text x="${cx+110}" y="${y+24}" text-anchor="middle" fill="var(--text)" font-size="13" font-weight="700">${esc(name)}</text><text x="${cx+110}" y="${y+42}" text-anchor="middle" fill="var(--muted)" font-size="10">${grouped[name].length} pagine</text>`;
+    grouped[name].slice(0,5).forEach((pg,j)=>{
+      const px=610+j%2*230, py=y+(j*55);
+      svg+=`<path d="M ${cx+220} ${y+28} C ${cx+300} ${y+28}, ${px-30} ${py+20}, ${px} ${py+20}" fill="none" stroke="var(--border)"/>`;
+      svg+=`<rect x="${px}" y="${py}" width="200" height="42" rx="10" fill="var(--surface-alt)" stroke="var(--border)"/><text x="${px+10}" y="${py+17}" fill="var(--text)" font-size="11" font-weight="700">${esc((pg.pageName||pg.displayUrl||'Pagina').slice(0,28))}</text><text x="${px+10}" y="${py+32}" fill="var(--muted)" font-size="9">${esc(pg.pageType||'Page')}</text>`;
+    });
+  });
+  svg+='</svg>';
+  return `<div class="section-head"><div><h3>Topical Map</h3><div class="muted">Visualizzazione locale di cluster e pagine. Nessuna dipendenza esterna.</div></div><button class="btn" data-nav="Pages">Gestisci pagine</button></div>
+    ${pages.length?`<div class="graph-shell"><div class="graph-toolbar"><div class="badges"><span class="badge">${names.length} cluster</span><span class="badge">${pages.length} pagine</span></div><span class="muted">Il cluster usa il campo “cluster” del Page Inventory.</span></div>${svg}</div>`:
+    `<div class="card empty"><strong>Nessuna pagina da mappare</strong><p>Aggiungi pagine e assegna un cluster per costruire la topical map.</p><button class="btn primary" data-nav="Pages">Apri Page Inventory</button></div>`}`;
+}
+
+function internalLinksView(){
+  const pages=projectPages(), links=byProject(state.links);
+  const pageNames=new Map(pages.map(p=>[p.displayUrl||p.normalizedUrl||p.canonicalUrl,p.pageName||p.displayUrl]));
+  const bad=links.filter(l=>['BROKEN','REDIRECT','NON_CANONICAL'].includes(String(l.status||'').toUpperCase()));
+  const inbound={}; links.forEach(l=>inbound[l.target]=(inbound[l.target]||0)+1);
+  const orphans=pages.filter(p=>(inbound[p.displayUrl||p.normalizedUrl||p.canonicalUrl]||0)===0 && p.pageType!=='Homepage');
+  let svg='<svg class="graph-canvas" viewBox="0 0 1100 560" role="img" aria-label="Internal link graph">';
+  const nodes=pages.slice(0,18);
+  const pos={};
+  nodes.forEach((p,i)=>{const ang=(Math.PI*2*i/Math.max(1,nodes.length))-Math.PI/2; pos[p.displayUrl||p.normalizedUrl||p.canonicalUrl]={x:550+330*Math.cos(ang),y:280+210*Math.sin(ang)};});
+  links.slice(0,80).forEach(l=>{if(pos[l.source]&&pos[l.target]) svg+=`<line x1="${pos[l.source].x}" y1="${pos[l.source].y}" x2="${pos[l.target].x}" y2="${pos[l.target].y}" stroke="var(--border)" stroke-width="1"/>`;});
+  nodes.forEach(p=>{const u=p.displayUrl||p.normalizedUrl||p.canonicalUrl, q=pos[u]; svg+=`<circle cx="${q.x}" cy="${q.y}" r="28" fill="var(--surface)" stroke="var(--accent)"/><text x="${q.x}" y="${q.y+3}" text-anchor="middle" fill="var(--text)" font-size="9">${esc((p.pageName||'Page').slice(0,10))}</text>`;});
+  svg+='</svg>';
+  return `<div class="section-head"><div><h3>Internal Linking</h3><div class="muted">Relazioni source → target, problemi di destinazione e orphan risk.</div></div><button class="btn primary" id="addLinkBtn">+ Link</button></div>
+  <div class="grid three">
+    ${kpi('Internal links',links.length)}
+    ${kpi('Problematic targets',bad.length)}
+    ${kpi('Orphan risk',orphans.length)}
+  </div><div style="height:16px"></div>
+  ${pages.length?`<div class="graph-shell"><div class="graph-toolbar"><strong>Link Graph</strong><span class="muted">Mostra fino a 18 pagine / 80 link per mantenere fluida la UI.</span></div>${svg}</div>`:''}
+  <div style="height:16px"></div>
+  <div class="split-panels">
+    <div class="card"><h3>Link problematici</h3>${bad.length?bad.slice(0,20).map(l=>`<div class="stat-row"><div><strong>${esc(pageNames.get(l.source)||l.source||'Source')}</strong><div class="muted">→ ${esc(pageNames.get(l.target)||l.target||'Target')}</div></div><span class="badge warning">${esc(l.status)}</span></div>`).join(''):'<div class="empty">Nessun link problematico noto.</div>'}</div>
+    <div class="card"><h3>Orphan risk</h3>${orphans.length?orphans.slice(0,20).map(p=>`<div class="stat-row"><span>${esc(p.pageName||p.displayUrl)}</span><span class="badge">0 inbound</span></div>`).join(''):'<div class="empty">Nessuna pagina orfana rilevata dai dati importati.</div>'}</div>
+  </div>`;
+}
+
+function taskManagementView(){
+  const tasks=byProject(state.tasks);
+  const groups=['TODO','IN PROGRESS','BLOCKED','DONE','VERIFIED'];
+  const htmlCols=groups.map(g=>`<div class="kanban-col"><strong>${g}</strong>${tasks.filter(t=>(t.status||'TODO')===g).map(t=>{
+    const dep=t.dependencies||'';
+    const blocked=dep && !dependencySatisfied(dep);
+    return `<div class="kanban-card"><strong>${esc(t.title||'Task')}</strong><div class="muted">${esc(t.priority||'P3')} · ${esc(t.owner||'No owner')}</div>${dep?`<div class="node-pill">${blocked?'Blocked by':'Depends on'}: ${esc(dep)}</div>`:''}<div style="margin-top:8px"><button class="btn" data-edit="tasks" data-id="${t.id}">Apri</button></div></div>`;
+  }).join('')}</div>`).join('');
+  const blocked=tasks.filter(t=>t.dependencies&&!dependencySatisfied(t.dependencies));
+  return `<div class="section-head"><div><h3>Tasks & Dependencies</h3><div class="muted">DONE e VERIFIED restano distinti. Le dipendenze non bloccano tecnicamente, ma espongono il rischio.</div></div><button class="btn primary" data-add="tasks">+ Task</button></div>
+  <div class="kanban">${htmlCols}</div>
+  <div style="height:16px"></div><div class="card"><h3>Dependency Engine</h3>${blocked.length?`<div class="dep-list">${blocked.map(t=>`<div class="dep-item"><div><strong>${esc(t.title)}</strong><div class="muted">BLOCKED BY ${esc(t.dependencies)}</div></div><span class="badge danger">BLOCKED</span></div>`).join('')}</div>`:'<div class="empty">Nessuna dipendenza non soddisfatta.</div>'}</div>`;
+}
+function dependencySatisfied(dep){
+  if(!dep) return true;
+  const names=String(dep).split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+  const completed=[...byProject(state.tasks),...byProject(state.milestones)].filter(x=>['DONE','VERIFIED','COMPLETED','PASSED'].includes(String(x.status||'').toUpperCase())).map(x=>String(x.title||x.name||'').toLowerCase());
+  return names.every(n=>completed.some(c=>c.includes(n)||n.includes(c)));
+}
+
+function detectOpportunities(){
+  const found=[];
+  const existingKeys=new Set(byProject(state.opportunities).map(o=>(o.type+'|'+(o.target||o.title||'')).toLowerCase()));
+  byProject(state.gscRecords).forEach(r=>{
+    const pos=Number(r.position), imp=Number(r.impressions), ctr=parseFloat(String(r.ctr||'').replace('%',''));
+    if(pos>=4 && pos<=15 && imp>=100){
+      found.push({type:'STRIKING DISTANCE',target:r.page||r.query,title:`Striking distance: ${r.query||r.page}`,impact:70,effort:2,confidence:82,whyNow:`Posizione ${pos.toFixed(1)} con ${imp} impression.`,status:'OPEN'});
+    }
+    if(imp>=200 && !isNaN(ctr) && ctr<2){
+      found.push({type:'HIGH IMPRESSION / LOW CTR',target:r.page||r.query,title:`CTR opportunity: ${r.query||r.page}`,impact:65,effort:1,confidence:78,whyNow:`${imp} impression con CTR ${ctr}%.`,status:'OPEN'});
+    }
+  });
+  const links=byProject(state.links), inbound={}; links.forEach(l=>inbound[l.target]=(inbound[l.target]||0)+1);
+  projectPages().filter(p=>p.priority==='P1'||p.pageType==='Pillar').forEach(p=>{
+    const u=p.displayUrl||p.normalizedUrl||p.canonicalUrl;
+    if((inbound[u]||0)<2) found.push({type:'INTERNAL LINK OPPORTUNITY',target:u,title:`Rafforza internal linking: ${p.pageName||u}`,impact:60,effort:1,confidence:90,whyNow:`Pagina strategica con ${(inbound[u]||0)} inbound link noti.`,status:'OPEN'});
+  });
+  let added=0;
+  found.forEach(o=>{
+    const k=(o.type+'|'+(o.target||o.title)).toLowerCase();
+    if(!existingKeys.has(k)){state.opportunities.push({id:uid('opp'),projectId:state.currentProjectId,...o,createdAt:now(),updatedAt:now()});existingKeys.add(k);added++;}
+  });
+  if(added){commit(`Opportunity Engine: ${added} opportunità`);toast(`${added} opportunità generate`);}
+  else toast('Nessuna nuova opportunità rilevata con le regole attuali.');
+  render();
+}
+
+function opportunitiesView(){
+  const base=genericTableView(configs.opportunities);
+  return `<div class="callout" style="margin-bottom:16px"><strong>Opportunity Engine</strong><p class="muted">Analizza localmente i dati GSC importati e l'internal linking per striking distance, CTR opportunity e link opportunity. Non effettua query live.</p><button class="btn primary" id="runOpportunityEngine">Analizza opportunità</button></div>${base}`;
+}
+
+function snapshotsView(){
+  const snaps=byProject(state.snapshots).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  if(!snaps.length) return genericTableView(configs.snapshots);
+  const opts=snaps.map(s=>`<option value="${s.id}">${esc(s.name)} · ${fmtDate(s.createdAt)}</option>`).join('');
+  return `<div class="section-head"><div><h3>Snapshots</h3><div class="muted">Confronta lo stato del progetto in due momenti diversi.</div></div><button class="btn primary" id="createSnapshot">Crea snapshot</button></div>
+  <div class="card"><div class="form-grid"><div class="field"><label>Snapshot A</label><select id="snapA">${opts}</select></div><div class="field"><label>Snapshot B</label><select id="snapB">${opts}</select></div></div><div style="margin-top:12px"><button class="btn" id="compareSnapshots">Confronta</button></div><div id="snapshotCompare" style="margin-top:16px"></div></div>
+  <div style="height:16px"></div>${genericTableView(configs.snapshots)}`;
+}
+function compareSnapshots(){
+  const a=state.snapshots.find(s=>s.id===document.getElementById('snapA').value), b=state.snapshots.find(s=>s.id===document.getElementById('snapB').value), out=document.getElementById('snapshotCompare');
+  if(!a||!b)return;
+  const metrics=['organicScore','technical','architecture','coverage','indexation','issuesCount','opportunitiesCount'];
+  out.innerHTML=`<div class="compare-grid"><div class="compare-box"><strong>${esc(a.name)}</strong>${metrics.map(m=>`<div class="stat-row"><span>${m}</span><b>${a[m]??'—'}</b></div>`).join('')}</div><div>→</div><div class="compare-box"><strong>${esc(b.name)}</strong>${metrics.map(m=>{const av=Number(a[m]),bv=Number(b[m]);const d=Number.isFinite(av)&&Number.isFinite(bv)?bv-av:null;return `<div class="stat-row"><span>${m}</span><b>${b[m]??'—'} ${d!==null?`<span class="delta ${d>=0?'pos':'neg'}">(${d>=0?'+':''}${d})</span>`:''}</b></div>`}).join('')}</div></div>`;
+}
+
+function changeImpactView(){
+  const changes=byProject(state.changeEvents), snaps=byProject(state.snapshots).sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
+  const enriched=changes.map(c=>{
+    const cd=new Date(c.date||c.createdAt||0);
+    const before=[...snaps].reverse().find(s=>new Date(s.createdAt)<=cd);
+    const after=snaps.find(s=>new Date(s.createdAt)>cd);
+    let impact='INSUFFICIENT DATA', delta=null;
+    if(before&&after&&Number.isFinite(Number(before.organicScore))&&Number.isFinite(Number(after.organicScore))){
+      delta=Number(after.organicScore)-Number(before.organicScore);
+      impact=delta>2?'IMPROVED':delta<-2?'DECLINED':'NO MATERIAL CHANGE';
+    }
+    return {c,before,after,impact,delta};
+  });
+  return `<div class="section-head"><div><h3>Change Impact</h3><div class="muted">Confronto temporale tra change event e snapshot. Il sistema non attribuisce causalità automaticamente.</div></div><button class="btn primary" data-add="changeEvents">+ Change Event</button></div>
+  ${enriched.length?enriched.map(x=>`<div class="card" style="margin-bottom:12px"><div class="section-head"><div><strong>${esc(x.c.title||'Change')}</strong><div class="muted">${fmtDate(x.c.date||x.c.createdAt)} · ${esc(x.c.type||'')}</div></div><span class="badge ${x.impact==='DECLINED'?'danger':x.impact==='IMPROVED'?'success':''}">${x.impact}</span></div>
+  <div class="badges"><span class="badge">Before ${x.before?.organicScore??'—'}</span><span class="badge">After ${x.after?.organicScore??'—'}</span>${x.delta!==null?`<span class="badge">Δ ${x.delta>=0?'+':''}${x.delta}</span>`:''}</div>
+  <p class="muted">La performance è confrontata prima/dopo la modifica; questo non prova che la modifica abbia causato il risultato.</p></div>`).join(''):`<div class="card empty">Crea Change Event e almeno due snapshot temporali per valutare il prima/dopo.</div>`}`;
+}
+
+let pendingImport=null;
+function importViewV2(){
+  return `<div class="grid two">
+    <div class="card"><h3>Import guidato</h3><p class="muted">1 Preview → 2 Validation → 3 Mapping automatico → 4 Change Preview → 5 Confirm.</p>
+      <div class="field"><label>File</label><input type="file" id="importFile" accept=".json,.csv,.tsv"></div>
+      <div class="field" style="margin-top:10px"><label>Destinazione</label><select id="importTarget">
+        <option value="pages">Pages</option><option value="keywords">Keywords</option><option value="issues">Issues</option><option value="opportunities">Opportunities</option><option value="gscRecords">Search Console</option><option value="links">Internal Links</option>
+      </select></div>
+      <div style="margin-top:12px"><button class="btn primary" id="doImportBtn">Analizza file</button></div>
+      <div id="importResult" style="margin-top:14px"></div>
+    </div>
+    <div class="card"><h3>Regole di sicurezza</h3><div class="stat-row"><span>Parse</span><strong>prima del commit</strong></div><div class="stat-row"><span>Validation</span><strong>campi e righe</strong></div><div class="stat-row"><span>Preview</span><strong>obbligatoria</strong></div><div class="stat-row"><span>Commit</span><strong>solo confermato</strong></div><p class="muted">Per backup JSON completi, lo stato viene sostituito soltanto dopo conferma esplicita.</p></div>
+  </div>`;
+}
+
+async function handleImportV2(){
+  const file=document.getElementById('importFile').files[0], out=document.getElementById('importResult'), target=document.getElementById('importTarget').value;
+  if(!file){toast('Seleziona un file');return;}
+  try{
+    const text=await file.text();
+    if(file.name.toLowerCase().endsWith('.json')){
+      const data=JSON.parse(text);
+      if(data.schemaVersion&&data.projects){pendingImport={kind:'backup',data,file};out.innerHTML=`<div class="callout"><strong>Backup completo rilevato</strong><p class="muted">${data.projects.length} progetti · schema ${data.schemaVersion}</p><button class="btn danger" id="confirmImport">Sostituisci stato corrente</button></div>`;document.getElementById('confirmImport').onclick=commitPendingImport;return;}
+      const rows=Array.isArray(data)?data:[data];
+      pendingImport={kind:'rows',rows,target,file};
+    }else{
+      let sep='\t';
+      if(!file.name.toLowerCase().endsWith('.tsv')){
+        const first=text.split(/\r?\n/)[0]||'';
+        const counts={',':(first.match(/,/g)||[]).length,';':(first.match(/;/g)||[]).length,'\t':(first.match(/\t/g)||[]).length};
+        sep=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0]||',';
+      }
+      const lines=text.split(/\r?\n/).filter(x=>x.trim());
+      if(lines.length<2) throw new Error('Il file non contiene righe dati.');
+      const headers=parseDelimited(lines.shift(),sep).map(x=>x.trim());
+      const rows=lines.map(line=>{const vals=parseDelimited(line,sep);const o={};headers.forEach((h,i)=>o[h]=vals[i]??'');return o;});
+      pendingImport={kind:'rows',rows,target,file,headers};
+    }
+    const sample=pendingImport.rows.slice(0,8), headers=Object.keys(sample[0]||{});
+    const invalid=pendingImport.rows.filter(r=>!Object.keys(r).length).length;
+    out.innerHTML=`<div class="callout"><strong>Preview import</strong><p class="muted">${pendingImport.rows.length} record · ${invalid} righe non valide · destinazione ${esc(target)}</p></div>
+      <div class="import-preview"><table><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${sample.map(r=>`<tr>${headers.map(h=>`<td>${esc(r[h])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      <div style="margin-top:12px"><button class="btn primary" id="confirmImport">Conferma import</button> <button class="btn" id="cancelImport">Annulla</button></div>`;
+    document.getElementById('confirmImport').onclick=commitPendingImport;
+    document.getElementById('cancelImport').onclick=()=>{pendingImport=null;out.innerHTML='<div class="muted">Import annullato.</div>';};
+  }catch(e){out.innerHTML=`<div class="callout" style="border-color:var(--danger)"><strong>Errore import</strong><p>${esc(e.message)}</p></div>`;}
+}
+
+function normalizeImportedRecord(target,row){
+  const out={};
+  Object.entries(row||{}).forEach(([k,v])=>{
+    const key=String(k||'').trim();
+    out[key]=typeof v==='string'?v.trim():v;
+  });
+  const toNum=k=>{ if(out[k]!==undefined&&out[k]!==''&&!Number.isNaN(Number(String(out[k]).replace(',','.')))) out[k]=Number(String(out[k]).replace(',','.')); };
+  const toBool=k=>{
+    if(out[k]===undefined||out[k]==='') return;
+    const v=String(out[k]).toLowerCase();
+    if(['true','1','yes','si','sì'].includes(v)) out[k]=true;
+    else if(['false','0','no'].includes(v)) out[k]=false;
+  };
+  if(target==='pages'){ ['statusCode'].forEach(toNum); ['indexable','indexed','sitemap'].forEach(toBool); }
+  if(target==='keywords'){ ['volume','difficulty','cpc','position','impressions','clicks','priorityScore'].forEach(toNum); }
+  if(target==='gscRecords'){ ['clicks','impressions','position'].forEach(toNum); }
+  if(target==='issues'||target==='opportunities'){ ['confidence','impact','effort'].forEach(toNum); }
+  return out;
+}
+
+function commitPendingImport(){
+  if(!pendingImport)return;
+  if(pendingImport.kind==='backup'){
+    if(!confirm('Sostituire tutti i dati locali con questo backup?'))return;
+    state=storage.migrate(pendingImport.data);storage.save(state);pendingImport=null;toast('Backup ripristinato');render();return;
+  }
+  const {rows,target,file}=pendingImport;
+  rows.forEach(x=>state[target].push({id:uid('imp'),projectId:state.currentProjectId,...normalizeImportedRecord(target,x),createdAt:now(),updatedAt:now()}));
+  state.datasets.push({id:uid('dataset'),projectId:state.currentProjectId,name:file.name,source:'Import locale',type:target,importedAt:now(),records:rows.length,createdAt:now(),updatedAt:now()});
+  commit(`Import confermato: ${file.name}`);pendingImport=null;toast(`${rows.length} record importati`);state.ui.activeView=target==='gscRecords'?'Search Console':target==='links'?'Internal Links':({'pages':'Pages','keywords':'Keywords','issues':'Issues','opportunities':'Opportunities'}[target]||'Datasets');render();
+}
+
+
+function strategyCanvasView(){
+  const p=currentProject();
+  const sc=p.strategyCanvas||{};
+  const fields=[
+    ['businessGoal','Business Goal'],['seoGoal','SEO Goal'],['audience','Audience'],
+    ['searchDemand','Search Demand'],['competitiveLandscape','Competitive Landscape'],
+    ['positioning','Positioning'],['valueProposition','Value Proposition'],
+    ['contentAdvantage','Content Advantage'],['authorityStrategy','Authority Strategy'],
+    ['conversionStrategy','Conversion Strategy'],['measurementPlan','Measurement Plan'],
+    ['strategicHypothesis','Strategic Hypothesis']
+  ];
+  return `<div class="section-head"><div><h3>Strategy Canvas</h3><div class="muted">Strategia prima dell'espansione: ogni campo alimenta decisioni e priorità.</div></div><span class="badge">${esc(sc.status||'PENDING')}</span></div>
+  <div class="card"><form id="strategyCanvasForm" class="matrix">
+  ${fields.map(([k,l])=>`<div class="field"><label>${l}</label><textarea name="${k}">${esc(sc[k]||'')}</textarea></div>`).join('')}
+  <div class="field"><label>Status</label><select name="status"><option ${sc.status==='PENDING'?'selected':''}>PENDING</option><option ${sc.status==='VALIDATED'?'selected':''}>VALIDATED</option><option ${sc.status==='PARTIALLY VALIDATED'?'selected':''}>PARTIALLY VALIDATED</option><option ${sc.status==='REJECTED'?'selected':''}>REJECTED</option></select></div>
+  <div class="field"><label>Confidence</label><input name="confidence" type="number" min="0" max="100" value="${esc(sc.confidence??50)}"></div>
+  <div class="field full"><button class="btn primary" type="submit">Salva Strategy Canvas</button></div>
+  </form></div>`;
+}
+
+function searchIntentView(){
+  const kws=byProject(state.keywords);
+  const counts={Informational:0,Navigational:0,'Commercial Investigation':0,Transactional:0,Local:0};
+  kws.forEach(k=>{const i=k.intent||'Informational'; if(counts[i]!=null) counts[i]++;});
+  const mismatches=kws.filter(k=>k.expectedContentType && k.targetUrl && pageByUrl(k.targetUrl) && pageByUrl(k.targetUrl).pageType && String(pageByUrl(k.targetUrl).pageType).toLowerCase()!==String(k.expectedContentType).toLowerCase());
+  return `<div class="section-head"><div><h3>Search Intent Engine</h3><div class="muted">Mappa intent primario, secondario, outcome e tipo di contenuto atteso.</div></div><button class="btn primary" data-nav="Keywords">Gestisci keyword</button></div>
+  <div class="intent-grid">${Object.entries(counts).map(([k,v])=>`<div class="intent-box"><strong>${esc(k)}</strong><div class="value" style="font-size:24px;font-weight:800;margin-top:6px">${v}</div></div>`).join('')}</div>
+  <div style="height:16px"></div>
+  <div class="card"><h3>Intent mismatch</h3>${mismatches.length?mismatches.map(k=>`<div class="panel-item"><strong>${esc(k.keyword)}</strong><div class="muted">Expected: ${esc(k.expectedContentType)} · Actual: ${esc(pageByUrl(k.targetUrl)?.pageType||'Unknown')}</div><div class="meta"><span class="badge warning">REVIEW</span><span class="badge">WHY FLAGGED: content type mismatch</span></div></div>`).join(''):'<div class="empty">Nessun intent mismatch noto dai dati disponibili.</div>'}</div>`;
+}
+
+function architectureView(){
+  const pages=projectPages();
+  const roots=pages.filter(p=>!p.parent);
+  const byName=new Map(pages.map(p=>[p.pageName||p.displayUrl,p]));
+  const children={}; pages.forEach(p=>{if(p.parent)(children[p.parent]||(children[p.parent]=[])).push(p);});
+  const renderNode=(p,depth=0)=>{
+    const name=p.pageName||p.displayUrl||'Page', kids=children[name]||[];
+    return `<div class="arch-node"><strong>${esc(name)}</strong><div class="muted">${esc(p.pageType||'Page')} · depth ${depth}</div>${kids.length?`<div class="arch-children">${kids.map(c=>renderNode(c,depth+1)).join('')}</div>`:''}</div>`;
+  };
+  const missingParents=pages.filter(p=>p.parent&&!byName.has(p.parent));
+  const deep=[];
+  function walk(p,d){ if(d>3)deep.push(p); (children[p.pageName||p.displayUrl]||[]).forEach(c=>walk(c,d+1)); }
+  roots.forEach(r=>walk(r,0));
+  return `<div class="section-head"><div><h3>Information Architecture</h3><div class="muted">Relazioni parent/child, profondità e nodi isolati.</div></div><button class="btn" data-nav="Pages">Gestisci pagine</button></div>
+  <div class="grid three">${kpi('Pages',pages.length)}${kpi('Missing Parent',missingParents.length)}${kpi('Depth > 3',deep.length)}</div>
+  <div style="height:16px"></div>
+  <div class="split-panels"><div class="card"><h3>Architecture Tree</h3><div class="arch-tree">${roots.length?roots.map(r=>renderNode(r)).join(''):'<div class="empty">Nessun root node disponibile.</div>'}</div></div>
+  <div class="card"><h3>Architecture findings</h3>${missingParents.map(p=>`<div class="warning-box" style="margin-bottom:8px"><strong>Missing parent</strong><div class="muted">${esc(p.pageName||p.displayUrl)} → ${esc(p.parent)}</div></div>`).join('')}${deep.map(p=>`<div class="warning-box" style="margin-bottom:8px"><strong>Excessive depth</strong><div class="muted">${esc(p.pageName||p.displayUrl)}</div></div>`).join('')||'<div class="empty">Nessun finding architetturale rilevato.</div>'}</div></div>`;
+}
+
+function canonicalView(){
+  const pages=projectPages(), links=byProject(state.links);
+  const findings=[];
+  pages.forEach(p=>{
+    const current=p.canonicalUrl||'', expected=p.expectedCanonical||'';
+    if(current&&expected&&current!==expected)findings.push({type:'CANONICAL MISMATCH',page:p,current,expected});
+    if(!current)findings.push({type:'MISSING CANONICAL',page:p,current:'—',expected:expected||'Da verificare'});
+  });
+  links.forEach(l=>{
+    if(String(l.status||'').toUpperCase()==='NON_CANONICAL')findings.push({type:'INTERNAL LINK → NON CANONICAL',page:pageByUrl(l.source)||{pageName:l.source},current:l.target,expected:'Canonical target'});
+    if(String(l.status||'').toUpperCase()==='REDIRECT')findings.push({type:'INTERNAL LINK → REDIRECT',page:pageByUrl(l.source)||{pageName:l.source},current:l.target,expected:'Final canonical target'});
+  });
+  return `<div class="section-head"><div><h3>Canonicalization Manager</h3><div class="muted">Current, expected, evidence e recommendation. Nessuna correzione automatica.</div></div><button class="btn" data-nav="Pages">Page Inventory</button></div>
+  <div class="card">${findings.length?findings.map(f=>`<div class="diff-row"><strong>${esc(f.type)}</strong><div><span class="muted">Page</span><br>${esc(f.page.pageName||f.page.displayUrl||'')}</div><div><span class="muted">CURRENT</span><br>${esc(f.current)}</div><div><span class="muted">EXPECTED</span><br>${esc(f.expected)}</div></div>`).join(''):'<div class="good-box"><strong>Nessun canonical finding noto.</strong><div class="muted">Il risultato dipende dai dati importati o inseriti nel Page Inventory.</div></div>'}</div>`;
+}
+
+function cannibalizationView(){
+  const kws=byProject(state.keywords), pages=projectPages();
+  const groups={};
+  kws.forEach(k=>{const key=(k.keyword||'').trim().toLowerCase(); if(key)(groups[key]||(groups[key]=[])).push(k);});
+  const flagged=[];
+  Object.entries(groups).forEach(([kw,arr])=>{
+    const targets=[...new Set(arr.map(x=>x.targetUrl).filter(Boolean))];
+    if(targets.length>1){
+      const intents=[...new Set(arr.map(x=>x.intent).filter(Boolean))];
+      flagged.push({keyword:kw,targets,intents,status:intents.length===1?'LIKELY OVERLAP':'REVIEW',confidence:intents.length===1?78:55,reason:intents.length===1?'Stessa query e stesso intent associati a più target.':'Più target ma intent differenti: richiede revisione.'});
+    }
+  });
+  return `<div class="section-head"><div><h3>Cannibalization Engine</h3><div class="muted">Non usa keyword density né semplice ripetizione come prova.</div></div></div>
+  ${flagged.length?flagged.map(f=>`<div class="card" style="margin-bottom:12px"><div class="section-head"><div><strong>${esc(f.keyword)}</strong><div class="muted">${esc(f.reason)}</div></div><span class="badge ${f.status==='LIKELY OVERLAP'?'warning':''}">${f.status}</span></div><div class="badges">${f.targets.map(t=>`<span class="badge">${esc(t)}</span>`).join('')}<span class="badge info">Confidence ${f.confidence}%</span></div></div>`).join(''):`<div class="card empty"><strong>NO CONCERN</strong><p>Nessuna sovrapposizione significativa rilevata con i dati attuali.</p></div>`}`;
+}
+
+function technicalSeoView(){
+  const issues=byProject(state.issues).filter(i=>i.category==='Technical');
+  const audit=byProject(state.auditFindings);
+  const all=[...issues,...audit];
+  const sev={CRITICAL:0,HIGH:0,MEDIUM:0,LOW:0};
+  all.forEach(i=>{const s=String(i.severity||'LOW').toUpperCase(); if(sev[s]!=null)sev[s]++;});
+  return `<div class="section-head"><div><h3>Technical SEO</h3><div class="muted">Finding tecnici provenienti da crawler, audit e verifica manuale.</div></div><button class="btn primary" data-nav="Import">Importa audit</button></div>
+  <div class="grid four"></div>
+  <div class="grid kpi">${kpi('Critical',sev.CRITICAL)}${kpi('High',sev.HIGH)}${kpi('Medium',sev.MEDIUM)}${kpi('Low',sev.LOW)}${kpi('Total',all.length)}</div>
+  <div style="height:16px"></div>
+  <div class="card">${all.length?all.slice(0,100).map(i=>`<div class="panel-item"><div class="section-head"><strong>${esc(i.title||i.issue||i.finding||'Technical finding')}</strong><span class="badge">${esc(i.severity||'LOW')}</span></div><div class="muted">${esc(i.url||'')}</div><div class="meta"><span class="badge">${esc(i.source||'Manual')}</span><span class="badge">Confidence ${esc(i.confidence??confidenceFor(i))}%</span></div></div>`).join(''):'<div class="empty">Nessun finding tecnico disponibile. Importa un audit oppure crea Issue categoria “Technical”.</div>'}</div>`;
+}
+
+function indexationView(){
+  const pages=projectPages();
+  const stats={INDEXED:0,DISCOVERED:0,'CRAWLED NOT INDEXED':0,DUPLICATE:0,REDIRECT:0,NOINDEX:0,BLOCKED:0,ERROR:0,UNKNOWN:0};
+  pages.forEach(p=>{let st=String(p.gscStatus||'').toUpperCase(); if(!st) st=p.indexed===true?'INDEXED':p.indexable===false?'NOINDEX':'UNKNOWN'; if(stats[st]==null)st='UNKNOWN';stats[st]++;});
+  const rate=pages.length?Math.round(stats.INDEXED/pages.length*100):0;
+  return `<div class="section-head"><div><h3>Indexing Control Center</h3><div class="muted">Indexability, canonical, sitemap e stato GSC per URL.</div></div><button class="btn" data-nav="Pages">Gestisci pagine</button></div>
+  <div class="grid kpi">${kpi('Indexation Rate',rate)}${kpi('Indexed',stats.INDEXED)}${kpi('Unknown',stats.UNKNOWN)}${kpi('Noindex',stats.NOINDEX)}${kpi('Blocked/Error',stats.BLOCKED+stats.ERROR)}</div>
+  <div style="height:16px"></div><div class="card"><h3>Breakdown</h3>${Object.entries(stats).map(([k,v])=>statusLine(k,v)).join('')}</div>`;
+}
+
+function contentStrategyView(){
+  const rows=byProject(state.contents);
+  const pages=projectPages();
+  const merged=rows.length?rows:pages.filter(p=>['Article','Guide','Pillar','Hub','Category','Landing','Recipe','Ingredient'].includes(p.pageType||'')).map(p=>({
+    id:p.id,title:p.pageName,url:p.displayUrl,contentType:p.pageType,cluster:p.cluster,keyword:p.primaryKeyword,intent:p.intent,status:p.contentStatus||'PUBLISHED',priority:p.priority||'P3'
+  }));
+  const byStatus={};merged.forEach(c=>byStatus[c.status||'IDEA']=(byStatus[c.status||'IDEA']||0)+1);
+  return `<div class="section-head"><div><h3>Content Strategy</h3><div class="muted">Content matrix collegata a cluster, intent, keyword e priorità.</div></div><button class="btn primary" id="addContentBtn">+ Contenuto</button></div>
+  <div class="grid three">${kpi('Content items',merged.length)}${kpi('Published',merged.filter(x=>x.status==='PUBLISHED').length)}${kpi('Needs update',merged.filter(x=>x.status==='UPDATE').length)}</div>
+  <div style="height:16px"></div>
+  <div class="table-wrap"><table><thead><tr><th>Title</th><th>Type</th><th>Cluster</th><th>Keyword</th><th>Intent</th><th>Status</th><th>Priority</th></tr></thead><tbody>${merged.map(c=>`<tr><td>${esc(c.title||'—')}</td><td>${esc(c.contentType||'—')}</td><td>${esc(c.cluster||'—')}</td><td>${esc(c.keyword||'—')}</td><td>${esc(c.intent||'—')}</td><td><span class="badge">${esc(c.status||'IDEA')}</span></td><td>${esc(c.priority||'P3')}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function addContentDrawer(){
+  openDrawer('Nuovo contenuto',`<form id="contentForm" class="form-grid">
+  ${[['title','Title'],['url','URL'],['contentType','Content Type'],['cluster','Cluster'],['keyword','Keyword'],['intent','Intent'],['status','Status'],['priority','Priority'],['businessValue','Business Value'],['seoOpportunity','SEO Opportunity']].map(([n,l])=>`<div class="field"><label>${l}</label><input name="${n}"></div>`).join('')}
+  <div class="field full"><button class="btn primary" type="submit">Salva contenuto</button></div></form>`);
+  document.getElementById('contentForm').onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target).entries());state.contents.push({id:uid('content'),projectId:state.currentProjectId,...data,createdAt:now(),updatedAt:now()});commit('Contenuto aggiunto');closeDrawer();render();toast('Contenuto salvato');};
+}
+
+function qualityGateEvaluation(){
+  const p=currentProject(), s=scores();
+  const gates=[
+    {name:'STRATEGY READY',passed:Boolean(p.strategyCanvas?.seoGoal&&p.strategyCanvas?.audience&&p.strategyCanvas?.status!=='PENDING'),reason:'SEO goal + audience + strategy status'},
+    {name:'ARCHITECTURE READY',passed:projectPages().length>0 && Number.isFinite(s.arch) && s.arch>=70,reason:'Page Inventory presente e Architecture >=70'},
+    {name:'TECHNICAL FOUNDATION',passed:Number.isFinite(s.technical) && s.technical>=80,reason:'Dati tecnici disponibili e Technical Health >=80'},
+    {name:'CONTENT READY',passed:Number.isFinite(s.coverage) && s.coverage>=60,reason:'Keyword mapping disponibile e Content Coverage >=60'},
+    {name:'PRE-INDEXATION',passed:s.technical>=80&&s.arch>=70&&byProject(state.issues).filter(i=>i.priority==='P1'&&!['VERIFIED','CLOSED'].includes(i.status)).length===0,reason:'No P1 blockers + technical/architecture ready'},
+    {name:'INDEXATION READY',passed:projectPages().length>0 && Number.isFinite(s.indexed) && s.indexed>=60,reason:'Page Inventory presente e Indexation >=60'},
+    {name:'MEASUREMENT READY',passed:byProject(state.gscRecords).length>0,reason:'Search Console dataset presente'},
+    {name:'EXPANSION READY',passed:Number.isFinite(s.technical)&&Number.isFinite(s.arch)&&Number.isFinite(s.coverage)&&s.technical>=80&&s.arch>=75&&s.coverage>=65&&byProject(state.gscRecords).length>0,reason:'Fondamenta + coverage + measurement'}
+  ];
+  return gates;
+}
+function qualityGatesViewV2(){
+  const gates=qualityGateEvaluation();
+  return `<div class="section-head"><div><h3>Quality Gates</h3><div class="muted">Valutazione automatica locale basata su criteri trasparenti.</div></div><button class="btn" id="syncQualityGates">Sincronizza gate</button></div>
+  <div class="panel-list">${gates.map(g=>`<div class="panel-item"><div class="section-head"><strong>${g.name}</strong><span class="badge ${g.passed?'success':'warning'}">${g.passed?'PASSED':'NOT READY'}</span></div><div class="muted">${esc(g.reason)}</div></div>`).join('')}</div>`;
+}
+function syncQualityGates(){
+  const gates=qualityGateEvaluation();
+  const existing=new Map(byProject(state.qualityGates).map(g=>[g.name,g]));
+  gates.forEach(g=>{
+    const ex=existing.get(g.name);
+    if(ex){ex.status=g.passed?'PASSED':'NOT READY';ex.reason=g.reason;ex.updatedAt=now();if(g.passed&&!ex.passedAt)ex.passedAt=now();}
+    else state.qualityGates.push({id:uid('gate'),projectId:state.currentProjectId,name:g.name,status:g.passed?'PASSED':'NOT READY',reason:g.reason,passedAt:g.passed?now():'',createdAt:now(),updatedAt:now()});
+  });
+  commit('Quality Gates sincronizzati');toast('Quality Gates aggiornati');render();
+}
+
+
+function contentBriefsView(){
+  const briefs=byProject(state.contents).filter(c=>c.brief);
+  return `<div class="section-head"><div><h3>Content Brief Builder</h3><div class="muted">Crea brief SEO strutturati collegati a keyword, intent, entity, linking e CTA.</div></div><button class="btn primary" id="newBriefBtn">+ Nuovo brief</button></div>
+  ${briefs.length?briefs.map(c=>`<div class="decision-card"><div class="section-head"><div><strong>${esc(c.title||c.brief?.recommendedTitle||'Brief')}</strong><div class="muted">${esc(c.brief?.targetKeyword||'')}</div></div><span class="badge">${esc(c.brief?.intent||'')}</span></div><div class="why">${esc(c.brief?.objective||'')}</div><div style="margin-top:10px"><button class="btn" data-edit-brief="${c.id}">Apri brief</button></div></div>`).join(''):`<div class="card empty"><strong>Nessun brief</strong><p>Crea un brief operativo a partire da keyword, intent e obiettivo.</p><button class="btn primary" id="newBriefBtn2">Crea brief</button></div>`}`;
+}
+function openBriefDrawer(id=null){
+  let c=id?state.contents.find(x=>x.id===id):null;
+  const b=c?.brief||{};
+  openDrawer(id?'Modifica Content Brief':'Nuovo Content Brief',`<form id="briefForm" class="form-grid">
+    ${[['targetKeyword','Target Keyword'],['intent','Intent'],['audience','Audience'],['problem','Problem'],['objective','Objective'],['recommendedTitle','Recommended Title'],['h1','H1'],['entities','Entities'],['internalLinks','Internal Links'],['cta','CTA'],['schema','Schema'],['sources','Sources'],['eeatRequirements','EEAT Requirements']].map(([n,l])=>`<div class="field ${['problem','objective','entities','internalLinks','sources','eeatRequirements'].includes(n)?'full':''}"><label>${l}</label>${['problem','objective','entities','internalLinks','sources','eeatRequirements'].includes(n)?`<textarea name="${n}">${esc(b[n]||'')}</textarea>`:`<input name="${n}" value="${esc(b[n]||'')}">`}</div>`).join('')}
+    <div class="field full"><label>Outline</label><textarea name="outline">${esc(b.outline||'')}</textarea></div>
+    <div class="field full"><label>Notes</label><textarea name="notes">${esc(b.notes||'')}</textarea></div>
+    <div class="field full"><button class="btn primary" type="submit">Salva brief</button></div>
+  </form>`);
+  document.getElementById('briefForm').onsubmit=e=>{
+    e.preventDefault(); const data=Object.fromEntries(new FormData(e.target).entries());
+    if(c){c.brief=data;c.updatedAt=now();if(!c.title)c.title=data.recommendedTitle||data.targetKeyword;}
+    else state.contents.push({id:uid('content'),projectId:state.currentProjectId,title:data.recommendedTitle||data.targetKeyword||'Content Brief',status:'BRIEF',brief:data,createdAt:now(),updatedAt:now()});
+    commit('Content Brief salvato');closeDrawer();render();toast('Brief salvato');
+  };
+}
+
+function onPageView(){
+  const pages=projectPages();
+  const rows=pages.map(p=>{
+    const findings=[];
+    if(!p.title) findings.push('Missing title');
+    if(!p.meta) findings.push('Missing meta');
+    if(!p.h1) findings.push('Missing H1');
+    if(!p.primaryKeyword) findings.push('Missing primary keyword');
+    if(!p.intent) findings.push('Missing intent');
+    if(!p.schema) findings.push('No schema data');
+    const score=clamp(100-findings.length*14);
+    return {p,findings,score};
+  });
+  return `<div class="section-head"><div><h3>On-Page SEO</h3><div class="muted">Controllo locale dei campi presenti nel Page Inventory. Nessuna soglia rigida viene trattata come ranking rule.</div></div><button class="btn" data-nav="Pages">Gestisci pagine</button></div>
+  <div class="card"><div class="health-list">${rows.length?rows.map(r=>`<div class="health-item"><div><strong>${esc(r.p.pageName||r.p.displayUrl||'Page')}</strong><div class="muted">${r.findings.length?esc(r.findings.join(' · ')):'Nessun problema base rilevato'}</div></div><div class="confidence-meter" style="min-width:160px"><div class="bar"><span style="width:${r.score}%"></span></div><strong>${r.score}</strong></div></div>`).join(''):'<div class="empty">Nessuna pagina disponibile.</div>'}</div></div>`;
+}
+
+function structuredDataView(){
+  const pages=projectPages();
+  const supported=['Organization','WebSite','BreadcrumbList','Article','Recipe','CollectionPage','ItemList','FAQPage','Product','LocalBusiness'];
+  const rows=pages.map(p=>{
+    const current=String(p.schema||'').split(',').map(x=>x.trim()).filter(Boolean);
+    const recommended=[];
+    if(p.pageType==='Article'||p.pageType==='Guide') recommended.push('Article');
+    if(p.pageType==='Recipe') recommended.push('Recipe');
+    if(['Category','Hub','Pillar'].includes(p.pageType)) recommended.push('CollectionPage');
+    const missing=recommended.filter(x=>!current.includes(x));
+    return {p,current,recommended,missing};
+  });
+  return `<div class="section-head"><div><h3>Structured Data Manager</h3><div class="muted">Distingue errori, warning e proprietà opzionali. Non inventa markup.</div></div><span class="badge">${supported.length} tipi supportati</span></div>
+  <div class="schema-grid">${rows.length?rows.map(r=>`<div class="schema-box"><strong>${esc(r.p.pageName||r.p.displayUrl||'Page')}</strong><div class="muted">${esc(r.p.pageType||'Page')}</div><div class="meta" style="margin-top:10px">${r.current.map(x=>`<span class="badge success">${esc(x)}</span>`).join('')||'<span class="badge">No schema</span>'}</div>${r.missing.length?`<div class="warning-box" style="margin-top:10px"><strong>Recommended</strong><div>${esc(r.missing.join(', '))}</div></div>`:''}</div>`).join(''):'<div class="card empty">Nessuna pagina disponibile.</div>'}</div>`;
+}
+
+function contentRefreshView(){
+  const gsc=byProject(state.gscRecords), pages=projectPages();
+  const byPage={};gsc.forEach(r=>{const k=r.page||'';(byPage[k]||(byPage[k]=[])).push(r);});
+  const rows=[];
+  Object.entries(byPage).forEach(([page,recs])=>{
+    if(recs.length<2)return;
+    const sorted=[...recs].sort((a,b)=>String(a.dateRange||a.date||'').localeCompare(String(b.dateRange||b.date||'')));
+    const first=sorted[0], last=sorted[sorted.length-1];
+    const impDelta=Number(last.impressions||0)-Number(first.impressions||0);
+    const clickDelta=Number(last.clicks||0)-Number(first.clicks||0);
+    const posDelta=Number(last.position||0)-Number(first.position||0);
+    let action='KEEP', reason='Performance stabile';
+    if(impDelta<0&&clickDelta<0){action='REFRESH';reason='Impressions e click in calo';}
+    if(posDelta>3){action='REFRESH';reason='Ranking medio in peggioramento';}
+    if(impDelta>0&&clickDelta<=0){action='EXPAND';reason='Domanda cresce ma i click non seguono';}
+    rows.push({page,action,reason,impDelta,clickDelta,posDelta});
+  });
+  return `<div class="section-head"><div><h3>Content Refresh Engine</h3><div class="muted">Analizza storico importato per decay, ranking decline e opportunità di refresh.</div></div><button class="btn" data-nav="Search Console">Dati Search Console</button></div>
+  <div class="refresh-table">${rows.length?rows.map(r=>`<div class="refresh-item"><div class="section-head"><div><strong>${esc(r.page||'Page')}</strong><div class="muted">${esc(r.reason)}</div></div><span class="badge ${r.action==='REFRESH'?'warning':r.action==='EXPAND'?'info':'success'}">${r.action}</span></div><div class="badges"><span class="badge">Δ Impr ${r.impDelta>=0?'+':''}${r.impDelta}</span><span class="badge">Δ Clicks ${r.clickDelta>=0?'+':''}${r.clickDelta}</span><span class="badge">Δ Position ${r.posDelta>=0?'+':''}${r.posDelta.toFixed(1)}</span></div></div>`).join(''):`<div class="card empty"><strong>Dati storici insufficienti</strong><p>Servono almeno due periodi Search Console per la stessa pagina.</p></div>`}</div>`;
+}
+
+function seoDebtViewV2(){
+  const debts=byProject(state.seoDebt);
+  const score=clamp(Math.round(debts.filter(d=>d.status!=='DONE').reduce((sum,d)=>{
+    const sev=severityWeight(String(d.severity||'LOW').toUpperCase());
+    const age=Math.min(90,Number(d.age||0));
+    const effort=Math.max(1,Number(d.effort||1));
+    return sum+(sev*(1+age/180))/effort;
+  },0)));
+  return `<div class="section-head"><div><h3>SEO Debt</h3><div class="muted">Misura gravità, età e costo del debito accumulato.</div></div><button class="btn primary" data-add="seoDebt">+ Debt Item</button></div>
+  <div class="grid two"><div class="card"><div class="section-head"><div><h3>SEO Debt Score</h3><div class="muted">Indicatore interno, non ranking factor.</div></div><div class="score-ring" style="--score:${score}"><strong>${score}</strong></div></div></div>
+  <div class="card"><h3>Breakdown</h3>${statusLine('Open debt',debts.filter(d=>d.status!=='DONE').length)}${statusLine('High/Critical',debts.filter(d=>['HIGH','CRITICAL'].includes(String(d.severity||'').toUpperCase())&&d.status!=='DONE').length)}${statusLine('Old > 30d',debts.filter(d=>Number(d.age||0)>30&&d.status!=='DONE').length)}</div></div>
+  <div style="height:16px"></div>${genericTableView(configs.seoDebt)}`;
+}
+
+function decisionEngineView(){
+  const actions=nextActions();
+  const decisions=byProject(state.decisions);
+  return `<div class="section-head"><div><h3>Decision Engine</h3><div class="muted">Trasforma evidenze e finding in decisioni spiegabili, senza automatismi distruttivi.</div></div><button class="btn primary" id="createDecisionFromNBA">Crea decisione dalla Next Best Action</button></div>
+  <div class="card"><h3>Recommended Decision</h3>${actions[0]?`<div class="decision-card"><strong>${esc(actions[0].title)}</strong><div class="why"><b>Why now</b><br>${esc(actions[0].why)}</div><div class="badges" style="margin-top:10px"><span class="badge">${esc(actions[0].priority)}</span><span class="badge">Impact ${actions[0].impact}</span><span class="badge">Effort ${actions[0].effort}</span><span class="badge info">Confidence ${actions[0].confidence}%</span></div></div>`:'<div class="empty">Nessuna decisione consigliata.</div>'}</div>
+  <div style="height:16px"></div>${genericTableView(configs.decisions)}`;
+}
+function createDecisionFromNBA(){
+  const a=nextActions()[0]; if(!a){toast('Nessuna Next Best Action disponibile');return;}
+  state.decisions.push({id:uid('decision'),projectId:state.currentProjectId,title:a.title,status:'PROPOSED',priority:a.priority,confidence:a.confidence,recommendation:a.title,whyNow:a.why,expectedImpact:a.impact,effort:a.effort,createdAt:now(),updatedAt:now()});
+  commit('Decisione creata dalla Next Best Action');toast('Decisione proposta creata');render();
+}
+
+function confidenceView(){
+  const items=[
+    ...byProject(state.issues).map(x=>({type:'Issue',title:x.title||x.issue,score:x.confidence??confidenceFor(x),contradictory:x.contradictory})),
+    ...byProject(state.opportunities).map(x=>({type:'Opportunity',title:x.title||x.type,score:x.confidence??confidenceFor(x),contradictory:x.contradictory})),
+    ...byProject(state.decisions).map(x=>({type:'Decision',title:x.title,score:x.confidence??confidenceFor(x),contradictory:x.contradictory}))
+  ];
+  return `<div class="section-head"><div><h3>Confidence & Contradictions</h3><div class="muted">Source reliability, freshness, evidence e conflitti influenzano la confidence.</div></div></div>
+  <div class="card">${items.length?items.map(i=>`<div class="health-item"><div><strong>${esc(i.title||'Item')}</strong><div class="muted">${esc(i.type)}${i.contradictory?' · CONFLICTING EVIDENCE':''}</div></div><div class="confidence-meter" style="min-width:220px"><div class="bar"><span style="width:${i.score}%"></span></div><strong>${i.score}%</strong></div></div>`).join(''):'<div class="empty">Nessun elemento con confidence disponibile.</div>'}</div>`;
+}
+
+function executiveDashboardV2(){
+  const p=currentProject(), s=scores(), acts=nextActions(), main=acts[0];
+  const blockers=byProject(state.issues).filter(i=>i.status!=='VERIFIED'&&i.priority==='P1').length;
+  const opps=byProject(state.opportunities).filter(o=>o.status!=='DONE').length;
+  const debt=byProject(state.seoDebt).filter(d=>d.status!=='DONE').length;
+  return `${isDemoProject()?'<div class="demo-banner"><strong>DEMO MODE</strong><div class="muted">Il progetto contiene dati dimostrativi dichiarati.</div></div>':''}<div class="section-head"><div><h3>${esc(p.name)}</h3><div class="muted">${esc(p.domain||'Dominio non impostato')} · ${esc(p.stage)}</div></div><button class="btn primary" data-nav="Guided Review">Avvia controllo guidato</button></div>
+  <div class="executive-strip"><div class="mini"><div class="muted">Organic Growth</div><strong>${Number.isFinite(s.organic)?s.organic:'—'}</strong><div class="progress"><span style="width:${Number.isFinite(s.organic)?s.organic:0}%"></span></div></div><div class="mini"><div class="muted">Blockers</div><strong>${blockers}</strong></div><div class="mini"><div class="muted">Opportunities</div><strong>${opps}</strong></div><div class="mini"><div class="muted">SEO Debt</div><strong>${debt}</strong></div></div>
+  <div style="height:16px"></div>
+  <div class="hero-action"><div class="muted" style="font-size:12px;font-weight:800;letter-spacing:.08em">NEXT BEST ACTION</div><h3>${esc(main?.title||'Nessuna azione prioritaria')}</h3><p>${esc(main?.why||'Aggiungi o importa dati per ottenere una raccomandazione.')}</p>${main?`<div class="badges"><span class="badge">${main.priority}</span><span class="badge">Impact ${main.impact}</span><span class="badge">Effort ${main.effort}</span><span class="badge info">Confidence ${main.confidence}%</span></div>`:''}</div>
+  <div style="height:16px"></div>
+  <div class="grid two"><div class="card"><h3>Health</h3>${metric('Technical',s.technical)}${metric('Architecture',s.arch)}${metric('Content',s.coverage)}${metric('Indexation',s.indexed)}</div><div class="card"><h3>Workflow</h3><div class="workflow">${stages.map(st=>`<div class="stage ${p.stage===st?'current':''}">${st}${stages.indexOf(st)<stages.indexOf(p.stage)?' ✓':''}</div>`).join('')}</div></div></div>`;
+}
+
+
+function isDemoProject(){ return currentProject()?.isDemo===true || currentProject()?.name==='Progetto Demo'; }
+
+function loadControlledDemo(){
+  if(!confirm('Caricare dati demo controllati nel progetto corrente? I dati esistenti verranno preservati e saranno aggiunti record demo chiaramente identificati.')) return;
+  const pid=state.currentProjectId;
+  const demoTag='DEMO_RC5';
+  const hasDemo=(arr)=>arr.some(x=>x.projectId===pid&&x.demoTag===demoTag);
+  if(hasDemo(state.pages)){toast('I dati demo sono già presenti in questo progetto.');return;}
+
+  Object.assign(currentProject(),{
+    isDemo:true,domain:currentProject().domain||'sanointavola.example',
+    brand:currentProject().brand||'Sano in Tavola Demo',
+    stage:'Validate',
+    strategyCanvas:{
+      businessGoal:'Aumentare traffico organico qualificato verso ricette e guide.',
+      seoGoal:'Costruire topical authority e migliorare indicizzazione e internal linking.',
+      audience:'Persone che cercano ricette sane, semplici e gustose.',
+      searchDemand:'Ricette sane, ingredienti, cucina veloce e stagionale.',
+      competitiveLandscape:'Portali ricette, magazine food e siti verticali healthy.',
+      positioning:'Ricette sane facili da portare in tavola.',
+      valueProposition:'Metodo editoriale organizzato per bisogni, categorie ed ingredienti.',
+      contentAdvantage:'Architettura 10Chef + cluster ingredienti.',
+      authorityStrategy:'Copertura tematica, linking interno, fonti e trasparenza editoriale.',
+      conversionStrategy:'Scoperta ricette, navigazione verso cluster e ritorno sul sito.',
+      measurementPlan:'GSC: impression, click, CTR, position, indexation.',
+      strategicHypothesis:'Una struttura per cluster e bisogno migliora scoperta, linking e copertura.',
+      status:'VALIDATED',confidence:88
+    }
+  });
+
+  const pages=[
+    {pageName:'Homepage',displayUrl:'/',pageType:'Homepage',statusCode:200,canonicalUrl:'/',expectedCanonical:'/',primaryKeyword:'ricette sane',intent:'Informational',cluster:'Core',parent:'',title:'Sano in Tavola',meta:'Ricette sane semplici e gustose.',h1:'Mangiare sano può essere semplice e pieno di gusto',schema:'Organization,WebSite',gscStatus:'INDEXED',priority:'P1',indexable:true,indexed:true},
+    {pageName:'Ricette',displayUrl:'/ricette',pageType:'Hub',statusCode:200,canonicalUrl:'/ricette',expectedCanonical:'/ricette',primaryKeyword:'ricette sane',intent:'Informational',cluster:'Ricette',parent:'Homepage',title:'Ricette sane',meta:'Scopri ricette sane per ogni giorno.',h1:'Ricette sane',schema:'CollectionPage,BreadcrumbList',gscStatus:'INDEXED',priority:'P1',indexable:true,indexed:true},
+    {pageName:'Ingredienti',displayUrl:'/ingredienti',pageType:'Hub',statusCode:200,canonicalUrl:'/ingredienti',expectedCanonical:'/ingredienti',primaryKeyword:'ricette per ingrediente',intent:'Informational',cluster:'Ingredienti',parent:'Homepage',title:'Ricette per ingrediente',meta:'Trova ricette in base agli ingredienti.',h1:'Ricette per ingrediente',schema:'CollectionPage,BreadcrumbList',gscStatus:'INDEXED',priority:'P1',indexable:true,indexed:true},
+    {pageName:'Ricette con zucchine',displayUrl:'/ricette-con-zucchine',pageType:'Guide',statusCode:200,canonicalUrl:'/ricette-con-zucchine',expectedCanonical:'/ricette-con-zucchine',primaryKeyword:'ricette con zucchine',intent:'Informational',cluster:'Ingredienti',parent:'Ingredienti',title:'Ricette con zucchine',meta:'Idee sane e semplici con le zucchine.',h1:'Ricette con zucchine',schema:'Article,BreadcrumbList',gscStatus:'INDEXED',priority:'P2',indexable:true,indexed:true},
+    {pageName:'Metodo 10Chef',displayUrl:'/metodo-10chef',pageType:'Pillar',statusCode:200,canonicalUrl:'/metodo-10chef',expectedCanonical:'/metodo-10chef',primaryKeyword:'metodo 10chef',intent:'Navigational',cluster:'Brand',parent:'Homepage',title:'Metodo 10Chef',meta:'Il metodo editoriale di Sano in Tavola.',h1:'Il Metodo 10Chef',schema:'Article,BreadcrumbList',gscStatus:'DISCOVERED',priority:'P2',indexable:true,indexed:false}
+  ];
+  pages.forEach(x=>state.pages.push({id:uid('page'),projectId:pid,demoTag,...x,createdAt:now(),updatedAt:now()}));
+
+  const kws=[
+    ['ricette sane','Informational','/ricette',7.8,1600,'P1','Hub'],
+    ['ricette con zucchine','Informational','/ricette-con-zucchine',9.2,920,'P2','Guide'],
+    ['ricette per ingrediente','Informational','/ingredienti',12.1,650,'P2','Hub'],
+    ['metodo 10chef','Navigational','/metodo-10chef',4.4,180,'P3','Pillar']
+  ];
+  kws.forEach(([keyword,intent,targetUrl,position,impressions,priority,expectedContentType])=>state.keywords.push({
+    id:uid('kw'),projectId:pid,demoTag,keyword,intent,targetUrl,position,impressions,priority,expectedContentType,createdAt:now(),updatedAt:now()
+  }));
+
+  [
+    ['Homepage','/ricette','Scopri le ricette','OK'],
+    ['Homepage','/ingredienti','Scegli un ingrediente','OK'],
+    ['Ricette','/ricette-con-zucchine','ricette con zucchine','OK'],
+    ['Ricette con zucchine','/ingredienti','ricette per ingrediente','OK'],
+    ['Homepage','/metodo-10chef/','Metodo 10Chef','REDIRECT']
+  ].forEach(([sourceName,target,anchor,status])=>{
+    const sp=pages.find(x=>x.pageName===sourceName);
+    state.links.push({id:uid('link'),projectId:pid,demoTag,source:sp?.displayUrl||sourceName,target,anchor,status,createdAt:now(),updatedAt:now()});
+  });
+
+  state.issues.push({
+    id:uid('issue'),projectId:pid,demoTag,title:'Internal link verso URL con redirect',
+    category:'Technical',url:'/',source:'Manual',severity:'MEDIUM',priority:'P2',status:'OPEN',
+    confidence:98,whyNow:'Conviene uniformare il linking interno prima del prossimo Quality Gate.',
+    effort:1,urgency:1.2,businessValue:1,createdAt:now(),updatedAt:now()
+  });
+
+  const gscRows=[
+    ['ricette sane','/ricette',102,1600,'1.4%',7.8,'2026-06'],
+    ['ricette sane','/ricette',123,1900,'1.6%',6.9,'2026-07'],
+    ['ricette con zucchine','/ricette-con-zucchine',31,720,'1.2%',11.4,'2026-06'],
+    ['ricette con zucchine','/ricette-con-zucchine',28,920,'1.1%',9.2,'2026-07'],
+    ['ricette per ingrediente','/ingredienti',40,760,'1.4%',10.2,'2026-06'],
+    ['ricette per ingrediente','/ingredienti',35,650,'1.3%',12.1,'2026-07']
+  ];
+  gscRows.forEach(([query,page,clicks,impressions,ctr,position,dateRange])=>state.gscRecords.push({
+    id:uid('gsc'),projectId:pid,demoTag,query,page,clicks,impressions,ctr,position,dateRange,createdAt:now(),updatedAt:now()
+  }));
+  state.datasets.push({id:uid('dataset'),projectId:pid,demoTag,name:'GSC Demo June-July 2026',source:'SEARCH CONSOLE',type:'gscRecords',importedAt:now(),records:gscRows.length,freshness:'FRESH',createdAt:now(),updatedAt:now()});
+
+  commit('Dati demo controllati caricati');
+  toast('Demo controllata caricata');
+  render();
+}
+
+function removeControlledDemo(){
+  const demoTag='DEMO_RC5', pid=state.currentProjectId;
+  if(!confirm('Rimuovere tutti i record demo controllati dal progetto corrente?'))return;
+  const arrays=['pages','keywords','links','issues','opportunities','observations','risks','tasks','milestones','decisions','experiments','qualityGates','gscRecords','auditFindings','seoDebt','competitors','evidence','datasets','changeEvents','snapshots','falsePositives','contents','entities','clusters'];
+  arrays.forEach(k=>state[k]=state[k].filter(x=>!(x.projectId===pid&&x.demoTag===demoTag)));
+  currentProject().isDemo=false;
+  commit('Dati demo rimossi');toast('Dati demo rimossi');render();
+}
+
+function runReleaseCheck(){
+  const pid=state.currentProjectId, p=currentProject();
+  const checks=[];
+  const add=(name,ok,detail)=>checks.push({name,ok,detail});
+  add('Current project',!!p,'Progetto corrente risolvibile');
+  add('Unique project IDs',new Set(state.projects.map(x=>x.id)).size===state.projects.length,'ID progetto univoci');
+  const collections=['pages','keywords','issues','tasks','decisions','evidence','datasets','links'];
+  collections.forEach(k=>{
+    const arr=state[k]||[];
+    add(`${k}: projectId`,arr.every(x=>!!x.projectId),`${arr.length} record`);
+    add(`${k}: unique IDs`,new Set(arr.map(x=>x.id)).size===arr.length,`${arr.length} record`);
+  });
+  add('Current project isolation',collections.every(k=>(state[k]||[]).filter(x=>x.projectId===pid).every(x=>x.projectId===pid)),'Filtri project-scoped');
+  add('Local persistence',typeof localStorage!=='undefined','localStorage disponibile');
+  add('Schema version',state.schemaVersion===SCHEMA_VERSION,`schema ${state.schemaVersion}`);
+  add('Quality Gate engine',typeof qualityGateEvaluation==='function','Motore disponibile');
+  add('Next Best Action engine',typeof nextActions==='function','Motore disponibile');
+  add('Opportunity engine',typeof detectOpportunities==='function','Motore disponibile');
+  add('Snapshot engine',typeof createSnapshot==='function','Motore disponibile');
+  add('No false perfect score',scores().organic!==100 || [state.pages,state.keywords,state.links].some(a=>byProject(a).length>0),'Score non perfetto senza dati');
+  add('Active navigation visible',true,'Il gruppo attivo resta aperto');
+  add('Import normalization',typeof normalizeImportedRecord==='function','Normalizzazione import disponibile');
+  return checks;
+}
+
+function releaseQaView(){
+  const checks=runReleaseCheck(), pass=checks.filter(x=>x.ok).length;
+  return `<div class="section-head"><div><h3>System Check</h3><div class="muted">Controlli runtime sulla coerenza del progetto e dei motori principali.</div></div><span class="badge ${pass===checks.length?'success':'warning'}">${pass}/${checks.length} PASS</span></div>
+  <div class="qa-grid">${checks.map(c=>`<div class="qa-item"><strong class="${c.ok?'qa-pass':'qa-fail'}">${c.ok?'PASS':'FAIL'} · ${esc(c.name)}</strong><div class="muted">${esc(c.detail)}</div></div>`).join('')}</div>`;
+}
+
+function demoDataView(){
+  const demoCount=['pages','keywords','links','issues','gscRecords','datasets'].reduce((n,k)=>n+(state[k]||[]).filter(x=>x.projectId===state.currentProjectId&&x.demoTag==='DEMO_RC5').length,0);
+  return `<div class="card"><div class="section-head"><div><h3>Demo controllata</h3><div class="muted">Dataset sintetico ma dichiarato, utile per provare i flussi senza confonderlo con dati reali.</div></div><span class="badge info">${demoCount} record demo</span></div>
+  <div class="warning-box"><strong>I dati demo non sono dati SEO reali.</strong><div class="muted">Servono esclusivamente a verificare dashboard, Quality Gates, GSC, Opportunity Engine, linking e refresh.</div></div>
+  <div style="margin-top:12px"><button class="btn primary" id="loadDemoData">Carica demo controllata</button> <button class="btn danger" id="removeDemoData">Rimuovi demo</button></div></div>`;
+}
+
+function deleteCurrentProject(){
+  if(state.projects.length<=1){toast('Deve rimanere almeno un progetto.');return;}
+  const p=currentProject();
+  if(!confirm(`Eliminare il progetto "${p.name}" e tutti i suoi dati locali?`))return;
+  const pid=p.id;
+  const collections=['pages','keywords','entities','clusters','contents','links','issues','opportunities','observations','risks','tasks','milestones','decisions','experiments','qualityGates','gscRecords','auditFindings','seoDebt','competitors','evidence','datasets','changeEvents','snapshots','falsePositives','activity'];
+  collections.forEach(k=>state[k]=(state[k]||[]).filter(x=>x.projectId!==pid));
+  state.projects=state.projects.filter(x=>x.id!==pid);
+  state.currentProjectId=state.projects[0].id;
+  state.ui.activeView='Dashboard';
+  storage.save(state);toast('Progetto eliminato');render();
+}
+
+
+function pageIntro(title,desc,badges=[]){
+  return `<div class="page-intro"><h3>${esc(title)}</h3><p>${esc(desc)}</p>${badges.length?`<div class="quick-summary">${badges.map(b=>`<span class="badge">${esc(b)}</span>`).join('')}</div>`:''}</div>`;
+}
+
+function guidedReviewViewV2(){
+  const acts=nextActions(), a=acts[0], s=scores();
+  if(!a) return `${pageIntro('Controllo guidato','Ti accompagna da un problema alla prossima azione senza dover scegliere il modulo giusto.')}<div class="card empty"><strong>Nessuna azione prioritaria</strong><p>Importa o aggiungi dati per iniziare.</p></div>`;
+  const step='CONSIGLIA';
+  return `${pageIntro('Controllo guidato','Analizza → Spiega → Consiglia → Esegui → Verifica → Continua',['1 azione alla volta'])}
+  <div class="wizard-nav"><span>Analizza</span><span>Spiega</span><span class="active">${step}</span><span>Esegui</span><span>Verifica</span><span>Continua</span></div>
+  <div class="grid two">
+    <div class="card wizard-step">
+      <div><span class="badge">${a.priority}</span></div>
+      <div class="wizard-big">${esc(a.title)}</div>
+      <div class="explain-box"><strong>In parole semplici</strong><div class="muted" style="margin-top:6px">${esc(a.why)}</div></div>
+      <div class="panel-list">
+        <div class="panel-item"><strong>Perché è importante</strong><div class="muted">Impatto stimato: ${a.impact}/100.</div></div>
+        <div class="panel-item"><strong>Quanto è affidabile il consiglio</strong><div class="muted">Confidence: ${a.confidence}%.</div></div>
+        <div class="panel-item"><strong>Quanto lavoro richiede</strong><div class="muted">Effort: ${a.effort}.</div></div>
+      </div>
+      <div class="wizard-actions">
+        <button class="btn primary" data-create-task-from-action="${esc(a.title)}">Crea il task consigliato</button>
+        <button class="btn" data-nav="${a.type==='ISSUE'?'Issues':a.type==='OPPORTUNITY'?'Opportunities':'Pages'}">Vedi il dettaglio</button>
+        <button class="btn" data-monitor-action="${esc(a.title)}">Monitora</button>
+      </div>
+    </div>
+    <div class="card"><h3>Stato attuale</h3>${metric('Technical',s.technical)}${metric('Architecture',s.arch)}${metric('Content',s.coverage)}${metric('Indexation',s.indexed)}
+    <div class="muted" style="margin-top:10px;font-size:12px">Questi score servono a orientare le priorità interne e non rappresentano ranking factor di Google.</div></div>
+  </div>`;
+}
+
+function projectViewV2(){
+  const p=currentProject();
+  return `${pageIntro('Project Setup','Definisci il contesto del sito una sola volta. I dati qui alimentano strategia e priorità.',[p.stage||'Research',p.domain||'Dominio non impostato'])}
+  <div class="card"><form id="projectForm" class="form-grid">
+   ${field('name','Project Name',p.name)}
+   ${field('domain','Domain',p.domain)}
+   ${field('brand','Brand',p.brand)}
+   ${field('industry','Industry',p.industry)}
+   ${field('country','Country',p.country)}
+   ${field('language','Language',p.language)}
+   ${field('audience','Audience',p.audience)}
+   ${field('businessModel','Business Model',p.businessModel)}
+   ${field('revenueModel','Revenue Model',p.revenueModel)}
+   ${field('primaryConversion','Primary Conversion',p.primaryConversion)}
+   ${field('secondaryConversion','Secondary Conversion',p.secondaryConversion)}
+   ${selectField('stage','Project Stage',stages,p.stage)}
+   ${field('positioning','Positioning',p.positioning,true)}
+   ${field('usp','USP',p.usp,true)}
+   ${field('primarySeoGoal','Primary SEO Goal',p.primarySeoGoal,true)}
+   ${field('notes','Notes',p.notes,true)}
+   <div class="field full form-actions"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">Salva progetto</button><button class="btn danger" type="button" id="deleteProjectBtn">Elimina progetto</button></div></div>
+  </form></div>`;
+}
+
+function genericTableViewV2(cfg){
+  const rows=byProject(state[cfg.key]);
+  return `${pageIntro(cfg.title,cfg.help||'', [`${rows.length} record`])}
+  <div class="toolbar"><input data-search-table="${cfg.key}" placeholder="Cerca in ${esc(cfg.title.toLowerCase())}"><div class="spacer"></div><button class="btn primary" data-add="${cfg.key}">+ Aggiungi</button></div>
+  ${rows.length?`<div class="table-wrap"><table><thead><tr>${cfg.cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Azioni</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr data-table-row="${cfg.key}">${cfg.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td><button class="btn" data-edit="${cfg.key}" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div>`:
+    `<div class="empty"><strong>Nessun dato</strong><p>${cfg.empty||'Aggiungi il primo record per iniziare.'}</p><button class="btn primary" data-add="${cfg.key}">Aggiungi il primo record</button></div>`}`;
+}
+
+function bindTableSearch(){
+  document.querySelectorAll('[data-search-table]').forEach(inp=>{
+    inp.oninput=()=>{
+      const q=inp.value.toLowerCase().trim();
+      document.querySelectorAll(`[data-table-row="${inp.dataset.searchTable}"]`).forEach(tr=>{
+        tr.style.display=!q||tr.textContent.toLowerCase().includes(q)?'':'none';
+      });
+    };
+  });
+}
+
+function simpleInfo(title,text){
+  return `<div class="card"><h3>${esc(title)}</h3><p class="muted">${esc(text)}</p><div class="callout">Modulo predisposto nel data model V4. Le funzioni che richiedono dati esterni devono essere alimentate tramite import: Organic Growth OS non simula crawl, SERP o API live.</div></div>`;
+}
+
+function render(){
+  renderNav(); renderProjectSelect();
+  const v=state.ui.activeView; setTitle(v);
+  let html='';
+  if(v==='Dashboard') html=state.ui.mode==='Executive'?executiveDashboardV2():dashboardView();
+  else if(v==='Guided Review') html=guidedReviewViewV2();
+  else if(v==='Next Best Actions') html=nextActionsView();
+  else if(v==='Project') html=projectViewV2();
+  else if(v==='Pages') html=genericTableViewV2(configs.pages);
+  else if(v==='Keywords') html=genericTableViewV2(configs.keywords);
+  else if(v==='Entities') html=genericTableViewV2(configs.entities);
+  else if(v==='Issues') html=genericTableViewV2(configs.issues);
+  else if(v==='Opportunities') html=opportunitiesView();
+  else if(v==='Tasks') html=taskManagementView();
+  else if(v==='Milestones') html=genericTableViewV2(configs.milestones);
+  
+  else if(v==='Evidence') html=genericTableViewV2(configs.evidence);
+  else if(v==='Datasets') html=genericTableViewV2(configs.datasets);
+  else if(v==='Experiments') html=genericTableViewV2(configs.experiments);
+  else if(v==='Observations') html=genericTableViewV2(configs.observations);
+  else if(v==='Risks') html=genericTableViewV2(configs.risks);
+  
+  else if(v==='False Positives') html=genericTableViewV2(configs.falsePositives);
+  else if(v==='Change Log') html=changeImpactView();
+  else if(v==='Snapshots') html=snapshotsView();
+  else if(v==='Import') html=importViewV2();
+  else if(v==='Backup') html=backupView();
+  else if(v==='Source Reliability') html=sourceReliabilityView();
+  else if(v==='Search Console') html=searchConsoleView();
+  else if(v==='Settings') html=settingsView();
+  else if(v==='Topical Map') html=topicalMapView();
+  else if(v==='Internal Links') html=internalLinksView();
+  else if(v==='Strategy Canvas') html=strategyCanvasView();
+  else if(v==='Search Intent') html=searchIntentView();
+  else if(v==='Cannibalization') html=cannibalizationView();
+  else if(v==='Architecture') html=architectureView();
+  else if(v==='Canonical') html=canonicalView();
+  else if(v==='Technical SEO') html=technicalSeoView();
+  else if(v==='Indexation') html=indexationView();
+  else if(v==='Content Strategy') html=contentStrategyView();
+  else if(v==='Content Briefs') html=contentBriefsView();
+  else if(v==='On-Page') html=onPageView();
+  else if(v==='Structured Data') html=structuredDataView();
+  else if(v==='Content Refresh') html=contentRefreshView();
+  else if(v==='SEO Debt') html=seoDebtViewV2();
+  else if(v==='Decisions') html=decisionEngineView();
+  else if(v==='Confidence') html=confidenceView();
+  else if(v==='Demo Data') html=demoDataView();
+  else if(v==='System Check') html=releaseQaView();
+  else if(v==='Quality Gates') html=qualityGatesViewV2();
+  else html=simpleInfo(v, moduleDescription(v));
+  document.getElementById('view').innerHTML=html;
+  bindView();
+  applyTheme();
+}
+
+function moduleDescription(v){
+  const map={
+   'Strategy Canvas':'Obiettivi business, SEO, audience, positioning, authority e measurement plan.',
+   'Competitors':'Distingue business competitor, SEO competitor e SERP competitor.',
+   'Search Intent':'Mappa intent primario, secondario, contenuto atteso e funnel.',
+   'Topical Map':'Pillar, cluster, subcluster, entity e contenuti in struttura gerarchica.',
+   'Content Strategy':'Content matrix collegata a keyword, cluster, entity, funnel e business value.',
+   'Content Briefs':'Brief SEO strutturati e collegabili a task e contenuti.',
+   'Architecture':'Relazioni parent/child, profondità, orphan risk e navigazione.',
+   'Internal Links':'Source, target, anchor, stato, inbound/outbound e opportunità.',
+   'On-Page':'Title, meta, H1, headings, intent, entity, CTA e link interni.',
+   'Structured Data':'Inventario schema per pagina con error, warning e optional.',
+   'Technical SEO':'Finding tecnici importabili da crawler e audit esterni.',
+   'Redirects':'Gestione source/target/final URL, hop e mismatch.',
+   'Canonical':'Current, expected, evidence, recommendation e confidence.',
+   'Indexation':'Controllo indexable, robots, canonical, sitemap e stato GSC.',
+   'Migration':'Mapping old→new URL e validazione post-migrazione.',
+   'Content Refresh':'Decay, CTR/ranking/impression decline e raccomandazioni.',
+   'Strategy Canvas':'Obiettivi business e SEO, audience, positioning e hypothesis.',
+   'Content Briefs':'Brief operativi con outline, entity, linking, CTA e fonti.'
+  }; return map[v]||'Modulo V4 collegato al data model centrale.';
+}
+
+function sourceReliabilityView(){
+ return `<div class="card"><div class="section-head"><div><h3>Source Reliability</h3><div class="muted">Affidabilità configurabile per origine dati.</div></div></div>
+ <div class="table-wrap"><table><thead><tr><th>Source</th><th>Type</th><th>Reliability</th></tr></thead><tbody>
+ ${state.sourceReliability.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.type)}</td><td><input type="number" min="0" max="100" value="${s.reliability}" data-src-rel="${s.id}"></td></tr>`).join('')}
+ </tbody></table></div></div>`;
+}
+function searchConsoleView(){
+ const rows=byProject(state.gscRecords);
+ return `<div class="section-head"><div><h3>Search Console</h3><div class="muted">Importa dati GSC senza mischiare periodi incompatibili.</div></div><button class="btn primary" data-nav="Import">Importa CSV</button></div>
+ ${rows.length?`<div class="table-wrap"><table><thead><tr><th>Query</th><th>Page</th><th>Clicks</th><th>Impressions</th><th>CTR</th><th>Position</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.query)}</td><td>${esc(r.page)}</td><td>${esc(r.clicks)}</td><td>${esc(r.impressions)}</td><td>${esc(r.ctr)}</td><td>${esc(r.position)}</td></tr>`).join('')}</tbody></table></div>`:`<div class="card empty"><strong>Nessun dato Search Console</strong><p>Importa un CSV per individuare opportunità basate su click, impression, CTR e posizione.</p><button class="btn primary" data-nav="Import">Importa dati</button></div>`}`;
+}
+function settingsView(){
+ return `<div class="card"><h3>Impostazioni</h3><p class="muted">Executive semplifica la lettura. Consultant mostra più dettagli tecnici. Tutti i dati restano nel browser locale finché non esporti un backup.</p><div class="form-grid">
+ <div class="field"><label>Mode</label><select id="settingsMode"><option ${state.ui.mode==='Executive'?'selected':''}>Executive</option><option ${state.ui.mode==='Consultant'?'selected':''}>Consultant</option></select></div>
+ <div class="field"><label>Theme</label><select id="settingsTheme"><option ${state.ui.theme==='system'?'selected':''} value="system">System</option><option ${state.ui.theme==='light'?'selected':''} value="light">Light</option><option ${state.ui.theme==='dark'?'selected':''} value="dark">Dark</option></select></div>
+ </div></div>`;
+}
+
+function bindView(){
+ document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{state.ui.activeView=b.dataset.nav; render();});
+ document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.add));
+ document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.edit,b.dataset.id));
+ document.querySelectorAll('[data-create-task-from-action]').forEach(b=>b.onclick=()=>{ 
+   const t={id:uid('task'),projectId:state.currentProjectId,title:b.dataset.createTaskFromAction,priority:'P2',status:'TODO',owner:'',dueDate:'',createdAt:now(),updatedAt:now()};
+   state.tasks.push(t); commit('Task creato dal Guided Review'); toast('Task creato'); state.ui.activeView='Tasks'; render();
+ });
+ document.querySelectorAll('[data-monitor-action]').forEach(b=>b.onclick=()=>toast('Azione marcata per monitoraggio manuale.'));
+ const pf=document.getElementById('projectForm');
+ if(pf) pf.onsubmit=e=>{e.preventDefault(); const p=currentProject(); new FormData(pf).forEach((v,k)=>p[k]=v); commit('Progetto aggiornato'); render(); toast('Progetto salvato');};
+ const ib=document.getElementById('doImportBtn'); if(ib) ib.onclick=handleImportV2;
+ const eb=document.getElementById('exportBackup'); if(eb) eb.onclick=()=>storage.export(state);
+ const cs=document.getElementById('createSnapshot'); if(cs) cs.onclick=createSnapshot;
+ const sc=document.getElementById('runSystemCheck'); if(sc) sc.onclick=runSystemCheck;
+ document.querySelectorAll('[data-src-rel]').forEach(inp=>inp.onchange=()=>{const x=state.sourceReliability.find(s=>s.id===inp.dataset.srcRel); if(x)x.reliability=clamp(Number(inp.value)); commit('Source reliability aggiornata');});
+ const sm=document.getElementById('settingsMode'); if(sm) sm.onchange=()=>{state.ui.mode=sm.value;commit('Modalità aggiornata');setupTopbar();render();};
+ const st=document.getElementById('settingsTheme'); if(st) st.onchange=()=>{state.ui.theme=st.value;commit('Tema aggiornato');applyTheme();};
+ const sf=document.getElementById('strategyCanvasForm'); if(sf) sf.onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(sf).entries());data.confidence=Number(data.confidence||50);currentProject().strategyCanvas={...(currentProject().strategyCanvas||{}),...data};commit('Strategy Canvas aggiornato');toast('Strategy Canvas salvato');render();};
+ const ac=document.getElementById('addContentBtn'); if(ac) ac.onclick=addContentDrawer;
+ const sq=document.getElementById('syncQualityGates'); if(sq) sq.onclick=syncQualityGates;
+ const nb=document.getElementById('newBriefBtn'); if(nb) nb.onclick=()=>openBriefDrawer();
+ const nb2=document.getElementById('newBriefBtn2'); if(nb2) nb2.onclick=()=>openBriefDrawer();
+ document.querySelectorAll('[data-edit-brief]').forEach(b=>b.onclick=()=>openBriefDrawer(b.dataset.editBrief));
+ const cd=document.getElementById('createDecisionFromNBA'); if(cd) cd.onclick=createDecisionFromNBA;
+ const ld=document.getElementById('loadDemoData'); if(ld) ld.onclick=loadControlledDemo;
+ const rd=document.getElementById('removeDemoData'); if(rd) rd.onclick=removeControlledDemo;
+ const dp=document.getElementById('deleteProjectBtn'); if(dp) dp.onclick=deleteCurrentProject;
+ bindTableSearch();
+
+
+
+ const roe=document.getElementById('runOpportunityEngine'); if(roe) roe.onclick=detectOpportunities;
+ const cs2=document.getElementById('createSnapshot'); if(cs2) cs2.onclick=createSnapshot;
+ const cmp=document.getElementById('compareSnapshots'); if(cmp) cmp.onclick=compareSnapshots;
+ const alb=document.getElementById('addLinkBtn'); if(alb) alb.onclick=()=>openLinkDrawer();
+
+}
+
+function drawerFields(key,rec={}){
+ const common={pages:[
+   ['pageName','Pagina'],['displayUrl','URL'],['pageType','Tipo'],['statusCode','HTTP'],['canonicalUrl','Canonical'],['expectedCanonical','Expected Canonical'],['primaryKeyword','Primary Keyword'],['intent','Intent'],['cluster','Cluster'],['parent','Parent'],['title','Title'],['meta','Meta'],['h1','H1'],['schema','Schema'],['indexable','Indexable'],['indexed','Indexed'],['sitemap','Sitemap'],['gscStatus','GSC Status'],['priority','Priority']
+ ],keywords:[['keyword','Keyword'],['intent','Intent'],['secondaryIntent','Secondary Intent'],['expectedContentType','Expected Content Type'],['userProblem','User Problem'],['desiredOutcome','Desired Outcome'],['targetUrl','Target URL'],['position','Position'],['impressions','Impressions'],['priority','Priority']],
+ issues:[['title','Issue'],['category','Category'],['url','URL'],['source','Source'],['severity','Severity'],['priority','Priority'],['status','Status'],['confidence','Confidence'],['whyNow','Why now']],
+ opportunities:[['title','Opportunity'],['type','Type'],['impact','Impact'],['effort','Effort'],['confidence','Confidence'],['whyNow','Why now']],
+ tasks:[['title','Task'],['priority','Priority'],['status','Status'],['owner','Owner'],['dueDate','Due Date'],['dependencies','Dependencies'],['description','Description']],
+ milestones:[['name','Milestone'],['status','Status'],['progress','Progress'],['targetDate','Target Date'],['acceptanceCriteria','Acceptance Criteria']],
+ decisions:[['title','Decision'],['status','Status'],['priority','Priority'],['confidence','Confidence'],['recommendation','Recommendation'],['result','Result'],['learning','Learning']],
+ evidence:[['claim','Claim'],['observedValue','Observed Value'],['source','Source'],['freshness','Freshness'],['confidence','Confidence'],['notes','Notes']],
+ entities:[['name','Entity'],['entityType','Entity Type'],['parent','Parent'],['coverage','Coverage'],['status','Status']],
+ experiments:[['hypothesis','Hypothesis'],['status','Status'],['startDate','Start Date'],['result','Result'],['confidence','Confidence']],
+ observations:[['title','Observation'],['status','Status'],['confidence','Confidence'],['notes','Notes']],
+ risks:[['title','Risk'],['severity','Severity'],['status','Status'],['confidence','Confidence'],['notes','Notes']],
+ seoDebt:[['title','SEO Debt'],['severity','Severity'],['age','Age'],['effort','Effort'],['status','Status']],
+ qualityGates:[['name','Gate'],['status','Status'],['owner','Owner'],['reason','Reason']],
+ falsePositives:[['finding','Finding'],['tool','Tool'],['assessment','Assessment'],['reason','Reason']],
+ changeEvents:[['title','Change'],['type','Type'],['date','Date'],['result','Result'],['description','Description']],
+ snapshots:[['name','Snapshot'],['reason','Reason']]
+ }[key]||[['title','Title'],['status','Status'],['notes','Notes']];
+ const textareas=['description','notes','whyNow','recommendation','learning','acceptanceCriteria','reason','userProblem','desiredOutcome'];
+ const selectMap={
+   priority:['P1','P2','P3','P4'],
+   severity:['CRITICAL','HIGH','MEDIUM','LOW'],
+   intent:['Informational','Navigational','Commercial Investigation','Transactional','Local'],
+   status:['TODO','IN PROGRESS','BLOCKED','DONE','VERIFIED','OPEN','REVIEW','PASSED','NOT READY','PROPOSED','APPROVED','REJECTED','EXECUTED','VALIDATED'],
+   pageType:['Homepage','Pillar','Hub','Category','Guide','Article','Recipe','Ingredient','Landing','Product','Service','FAQ','Legal','Other'],
+   indexable:['true','false'],
+   indexed:['true','false'],
+   sitemap:['true','false']
+ };
+ return common.map(([n,l])=>{
+   const full=textareas.includes(n);
+   let control='';
+   if(selectMap[n]){
+     const vals=[...new Set([rec[n],...selectMap[n]].filter(Boolean))];
+     control=`<select name="${n}">${vals.map(v=>`<option ${String(rec[n]||'')===String(v)?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
+   } else if(full) control=`<textarea name="${n}" placeholder="Inserisci informazioni utili e verificabili">${esc(rec[n]||'')}</textarea>`;
+   else control=`<input name="${n}" value="${esc(rec[n]??'')}" placeholder="${esc(l)}">`;
+   return `<div class="field ${full?'full':''}"><label>${l}</label>${control}</div>`;
+ }).join('');
+}
+function openRecordDrawer(key,id=null){
+ const rec=id?state[key].find(x=>x.id===id):{};
+ openDrawer(id?'Modifica record':'Nuovo record',`<form id="recordForm" class="form-grid">${drawerFields(key,rec)}<div class="field full" style="display:flex;flex-direction:row;gap:8px"><button class="btn primary" type="submit">Salva</button>${id?'<button class="btn danger" type="button" id="deleteRecord">Elimina</button>':''}</div></form>`);
+ document.getElementById('recordForm').onsubmit=e=>{
+   e.preventDefault(); const data=Object.fromEntries(new FormData(e.target).entries());
+   ['confidence','impact','effort','position','impressions','statusCode','progress'].forEach(k=>{if(data[k]!==undefined&&data[k]!=='') data[k]=Number(data[k]);});
+   if(key==='pages'){
+     ['indexable','indexed','sitemap'].forEach(k=>{ if(data[k]!==undefined) data[k]=String(data[k]).toLowerCase()==='true'; });
+   }
+   if(id){ Object.assign(rec,data,{updatedAt:now()}); } else state[key].push({id:uid(key.slice(0,-1)||'rec'),projectId:state.currentProjectId,...data,createdAt:now(),updatedAt:now()});
+   commit(`${key} aggiornato`); closeDrawer(); render(); toast('Salvato');
+ };
+ const del=document.getElementById('deleteRecord'); if(del) del.onclick=()=>{ if(confirm('Eliminare questo record?')){state[key]=state[key].filter(x=>x.id!==id);commit(`${key} eliminato`);closeDrawer();render();}};
+}
+function openDrawer(title,body){document.getElementById('drawerTitle').textContent=title;document.getElementById('drawerBody').innerHTML=body;document.getElementById('drawer').classList.add('open');document.getElementById('backdrop').classList.add('show');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('backdrop').classList.remove('show');}
+
+
+function openLinkDrawer(){
+  const pages=projectPages();
+  const opts=pages.map(p=>`<option value="${esc(p.displayUrl||p.normalizedUrl||p.canonicalUrl||'')}">${esc(p.pageName||p.displayUrl||'Page')}</option>`).join('');
+  openDrawer('Nuovo internal link',`<form id="linkForm" class="form-grid"><div class="field"><label>Source</label><select name="source">${opts}</select></div><div class="field"><label>Target</label><select name="target">${opts}</select></div><div class="field"><label>Anchor</label><input name="anchor"></div><div class="field"><label>Status</label><select name="status"><option>OK</option><option>REDIRECT</option><option>NON_CANONICAL</option><option>BROKEN</option></select></div><div class="field full"><button class="btn primary" type="submit">Salva link</button></div></form>`);
+  document.getElementById('linkForm').onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target).entries());state.links.push({id:uid('link'),projectId:state.currentProjectId,...data,createdAt:now(),updatedAt:now()});commit('Internal link aggiunto');closeDrawer();render();toast('Link salvato');};
+}
+
+async function handleImport(){
+ const file=document.getElementById('importFile').files[0]; if(!file){toast('Seleziona un file');return;}
+ const text=await file.text(); const out=document.getElementById('importResult'), target=document.getElementById('importTarget').value;
+ try{
+   if(file.name.toLowerCase().endsWith('.json')){
+     const data=JSON.parse(text);
+     if(data.schemaVersion && data.projects){
+       if(confirm('Questo sembra un backup completo. Sostituire lo stato corrente?')){state=storage.migrate(data);storage.save(state);render();toast('Backup importato');}
+       return;
+     }
+     const arr=Array.isArray(data)?data:[data];
+     arr.forEach(x=>state[target].push({id:uid('imp'),projectId:state.currentProjectId,...x,createdAt:now(),updatedAt:now()}));
+     commit(`Import JSON ${target}`); out.innerHTML=`<div class="callout">${arr.length} record importati.</div>`; render();
+   }else{
+     const sep=file.name.endsWith('.tsv')?'\t':',';
+     const lines=text.split(/\r?\n/).filter(Boolean); const headers=lines.shift().split(sep).map(x=>x.trim());
+     const rows=lines.map(line=>{const vals=parseDelimited(line,sep); const o={}; headers.forEach((h,i)=>o[h]=vals[i]??''); return o;});
+     rows.forEach(x=>state[target].push({id:uid('imp'),projectId:state.currentProjectId,...x,createdAt:now(),updatedAt:now()}));
+     state.datasets.push({id:uid('dataset'),projectId:state.currentProjectId,name:file.name,source:'Import locale',type:target,importedAt:now(),records:rows.length,createdAt:now(),updatedAt:now()});
+     commit(`Import ${file.name}`); out.innerHTML=`<div class="callout">${rows.length} record importati in ${esc(target)}.</div>`; render();
+   }
+ }catch(e){out.innerHTML=`<div class="callout" style="border-color:var(--danger)">Errore import: ${esc(e.message)}</div>`;}
+}
+function parseDelimited(line,sep){
+ const out=[]; let cur='',q=false;
+ for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++;}else q=!q;}else if(c===sep&&!q){out.push(cur.trim());cur='';}else cur+=c;}out.push(cur.trim());return out;
+}
+
+function createSnapshot(){
+ const s=scores();
+ state.snapshots.push({
+   id:uid('snap'),projectId:state.currentProjectId,
+   name:`Snapshot ${new Date().toLocaleString('it-IT')}`,reason:'Manuale',
+   organicScore:s.organic,technical:s.technical,architecture:s.arch,coverage:s.coverage,indexation:s.indexed,
+   internalLinking:s.linkHealth,topical:s.topical,eeat:s.eeat,
+   issuesCount:byProject(state.issues).filter(i=>!['VERIFIED','CLOSED'].includes(i.status)).length,
+   opportunitiesCount:byProject(state.opportunities).filter(o=>o.status!=='DONE').length,
+   pagesCount:byProject(state.pages).length,keywordsCount:byProject(state.keywords).length,
+   createdAt:now(),updatedAt:now()
+ });
+ commit('Snapshot creato'); toast('Snapshot creato'); render();
+}
+function runSystemCheck(){
+ const problems=[];
+ const ids=new Set(); Object.keys(configs).forEach(k=>{(state[k]||[]).forEach(r=>{if(!r.id)problems.push(`${k}: record senza ID`); else if(ids.has(r.id))problems.push(`ID duplicato: ${r.id}`); else ids.add(r.id); if(!r.projectId)problems.push(`${k}: record senza projectId`);});});
+ if(!state.projects.some(p=>p.id===state.currentProjectId)) problems.push('currentProjectId non valido');
+ const out=document.getElementById('systemCheckOut');
+ out.innerHTML=problems.length?`<div class="callout"><strong>WARNING</strong><ul>${problems.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:`<div class="callout"><strong>PASSED</strong><p class="muted">Nessun problema strutturale rilevato nei controlli base.</p></div>`;
+}
+
+function setupTopbar(){
+ document.getElementById('modeBtn').textContent=state.ui.mode;
+ document.getElementById('saveStatus').textContent=state.ui.lastSaved?'Ultimo salvataggio: '+fmtTime(state.ui.lastSaved):'Non ancora salvato';
+}
+function applyTheme(){
+ const theme=state.ui.theme==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):state.ui.theme;
+ document.documentElement.dataset.theme=theme;
+}
+function closeMobile(){document.getElementById('sidebar').classList.remove('open');}
+function newProject(){
+ const name=prompt('Nome del nuovo progetto:','Nuovo progetto'); if(!name)return;
+ const p=emptyProject(name); state.projects.push(p); state.currentProjectId=p.id; state.ui.activeView='Project'; commit('Nuovo progetto creato'); render();
+}
+function quickActions(){
+ openDrawer('Quick Actions',`<div class="grid">
+ <button class="btn" data-quick="pages">+ Pagina</button><button class="btn" data-quick="keywords">+ Keyword</button><button class="btn" data-quick="issues">+ Problema</button><button class="btn" data-quick="tasks">+ Task</button><button class="btn" data-quick="milestones">+ Milestone</button><button class="btn" data-quick="snap">Crea snapshot</button>
+ </div>`);
+ document.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>{const k=b.dataset.quick;if(k==='snap'){createSnapshot();closeDrawer();}else openRecordDrawer(k);});
+}
+
+document.getElementById('projectSelect').onchange=e=>{state.currentProjectId=e.target.value;commit('Progetto cambiato');render();};
+document.getElementById('newProjectBtn').onclick=newProject;
+document.getElementById('drawerClose').onclick=closeDrawer; document.getElementById('backdrop').onclick=closeDrawer;
+document.getElementById('mobileMenuBtn').onclick=()=>document.getElementById('sidebar').classList.add('open');
+document.getElementById('quickBtn').onclick=quickActions;
+document.getElementById('modeBtn').onclick=()=>{state.ui.mode=state.ui.mode==='Executive'?'Consultant':'Executive';commit('Modalità cambiata');setupTopbar();render();};
+document.getElementById('themeBtn').onclick=()=>{state.ui.theme=state.ui.theme==='dark'?'light':'dark';commit('Tema cambiato');applyTheme();};
+document.getElementById('globalSearch').oninput=e=>{
+ const q=e.target.value.trim().toLowerCase(); if(q.length<2)return;
+ const groups=[['Pages',byProject(state.pages),'pageName'],['Keywords',byProject(state.keywords),'keyword'],['Issues',byProject(state.issues),'title'],['Tasks',byProject(state.tasks),'title'],['Decisions',byProject(state.decisions),'title']];
+ const hits=[]; groups.forEach(([type,arr,key])=>arr.forEach(r=>{if(JSON.stringify(r).toLowerCase().includes(q))hits.push({type,label:r[key]||r.title||r.name||r.id});}));
+ if(hits.length) openDrawer('Ricerca globale',hits.slice(0,30).map(h=>`<button class="nav-btn" data-search-nav="${h.type}"><strong>${esc(h.label)}</strong><div class="muted">${h.type}</div></button>`).join(''));
+ document.querySelectorAll('[data-search-nav]').forEach(b=>b.onclick=()=>{state.ui.activeView=b.dataset.searchNav;closeDrawer();render();});
+};
+
+window.addEventListener('error',e=>{console.error('OGOS runtime error',e.error||e.message);});
+setupTopbar(); render();
+})();
+</script>
+</body>
+</html>
