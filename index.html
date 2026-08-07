@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS V5.2: wizard SEO a percorsi, task sequenziali, verifica dei risultati e report operativo scaricabile.">
+<meta name="description" content="Organic Growth OS V5.3: wizard SEO a percorsi, import Search Console corretto, piano operativo visibile e report scaricabile.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
 <title>Organic Growth OS</title>
@@ -104,7 +104,7 @@ textarea{min-height:110px;resize:vertical}.form-grid{display:grid;grid-template-
 @media(max-width:700px){.import-choice{grid-template-columns:1fr}.page-actions{width:100%}.page-actions .btn{flex:1}}
 
 
-/* V5.2 Guided UX + Auto Verification */
+/* V5.3 Guided UX + Auto Verification */
 .guide-shell{max-width:980px;margin:0 auto}
 .guide-progress{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
 .guide-step{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:var(--surface-alt);font-size:13.4px;color:var(--muted)}
@@ -388,7 +388,7 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
 
 
 /* ============================================================
-   NUOVI COMPONENTI V5.2
+   NUOVI COMPONENTI V5.3
    ============================================================ */
 
 /* --- Overlay di analisi (visibile da qualsiasi schermata) --- */
@@ -443,13 +443,13 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
 .is-busy{pointer-events:none;opacity:.65}
 .hint-inline{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--surface-alt);border:1px solid var(--border);color:var(--muted);font-size:16px}
 
-/* V5.2 — piano operativo leggibile e sequenziale */
+/* V5.3 — piano operativo leggibile e sequenziale */
 .task-plan{display:grid;gap:14px}.task-plan-card{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:16px;align-items:start;border:1px solid var(--border);border-radius:16px;background:var(--surface);padding:18px}
 .task-plan-card.current{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 5%,var(--surface))}.task-order{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--surface-alt);font-weight:900}.task-plan-card.current .task-order{background:var(--accent);color:var(--on-accent)}
 .task-plan-card h4{font-size:19px;margin:0 0 6px}.task-why{color:var(--muted);margin:0 0 10px}.task-steps{margin:8px 0 0;padding-left:22px}.task-steps li{margin:5px 0}.task-check{margin-top:10px;padding:10px 12px;border-left:3px solid var(--success);background:var(--surface-alt);border-radius:8px}.completed-history summary{font-weight:800;cursor:pointer;padding:6px 0}.completed-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border)}
 @media(max-width:760px){.task-plan-card{grid-template-columns:44px minmax(0,1fr)}.task-plan-card>.task-actions{grid-column:1/-1}.task-actions .btn{width:100%}.completed-row{display:block}}
 
-/* V5.2 — Wizard a percorsi */
+/* V5.3 — Wizard a percorsi */
 .journey-shell{max-width:1180px;margin:0 auto}.journey-hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;margin-bottom:24px}.journey-hero h3{font-size:34px;line-height:1.15;margin:0 0 8px}.journey-hero p{max-width:760px;margin:0;color:var(--muted)}
 .journey-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.journey-card{position:relative;display:grid;grid-template-columns:56px minmax(0,1fr);gap:16px;border:1px solid var(--border);border-radius:20px;background:var(--surface);padding:22px;text-align:left;color:inherit;box-shadow:var(--shadow);min-height:230px}.journey-card:hover{border-color:var(--accent);transform:translateY(-1px)}.journey-card.recommended{border-width:2px;border-color:color-mix(in srgb,var(--accent) 55%,var(--border))}.journey-card.completed{opacity:.88}.journey-icon{width:52px;height:52px;border-radius:15px;background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent);display:grid;place-items:center}.journey-icon svg{width:27px;height:27px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}.journey-card h4{font-size:21px;line-height:1.25;margin:2px 0 8px}.journey-card p{color:var(--muted);margin:0 0 16px}.journey-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}.journey-card-body{display:flex;flex-direction:column;min-width:0}.journey-card-action{margin-top:18px;display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--accent);font-weight:850}.journey-status{font-weight:800}.journey-status.todo{color:var(--muted)}.journey-status.progress,.journey-status.verify{color:var(--warning)}.journey-status.done{color:var(--success)}
 .journey-top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}.journey-back{border:0;background:transparent;color:var(--accent);padding:8px 0;font-weight:800}.journey-progress{display:grid;grid-template-columns:repeat(var(--journey-steps),minmax(70px,1fr));gap:8px;margin-bottom:20px;overflow:auto}.journey-progress-item{min-width:78px;padding:10px 8px;border:1px solid var(--border);border-radius:11px;background:var(--surface-alt);color:var(--muted);text-align:center;font-size:15px;font-weight:750}.journey-progress-item.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.journey-progress-item.done{color:var(--success);border-color:color-mix(in srgb,var(--success) 45%,var(--border))}
@@ -497,7 +497,7 @@ html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,v
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.2</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.3</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -753,8 +753,8 @@ function nextActions(){
 
 function navLabel(item){
   const labels={
-    Dashboard:'Panoramica','Guided Review':'Controllo guidato','Next Best Actions':'Prossime azioni',Project:'Configurazione progetto',
-    Pages:'Pagine del sito',Tasks:'Piano di lavoro',Settings:'Impostazioni',Keywords:'Parole chiave',Entities:'Entità',
+    Dashboard:'Dashboard','Guided Review':'Wizard disponibili','Operational Plan':'Piano operativo','Next Best Actions':'Prossime azioni',Project:'Configurazione progetto',
+    Pages:'Pagine del sito',Tasks:'Attività',Settings:'Impostazioni',Keywords:'Parole chiave',Entities:'Entità',
     'Strategy Canvas':'Strategia','Search Intent':'Intento di ricerca',Cannibalization:'Cannibalizzazione',Competitors:'Concorrenti',
     'Topical Map':'Mappa tematica','Content Strategy':'Strategia contenuti','Content Briefs':'Brief contenuti',Architecture:'Architettura',
     'Internal Links':'Link interni','On-Page':'SEO on-page','Structured Data':'Dati strutturati','Technical SEO':'SEO tecnica',
@@ -772,7 +772,7 @@ function renderNav(){
 
   const groups = state.ui.experienceMode==='guided'
     ? {
-        'GUIDATO':['Dashboard','Guided Review','Tasks'],
+        'GUIDATO':['Dashboard','Operational Plan','Tasks'],
         'DATI ESSENZIALI':['Pages','Search Console'],
         'SISTEMA':['Settings']
       }
@@ -909,6 +909,25 @@ function field(name,label,val,full=false){
   </div>`;
 }
 function selectField(name,label,opts,val){return `<div class="field"><label for="${name}">${label}</label><select id="${name}" name="${name}">${opts.map(o=>`<option ${o===val?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`}
+
+function operationalPlanItems(){
+  const checks=wizardChecks(),tasks=byProject(state.tasks),represented=new Set(tasks.map(task=>task.wizardFindingId).filter(Boolean));
+  const taskItems=tasks.filter(task=>!['VERIFIED','CLOSED'].includes(String(task.status||'').toUpperCase())).map(task=>{
+    const finding=checks.find(check=>check.id===task.wizardFindingId),rawSteps=finding?.steps||task.steps||[],steps=Array.isArray(rawSteps)?rawSteps:String(rawSteps||'').split(/\r?\n/).map(step=>step.trim()).filter(Boolean);
+    return {id:task.id,kind:'task',title:task.title||'Attività',priority:task.priority||'P3',status:task.status||'TODO',why:finding?.why||task.why||task.description||'Attività presente nel piano.',target:task.targetView||finding?.target||'Tasks',url:task.linkedUrl||task.url||'',steps,verification:finding?.simple||task.verification||'Controlla il risultato prima di chiudere l’attività.'};
+  });
+  const checkItems=checks.filter(check=>!check.resolved()&&!represented.has(check.id)).map(check=>({id:check.id,kind:'check',title:check.title,priority:check.severity==='CRITICAL'?'P1':check.severity==='HIGH'?'P1':check.severity==='MEDIUM'?'P2':'P3',status:'TODO',why:check.why,target:check.target||'Guided Review',url:'',steps:check.steps||[],verification:check.simple||'Ripeti il controllo.'}));
+  const weight={P1:1,P2:2,P3:3,P4:4};
+  return [...taskItems,...checkItems].sort((a,b)=>(weight[a.priority]||9)-(weight[b.priority]||9)||a.title.localeCompare(b.title));
+}
+function operationalPlanView(){
+  const items=operationalPlanItems(),done=byProject(state.tasks).filter(task=>['DONE','VERIFIED','CLOSED'].includes(String(task.status||'').toUpperCase())).length,first=items[0];
+  return `${pageIntro('Piano operativo','Qui puoi consultare le modifiche consigliate direttamente nell’app, senza dover prima scaricare il report.',[`${items.length} attività aperte`,`${done} completate o verificate`])}
+  <section class="dashboard-command" aria-labelledby="planNextTitle"><div><div class="dashboard-label">Prossima azione consigliata</div><h3 id="planNextTitle">${esc(first?.title||'Il piano è aggiornato')}</h3><p>${esc(first?.why||'Non risultano altre modifiche prioritarie con i dati disponibili.')}</p></div>${first?`<button class="btn primary" data-nav="${esc(first.target)}">Inizia dalla priorità 1</button>`:'<button class="btn primary" data-nav="Dashboard">Torna ai wizard</button>'}</section>
+  <div style="height:18px"></div>
+  <div class="section-head"><div><h3>Modifiche consigliate in ordine di priorità</h3><div class="muted">Bloccanti e priorità alte vengono mostrate per prime. Ogni attività spiega motivo, passaggi e verifica finale.</div></div><div class="page-actions"><button class="btn" id="refreshOperationalPlan">Aggiorna piano</button><button class="btn" data-report-export>Scarica report</button></div></div>
+  <div class="journey-problem-list">${items.length?items.map((item,index)=>`<article class="journey-problem"><div class="section-head"><div><div class="badges"><span class="badge ${item.priority==='P1'?'danger':item.priority==='P2'?'warning':'info'}">${esc(item.priority)}</span><span class="badge">${esc(item.status)}</span></div><h4>${index+1}. ${esc(item.title)}</h4></div><span class="badge">${esc(navLabel(item.target))}</span></div><p><strong>Perché è importante:</strong> ${esc(item.why)}</p>${item.url?`<div class="journey-problem-url">${esc(item.url)}</div>`:''}${item.steps.length?`<ol class="task-steps">${item.steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol>`:''}<div class="callout"><strong>Come verifichiamo</strong><div class="muted">${esc(item.verification)}</div></div><div class="page-actions" style="margin-top:12px"><button class="btn primary" data-nav="${esc(item.target)}">Apri e completa</button>${item.kind==='task'?`<button class="btn" data-edit="tasks" data-id="${esc(item.id)}">Dettagli attività</button>`:''}</div></article>`).join(''):'<div class="journey-empty"><strong>Nessuna modifica prioritaria aperta</strong><p class="muted">Tutti i controlli disponibili risultano completati oppure non richiedono interventi.</p><button class="btn primary" data-nav="Dashboard">Torna ai wizard</button></div>'}</div>`;
+}
 
 function nextActionsView(){
   const acts=nextActions();
@@ -1162,12 +1181,13 @@ function normalizeImportHeader(key){
   const raw=String(key||'').replace(/^\uFEFF/,'').trim();
   const k=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[%()]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
   const map={
-    'query principali':'query','query':'query','queries':'query','parola chiave':'query','keyword':'query',
+    'query principali':'query','query piu frequenti':'query','query frequenti':'query','query':'query','queries':'query','parola chiave':'query','keyword':'query',
     'pagine principali':'page','pagina':'page','page':'page','url':'page','landing page':'page',
     'clic':'clicks','click':'clicks','clicks':'clicks','impressioni':'impressions','impression':'impressions','impressions':'impressions',
     'ctr':'ctr','ctr medio':'ctr','posizione':'position','posizione media':'position','position':'position','average position':'position',
     'aspetto nella ricerca':'searchAppearance','search appearance':'searchAppearance','dispositivo':'device','device':'device',
-    'paese':'country','country':'country','data':'date','date':'date'
+    'paese':'country','country':'country','data':'date','date':'date',
+    'filtra':'filter','filtro':'filter','filter':'filter','valore':'value','value':'value'
   };
   return map[k]||raw;
 }
@@ -1211,22 +1231,25 @@ async function handleImportV2(){
       }
       const sep=detectDelimiter(text,file.name);
       const matrix=parseDelimitedText(text,sep);
-      if(matrix.length<2)throw new Error(`${file.name}: non trovo righe dati leggibili. Esporta il file come CSV, TSV o CSV UTF-16 e riprova.`);
+      if(!matrix.length)throw new Error(`${file.name}: il file è completamente vuoto. Esportalo di nuovo da Search Console e riprova.`);
       const headers=matrix.shift().map(x=>x.trim());
+      const normalizedHeaders=headers.map(normalizeImportHeader);
       const rows=normalizeImportRows(headers,matrix);
-      if(!rows.length)throw new Error(`${file.name}: le righe sono presenti ma risultano vuote dopo la lettura.`);
-      parsed.push({file,rows,headers:headers.map(normalizeImportHeader)});
+      const looksLikeGsc=normalizedHeaders.some(key=>['query','page','clicks','impressions','ctr','position','searchAppearance','device','country','date','filter','value'].includes(key));
+      if(!rows.length&&!looksLikeGsc)throw new Error(`${file.name}: è presente l’intestazione, ma non trovo righe utilizzabili né colonne riconosciute. Controlla il file e riprova.`);
+      parsed.push({file,rows,headers:normalizedHeaders,empty:rows.length===0,emptyReason:rows.length===0?'Search Console non ha restituito righe per questa dimensione. Il file è accettato e non blocca gli altri report.':''});
     }
     const detectedGsc=parsed.some(group=>group.rows.some(row=>['query','page','clicks','impressions','searchAppearance','device','country','date'].some(k=>Object.prototype.hasOwnProperty.call(row,k))));
     if(detectedGsc&&target==='pages'){
       target='gscRecords';document.getElementById('importTarget').value=target;
     }
     const rows=parsed.flatMap(group=>group.rows.map(row=>({...row,__sourceFile:group.file.name})));
-    pendingImport={kind:'rows',rows,target,files:parsed.map(group=>({name:group.file.name,records:group.rows.length}))};
+    if(!rows.length)throw new Error('I file sono riconosciuti, ma nessuno contiene righe dati. In Search Console amplia il periodo o scegli una dimensione con risultati, poi esporta di nuovo.');
+    pendingImport={kind:'rows',rows,target,files:parsed.map(group=>({name:group.file.name,records:group.rows.length,valid:true,emptyOptional:group.empty}))};
     const sample=rows.slice(0,8), headers=[...new Set(parsed.flatMap(group=>group.headers))];
     const invalid=rows.filter(r=>Object.keys(r).filter(k=>k!=='__sourceFile').length===0).length;
     out.innerHTML=`<div class="callout"><strong>Anteprima import multiplo</strong><p class="muted">${files.length} file · ${rows.length} record · ${invalid} righe non valide · destinazione ${esc(navLabel(target==='gscRecords'?'Search Console':target==='links'?'Internal Links':target[0].toUpperCase()+target.slice(1)))}</p></div>
-      <div class="import-file-list">${parsed.map(group=>`<div class="import-file-item"><strong>${esc(group.file.name)}</strong> · ${group.rows.length} record</div>`).join('')}</div>
+      <div class="import-file-list">${parsed.map(group=>`<div class="import-file-item"><strong>${esc(group.file.name)}</strong> · ${group.rows.length} record ${group.empty?'<span class="badge warning">Nessuna riga in questo report · accettato</span>':'<span class="badge success">Dati validi</span>'}${group.emptyReason?`<div class="muted">${esc(group.emptyReason)}</div>`:''}</div>`).join('')}</div>
       <div class="import-preview"><table><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${sample.map(r=>`<tr>${headers.map(h=>`<td>${esc(r[h])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
       <div style="margin-top:12px"><button class="btn primary" id="confirmImport">Importa ${files.length} file</button> <button class="btn" id="cancelImport">Annulla</button></div>`;
     document.getElementById('confirmImport').onclick=commitPendingImport;
@@ -1257,8 +1280,8 @@ function normalizeImportedRecord(target,row){
   if(target==='keywords'){if(!out.keyword&&out.query)out.keyword=out.query; ['volume','difficulty','cpc','position','impressions','clicks','priorityScore'].forEach(toNum); }
   if(target==='gscRecords'){
     ['clicks','impressions','position','ctr'].forEach(toNum);
-    if(!out.dimension)out.dimension=out.query||out.page||out.searchAppearance||out.device||out.country||out.date||'';
-    if(!out.dimensionType)out.dimensionType=out.query?'Query':out.page?'Pagina':out.searchAppearance?'Aspetto nella ricerca':out.device?'Dispositivo':out.country?'Paese':out.date?'Data':'Dato Search Console';
+    if(!out.dimension)out.dimension=out.query||out.page||out.searchAppearance||out.device||out.country||out.date||(out.filter?`${out.filter}${out.value?`: ${out.value}`:''}`:'');
+    if(!out.dimensionType)out.dimensionType=out.query?'Query':out.page?'Pagina':out.searchAppearance?'Aspetto nella ricerca':out.device?'Dispositivo':out.country?'Paese':out.date?'Data':out.filter?'Filtro':'Dato Search Console';
   }
   if(target==='issues'||target==='opportunities'){ ['confidence','impact','effort'].forEach(toNum); }
   return out;
@@ -1282,10 +1305,15 @@ function commitPendingImport(){
     state=storage.migrate(pendingImport.data);storage.save(state);pendingImport=null;toast('Backup ripristinato');render();return;
   }
   const {rows,target,files=[]}=pendingImport;
+  if(target==='gscRecords'){
+    const sourceNames=new Set(files.map(file=>String(file.name||'')));
+    state.gscRecords=state.gscRecords.filter(record=>record.projectId!==state.currentProjectId||!sourceNames.has(String(record.sourceFile||'')));
+    state.datasets=state.datasets.filter(dataset=>dataset.projectId!==state.currentProjectId||String(dataset.type||'')!=='gscRecords'||!sourceNames.has(String(dataset.name||'')));
+  }
   const imported=[];
   rows.forEach(row=>{const {__sourceFile,...data}=row;const record={...normalizeImportedRecord(target,data),id:uid('imp'),projectId:state.currentProjectId,sourceFile:__sourceFile||'',createdAt:now(),updatedAt:now()};state[target].push(record);imported.push(record);});
   if(target==='gscRecords')syncKeywordsFromGsc(imported);
-  files.forEach(file=>state.datasets.push({id:uid('dataset'),projectId:state.currentProjectId,name:file.name,source:'Import locale',type:target,importedAt:now(),records:file.records,createdAt:now(),updatedAt:now()}));
+  files.forEach(file=>state.datasets.push({id:uid('dataset'),projectId:state.currentProjectId,name:file.name,source:'Import locale',type:target,importedAt:now(),records:file.records,valid:file.valid!==false,emptyOptional:Boolean(file.emptyOptional),validationStatus:file.emptyOptional?'EMPTY_OPTIONAL':'VALID',createdAt:now(),updatedAt:now()}));
   commit(`Import confermato: ${files.length||1} file`);runAutomationCycle(false);pendingImport=null;toast(`${rows.length} record importati da ${files.length||1} file`);state.ui.activeView=target==='gscRecords'?'Search Console':target==='links'?'Internal Links':({'pages':'Pages','keywords':'Keywords','issues':'Issues','opportunities':'Opportunities'}[target]||'Datasets');render();
 }
 
@@ -2413,7 +2441,7 @@ function absoluteSiteUrl(value){
 }
 
 /* ============================================================
-   MOTORE DI LETTURA DEL SITO (V5.2)
+   MOTORE DI LETTURA DEL SITO (V5.3)
    Il browser blocca le richieste cross-origin (CORS): senza una
    catena di ripieghi la lettura automatica fallisce quasi sempre.
    Qui proviamo: accesso diretto -> piu' servizi pubblici di sola
@@ -2547,7 +2575,7 @@ function pageSignalsFromHtml(html,url){
 }
 
 /* ============================================================
-   COMPILAZIONE AUTOMATICA DEI CAMPI PROGETTO (V5.2)
+   COMPILAZIONE AUTOMATICA DEI CAMPI PROGETTO (V5.3)
    Regola: si compilano SOLO i campi vuoti, mai si sovrascrive
    quello che ha scritto la persona. Ogni campo compilato viene
    marcato con la sua origine:
@@ -2963,7 +2991,7 @@ function updateScanProgress(key,status,text){
 }
 
 /* ============================================================
-   ANALISI DEL SITO (V5.2)
+   ANALISI DEL SITO (V5.3)
    - progresso sempre visibile (overlay), da qualunque schermata
    - annullabile
    - non parte due volte in parallelo
@@ -3747,7 +3775,7 @@ function legacySmartWizardView(){
 }
 
 /* ============================================================
-   WIZARD A PERCORSI — V5.2
+   WIZARD A PERCORSI — V5.3
    Ogni percorso mostra un solo obiettivo per schermata e salva
    automaticamente avanzamento, salti facoltativi e verifiche.
    ============================================================ */
@@ -3794,7 +3822,7 @@ function keywordJourneyInsights(){
 }
 function guidedJourneyDefinitions(){
   const p=currentProject(),pages=byProject(state.pages),gsc=byProject(state.gscRecords),datasets=byProject(state.datasets),keywords=byProject(state.keywords),issues=openPriorityIssues(),tasks=activeOpenTasks(),insights=keywordJourneyInsights();
-  const validImports=datasets.length===0||datasets.every(dataset=>Number(dataset.records||0)>0);
+  const validImports=datasets.length===0||datasets.every(dataset=>dataset.valid!==false&&(Number(dataset.records||0)>0||dataset.emptyOptional===true));
   return [
     {id:'setup',icon:'settings',title:'Configura il progetto',description:'Prepara dominio, pagine e dati necessari prima dell’analisi.',duration:'circa 8 minuti',priority:(!p.domain||!pages.length)?'Alta':'Consigliata',steps:[
       {id:'domain',title:'Inserisci o verifica il sito',summary:'Controlliamo qual è il dominio principale del progetto.',why:'Il dominio permette di riconoscere le URL corrette ed evitare import associati al sito sbagliato.',result:'Il progetto sarà collegato al sito corretto.',requirement:'Obbligatorio',target:'Project',actionLabel:p.domain?'Verifica il dominio':'Inserisci il dominio',done:()=>Boolean(normalizeSiteDomain(p.domain))},
@@ -3899,7 +3927,7 @@ function guidedJourneyStepView(journey){
   const record=guidedPathRecord(journey.id),status=guidedJourneyStatus(journey),index=Math.max(0,Math.min(record.current??status.current,journey.steps.length-1)),step=journey.steps[index],done=step.done();
   const requirementClass=step.requirement==='Obbligatorio'?'required':step.requirement==='Consigliato'?'recommended':'optional';
   const actionHtml=done
-    ?(index<journey.steps.length-1?'<button class="btn primary" data-path-next>Passo successivo</button>':'<button class="btn primary" data-path-dashboard>Torna a tutti i percorsi</button>')
+    ?(index<journey.steps.length-1?'<button class="btn primary" data-path-next>Passo successivo</button>':'<button class="btn primary" data-nav="Operational Plan">Vai al piano di lavoro</button>')
     :`${step.target?`<button class="btn primary" data-path-nav="${esc(step.target)}" data-path-ack="${esc(step.id)}">${esc(step.actionLabel)}</button>`:step.autoAction?`<button class="btn primary" data-path-action="${esc(step.autoAction)}">${esc(step.actionLabel)}</button>`:''}${step.skipLabel?`<button class="btn" data-path-skip="${esc(step.id)}">${esc(step.skipLabel)}</button>`:''}`;
   return `<div class="journey-shell"><div class="journey-top"><button class="journey-back" data-path-dashboard>← Tutti i percorsi</button><div class="muted">Salvataggio automatico attivo</div></div><div class="journey-progress" style="--journey-steps:${journey.steps.length}">${journey.steps.map((item,i)=>`<button type="button" class="journey-progress-item ${item.done()?'done':i===index?'active':''}" data-path-step="${i}" ${i===index?'aria-current="step"':''}>${item.done()?'✓ ':''}${i+1}. ${esc(item.title.split(' ').slice(0,3).join(' '))}</button>`).join('')}</div><section class="journey-step-card"><div class="journey-step-number">Step ${index+1} di ${journey.steps.length} · ${esc(journey.title)}</div><h3>${esc(step.title)}</h3><p class="journey-step-lead">${esc(step.summary)}</p><div class="journey-requirement ${requirementClass}">${esc(step.requirement)}</div><div class="journey-explain"><div><strong>Perché è importante</strong><span class="muted">${esc(step.why)}</span></div><div><strong>Risultato atteso</strong><span class="muted">${esc(step.result)}</span></div></div>${guidedPathExtra(journey,step,index)}<div class="journey-main-action">${actionHtml}</div><div class="journey-footer-actions"><button class="btn" data-path-prev ${index===0?'disabled':''}>Indietro</button><div class="muted">${done?'Passo completato ✓':'Completa l’azione, poi verifica il risultato.'}</div></div></section></div>`;
 }
@@ -4017,7 +4045,7 @@ function guidedDashboardView(){
       <h3 id="nextActionTitle">${esc(nextJourney?.title||'Apri il controllo guidato')}</h3>
       <p>${esc(nextJourney?.description||'Scegli un percorso e completa una sola azione alla volta.')}</p>
     </div>
-    <button class="btn primary" data-nav="Guided Review">${esc(cta)}</button>
+    <button class="btn primary" data-path-start="${esc(nextJourney?.id||'setup')}">${esc(cta)}</button>
   </section>
   <div style="height:18px"></div>
   <div class="grid two">
@@ -4031,9 +4059,8 @@ function guidedDashboardView(){
     </section>
   </div>
   <div style="height:18px"></div>
-  <section class="workflow-list" aria-labelledby="workflowTitle"><h3 id="workflowTitle">I tuoi percorsi guidati</h3>
-    ${journeys.map((journey,i)=>`<div class="workflow-row ${journey.status.className==='done'?'done':journey===nextJourney?'current':''}"><div class="step-index" aria-hidden="true">${journey.status.className==='done'?'✓':i+1}</div><strong>${esc(journey.title)}</strong><div class="workflow-desc muted">${esc(journey.description)}</div><div class="state-text">${esc(journey.status.label)}</div></div>`).join('')}
-  </section><div style="height:18px"></div><div class="section-head"><div><strong>Riepilogo del progetto</strong><div class="muted">Scarica problemi, keyword, attività, pagine e opportunità del progetto corrente.</div></div><button class="btn" data-report-export>Scarica report</button></div>`;
+  ${guidedJourneyDashboard()}
+  <div style="height:18px"></div><div class="section-head"><div><strong>Piano e riepilogo del progetto</strong><div class="muted">Consulta direttamente le modifiche consigliate oppure scarica il report completo.</div></div><div class="page-actions"><button class="btn primary" data-nav="Operational Plan">Vedi piano operativo</button><button class="btn" data-report-export>Scarica report</button></div></div>`;
 }
 
 function simpleInfo(title,text){
@@ -4046,6 +4073,7 @@ function render(){
   let html='';
   if(v==='Dashboard') html=state.ui.experienceMode==='guided'?guidedDashboardView():(state.ui.mode==='Executive'?executiveDashboardV2():dashboardView());
   else if(v==='Guided Review') html=smartWizardView();
+  else if(v==='Operational Plan') html=operationalPlanView();
   else if(v==='Next Best Actions') html=nextActionsView();
   else if(v==='Project') html=projectViewV2();
   else if(v==='Pages') html=pagesInventoryView();
@@ -4129,8 +4157,9 @@ function sourceReliabilityView(){
  </tbody></table></div></div>`;
 }
 function searchConsoleView(){
- const rows=byProject(state.gscRecords);
+ const rows=byProject(state.gscRecords),datasets=byProject(state.datasets).filter(dataset=>String(dataset.type||'')==='gscRecords');
  return `<div class="section-head"><div><h3>Search Console</h3><div class="muted">Accetta export CSV italiani e internazionali: query, pagine, date, paesi, dispositivi e aspetto nella ricerca.</div></div><button class="btn primary" data-import-target="gscRecords">Importa file Search Console</button></div>
+ ${datasets.length?`<div class="card"><div class="section-head"><div><h3>File importati</h3><div class="muted">Un report senza righe non blocca gli altri file: significa che Search Console non ha restituito dati per quella dimensione nel periodo scelto.</div></div><span class="badge success">${datasets.length} file riconosciuti</span></div><div class="import-file-list">${datasets.map(dataset=>`<div class="import-file-item"><strong>${esc(dataset.name)}</strong> · ${Number(dataset.records||0)} record ${dataset.emptyOptional?'<span class="badge warning">Nessuna riga · accettato</span>':'<span class="badge success">Dati validi</span>'}</div>`).join('')}</div></div><div style="height:14px"></div>`:''}
  ${rows.length?`<div class="table-wrap" tabindex="0" role="region" aria-label="Dati Search Console"><table><thead><tr><th scope="col">Dimensione</th><th scope="col">Valore</th><th scope="col">Click</th><th scope="col">Impression</th><th scope="col">CTR</th><th scope="col">Posizione</th><th scope="col">File</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.dimensionType||'Dato')}</td><td>${esc(r.dimension||r.query||r.page||r.searchAppearance||r.device||r.country||r.date||'—')}</td><td>${esc(r.clicks??'—')}</td><td>${esc(r.impressions??'—')}</td><td>${esc(r.ctr??'—')}</td><td>${esc(r.position??'—')}</td><td>${esc(r.sourceFile||'—')}</td></tr>`).join('')}</tbody></table></div>`:`<div class="card empty"><strong>Nessun dato Search Console</strong><p>Puoi selezionare più CSV insieme. Il sistema riconosce anche “Aspetto nella ricerca.csv” e file UTF-16 esportati da Excel.</p><button class="btn primary" data-import-target="gscRecords">Importa i file</button></div>`}`;
 }
 function settingsView(){
@@ -4236,6 +4265,7 @@ function bindView(){
  }
  const importInput=document.getElementById('importFile');if(importInput)importInput.onchange=()=>{const list=document.getElementById('selectedImportFiles');const files=[...importInput.files];list.innerHTML=files.map(file=>`<div class="import-file-item"><strong>${esc(file.name)}</strong> · ${Math.max(1,Math.round(file.size/1024))} KB</div>`).join('');};
  const ib=document.getElementById('doImportBtn'); if(ib) ib.onclick=handleImportV2;
+ const rop=document.getElementById('refreshOperationalPlan'); if(rop) rop.onclick=()=>{runAutomationCycle(false);commit('Piano operativo aggiornato');toast('Piano aggiornato con i dati disponibili.');render();};
  const eb=document.getElementById('exportBackup'); if(eb) eb.onclick=()=>storage.export(state);
  const cs=document.getElementById('createSnapshot'); if(cs) cs.onclick=createSnapshot;
  const sc=document.getElementById('runSystemCheck'); if(sc) sc.onclick=runSystemCheck;
