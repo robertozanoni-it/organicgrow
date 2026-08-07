@@ -349,6 +349,16 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
 .state-text{font-weight:800;color:var(--muted)}.workflow-row.done .state-text{color:var(--success)}.workflow-row.current .state-text{color:var(--accent)}
 .form-help{font-size:16px;color:var(--muted)}.field-error{font-size:16px;color:var(--danger);font-weight:700}
 [aria-invalid="true"]{border-color:var(--danger)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 18%,transparent)}
+.clickable-card{cursor:pointer;transition:border-color .16s,background-color .16s,transform .16s}
+.clickable-card:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 4%,var(--surface));transform:translateY(-1px)}
+.clickable-card:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.wz-progress-item{width:100%;min-height:54px;cursor:pointer;font-family:inherit}
+.wz-progress-item:hover{border-color:var(--accent);color:var(--accent)}
+.wz-progress-item.active:hover{color:#fff}
+.wz-status.clickable-card{appearance:none;color:inherit;text-align:left;font:inherit;width:100%}
+.wz-status.clickable-card::after{content:'Apri dettagli →';display:block;margin-top:10px;color:var(--accent);font-weight:800;font-size:15px}
+.task-sync{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.import-file-list{display:grid;gap:6px;margin-top:10px}.import-file-item{padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-alt)}
 @media(max-width:1100px){
   .dashboard-command{grid-template-columns:1fr}.dashboard-command .btn{justify-self:start}
   .workflow-row{grid-template-columns:42px 1fr auto}.workflow-row .workflow-desc{grid-column:2/-1}
@@ -367,7 +377,7 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Decision Operating System · V4.6</p></div>
+      <div><h1>Organic Growth OS</h1><p>Decision Operating System · V4.8</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -785,9 +795,19 @@ function guidedReviewView(){
 
 function nextActionsView(){
   const acts=nextActions();
-  return `<div class="section-head"><div><h3>Next Best Actions</h3><div class="muted">Priorità spiegabili basate sui dati disponibili.</div></div></div>
-  ${acts.map((a,i)=>`<div class="card" style="margin-bottom:12px"><div class="section-head"><div><strong>${i+1}. ${esc(a.title)}</strong><div class="muted">${esc(a.why)}</div></div><span class="badge">${a.priority}</span></div>
-  <div class="badges"><span class="badge">Impact ${a.impact}</span><span class="badge">Effort ${a.effort}</span><span class="badge info">Confidence ${a.confidence}%</span><span class="badge">Score ${a.score}</span></div></div>`).join('')||'<div class="card empty">Nessuna azione disponibile.</div>'}`;
+  return `<div class="section-head"><div><h3>Prossime azioni consigliate</h3><div class="muted">Seleziona un box: aprirò direttamente il contenuto utile e manterrò aggiornata la relativa attività.</div></div></div>
+  ${acts.map((a,i)=>{const target=taskResolutionTarget(a);return `<div class="card clickable-card" role="button" tabindex="0" data-next-action="${i}" aria-label="Apri ${esc(a.title)}" style="margin-bottom:12px"><div class="section-head"><div><strong>${i+1}. ${esc(a.title)}</strong><div class="muted">${esc(a.why)}</div></div><span class="badge">${a.priority}</span></div>
+  <div class="badges"><span class="badge">Impatto ${a.impact}</span><span class="badge">Impegno ${a.effort}</span><span class="badge info">Affidabilità ${a.confidence}%</span><span class="badge">Punteggio ${a.score}</span></div><div style="margin-top:14px;color:var(--accent);font-weight:800">${esc(target.label)} →</div></div>`;}).join('')||'<div class="card empty">Nessuna azione disponibile.</div>'}`;
+}
+
+function activateNextAction(index){
+  const action=nextActions()[Number(index)];
+  if(!action){toast('Questa azione non è più necessaria: i dati sono stati aggiornati.');render();return;}
+  runAutomationCycle(false);
+  const target=taskResolutionTarget(action);
+  state.ui.activeView=target.view;
+  commit(`Aperta azione consigliata: ${action.title}`);
+  render();window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function importView(){
@@ -806,12 +826,56 @@ function importView(){
 
 function backupView(){
   return `<div class="grid two">
-    <div class="card"><h3>Backup & Recovery</h3><p class="muted">Esporta tutti i progetti e i relativi dati locali.</p>
+    <div class="card"><h3>Report e backup</h3><p class="muted">Scarica un report leggibile oppure esporta tutti i dati locali.</p>
+      <button class="btn primary" data-report-export>Scarica report</button>
       <button class="btn primary" id="exportBackup">Esporta backup JSON</button>
       <button class="btn" id="createSnapshot">Crea snapshot progetto</button>
     </div>
     <div class="card"><h3>Integrità</h3><p class="muted">Esegui un controllo dei dati locali e delle relazioni principali.</p><button class="btn" id="runSystemCheck">Run System Check</button><div id="systemCheckOut" style="margin-top:12px"></div></div>
   </div>`;
+}
+
+function reportFileBase(){
+  const name=String(currentProject()?.name||'progetto-seo').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'progetto-seo';
+  return `${name}-report-seo-${new Date().toISOString().slice(0,10)}`;
+}
+function downloadTextFile(content,mime,extension){
+  const blob=new Blob([content],{type:`${mime};charset=utf-8`});
+  const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`${reportFileBase()}.${extension}`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
+}
+function reportRows(){
+  const rows=[];
+  byProject(state.pages).forEach(p=>rows.push({sezione:'Pagina',stato:p.indexable===false?'NOINDEX':p.statusCode||'Rilevata',priorita:p.priority||'',titolo:p.pageName||p.title||'',url:p.displayUrl||p.normalizedUrl||'',dettaglio:p.primaryKeyword||p.meta||''}));
+  byProject(state.keywords).forEach(k=>rows.push({sezione:'Keyword',stato:k.intent||'',priorita:k.priority||'',titolo:k.keyword||'',url:k.targetUrl||'',dettaglio:k.source||''}));
+  byProject(state.issues).forEach(i=>rows.push({sezione:'Problema',stato:i.status||'',priorita:i.priority||i.severity||'',titolo:i.title||'',url:i.url||'',dettaglio:i.whyNow||''}));
+  byProject(state.tasks).forEach(t=>rows.push({sezione:'Attività',stato:t.status||'',priorita:t.priority||'',titolo:t.title||'',url:t.targetView||'',dettaglio:t.systemGenerated?'Sincronizzata automaticamente':'Manuale'}));
+  byProject(state.opportunities).forEach(o=>rows.push({sezione:'Opportunità',stato:o.status||'',priorita:o.priority||'',titolo:o.title||o.type||'',url:o.target||'',dettaglio:o.whyNow||''}));
+  return rows;
+}
+function buildReportHtml(){
+  const p=currentProject(),scan=p.websiteScan||{},w=wizardState(),s=scores(),rows=reportRows();
+  const openIssues=byProject(state.issues).filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase()));
+  const generated=new Date().toLocaleString('it-IT');
+  const tableRows=rows.map(r=>`<tr><td>${esc(r.sezione)}</td><td>${esc(r.titolo)}</td><td>${esc(r.stato)}</td><td>${esc(r.priorita)}</td><td>${esc(r.url)}</td><td>${esc(r.dettaglio)}</td></tr>`).join('');
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Report SEO · ${esc(p.name)}</title><style>body{font-family:Inter,Arial,sans-serif;color:#101828;line-height:1.55;margin:0;background:#f5f7fb;font-size:16px}main{max-width:1180px;margin:auto;padding:32px}.head,.card{background:#fff;border:1px solid #d5dbe5;border-radius:14px;padding:22px;margin-bottom:18px}.head h1{font-size:30px;margin:0 0 8px}.muted{color:#536176}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{background:#fff;border:1px solid #d5dbe5;border-radius:12px;padding:16px}.stat strong{display:block;font-size:28px}.good{color:#087a47}.warn{color:#a34f00}table{width:100%;border-collapse:collapse;background:#fff;font-size:14px}th,td{text-align:left;vertical-align:top;border:1px solid #d5dbe5;padding:9px;overflow-wrap:anywhere}th{background:#eef3fb}.print{margin-bottom:18px;padding:10px 16px;border:0;border-radius:9px;background:#155eef;color:#fff;font-weight:700}@media(max-width:760px){main{padding:16px}.stats{grid-template-columns:1fr 1fr}.table{overflow:auto}}@media print{body{background:#fff}.print{display:none}main{max-width:none;padding:0}.head,.card,.stat{break-inside:avoid}}</style></head><body><main><button class="print" onclick="window.print()">Stampa / salva PDF</button><section class="head"><h1>Report SEO · ${esc(p.name)}</h1><div class="muted">${esc(p.domain||'Dominio non impostato')} · generato il ${esc(generated)}</div><p>${esc(p.positioning||p.primarySeoGoal||'Riepilogo operativo del progetto Organic Growth OS.')}</p></section><section class="stats"><div class="stat"><strong>${byProject(state.pages).length}</strong>Pagine</div><div class="stat"><strong>${byProject(state.keywords).length}</strong>Keyword</div><div class="stat"><strong class="${openIssues.length?'warn':'good'}">${openIssues.length}</strong>Problemi aperti</div><div class="stat"><strong>${byProject(state.tasks).filter(t=>!['DONE','VERIFIED'].includes(String(t.status||'').toUpperCase())).length}</strong>Attività aperte</div></section><section class="card"><h2>Stato del controllo</h2><p><strong>Analisi sito:</strong> ${scan.status==='completed'?'Completata':'Non completata'} · <strong>Pagine analizzate:</strong> ${scan.pagesAnalyzed||0} · <strong>Keyword rilevate:</strong> ${scan.keywordsAdded||0}</p><p><strong>Wizard:</strong> ${esc(w.status||'non avviato')} · <strong>Ultimo aggiornamento:</strong> ${esc(w.updatedAt?fmtDate(w.updatedAt):'—')}</p><p><strong>Score disponibili:</strong> Tecnica ${s.technical??'—'} · Architettura ${s.arch??'—'} · Copertura ${s.coverage??'—'} · Indicizzazione ${s.indexed??'—'}</p></section><section class="card table"><h2>Dettaglio operativo</h2>${rows.length?`<table><thead><tr><th>Sezione</th><th>Elemento</th><th>Stato</th><th>Priorità</th><th>URL/modulo</th><th>Dettaglio</th></tr></thead><tbody>${tableRows}</tbody></table>`:'<p>Nessun dato operativo disponibile.</p>'}</section><section class="card"><strong>Nota</strong><p>Le keyword rilevate automaticamente derivano da contenuti pubblici del sito. Volumi, difficoltà e posizionamenti richiedono dati Search Console o strumenti esterni.</p></section></main></body></html>`;
+}
+function downloadHtmlReport(){downloadTextFile(buildReportHtml(),'text/html','html');toast('Report HTML scaricato.');}
+function downloadCsvReport(){
+  const headers=['Sezione','Elemento','Stato','Priorità','URL o modulo','Dettaglio'];
+  const quote=value=>`"${String(value??'').replace(/"/g,'""')}"`;
+  const csv='\uFEFF'+[headers,...reportRows().map(r=>[r.sezione,r.titolo,r.stato,r.priorita,r.url,r.dettaglio])].map(row=>row.map(quote).join(';')).join('\r\n');
+  downloadTextFile(csv,'text/csv','csv');toast('Report CSV scaricato.');
+}
+function printReport(){
+  const win=window.open('','_blank');
+  if(!win){toast('Il browser ha bloccato la finestra di stampa. Consenti i popup e riprova.');return;}
+  win.document.open();win.document.write(buildReportHtml());win.document.close();win.focus();setTimeout(()=>win.print(),250);
+}
+function openReportExport(){
+  openDrawer('Scarica report',`<div class="card"><h3>Scegli il formato</h3><p class="muted">Il report utilizza solo i dati del progetto corrente.</p><div class="panel-list"><button class="panel-item clickable-card" type="button" id="downloadReportHtml" style="text-align:left;color:inherit;font:inherit"><strong>Report HTML completo</strong><div class="muted">Apribile in qualsiasi browser, con riepilogo e dettaglio operativo.</div></button><button class="panel-item clickable-card" type="button" id="printReportPdf" style="text-align:left;color:inherit;font:inherit"><strong>Stampa o salva in PDF</strong><div class="muted">Apre la versione impaginata e la finestra di stampa del browser.</div></button><button class="panel-item clickable-card" type="button" id="downloadReportCsv" style="text-align:left;color:inherit;font:inherit"><strong>Report CSV</strong><div class="muted">Compatibile con Excel e utile per lavorare sui dati.</div></button></div></div>`);
+  document.getElementById('downloadReportHtml').onclick=downloadHtmlReport;
+  document.getElementById('printReportPdf').onclick=printReport;
+  document.getElementById('downloadReportCsv').onclick=downloadCsvReport;
 }
 
 
@@ -967,11 +1031,11 @@ let pendingImport=null;
 function importViewV2(){
   return `<div class="grid two">
     <div class="card"><h3>Import guidato</h3><p class="muted">1 Anteprima → 2 Validazione → 3 Associazione campi → 4 Riepilogo modifiche → 5 Conferma.</p>
-      <div class="field"><label for="importFile">File</label><input type="file" id="importFile" accept=".json,.csv,.tsv" aria-describedby="importHelp"><div class="form-help" id="importHelp">Sono supportati JSON, CSV con virgola o punto e virgola e TSV.</div></div>
+      <div class="field"><label for="importFile">File</label><input type="file" id="importFile" accept=".json,.csv,.tsv" multiple aria-describedby="importHelp"><div class="form-help" id="importHelp">Puoi selezionare più file insieme. Sono supportati JSON, CSV con virgola o punto e virgola e TSV.</div><div id="selectedImportFiles" class="import-file-list" aria-live="polite"></div></div>
       <div class="field" style="margin-top:10px"><label for="importTarget">Destinazione</label><select id="importTarget">
         <option value="pages">Pages</option><option value="keywords">Keywords</option><option value="issues">Issues</option><option value="opportunities">Opportunities</option><option value="gscRecords">Search Console</option><option value="links">Internal Links</option>
       </select></div>
-      <div style="margin-top:12px"><button class="btn primary" id="doImportBtn">Analizza file</button></div>
+      <div style="margin-top:12px"><button class="btn primary" id="doImportBtn">Analizza i file</button></div>
       <div id="importResult" style="margin-top:14px"></div>
     </div>
     <div class="card"><h3>Regole di sicurezza</h3><div class="stat-row"><span>Parse</span><strong>prima del commit</strong></div><div class="stat-row"><span>Validation</span><strong>campi e righe</strong></div><div class="stat-row"><span>Preview</span><strong>obbligatoria</strong></div><div class="stat-row"><span>Commit</span><strong>solo confermato</strong></div><p class="muted">Per backup JSON completi, lo stato viene sostituito soltanto dopo conferma esplicita.</p></div>
@@ -979,16 +1043,24 @@ function importViewV2(){
 }
 
 async function handleImportV2(){
-  const file=document.getElementById('importFile').files[0], out=document.getElementById('importResult'), target=document.getElementById('importTarget').value;
-  if(!file){toast('Seleziona un file');return;}
+  const files=[...document.getElementById('importFile').files], out=document.getElementById('importResult'), target=document.getElementById('importTarget').value;
+  if(!files.length){toast('Seleziona almeno un file');return;}
   try{
-    const text=await file.text();
-    if(file.name.toLowerCase().endsWith('.json')){
-      const data=JSON.parse(text);
-      if(data.schemaVersion&&data.projects){pendingImport={kind:'backup',data,file};out.innerHTML=`<div class="callout"><strong>Backup completo rilevato</strong><p class="muted">${data.projects.length} progetti · schema ${data.schemaVersion}</p><button class="btn danger" id="confirmImport">Sostituisci stato corrente</button></div>`;document.getElementById('confirmImport').onclick=commitPendingImport;return;}
-      const rows=Array.isArray(data)?data:[data];
-      pendingImport={kind:'rows',rows,target,file};
-    }else{
+    const parsed=[];
+    for(const file of files){
+      const text=await file.text();
+      if(file.name.toLowerCase().endsWith('.json')){
+        const data=JSON.parse(text);
+        if(data.schemaVersion&&data.projects){
+          if(files.length>1)throw new Error('Un backup completo deve essere importato da solo, senza altri file.');
+          pendingImport={kind:'backup',data,file};
+          out.innerHTML=`<div class="callout"><strong>Backup completo rilevato</strong><p class="muted">${data.projects.length} progetti · schema ${data.schemaVersion}</p><button class="btn danger" id="confirmImport">Sostituisci stato corrente</button></div>`;
+          document.getElementById('confirmImport').onclick=commitPendingImport;return;
+        }
+        const rows=Array.isArray(data)?data:[data];
+        parsed.push({file,rows,headers:Object.keys(rows[0]||{})});
+        continue;
+      }
       let sep='\t';
       if(!file.name.toLowerCase().endsWith('.tsv')){
         const first=text.split(/\r?\n/)[0]||'';
@@ -996,16 +1068,19 @@ async function handleImportV2(){
         sep=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0]||',';
       }
       const lines=text.split(/\r?\n/).filter(x=>x.trim());
-      if(lines.length<2) throw new Error('Il file non contiene righe dati.');
+      if(lines.length<2)throw new Error(`${file.name}: il file non contiene righe dati.`);
       const headers=parseDelimited(lines.shift(),sep).map(x=>x.trim());
       const rows=lines.map(line=>{const vals=parseDelimited(line,sep);const o={};headers.forEach((h,i)=>o[h]=vals[i]??'');return o;});
-      pendingImport={kind:'rows',rows,target,file,headers};
+      parsed.push({file,rows,headers});
     }
-    const sample=pendingImport.rows.slice(0,8), headers=Object.keys(sample[0]||{});
-    const invalid=pendingImport.rows.filter(r=>!Object.keys(r).length).length;
-    out.innerHTML=`<div class="callout"><strong>Preview import</strong><p class="muted">${pendingImport.rows.length} record · ${invalid} righe non valide · destinazione ${esc(target)}</p></div>
+    const rows=parsed.flatMap(group=>group.rows.map(row=>({...row,__sourceFile:group.file.name})));
+    pendingImport={kind:'rows',rows,target,files:parsed.map(group=>({name:group.file.name,records:group.rows.length}))};
+    const sample=rows.slice(0,8), headers=[...new Set(parsed.flatMap(group=>group.headers))];
+    const invalid=rows.filter(r=>Object.keys(r).filter(k=>k!=='__sourceFile').length===0).length;
+    out.innerHTML=`<div class="callout"><strong>Anteprima import multiplo</strong><p class="muted">${files.length} file · ${rows.length} record · ${invalid} righe non valide · destinazione ${esc(navLabel(target==='gscRecords'?'Search Console':target==='links'?'Internal Links':target[0].toUpperCase()+target.slice(1)))}</p></div>
+      <div class="import-file-list">${parsed.map(group=>`<div class="import-file-item"><strong>${esc(group.file.name)}</strong> · ${group.rows.length} record</div>`).join('')}</div>
       <div class="import-preview"><table><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${sample.map(r=>`<tr>${headers.map(h=>`<td>${esc(r[h])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
-      <div style="margin-top:12px"><button class="btn primary" id="confirmImport">Conferma import</button> <button class="btn" id="cancelImport">Annulla</button></div>`;
+      <div style="margin-top:12px"><button class="btn primary" id="confirmImport">Importa ${files.length} file</button> <button class="btn" id="cancelImport">Annulla</button></div>`;
     document.getElementById('confirmImport').onclick=commitPendingImport;
     document.getElementById('cancelImport').onclick=()=>{pendingImport=null;out.innerHTML='<div class="muted">Import annullato.</div>';};
   }catch(e){out.innerHTML=`<div class="callout" style="border-color:var(--danger)"><strong>Errore import</strong><p>${esc(e.message)}</p></div>`;}
@@ -1037,10 +1112,10 @@ function commitPendingImport(){
     if(!confirm('Sostituire tutti i dati locali con questo backup?'))return;
     state=storage.migrate(pendingImport.data);storage.save(state);pendingImport=null;toast('Backup ripristinato');render();return;
   }
-  const {rows,target,file}=pendingImport;
-  rows.forEach(x=>state[target].push({...normalizeImportedRecord(target,x),id:uid('imp'),projectId:state.currentProjectId,createdAt:now(),updatedAt:now()}));
-  state.datasets.push({id:uid('dataset'),projectId:state.currentProjectId,name:file.name,source:'Import locale',type:target,importedAt:now(),records:rows.length,createdAt:now(),updatedAt:now()});
-  commit(`Import confermato: ${file.name}`);runAutomationCycle(false);pendingImport=null;toast(`${rows.length} record importati`);state.ui.activeView=target==='gscRecords'?'Search Console':target==='links'?'Internal Links':({'pages':'Pages','keywords':'Keywords','issues':'Issues','opportunities':'Opportunities'}[target]||'Datasets');render();
+  const {rows,target,files=[]}=pendingImport;
+  rows.forEach(row=>{const {__sourceFile,...data}=row;state[target].push({...normalizeImportedRecord(target,data),id:uid('imp'),projectId:state.currentProjectId,sourceFile:__sourceFile||'',createdAt:now(),updatedAt:now()});});
+  files.forEach(file=>state.datasets.push({id:uid('dataset'),projectId:state.currentProjectId,name:file.name,source:'Import locale',type:target,importedAt:now(),records:file.records,createdAt:now(),updatedAt:now()}));
+  commit(`Import confermato: ${files.length||1} file`);runAutomationCycle(false);pendingImport=null;toast(`${rows.length} record importati da ${files.length||1} file`);state.ui.activeView=target==='gscRecords'?'Search Console':target==='links'?'Internal Links':({'pages':'Pages','keywords':'Keywords','issues':'Issues','opportunities':'Opportunities'}[target]||'Datasets');render();
 }
 
 
@@ -1515,11 +1590,12 @@ function projectViewV2(){
   <div class="hero-action">
     <h3>Compilazione automatica dal sito</h3>
     <p>Inserisci il dominio e avvia l’analisi. Rileverò homepage, sitemap, pagine, title, meta description, H1, canonical, lingua, dati strutturati e problemi SEO verificabili.</p>
-    <button class="btn primary" id="autoAnalyzeWebsite" ${normalizeSiteDomain(p.domain)?'':'disabled'}>Analizza e compila automaticamente</button>
-    ${!normalizeSiteDomain(p.domain)?'<div class="muted" style="margin-top:10px">Prima inserisci il dominio nel campo qui sotto e salva il progetto.</div>':''}
+    <button class="btn primary" type="button" id="autoAnalyzeWebsite">Analizza e compila automaticamente</button>
+    ${!normalizeSiteDomain(p.domain)?'<div class="muted" style="margin-top:10px">Inserisci il dominio nel campo qui sotto: il pulsante lo salverà e compilerà subito i campi disponibili.</div>':''}
     ${scan.completedAt?`<div class="scan-summary">
       <div><strong>${scan.pagesFound||0}</strong><span>URL trovate</span></div>
       <div><strong>${scan.pagesAnalyzed||0}</strong><span>pagine analizzate</span></div>
+      <div><strong>${scan.keywordsAdded||0}</strong><span>keyword rilevate</span></div>
       <div><strong>${scan.issuesFound||0}</strong><span>problemi rilevati</span></div>
       <div><strong>${scan.safeFixes||0}</strong><span>correzioni sicure applicate</span></div>
       <div><strong>✓</strong><span>ultimo controllo ${fmtTime(scan.completedAt)}</span></div>
@@ -1649,6 +1725,14 @@ function systemTaskRules(){
       verified:()=>byProject(state.pages).some(p=>(p.displayUrl||p.pageName)&&p.projectId===state.currentProjectId)
     },
     {
+      key:'keyword_intelligence',
+      match:t=>/keyword intelligence|keyword collegate|aggiungi.*keyword|mancano.*keyword/i.test(t.title||''),
+      label:'Keyword collegate alle pagine',
+      explanation:'È completata quando il progetto contiene almeno una keyword con una pagina target.',
+      test:()=>byProject(state.keywords).length>0,
+      verified:()=>byProject(state.keywords).some(k=>k.keyword&&k.targetUrl)
+    },
+    {
       key:'strategy_canvas',
       match:t=>/strategy canvas|strategia seo|definisci.*strateg/i.test(t.title||''),
       label:'Strategia di base definita',
@@ -1701,6 +1785,37 @@ function canonicalOpenFindingsCount(){
     if(['NON_CANONICAL','REDIRECT'].includes(String(l.status||'').toUpperCase()))n++;
   });
   return n;
+}
+
+function syncWizardTasks(){
+  const checks=wizardChecks();
+  const unresolved=checks.filter(f=>!f.resolved()&&['CRITICAL','HIGH','MEDIUM'].includes(f.severity));
+  const activeKeys=new Set(unresolved.map(f=>`wizard:${f.id}`));
+  let changed=0;
+  unresolved.forEach(f=>{
+    const autoKey=`wizard:${f.id}`;
+    let task=byProject(state.tasks).find(t=>t.autoKey===autoKey);
+    const target=taskResolutionTarget({title:f.title,verificationRule:f.id});
+    if(!task){
+      task={id:uid('task'),projectId:state.currentProjectId,autoKey,wizardFindingId:f.id,title:f.title,
+        priority:f.severity==='CRITICAL'?'P1':f.severity==='HIGH'?'P2':'P3',status:'TODO',owner:'',
+        targetView:f.target||target.view,systemGenerated:true,verificationRule:f.id,createdAt:now(),updatedAt:now()};
+      state.tasks.push(task);changed++;
+    }else{
+      const desiredPriority=f.severity==='CRITICAL'?'P1':f.severity==='HIGH'?'P2':'P3';
+      if(task.title!==f.title||task.priority!==desiredPriority||task.targetView!==(f.target||target.view)||['DONE','VERIFIED'].includes(String(task.status||'').toUpperCase())){
+        Object.assign(task,{title:f.title,priority:desiredPriority,targetView:f.target||target.view,status:'TODO',updatedAt:now()});changed++;
+      }
+    }
+  });
+  byProject(state.tasks).filter(t=>t.systemGenerated&&t.wizardFindingId&&!activeKeys.has(t.autoKey)).forEach(task=>{
+    const finding=checks.find(f=>f.id===task.wizardFindingId);
+    if((!finding||finding.resolved())&&task.status!=='VERIFIED'){
+      task.status='VERIFIED';task.completedAt=task.completedAt||now();task.verifiedAt=now();task.updatedAt=now();changed++;
+    }
+  });
+  if(changed){currentProject().tasksLastSyncedAt=now();commit('Attività automatiche sincronizzate');}
+  return changed;
 }
 
 function autoVerifySystemTasks(silent=true){
@@ -1767,8 +1882,12 @@ function syncWorkflowFromGates(notify=false){
 }
 
 function runAutomationCycle(notify=false){
-  autoVerifySystemTasks(true);
+  const createdOrUpdated=syncWizardTasks();
+  const verified=autoVerifySystemTasks(true);
   syncWorkflowFromGates(notify);
+  const total=createdOrUpdated+verified;
+  if(total&&notify)toast(`${total} attività aggiornate automaticamente`);
+  return total;
 }
 
 function explainTerm(term){
@@ -1861,14 +1980,15 @@ function taskManagementViewV2(){
     const dep=t.dependencies||'';
     const blocked=dep&&!dependencySatisfied(dep);
     const rule=rules.find(r=>r.match(t));
+    const target=taskResolutionTarget(t);
     return `<div class="kanban-card"><strong>${esc(t.title||'Task')}</strong><div class="muted">${esc(t.priority||'P3')} · ${esc(t.owner||'No owner')}</div>
-      ${rule?`<div class="auto-verify"><span class="dot"></span>Verifica automatica<div><button class="help-toggle" data-task-rule="${rule.key}">Come funziona?</button></div></div>`:''}
+      ${t.systemGenerated?`<div class="auto-verify"><span class="dot"></span>Attività sincronizzata automaticamente${rule?`<div><button class="help-toggle" data-task-rule="${rule.key}">Come funziona?</button></div>`:''}</div>`:''}
       ${dep?`<div class="node-pill">${blocked?'Blocked by':'Depends on'}: ${esc(dep)}</div>`:''}
-      <div style="margin-top:8px"><button class="btn" data-edit="tasks" data-id="${t.id}">Apri</button></div></div>`;
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-task-nav="${esc(t.targetView||target.view)}">${esc(target.label)}</button><button class="btn" data-edit="tasks" data-id="${t.id}">Dettagli</button></div></div>`;
   }).join('')}</div>`).join('');
   const blocked=tasks.filter(t=>t.dependencies&&!dependencySatisfied(t.dependencies));
   return `${pageIntro('Task','Le task verificabili vengono aggiornate automaticamente. Il pulsante principale apre direttamente il modulo giusto per risolverle; quelle che richiedono valutazione restano manuali.',[`${tasks.length} task`])}
-  <div class="section-head"><div></div><button class="btn primary" data-add="tasks">+ Task</button></div>
+  <div class="section-head"><div class="task-sync"><button class="btn" id="syncTasksNow">Aggiorna attività</button><span class="muted">${currentProject().tasksLastSyncedAt?`Ultimo aggiornamento: ${fmtTime(currentProject().tasksLastSyncedAt)}`:'La sincronizzazione parte automaticamente con il controllo.'}</span></div><button class="btn primary" data-add="tasks">+ Task manuale</button></div>
   <div class="kanban">${htmlCols}</div>
   <div style="height:16px"></div>
   <div class="card"><h3>Dipendenze</h3>${blocked.length?`<div class="dep-list">${blocked.map(t=>`<div class="dep-item"><div><strong>${esc(t.title)}</strong><div class="muted">Prima completa: ${esc(t.dependencies)}</div></div><span class="badge danger">BLOCCATA</span></div>`).join('')}</div>`:'<div class="empty">Nessuna dipendenza non soddisfatta.</div>'}</div>`;
@@ -2160,6 +2280,52 @@ function inferProjectFieldsFromSignals(signal){
   p.strategyCanvas.confidence=Math.max(Number(p.strategyCanvas.confidence||0),60);
 }
 
+const keywordStopWords=new Set('a ad al alla alle allo ai agli anche che chi con da dal dalla dalle dei del della delle di e ed è gli ha il in la le lo ma nel nella nelle o per più se su tra un una uno the and for from with your our this that home homepage sito website ufficiale pagina'.split(/\s+/));
+function keywordFromSignal(signal){
+  const p=currentProject();
+  const brandWords=String(p.brand||p.name||'').toLowerCase().split(/\W+/).filter(Boolean);
+  const source=String(signal.h1||signal.title||guessPageNameFromUrl(signal.url)||'')
+    .split(/[|–—]/)[0].replace(/[_/]+/g,' ').replace(/[^\p{L}\p{N}\s'-]/gu,' ').replace(/\s+/g,' ').trim();
+  const words=source.split(/\s+/).filter(word=>{
+    const clean=word.toLowerCase().replace(/^['-]+|['-]+$/g,'');
+    return clean.length>1&&!keywordStopWords.has(clean)&&!brandWords.includes(clean);
+  });
+  const candidate=words.slice(0,7).join(' ').trim();
+  if(candidate)return candidate;
+  const fallback=guessPageNameFromUrl(normalizePageUrlForProject(signal.url)).toLowerCase();
+  return fallback==='homepage'?'':fallback;
+}
+function keywordIntent(keyword,url){
+  const text=`${keyword} ${url}`.toLowerCase();
+  if(/prezz|costo|acquist|shop|prodotto|servizio|consulenza|prenot|preventiv/.test(text))return 'TRANSACTIONAL';
+  if(/come|guida|cos'è|cosa|perché|benefici|ricett|idee|consigli/.test(text))return 'INFORMATIONAL';
+  if(/contatti|chi siamo|about|login|area riservata/.test(text))return 'NAVIGATIONAL';
+  return 'COMMERCIAL / INFORMATIONAL — da validare';
+}
+function detectKeywordsFromSignals(signals){
+  const existing=new Set(byProject(state.keywords).map(k=>`${String(k.keyword||'').toLowerCase()}|${String(k.targetUrl||'').toLowerCase()}`));
+  let added=0;
+  signals.forEach(signal=>{
+    const keyword=keywordFromSignal(signal);
+    const targetUrl=normalizePageUrlForProject(signal.url);
+    if(!keyword||keyword.length<3||!targetUrl)return;
+    const key=`${keyword.toLowerCase()}|${targetUrl.toLowerCase()}`;
+    if(existing.has(key))return;
+    const path=targetUrl.split('/').filter(Boolean);
+    const page=byProject(state.pages).find(item=>item.displayUrl===targetUrl||item.normalizedUrl===targetUrl);
+    state.keywords.push({
+      id:uid('kw'),projectId:state.currentProjectId,keyword,intent:keywordIntent(keyword,targetUrl),
+      cluster:path[0]?guessPageNameFromUrl('/'+path[0]):currentProject().industry||'Homepage',targetUrl,
+      expectedContentType:page?.pageType||'Da validare',priority:path.length<=1?'P2':'P3',
+      source:'AUTO SITE CONTENT',confidence:72,notes:'Rilevata da title/H1 pubblico. Volumi e difficoltà richiedono dati esterni.',
+      createdAt:now(),updatedAt:now()
+    });
+    if(page&&!page.primaryKeyword)page.primaryKeyword=keyword;
+    existing.add(key);added++;
+  });
+  return added;
+}
+
 function upsertScannedPage(signal){
   const display=normalizePageUrlForProject(signal.url);
   let page=byProject(state.pages).find(x=>[x.displayUrl,x.normalizedUrl,x.canonicalUrl].includes(display)||absoluteSiteUrl(x.displayUrl)===signal.url);
@@ -2279,14 +2445,16 @@ async function analyzeCurrentWebsite(options={}){
     const display=normalizePageUrlForProject(url);
     if(!byProject(state.pages).some(x=>x.displayUrl===display))state.pages.push({id:uid('page'),projectId:state.currentProjectId,pageName:guessPageNameFromUrl(display),displayUrl:display,normalizedUrl:display,pageType:'Other',sitemap:true,indexable:true,source:'AUTO SITEMAP',createdAt:now(),updatedAt:now()});
   });
+  const keywordSignals=[...result.signals,...uniqueUrls.filter(url=>!result.signals.some(signal=>signal.url===url)).map(url=>({url,title:guessPageNameFromUrl(normalizePageUrlForProject(url)),h1:''}))];
+  result.keywordsAdded=detectKeywordsFromSignals(keywordSignals);
   result.safeFixes=applySafeAutomaticDataFixes();
-  updateScanProgress('pages','done',`${result.signals.length} pagine analizzate; ${byProject(state.pages).length} pagine registrate.`);
+  updateScanProgress('pages','done',`${result.signals.length} pagine analizzate; ${byProject(state.pages).length} pagine e ${result.keywordsAdded} nuove keyword registrate.`);
 
   updateScanProgress('issues','running','Verifico errori e priorità…');
   replaceAutomaticScanIssues(result.signals,result);
-  p.websiteScan={status:'completed',startedAt:p.websiteScan.startedAt,completedAt:now(),pagesFound:uniqueUrls.length,pagesAnalyzed:result.signals.length,issuesFound:byProject(state.issues).filter(i=>i.autoScan).length,safeFixes:result.safeFixes,usedFallback:result.usedFallback,errors:result.errors.slice(0,20)};
+  p.websiteScan={status:'completed',startedAt:p.websiteScan.startedAt,completedAt:now(),pagesFound:uniqueUrls.length,pagesAnalyzed:result.signals.length,keywordsAdded:result.keywordsAdded,issuesFound:byProject(state.issues).filter(i=>i.autoScan).length,safeFixes:result.safeFixes,usedFallback:result.usedFallback,errors:result.errors.slice(0,20)};
   updateScanProgress('issues','done',`${p.websiteScan.issuesFound} problemi verificabili rilevati.`);
-  commit(`Analisi automatica completata: ${result.signals.length} pagine`);
+  commit(`Analisi automatica completata: ${result.signals.length} pagine, ${result.keywordsAdded} keyword`);
   runAutomationCycle(false);
   return result;
 }
@@ -2302,6 +2470,9 @@ function wizardState(){
       startedAt:null,
       updatedAt:null,
       lastCompletedAt:null,
+      pausedAt:null,
+      lastVerifiedTitle:'',
+      lastFailedTitle:'',
       findings:[],
       summary:null
     };
@@ -2362,6 +2533,26 @@ function wizardChecks(){
       'Incolla le URL e controlla l’anteprima.',
       'Importa. Il sistema rimuove automaticamente i duplicati.',
       'Torna qui: il wizard verificherà da solo che le pagine siano presenti.'
+    ]
+  });
+
+  checks.push({
+    id:'keyword_intelligence',
+    order:25,
+    title:'Mancano le keyword collegate alle pagine',
+    simple:'Non risultano ancora parole chiave associate alle URL del sito.',
+    why:'Durante il rilevamento automatico il sistema propone keyword da title e H1. Sono una base operativa da validare, senza inventare volumi di ricerca.',
+    severity:'MEDIUM',
+    kind:'manual',
+    target:'Keywords',
+    actionLabel:'Apri le keyword rilevate',
+    resolved:()=>byProject(state.keywords).length>0,
+    technical:`keywords count = ${byProject(state.keywords).length}`,
+    steps:[
+      'Esegui nuovamente il rilevamento del sito per generare proposte da title e H1.',
+      'Apri “Parole chiave” e controlla keyword, intento e pagina target.',
+      'Integra successivamente volumi e difficoltà tramite Search Console o un tool esterno.',
+      'Torna qui e verifica il risultato.'
     ]
   });
 
@@ -2585,10 +2776,12 @@ function wizardVerifyCurrent(){
     } else {
       w.step='verified';
       w.lastVerifiedTitle=f.title;
+      w.lastFailedTitle='';
     }
   } else {
     w.step='verify_failed';
     w.lastFailedTitle=f.title;
+    w.lastVerifiedTitle='';
   }
   saveWizardState();
   render();
@@ -2608,7 +2801,7 @@ function wizardContinueAfterVerified(){
 function wizardRestart(){
   const p=currentProject();
   p.wizardState={
-    status:'not_started',step:'start',currentProblem:0,startedAt:null,updatedAt:null,lastCompletedAt:null,pausedAt:null,findings:[],summary:null
+    status:'not_started',step:'start',currentProblem:0,startedAt:null,updatedAt:null,lastCompletedAt:null,pausedAt:null,lastVerifiedTitle:'',lastFailedTitle:'',findings:[],summary:null
   };
   commit('Wizard riavviato');
   render();
@@ -2618,7 +2811,38 @@ function wizardProgress(step){
   const labels=['Analisi','Risultato','Correzione','Verifica','Completato'];
   const map={start:0,analysis:0,result:1,correction:2,verified:3,verify_failed:3,complete:4};
   const idx=map[step]??0;
-  return `<div class="wz-progress">${labels.map((l,i)=>`<div class="wz-progress-item ${i<idx?'done':i===idx?'active':''}">${i<idx?'✓ ':''}${l}</div>`).join('')}</div>`;
+  const steps=['analysis','result','correction','verification','complete'];
+  return `<div class="wz-progress" aria-label="Passaggi del controllo">${labels.map((l,i)=>`<button type="button" class="wz-progress-item ${i<idx?'done':i===idx?'active':''}" data-wizard-tab="${steps[i]}" ${i===idx?'aria-current="step"':''}>${i<idx?'✓ ':''}${l}</button>`).join('')}</div>`;
+}
+
+function navigateWizardTab(tab){
+  const w=wizardState();
+  if(tab==='analysis'){runWizardAnalysis();return;}
+  if(tab==='result'){
+    if(w.summary){wizardGo('result');return;}
+    toast('Esegui prima l’analisi.');return;
+  }
+  if(tab==='correction'){
+    if(w.summary&&wizardRequiredFindings().length){wizardStartCorrections();return;}
+    toast('Non ci sono correzioni prioritarie da mostrare.');return;
+  }
+  if(tab==='verification'){
+    if(w.lastFailedTitle){wizardGo('verify_failed');return;}
+    if(w.lastVerifiedTitle){wizardGo('verified');return;}
+    toast('La verifica sarà disponibile dopo una correzione.');return;
+  }
+  if(tab==='complete'){
+    if(!wizardRequiredFindings().length&&w.summary){w.step='complete';w.status='completed';w.lastCompletedAt=now();saveWizardState();render();return;}
+    toast('Completa prima i problemi prioritari.');
+  }
+}
+
+function openWizardSummary(kind){
+  const all=wizardChecks();
+  const items=kind==='passed'?all.filter(c=>c.resolved()):kind==='problems'?all.filter(c=>!c.resolved()&&['CRITICAL','HIGH','MEDIUM'].includes(c.severity)):all.filter(c=>!c.resolved()&&['LOW','INFO'].includes(c.severity));
+  const title=kind==='passed'?'Controlli superati':kind==='problems'?'Problemi da correggere':'Suggerimenti facoltativi';
+  openDrawer(title,items.length?`<div class="panel-list">${items.map(item=>`<button type="button" class="panel-item clickable-card" data-summary-nav="${esc(item.target||'Dashboard')}" style="width:100%;text-align:left;color:inherit;font:inherit"><strong>${esc(item.title)}</strong><div class="muted">${esc(item.simple||item.why||'')}</div><div style="margin-top:8px;color:var(--accent);font-weight:800">Apri ${esc(navLabel(item.target||'Dashboard'))} →</div></button>`).join('')}</div>`:`<div class="empty"><strong>Nessun elemento</strong><p>Lo stato è già aggiornato.</p></div>`);
+  document.querySelectorAll('[data-summary-nav]').forEach(button=>button.onclick=()=>{state.ui.activeView=button.dataset.summaryNav;closeDrawer();render();});
 }
 
 function wizardTechnicalDetails(f){
@@ -2683,15 +2907,15 @@ function smartWizardView(){
         <div class="wz-lead">Prima ti mostro il quadro generale. I dettagli tecnici restano nascosti finché non ti servono.</div>
 
         <div class="wz-status-grid">
-          <div class="wz-status"><div class="num">${s.passed}</div><strong>controlli superati</strong></div>
-          <div class="wz-status"><div class="num">${s.problems}</div><strong>problemi da correggere</strong></div>
-          <div class="wz-status"><div class="num">${s.suggestions}</div><strong>suggerimenti</strong></div>
+          <button type="button" class="wz-status clickable-card" data-wizard-summary="passed"><div class="num">${s.passed}</div><strong>controlli superati</strong></button>
+          <button type="button" class="wz-status clickable-card" data-wizard-summary="problems"><div class="num">${s.problems}</div><strong>problemi da correggere</strong></button>
+          <button type="button" class="wz-status clickable-card" data-wizard-summary="suggestions"><div class="num">${s.suggestions}</div><strong>suggerimenti</strong></button>
         </div>
 
         ${required.length?`<div class="wz-note wz-warning"><strong>Da dove iniziamo?</strong><div class="muted">Partiamo automaticamente dal punto più importante: <b>${esc(required[0].title)}</b>.</div></div>`:''}
 
         <div class="wz-primary">${required.length?`<button class="btn primary" id="wizardStartCorrections">Inizia le correzioni</button>`:`<button class="btn primary" id="wizardCompleteNow">Completa controllo</button>`}</div>
-        <div class="wz-secondary">${active.filter(x=>['LOW','INFO'].includes(x.severity)).length?`<button class="btn" data-nav="Search Console">Esamina i suggerimenti facoltativi</button>`:''}<button class="btn" id="wizardPause">Interrompi e riprendi più tardi</button></div>
+        <div class="wz-secondary">${active.filter(x=>['LOW','INFO'].includes(x.severity)).length?`<button class="btn" data-wizard-summary="suggestions">Esamina i suggerimenti facoltativi</button>`:''}<button class="btn" id="wizardPause">Interrompi e riprendi più tardi</button></div>
       </div>
     </div>`;
   }
@@ -2759,12 +2983,12 @@ function smartWizardView(){
       <div class="wz-title wz-result-good">Hai completato il controllo ✓</div>
       <div class="wz-lead">Il wizard ha verificato i controlli disponibili con i dati presenti nell'app.</div>
       <div class="wz-status-grid">
-        <div class="wz-status"><div class="num">${wizardChecks().filter(c=>c.resolved()).length}</div><strong>controlli superati</strong></div>
-        <div class="wz-status"><div class="num">${wizardChecks().filter(c=>!c.resolved()&&['CRITICAL','HIGH','MEDIUM'].includes(c.severity)).length}</div><strong>problemi rimasti</strong></div>
-        <div class="wz-status"><div class="num">${wizardChecks().filter(c=>!c.resolved()&&['LOW','INFO'].includes(c.severity)).length}</div><strong>suggerimenti</strong></div>
+        <button type="button" class="wz-status clickable-card" data-wizard-summary="passed"><div class="num">${wizardChecks().filter(c=>c.resolved()).length}</div><strong>controlli superati</strong></button>
+        <button type="button" class="wz-status clickable-card" data-wizard-summary="problems"><div class="num">${wizardChecks().filter(c=>!c.resolved()&&['CRITICAL','HIGH','MEDIUM'].includes(c.severity)).length}</div><strong>problemi rimasti</strong></button>
+        <button type="button" class="wz-status clickable-card" data-wizard-summary="suggestions"><div class="num">${wizardChecks().filter(c=>!c.resolved()&&['LOW','INFO'].includes(c.severity)).length}</div><strong>suggerimenti</strong></button>
       </div>
       <div class="wz-primary"><button class="btn primary" id="wizardRestart">Nuovo controllo</button></div>
-      <div class="wz-secondary"><button class="btn" data-nav="Dashboard">Torna alla dashboard</button><button class="btn" data-nav="Next Best Actions">Vedi prossime azioni</button></div>
+      <div class="wz-secondary"><button class="btn" data-report-export>Scarica report</button><button class="btn" data-nav="Dashboard">Torna alla dashboard</button><button class="btn" data-nav="Next Best Actions">Vedi prossime azioni</button></div>
     </div>
   </div>`;
 }
@@ -2813,7 +3037,7 @@ function guidedDashboardView(){
   <div style="height:18px"></div>
   <section class="workflow-list" aria-labelledby="workflowTitle"><h3 id="workflowTitle">Il controllo guidato in 5 passaggi</h3>
     ${steps.map((step,i)=>`<div class="workflow-row ${step.done?'done':i===currentIndex?'current':''}"><div class="step-index" aria-hidden="true">${step.done?'✓':i+1}</div><strong>${esc(step.title)}</strong><div class="workflow-desc muted">${esc(step.desc)}</div><div class="state-text">${step.done?'Completato':i===currentIndex?'Prossimo':'Da iniziare'}</div></div>`).join('')}
-  </section>`;
+  </section><div style="height:18px"></div><div class="section-head"><div><strong>Riepilogo del progetto</strong><div class="muted">Scarica problemi, keyword, attività, pagine e opportunità del progetto corrente.</div></div><button class="btn" data-report-export>Scarica report</button></div>`;
 }
 
 function simpleInfo(title,text){
@@ -2922,8 +3146,29 @@ function settingsView(){
  </div></div>`;
 }
 
+async function analyzeProjectForm(){
+  const form=document.getElementById('projectForm');
+  if(!form)return;
+  if(!form.reportValidity())return;
+  const p=currentProject();
+  new FormData(form).forEach((value,key)=>p[key]=value);
+  p.domain=normalizeSiteDomain(p.domain)||String(p.domain||'').trim();
+  if(!normalizeSiteDomain(p.domain)){toast('Inserisci un dominio valido, ad esempio https://esempio.it.');return;}
+  commit('Progetto salvato prima dell’analisi automatica');
+  toast('Analizzo il sito e compilo i campi verificabili…');
+  const result=await analyzeCurrentWebsite({showView:false});
+  runAutomationCycle(false);
+  state.ui.activeView='Project';render();
+  if(result)toast(`Compilazione completata: ${result.signals.length} pagine e ${result.keywordsAdded||0} keyword rilevate.`);
+}
+
 function bindView(){
  document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{state.ui.activeView=b.dataset.nav;render();window.scrollTo({top:0,behavior:'smooth'});});
+ document.querySelectorAll('[data-next-action]').forEach(card=>{const open=()=>activateNextAction(card.dataset.nextAction);card.onclick=open;card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}};});
+ document.querySelectorAll('[data-task-nav]').forEach(button=>button.onclick=()=>{state.ui.activeView=button.dataset.taskNav;render();window.scrollTo({top:0,behavior:'smooth'});});
+ document.querySelectorAll('[data-wizard-tab]').forEach(button=>button.onclick=()=>navigateWizardTab(button.dataset.wizardTab));
+ document.querySelectorAll('[data-wizard-summary]').forEach(button=>button.onclick=()=>openWizardSummary(button.dataset.wizardSummary));
+ document.querySelectorAll('[data-report-export]').forEach(button=>button.onclick=openReportExport);
  document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.add));
  document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.edit,b.dataset.id));
  document.querySelectorAll('[data-create-task-from-action]').forEach(b=>b.onclick=()=>{ 
@@ -2951,6 +3196,7 @@ function bindView(){
    else render();
    };
  }
+ const importInput=document.getElementById('importFile');if(importInput)importInput.onchange=()=>{const list=document.getElementById('selectedImportFiles');const files=[...importInput.files];list.innerHTML=files.map(file=>`<div class="import-file-item"><strong>${esc(file.name)}</strong> · ${Math.max(1,Math.round(file.size/1024))} KB</div>`).join('');};
  const ib=document.getElementById('doImportBtn'); if(ib) ib.onclick=handleImportV2;
  const eb=document.getElementById('exportBackup'); if(eb) eb.onclick=()=>storage.export(state);
  const cs=document.getElementById('createSnapshot'); if(cs) cs.onclick=createSnapshot;
@@ -2974,7 +3220,7 @@ function bindView(){
  const dp=document.getElementById('deleteProjectBtn'); if(dp) dp.onclick=deleteCurrentProject;
  bindTableSearch();
  const wr=document.getElementById('wizardRunAnalysis'); if(wr) wr.onclick=runWizardAnalysis;
- const aaw=document.getElementById('autoAnalyzeWebsite'); if(aaw) aaw.onclick=runWizardAnalysis;
+ const aaw=document.getElementById('autoAnalyzeWebsite'); if(aaw) aaw.onclick=analyzeProjectForm;
  const aap=document.getElementById('autoAnalyzePages'); if(aap) aap.onclick=runWizardAnalysis;
  const aap2=document.getElementById('autoAnalyzePages2'); if(aap2) aap2.onclick=runWizardAnalysis;
  const wsc=document.getElementById('wizardStartCorrections'); if(wsc) wsc.onclick=wizardStartCorrections;
@@ -2998,6 +3244,7 @@ function bindView(){
 
  document.querySelectorAll('[data-help-term]').forEach(b=>b.onclick=()=>{const p=b.parentElement.querySelector('.help-panel');p.hidden=!p.hidden;p.textContent=explainTerm(b.dataset.helpTerm);});
  document.querySelectorAll('[data-task-rule]').forEach(b=>b.onclick=()=>{const rule=systemTaskRules().find(r=>r.key===b.dataset.taskRule);if(rule)toast(rule.explanation);});
+ const syncTasks=document.getElementById('syncTasksNow');if(syncTasks)syncTasks.onclick=()=>{const changed=runAutomationCycle(true);currentProject().tasksLastSyncedAt=now();commit(changed?'Attività sincronizzate':'Controllo attività completato');render();if(!changed)toast('Le attività sono già aggiornate.');};
  const wm=document.getElementById('workflowModeSelect'); if(wm) wm.onchange=()=>{currentProject().workflowMode=wm.value;commit('Modalità workflow aggiornata');syncWorkflowFromGates(true);render();};
 
 
@@ -3172,11 +3419,14 @@ function closeMobile(){
  if(!document.getElementById('drawer').classList.contains('open')){backdrop.classList.remove('show');backdrop.setAttribute('aria-hidden','true');document.body.classList.remove('overlay-open');}
 }
 function newProject(){
- openDrawer('Nuovo progetto',`<form id="newProjectForm"><div class="field"><label for="newProjectName">Nome progetto</label><input id="newProjectName" name="name" value="Nuovo progetto" required autocomplete="off"></div><div class="field" style="margin-top:12px"><label for="newProjectDomain">Dominio del sito <span class="muted">(facoltativo)</span></label><input id="newProjectDomain" name="domain" type="url" placeholder="https://esempio.it"></div><div style="margin-top:18px"><button class="btn primary" type="submit">Crea progetto</button></div></form>`);
- document.getElementById('newProjectForm').onsubmit=e=>{
+ openDrawer('Nuovo progetto',`<form id="newProjectForm"><div class="field"><label for="newProjectName">Nome progetto <span class="muted">(facoltativo)</span></label><input id="newProjectName" name="name" placeholder="Lo rileverò dal sito" autocomplete="off"></div><div class="field" style="margin-top:12px"><label for="newProjectDomain">Dominio del sito</label><input id="newProjectDomain" name="domain" type="url" required placeholder="https://esempio.it" aria-describedby="newProjectHelp"><div class="form-help" id="newProjectHelp">Il dominio verrà collegato solo al nuovo progetto.</div></div><div style="display:flex;gap:10px;align-items:flex-start;margin-top:16px"><input id="newProjectAutoStart" type="checkbox" name="autoStart" value="yes" checked style="width:22px;min-height:22px"><label for="newProjectAutoStart"><strong>Avvia subito il controllo guidato</strong><span class="muted" style="display:block">Rileva pagine, keyword e informazioni principali, compila i campi e aggiorna le attività.</span></label></div><div style="margin-top:18px"><button class="btn primary" type="submit">Crea, collega e analizza</button></div></form>`);
+ document.getElementById('newProjectForm').onsubmit=async e=>{
    e.preventDefault();const data=Object.fromEntries(new FormData(e.target).entries());
-   const p=emptyProject(String(data.name||'').trim()||'Nuovo progetto');p.domain=normalizeSiteDomain(data.domain)||'';
-   state.projects.push(p);state.currentProjectId=p.id;state.ui.activeView='Project';commit('Nuovo progetto creato');closeDrawer();render();toast('Progetto creato');
+   const domain=normalizeSiteDomain(data.domain);
+   if(!domain){toast('Inserisci un dominio valido.');return;}
+   const p=emptyProject(String(data.name||'').trim()||'Nuovo progetto');p.domain=domain;
+   state.projects.push(p);state.currentProjectId=p.id;state.ui.activeView=data.autoStart==='yes'?'Guided Review':'Project';commit('Nuovo progetto creato e dominio collegato');closeDrawer();render();toast('Progetto creato e dominio collegato');
+   if(data.autoStart==='yes')await runWizardAnalysis();
  };
 }
 function quickActions(){
