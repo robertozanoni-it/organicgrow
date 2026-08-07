@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS V5.3: wizard SEO a percorsi, import Search Console corretto, piano operativo visibile e report scaricabile.">
+<meta name="description" content="Organic Growth OS V5.4: card wizard funzionanti, piano modificabile e approvabile, verifiche affidabili e report scaricabile.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
 <title>Organic Growth OS</title>
@@ -104,7 +104,7 @@ textarea{min-height:110px;resize:vertical}.form-grid{display:grid;grid-template-
 @media(max-width:700px){.import-choice{grid-template-columns:1fr}.page-actions{width:100%}.page-actions .btn{flex:1}}
 
 
-/* V5.3 Guided UX + Auto Verification */
+/* V5.4 Guided UX + Auto Verification */
 .guide-shell{max-width:980px;margin:0 auto}
 .guide-progress{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
 .guide-step{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:var(--surface-alt);font-size:13.4px;color:var(--muted)}
@@ -388,7 +388,7 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
 
 
 /* ============================================================
-   NUOVI COMPONENTI V5.3
+   NUOVI COMPONENTI V5.4
    ============================================================ */
 
 /* --- Overlay di analisi (visibile da qualsiasi schermata) --- */
@@ -443,15 +443,16 @@ th{z-index:1}.toolbar input{min-width:min(360px,100%)}
 .is-busy{pointer-events:none;opacity:.65}
 .hint-inline{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--surface-alt);border:1px solid var(--border);color:var(--muted);font-size:16px}
 
-/* V5.3 — piano operativo leggibile e sequenziale */
+/* V5.4 — piano operativo leggibile e sequenziale */
 .task-plan{display:grid;gap:14px}.task-plan-card{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:16px;align-items:start;border:1px solid var(--border);border-radius:16px;background:var(--surface);padding:18px}
 .task-plan-card.current{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 5%,var(--surface))}.task-order{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--surface-alt);font-weight:900}.task-plan-card.current .task-order{background:var(--accent);color:var(--on-accent)}
 .task-plan-card h4{font-size:19px;margin:0 0 6px}.task-why{color:var(--muted);margin:0 0 10px}.task-steps{margin:8px 0 0;padding-left:22px}.task-steps li{margin:5px 0}.task-check{margin-top:10px;padding:10px 12px;border-left:3px solid var(--success);background:var(--surface-alt);border-radius:8px}.completed-history summary{font-weight:800;cursor:pointer;padding:6px 0}.completed-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border)}
 @media(max-width:760px){.task-plan-card{grid-template-columns:44px minmax(0,1fr)}.task-plan-card>.task-actions{grid-column:1/-1}.task-actions .btn{width:100%}.completed-row{display:block}}
 
-/* V5.3 — Wizard a percorsi */
+/* V5.4 — Wizard a percorsi */
 .journey-shell{max-width:1180px;margin:0 auto}.journey-hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;margin-bottom:24px}.journey-hero h3{font-size:34px;line-height:1.15;margin:0 0 8px}.journey-hero p{max-width:760px;margin:0;color:var(--muted)}
-.journey-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.journey-card{position:relative;display:grid;grid-template-columns:56px minmax(0,1fr);gap:16px;border:1px solid var(--border);border-radius:20px;background:var(--surface);padding:22px;text-align:left;color:inherit;box-shadow:var(--shadow);min-height:230px}.journey-card:hover{border-color:var(--accent);transform:translateY(-1px)}.journey-card.recommended{border-width:2px;border-color:color-mix(in srgb,var(--accent) 55%,var(--border))}.journey-card.completed{opacity:.88}.journey-icon{width:52px;height:52px;border-radius:15px;background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent);display:grid;place-items:center}.journey-icon svg{width:27px;height:27px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}.journey-card h4{font-size:21px;line-height:1.25;margin:2px 0 8px}.journey-card p{color:var(--muted);margin:0 0 16px}.journey-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}.journey-card-body{display:flex;flex-direction:column;min-width:0}.journey-card-action{margin-top:18px;display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--accent);font-weight:850}.journey-status{font-weight:800}.journey-status.todo{color:var(--muted)}.journey-status.progress,.journey-status.verify{color:var(--warning)}.journey-status.done{color:var(--success)}
+.journey-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.journey-card{position:relative;display:grid;grid-template-columns:56px minmax(0,1fr);gap:16px;width:100%;border:1px solid var(--border);border-radius:20px;background:var(--surface);padding:22px;text-align:left;color:inherit;font:inherit;box-shadow:var(--shadow);min-height:230px;cursor:pointer;transition:border-color .16s ease,transform .16s ease,box-shadow .16s ease}.journey-card:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-lg)}.journey-card:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.journey-card.recommended{border-width:2px;border-color:color-mix(in srgb,var(--accent) 55%,var(--border))}.journey-card.completed{opacity:.88}.journey-icon{width:52px;height:52px;border-radius:15px;background:color-mix(in srgb,var(--accent) 12%,var(--surface));color:var(--accent);display:grid;place-items:center}.journey-icon svg{width:27px;height:27px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}.journey-card h4{font-size:21px;line-height:1.25;margin:2px 0 8px}.journey-card p{color:var(--muted);margin:0 0 16px}.journey-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}.journey-card-body{display:flex;flex-direction:column;min-width:0}.journey-card-action{margin-top:18px;display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--accent);font-weight:850}.journey-card-action .btn{pointer-events:none}.journey-status{font-weight:800}.journey-status.todo{color:var(--muted)}.journey-status.progress,.journey-status.verify{color:var(--warning)}.journey-status.done{color:var(--success)}
+.journey-card-heading{display:block;font-size:21px;font-weight:800;line-height:1.25;margin:2px 0 8px}.journey-card-description{display:block;color:var(--muted);margin:0 0 16px}.plan-approval{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.plan-state{display:inline-flex;align-items:center;gap:7px;font-weight:800}.plan-state::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--muted)}.plan-state.approved::before{background:var(--info)}.plan-state.done::before{background:var(--warning)}.plan-state.verified::before{background:var(--success)}
 .journey-top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}.journey-back{border:0;background:transparent;color:var(--accent);padding:8px 0;font-weight:800}.journey-progress{display:grid;grid-template-columns:repeat(var(--journey-steps),minmax(70px,1fr));gap:8px;margin-bottom:20px;overflow:auto}.journey-progress-item{min-width:78px;padding:10px 8px;border:1px solid var(--border);border-radius:11px;background:var(--surface-alt);color:var(--muted);text-align:center;font-size:15px;font-weight:750}.journey-progress-item.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.journey-progress-item.done{color:var(--success);border-color:color-mix(in srgb,var(--success) 45%,var(--border))}
 .journey-step-card{border:1px solid var(--border);border-radius:22px;background:var(--surface);padding:28px;box-shadow:var(--shadow)}.journey-step-number{color:var(--accent);font-weight:850;margin-bottom:8px}.journey-step-card h3{font-size:30px;line-height:1.2;margin:0 0 10px}.journey-step-lead{font-size:19px;color:var(--muted);max-width:850px;margin:0}.journey-explain{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}.journey-explain>div{padding:16px;border:1px solid var(--border);border-radius:14px;background:var(--surface-alt)}.journey-explain strong{display:block;margin-bottom:5px}.journey-main-action{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}.journey-main-action .btn.primary{min-width:220px}.journey-footer-actions{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}.journey-requirement{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-weight:800}.journey-requirement.required{color:var(--danger)}.journey-requirement.recommended{color:var(--warning)}.journey-requirement.optional{color:var(--muted)}
 .journey-data-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:20px}.journey-data-card{border:1px solid var(--border);border-radius:15px;background:var(--surface-alt);padding:16px}.journey-data-card .value{font-size:28px;font-weight:900;margin-bottom:4px}.journey-problem-list{display:grid;gap:12px;margin-top:20px}.journey-problem{border:1px solid var(--border);border-radius:15px;padding:16px;background:var(--surface-alt)}.journey-problem h4{font-size:18px;margin:0 0 6px}.journey-problem p{margin:5px 0;color:var(--muted)}.journey-problem-url{overflow-wrap:anywhere;color:var(--accent);font-weight:700}.journey-empty{margin-top:20px;border:1px dashed var(--border);border-radius:15px;padding:20px;background:var(--surface-alt)}
@@ -497,7 +498,7 @@ html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,v
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.3</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.4</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -855,7 +856,7 @@ const statusLine=(label,val)=>`<div style="display:flex;justify-content:space-be
 function genericTableView(cfg){
   const rows=byProject(state[cfg.key]);
   return `<div class="section-head"><div><h3>${cfg.title}</h3><div class="muted">${cfg.help||''}</div></div><button class="btn primary" data-add="${cfg.key}">+ Aggiungi</button></div>
-  <div class="toolbar"><input data-search-table="${cfg.key}" placeholder="Cerca"><span class="muted">${rows.length} record</span></div>
+  <div class="toolbar"><input data-search-table="${cfg.key}" aria-label="Cerca in ${esc(cfg.title)}" placeholder="Cerca"><span class="muted">${rows.length} record</span></div>
   ${rows.length?`<div class="table-wrap" tabindex="0" role="region" aria-label="Tabella ${esc(cfg.title)}"><table><thead><tr>${cfg.cols.map(c=>`<th scope="col">${c.label}</th>`).join('')}<th scope="col">Azioni</th></tr></thead>
     <tbody>${rows.map(r=>`<tr>${cfg.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td><button class="btn" data-edit="${cfg.key}" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div>`:
     `<div class="card empty"><strong>Nessun dato</strong><p>${cfg.empty||'Aggiungi il primo record per iniziare.'}</p><button class="btn primary" data-add="${cfg.key}">Aggiungi</button></div>`}`;
@@ -910,23 +911,72 @@ function field(name,label,val,full=false){
 }
 function selectField(name,label,opts,val){return `<div class="field"><label for="${name}">${label}</label><select id="${name}" name="${name}">${opts.map(o=>`<option ${o===val?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`}
 
+function normalizeTaskSteps(value){return Array.isArray(value)?value.filter(Boolean):String(value||'').split(/\r?\n/).map(step=>step.trim()).filter(Boolean);}
+function planStatusInfo(status){
+  const key=String(status||'PROPOSED').toUpperCase();
+  const map={PROPOSED:['Da approvare','proposed'],TODO:['Da approvare','proposed'],APPROVED:['Approvata','approved'],'IN PROGRESS':['In corso','approved'],BLOCKED:['Bloccata','done'],DONE:['Da verificare','done'],VERIFIED:['Verificata','verified'],CLOSED:['Chiusa','verified']};
+  const value=map[key]||[key.toLowerCase().replace(/\b\w/g,char=>char.toUpperCase()),'proposed'];return {key,label:value[0],className:value[1]};
+}
 function operationalPlanItems(){
   const checks=wizardChecks(),tasks=byProject(state.tasks),represented=new Set(tasks.map(task=>task.wizardFindingId).filter(Boolean));
   const taskItems=tasks.filter(task=>!['VERIFIED','CLOSED'].includes(String(task.status||'').toUpperCase())).map(task=>{
-    const finding=checks.find(check=>check.id===task.wizardFindingId),rawSteps=finding?.steps||task.steps||[],steps=Array.isArray(rawSteps)?rawSteps:String(rawSteps||'').split(/\r?\n/).map(step=>step.trim()).filter(Boolean);
-    return {id:task.id,kind:'task',title:task.title||'Attività',priority:task.priority||'P3',status:task.status||'TODO',why:finding?.why||task.why||task.description||'Attività presente nel piano.',target:task.targetView||finding?.target||'Tasks',url:task.linkedUrl||task.url||'',steps,verification:finding?.simple||task.verification||'Controlla il risultato prima di chiudere l’attività.'};
+    const finding=checks.find(check=>check.id===task.wizardFindingId),steps=normalizeTaskSteps(finding?.steps||task.steps);
+    return {id:task.id,kind:'task',title:task.title||'Attività',priority:task.priority||'P3',status:task.status||'PROPOSED',why:finding?.why||task.why||task.description||'Attività presente nel piano.',target:task.targetView||finding?.target||'Tasks',url:task.linkedUrl||task.url||'',steps,verification:finding?.simple||task.acceptanceCriteria||task.verification||'Controlla il risultato prima di chiudere l’attività.',wizardFindingId:task.wizardFindingId||'',verificationEvidence:task.verificationEvidence||''};
   });
-  const checkItems=checks.filter(check=>!check.resolved()&&!represented.has(check.id)).map(check=>({id:check.id,kind:'check',title:check.title,priority:check.severity==='CRITICAL'?'P1':check.severity==='HIGH'?'P1':check.severity==='MEDIUM'?'P2':'P3',status:'TODO',why:check.why,target:check.target||'Guided Review',url:'',steps:check.steps||[],verification:check.simple||'Ripeti il controllo.'}));
-  const weight={P1:1,P2:2,P3:3,P4:4};
-  return [...taskItems,...checkItems].sort((a,b)=>(weight[a.priority]||9)-(weight[b.priority]||9)||a.title.localeCompare(b.title));
+  const checkItems=checks.filter(check=>!check.resolved()&&!represented.has(check.id)).map(check=>({id:check.id,kind:'check',title:check.title,priority:check.severity==='CRITICAL'||check.severity==='HIGH'?'P1':check.severity==='MEDIUM'?'P2':'P3',status:'PROPOSED',why:check.why,target:check.target||'Guided Review',url:'',steps:normalizeTaskSteps(check.steps),verification:check.simple||'Ripeti il controllo.',wizardFindingId:check.id,verificationEvidence:''}));
+  const weight={P1:1,P2:2,P3:3,P4:4},statusWeight={DONE:1,APPROVED:2,'IN PROGRESS':2,PROPOSED:3,TODO:3,BLOCKED:4};
+  return [...taskItems,...checkItems].sort((a,b)=>(weight[a.priority]||9)-(weight[b.priority]||9)||(statusWeight[String(a.status).toUpperCase()]||8)-(statusWeight[String(b.status).toUpperCase()]||8)||a.title.localeCompare(b.title));
+}
+function operationalPlanActions(item){
+  const status=planStatusInfo(item.status),identity=`data-plan-id="${esc(item.id)}" data-plan-kind="${esc(item.kind)}"`;
+  if(status.key==='DONE')return `<button class="btn primary" data-plan-verify ${identity}>Verifica risultato</button><button class="btn" data-plan-edit ${identity}>Modifica</button>`;
+  if(['APPROVED','IN PROGRESS','BLOCKED'].includes(status.key))return `<button class="btn primary" data-nav="${esc(item.target)}">Apri istruzioni</button><button class="btn" data-plan-done ${identity}>Segna eseguita</button><button class="btn" data-plan-edit ${identity}>Modifica</button>`;
+  return `<button class="btn primary" data-plan-approve ${identity}>Approva attività</button><button class="btn" data-plan-edit ${identity}>Modifica prima di approvare</button>`;
 }
 function operationalPlanView(){
-  const items=operationalPlanItems(),done=byProject(state.tasks).filter(task=>['DONE','VERIFIED','CLOSED'].includes(String(task.status||'').toUpperCase())).length,first=items[0];
-  return `${pageIntro('Piano operativo','Qui puoi consultare le modifiche consigliate direttamente nell’app, senza dover prima scaricare il report.',[`${items.length} attività aperte`,`${done} completate o verificate`])}
-  <section class="dashboard-command" aria-labelledby="planNextTitle"><div><div class="dashboard-label">Prossima azione consigliata</div><h3 id="planNextTitle">${esc(first?.title||'Il piano è aggiornato')}</h3><p>${esc(first?.why||'Non risultano altre modifiche prioritarie con i dati disponibili.')}</p></div>${first?`<button class="btn primary" data-nav="${esc(first.target)}">Inizia dalla priorità 1</button>`:'<button class="btn primary" data-nav="Dashboard">Torna ai wizard</button>'}</section>
+  const items=operationalPlanItems(),verified=byProject(state.tasks).filter(task=>['VERIFIED','CLOSED'].includes(String(task.status||'').toUpperCase())),first=items[0],firstStatus=first?planStatusInfo(first.status):null;
+  const firstAction=first?(firstStatus.key==='DONE'?`<button class="btn primary" data-plan-verify data-plan-id="${esc(first.id)}" data-plan-kind="${esc(first.kind)}">Verifica la priorità 1</button>`:['APPROVED','IN PROGRESS','BLOCKED'].includes(firstStatus.key)?`<button class="btn primary" data-nav="${esc(first.target)}">Continua la priorità 1</button>`:`<button class="btn primary" data-plan-approve data-plan-id="${esc(first.id)}" data-plan-kind="${esc(first.kind)}">Approva la priorità 1</button>`):'<button class="btn primary" data-nav="Dashboard">Torna ai wizard</button>';
+  return `${pageIntro('Piano operativo','Consulta, modifica, approva e verifica ogni attività direttamente nell’app.',[`${items.length} attività aperte`,`${verified.length} verificate`])}
+  <section class="dashboard-command" aria-labelledby="planNextTitle"><div><div class="dashboard-label">Prossima azione consigliata</div><h3 id="planNextTitle">${esc(first?.title||'Il piano è aggiornato')}</h3><p>${esc(first?.why||'Non risultano altre modifiche prioritarie con i dati disponibili.')}</p></div>${firstAction}</section>
   <div style="height:18px"></div>
-  <div class="section-head"><div><h3>Modifiche consigliate in ordine di priorità</h3><div class="muted">Bloccanti e priorità alte vengono mostrate per prime. Ogni attività spiega motivo, passaggi e verifica finale.</div></div><div class="page-actions"><button class="btn" id="refreshOperationalPlan">Aggiorna piano</button><button class="btn" data-report-export>Scarica report</button></div></div>
-  <div class="journey-problem-list">${items.length?items.map((item,index)=>`<article class="journey-problem"><div class="section-head"><div><div class="badges"><span class="badge ${item.priority==='P1'?'danger':item.priority==='P2'?'warning':'info'}">${esc(item.priority)}</span><span class="badge">${esc(item.status)}</span></div><h4>${index+1}. ${esc(item.title)}</h4></div><span class="badge">${esc(navLabel(item.target))}</span></div><p><strong>Perché è importante:</strong> ${esc(item.why)}</p>${item.url?`<div class="journey-problem-url">${esc(item.url)}</div>`:''}${item.steps.length?`<ol class="task-steps">${item.steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol>`:''}<div class="callout"><strong>Come verifichiamo</strong><div class="muted">${esc(item.verification)}</div></div><div class="page-actions" style="margin-top:12px"><button class="btn primary" data-nav="${esc(item.target)}">Apri e completa</button>${item.kind==='task'?`<button class="btn" data-edit="tasks" data-id="${esc(item.id)}">Dettagli attività</button>`:''}</div></article>`).join(''):'<div class="journey-empty"><strong>Nessuna modifica prioritaria aperta</strong><p class="muted">Tutti i controlli disponibili risultano completati oppure non richiedono interventi.</p><button class="btn primary" data-nav="Dashboard">Torna ai wizard</button></div>'}</div>`;
+  <div class="section-head"><div><h3>Modifiche consigliate in ordine di priorità</h3><div class="muted">Approva prima il piano, esegui la modifica e verifica il risultato prima di chiuderla.</div></div><div class="page-actions"><button class="btn" id="refreshOperationalPlan">Aggiorna piano</button><button class="btn" data-report-export>Scarica report</button></div></div>
+  <div class="journey-problem-list">${items.length?items.map((item,index)=>{const status=planStatusInfo(item.status);return `<article class="journey-problem" data-plan-card="${esc(item.id)}"><div class="section-head"><div><div class="badges"><span class="badge ${item.priority==='P1'?'danger':item.priority==='P2'?'warning':'info'}">${esc(item.priority)}</span><span class="plan-state ${status.className}">${esc(status.label)}</span></div><h4>${index+1}. ${esc(item.title)}</h4></div><span class="badge">${esc(navLabel(item.target))}</span></div><p><strong>Perché è importante:</strong> ${esc(item.why)}</p>${item.url?`<div class="journey-problem-url">${esc(item.url)}</div>`:''}${item.steps.length?`<details ${index===0?'open':''}><summary>Passaggi da seguire</summary><ol class="task-steps">${item.steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol></details>`:''}<div class="callout"><strong>Come verifichiamo</strong><div class="muted">${esc(item.verification)}</div>${item.verificationEvidence?`<div style="margin-top:8px"><strong>Prova registrata:</strong> ${esc(item.verificationEvidence)}</div>`:''}</div><div class="plan-approval">${operationalPlanActions(item)}</div></article>`;}).join(''):'<div class="journey-empty"><strong>Nessuna modifica prioritaria aperta</strong><p class="muted">Tutti i controlli disponibili risultano completati oppure non richiedono interventi.</p><button class="btn primary" data-nav="Dashboard">Torna ai wizard</button></div>'}</div>
+  ${verified.length?`<div style="height:18px"></div><details class="card completed-history"><summary>Attività verificate (${verified.length})</summary>${verified.map(task=>`<div class="completed-row"><div><strong>${esc(task.title||'Attività')}</strong><div class="muted">${esc(task.verifiedAt?`Verificata il ${fmtDate(task.verifiedAt)}`:'Verificata')}</div></div><button class="btn" data-plan-edit data-plan-id="${esc(task.id)}" data-plan-kind="task">Rivedi</button></div>`).join('')}</details>`:''}`;
+}
+function ensureOperationalPlanTask(id,kind){
+  if(kind==='task')return byProject(state.tasks).find(task=>task.id===id)||null;
+  const finding=wizardChecks().find(check=>check.id===id);if(!finding)return null;
+  let task=byProject(state.tasks).find(item=>item.wizardFindingId===finding.id);
+  if(task)return task;
+  task={id:uid('task'),projectId:state.currentProjectId,autoKey:`wizard:${finding.id}`,wizardFindingId:finding.id,title:finding.title,priority:finding.severity==='CRITICAL'||finding.severity==='HIGH'?'P1':finding.severity==='MEDIUM'?'P2':'P3',status:'PROPOSED',description:finding.simple,why:finding.why,steps:[...(finding.steps||[])],acceptanceCriteria:finding.simple,targetView:finding.target||'Guided Review',systemGenerated:true,verificationRule:finding.id,createdAt:now(),updatedAt:now()};
+  state.tasks.push(task);return task;
+}
+function approveOperationalPlanItem(id,kind){
+  const task=ensureOperationalPlanTask(id,kind);if(!task){toast('Attività non trovata. Aggiorna il piano e riprova.');return;}
+  task.status='APPROVED';task.approvedAt=now();task.approvedByUser=true;task.updatedAt=now();commit(`Attività approvata: ${task.title}`);toast('Attività approvata. Ora puoi eseguirla seguendo i passaggi.');render();
+}
+function editOperationalPlanItem(id,kind){
+  const task=ensureOperationalPlanTask(id,kind);if(!task){toast('Attività non trovata.');return;}
+  if(kind!=='task')commit(`Attività creata dal piano: ${task.title}`);
+  openRecordDrawer('tasks',task.id);
+}
+function completeOperationalPlanItem(id,kind){
+  const task=ensureOperationalPlanTask(id,kind);if(!task){toast('Attività non trovata.');return;}
+  if(!task.approvedByUser&&!['APPROVED','IN PROGRESS'].includes(String(task.status||'').toUpperCase())){toast('Approva prima l’attività, così il piano registra la decisione.');return;}
+  task.status='DONE';task.completedAt=now();task.updatedAt=now();commit(`Attività eseguita, da verificare: ${task.title}`);toast('Attività registrata come eseguita. Ora verifica il risultato.');render();
+}
+function openManualPlanVerification(task){
+  openDrawer('Verifica e approva il risultato',`<form id="planVerificationForm"><div class="callout"><strong>Cosa stai verificando</strong><p class="muted">${esc(task.acceptanceCriteria||task.verification||'Controlla che la modifica produca il risultato atteso.')}</p></div><div class="field" style="margin-top:14px"><label for="planVerificationEvidence">Prova o controllo eseguito</label><textarea id="planVerificationEvidence" name="evidence" required placeholder="Esempio: ho riaperto la pagina, controllato il title e verificato che il valore corretto sia visibile.">${esc(task.verificationEvidence||'')}</textarea><div class="form-help">Descrivi ciò che hai controllato. Non dichiareremo il successo senza questa conferma.</div></div><label style="display:flex;gap:10px;align-items:flex-start;margin-top:14px"><input type="checkbox" name="confirmed" value="yes" required style="width:22px;min-height:22px"><span><strong>Confermo che il risultato è corretto</strong><span class="muted" style="display:block">Questa approvazione verrà registrata nel piano.</span></span></label><div style="margin-top:18px"><button class="btn primary" type="submit">Approva verifica</button></div></form>`);
+  document.getElementById('planVerificationForm').onsubmit=event=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.target).entries());if(data.confirmed!=='yes'||!String(data.evidence||'').trim()){toast('Inserisci la prova e conferma il risultato.');return;}task.status='VERIFIED';task.verificationEvidence=String(data.evidence).trim();task.verifiedAt=now();task.verifiedByUser=true;task.updatedAt=now();commit(`Risultato verificato e approvato: ${task.title}`);closeDrawer();render();toast('Risultato verificato e approvato. Il piano è stato aggiornato.');};
+}
+function verifyOperationalPlanItem(id,kind){
+  const task=ensureOperationalPlanTask(id,kind);if(!task){toast('Attività non trovata.');return;}
+  const finding=wizardChecks().find(check=>check.id===task.wizardFindingId);
+  if(finding){
+    if(!finding.resolved()){task.status='DONE';task.updatedAt=now();commit(`Verifica non superata: ${task.title}`);toast('La verifica rileva ancora il problema. L’attività resta “Da verificare”.');render();return;}
+    task.status='VERIFIED';task.verifiedAt=now();task.verificationEvidence=`Verifica automatica superata: ${finding.simple}`;task.updatedAt=now();commit(`Risultato verificato automaticamente: ${task.title}`);toast('Verifica automatica superata. Attività approvata e chiusa.');render();return;
+  }
+  openManualPlanVerification(task);
 }
 
 function nextActionsView(){
@@ -1719,7 +1769,7 @@ function runReleaseCheck(){
   add('Opportunity engine',typeof detectOpportunities==='function','Motore disponibile');
   add('Snapshot engine',typeof createSnapshot==='function','Motore disponibile');
   add('No false perfect score',scores().organic!==100 || [state.pages,state.keywords,state.links].some(a=>byProject(a).length>0),'Score non perfetto senza dati');
-  const knownViews=new Set(nav.flatMap(group=>group.items));
+  const knownViews=new Set([...Object.values(navGroups).flat(),'Operational Plan']);
   add('Active navigation valid',knownViews.has(state.ui.activeView),`Vista attiva: ${state.ui.activeView}`);
   const normalizedDomain=normalizeSiteDomain(p?.domain);
   add('Project domain',!p?.domain||Boolean(normalizedDomain),p?.domain?'Dominio valido e normalizzabile':'Dominio non ancora configurato');
@@ -2118,11 +2168,11 @@ function explainTerm(term){
 function taskManagementViewV2(){
   runAutomationCycle(false);
   const tasks=byProject(state.tasks),checks=wizardChecks(),weight={P1:1,P2:2,P3:3};
-  const active=tasks.filter(t=>!['DONE','VERIFIED','CLOSED'].includes(String(t.status||'TODO').toUpperCase())).sort((a,b)=>(weight[a.priority]||4)-(weight[b.priority]||4)||(a.createdAt||'').localeCompare(b.createdAt||''));
-  const completed=tasks.filter(t=>['DONE','VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase())).sort((a,b)=>(b.verifiedAt||b.completedAt||b.updatedAt||'').localeCompare(a.verifiedAt||a.completedAt||a.updatedAt||''));
+  const active=tasks.filter(t=>!['VERIFIED','CLOSED'].includes(String(t.status||'TODO').toUpperCase())).sort((a,b)=>(weight[a.priority]||4)-(weight[b.priority]||4)||(a.createdAt||'').localeCompare(b.createdAt||''));
+  const completed=tasks.filter(t=>['VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase())).sort((a,b)=>(b.verifiedAt||b.completedAt||b.updatedAt||'').localeCompare(a.verifiedAt||a.completedAt||a.updatedAt||''));
   const taskCard=(t,index)=>{
-    const finding=checks.find(f=>f.id===t.wizardFindingId),target=taskResolutionTarget(t),steps=finding?.steps||t.steps||[],why=finding?.why||t.why||t.description||'Attività aggiunta al piano operativo.';
-    return `<article class="task-plan-card ${index===0?'current':''}"><div class="task-order">${index+1}</div><div><div class="badges"><span class="badge ${t.priority==='P1'?'danger':t.priority==='P2'?'warning':''}">${esc(t.priority||'P3')}</span>${index===0?'<span class="badge info">DA FARE ADESSO</span>':'<span class="badge">PASSO SUCCESSIVO</span>'}</div><h4>${esc(t.title||'Attività')}</h4><p class="task-why">${esc(why)}</p>${steps.length?`<details ${index===0?'open':''}><summary>Passaggi da seguire</summary><ol class="task-steps">${steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol></details>`:''}<div class="task-check"><strong>Quando è completata</strong><div>${esc(t.acceptanceCriteria||finding?.simple||'Quando il risultato è stato verificato e lo stato passa a Completata.')}</div></div></div><div class="task-actions"><button class="btn primary" data-task-nav="${esc(t.targetView||target.view)}">${esc(index===0?'Inizia questo passo':target.label)}</button><button class="btn" data-edit="tasks" data-id="${t.id}">Dettagli</button></div></article>`;
+    const finding=checks.find(f=>f.id===t.wizardFindingId),target=taskResolutionTarget(t),steps=normalizeTaskSteps(finding?.steps||t.steps),why=finding?.why||t.why||t.description||'Attività aggiunta al piano operativo.',status=planStatusInfo(t.status),planItem={id:t.id,kind:'task',target:t.targetView||target.view,status:t.status};
+    return `<article class="task-plan-card ${index===0?'current':''}"><div class="task-order">${index+1}</div><div><div class="badges"><span class="badge ${t.priority==='P1'?'danger':t.priority==='P2'?'warning':''}">${esc(t.priority||'P3')}</span><span class="plan-state ${status.className}">${esc(status.label)}</span>${index===0?'<span class="badge info">DA FARE ADESSO</span>':'<span class="badge">PASSO SUCCESSIVO</span>'}</div><h4>${esc(t.title||'Attività')}</h4><p class="task-why">${esc(why)}</p>${steps.length?`<details ${index===0?'open':''}><summary>Passaggi da seguire</summary><ol class="task-steps">${steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol></details>`:''}<div class="task-check"><strong>Quando è completata</strong><div>${esc(t.acceptanceCriteria||finding?.simple||'Quando il risultato è stato verificato e lo stato passa a Completata.')}</div></div></div><div class="task-actions">${operationalPlanActions(planItem)}</div></article>`;
   };
   const completedTitle=t=>{const rule=systemTaskRules().find(r=>r.match(t));return rule?`Completato: ${rule.label}`:`Completato: ${t.title||'Attività'}`;};
   return `${pageIntro('Piano operativo','Una sola priorità alla volta. Completa il primo passo, verifica il risultato e il sistema porterà in cima l’attività successiva.',[`${active.length} da fare`,`${completed.length} completate`])}
@@ -2441,7 +2491,7 @@ function absoluteSiteUrl(value){
 }
 
 /* ============================================================
-   MOTORE DI LETTURA DEL SITO (V5.3)
+   MOTORE DI LETTURA DEL SITO (V5.4)
    Il browser blocca le richieste cross-origin (CORS): senza una
    catena di ripieghi la lettura automatica fallisce quasi sempre.
    Qui proviamo: accesso diretto -> piu' servizi pubblici di sola
@@ -2575,7 +2625,7 @@ function pageSignalsFromHtml(html,url){
 }
 
 /* ============================================================
-   COMPILAZIONE AUTOMATICA DEI CAMPI PROGETTO (V5.3)
+   COMPILAZIONE AUTOMATICA DEI CAMPI PROGETTO (V5.4)
    Regola: si compilano SOLO i campi vuoti, mai si sovrascrive
    quello che ha scritto la persona. Ogni campo compilato viene
    marcato con la sua origine:
@@ -2991,7 +3041,7 @@ function updateScanProgress(key,status,text){
 }
 
 /* ============================================================
-   ANALISI DEL SITO (V5.3)
+   ANALISI DEL SITO (V5.4)
    - progresso sempre visibile (overlay), da qualunque schermata
    - annullabile
    - non parte due volte in parallelo
@@ -3775,7 +3825,7 @@ function legacySmartWizardView(){
 }
 
 /* ============================================================
-   WIZARD A PERCORSI — V5.3
+   WIZARD A PERCORSI — V5.4
    Ogni percorso mostra un solo obiettivo per schermata e salva
    automaticamente avanzamento, salti facoltativi e verifiche.
    ============================================================ */
@@ -3897,11 +3947,15 @@ function guidedJourneyDashboard(){
   const next=journeys.find(journey=>journey.status.className!=='done');
   return `<div class="journey-shell"><div class="journey-hero"><div><h3>Cosa vuoi fare oggi?</h3><p>Scegli un percorso. Ti mostrerò una sola azione alla volta, verificherò il risultato e indicherò automaticamente il passo successivo.</p></div>${next?`<button class="btn primary" data-path-start="${next.id}">Continua dalla priorità consigliata</button>`:'<button class="btn" data-report-export>Scarica il report finale</button>'}</div><div class="journey-grid">${journeys.map(journey=>{
     const status=journey.status,cta=status.className==='done'?'Rivedi il percorso':status.className==='todo'?'Inizia il percorso':`Riprendi dal passo ${status.current+1}`;
-    return `<article class="journey-card ${journey===next?'recommended':''} ${status.className==='done'?'completed':''}"><div class="journey-icon">${guidedJourneyIcon(journey.icon)}</div><div class="journey-card-body"><div class="badges"><span class="badge ${journey.priority==='Alta'?'danger':journey.priority==='Consigliata'?'info':''}">${esc(journey.priority)}</span></div><h4>${esc(journey.title)}</h4><p>${esc(journey.description)}</p><div class="journey-meta"><span>${journey.steps.length} step</span><span>·</span><span>${esc(journey.duration)}</span></div><div class="journey-card-action"><span class="journey-status ${status.className}">${status.label}</span><button class="btn ${journey===next?'primary':''}" data-path-start="${journey.id}">${esc(cta)}</button></div></div></article>`;
+    return `<button type="button" class="journey-card ${journey===next?'recommended':''} ${status.className==='done'?'completed':''}" data-path-start="${journey.id}" aria-label="${esc(cta)}: ${esc(journey.title)}"><span class="journey-icon">${guidedJourneyIcon(journey.icon)}</span><span class="journey-card-body"><span class="badges"><span class="badge ${journey.priority==='Alta'?'danger':journey.priority==='Consigliata'?'info':''}">${esc(journey.priority)}</span></span><span role="heading" aria-level="4" class="journey-card-heading">${esc(journey.title)}</span><span class="journey-card-description">${esc(journey.description)}</span><span class="journey-meta"><span>${journey.steps.length} step</span><span>·</span><span>${esc(journey.duration)}</span></span><span class="journey-card-action"><span class="journey-status ${status.className}">${status.label}</span><span class="btn ${journey===next?'primary':''}">${esc(cta)}</span></span></span></button>`;
   }).join('')}</div></div>`;
 }
 function guidedPathExtra(journey,step,index){
   const pages=byProject(state.pages),issues=openPriorityIssues(),insights=keywordJourneyInsights(),plan=pageImprovementPlan();
+  if(index===journey.steps.length-1&&step.done()){
+    const priorities=operationalPlanItems().slice(0,3);
+    return `<div class="callout"><strong>Piano di lavoro aggiornato</strong><p class="muted">Il percorso è completato. Queste sono le prossime priorità da approvare, modificare ed eseguire.</p>${priorities.length?`<ol class="task-steps">${priorities.map(item=>`<li><strong>${esc(item.priority)} · ${esc(item.title)}</strong> — ${esc(planStatusInfo(item.status).label)}</li>`).join('')}</ol>`:'<div class="good-box"><strong>Nessuna attività prioritaria aperta.</strong></div>'}<button class="btn primary" data-nav="Operational Plan">Apri il piano completo</button></div>`;
+  }
   if(journey.id==='setup'&&step.id==='confirm')return `<div class="journey-data-grid"><div class="journey-data-card"><div class="value">${pages.length}</div>Pagine del sito</div><div class="journey-data-card"><div class="value">${byProject(state.keywords).length}</div>Keyword</div><div class="journey-data-card"><div class="value">${byProject(state.gscRecords).length}</div>Record Search Console</div></div>`;
   if(journey.id==='technical'&&step.id==='summary'){
     const all=byProject(state.issues),healthy=Math.max(0,pages.length-new Set(all.map(issue=>issue.url).filter(Boolean)).size);
@@ -3917,7 +3971,7 @@ function guidedPathExtra(journey,step,index){
   if(journey.id==='tasks'&&['priority','do-task','verify-task','next-task'].includes(step.id)){
     const record=guidedPathRecord('tasks'),pending=byProject(state.tasks).find(task=>task.id===record.pendingTaskId),task=pending||activeOpenTasks().sort((a,b)=>String(a.priority||'P3').localeCompare(String(b.priority||'P3')))[0];
     if(!task)return '<div class="journey-empty"><strong>Nessuna task aperta</strong><p class="muted">Il piano è aggiornato con i dati disponibili.</p></div>';
-    const finding=wizardChecks().find(item=>item.id===task.wizardFindingId),steps=finding?.steps||task.steps||[];
+    const finding=wizardChecks().find(item=>item.id===task.wizardFindingId),steps=normalizeTaskSteps(finding?.steps||task.steps);
     return `<article class="journey-problem"><div class="badges"><span class="badge ${task.priority==='P1'?'danger':'warning'}">${esc(task.priority||'P3')}</span><span class="badge">${esc(task.status||'TODO')}</span></div><h4>${esc(task.title||'Attività')}</h4><p><strong>Perché:</strong> ${esc(finding?.why||task.why||task.description||'Attività presente nel piano operativo.')}</p>${task.targetView?`<p><strong>Pagina o modulo:</strong> ${esc(navLabel(task.targetView))}</p>`:''}${steps.length?`<ol class="task-steps">${steps.map(item=>`<li>${esc(item)}</li>`).join('')}</ol>`:''}${step.id==='do-task'&&task.targetView?`<button class="btn" data-nav="${esc(task.targetView)}">Apri il modulo collegato</button>`:''}</article>`;
   }
   if(journey.id==='report')return `<div class="journey-data-grid"><div class="journey-data-card"><div class="value">${pages.length}</div>Pagine analizzate</div><div class="journey-data-card"><div class="value">${byProject(state.tasks).filter(task=>String(task.status||'').toUpperCase()==='VERIFIED').length}</div>Task verificate</div><div class="journey-data-card"><div class="value">${activeOpenTasks().length}</div>Task aperte</div></div>`;
@@ -3939,13 +3993,14 @@ function smartWizardView(){
 
 function openGuidedJourney(id){
   const journey=guidedJourneyDefinitions().find(item=>item.id===id);if(!journey)return;
-  const root=guidedPathsState(),record=guidedPathRecord(id);root.activeId=id;record.startedAt=record.startedAt||now();
+  const root=guidedPathsState(),record=guidedPathRecord(id);root.activeId=id;record.startedAt=record.startedAt||now();state.ui.activeView='Guided Review';
   if(record.current>=journey.steps.length)record.current=journey.steps.length-1;
   const first=journey.steps.findIndex(step=>!step.done());
-  if(first>=0&&journey.steps[record.current]?.done())record.current=first;
+  if(first<0)record.current=0;
+  else if(journey.steps[record.current]?.done()||record.current>first)record.current=first;
   record.updatedAt=root.updatedAt=now();commit(`Percorso guidato avviato: ${journey.title}`);render();window.scrollTo({top:0,behavior:'smooth'});
 }
-function showGuidedJourneyDashboard(){guidedPathsState().activeId='';guidedPathsState().updatedAt=now();commit('Dashboard percorsi aperta');render();window.scrollTo({top:0,behavior:'smooth'});}
+function showGuidedJourneyDashboard(){guidedPathsState().activeId='';guidedPathsState().updatedAt=now();state.ui.activeView='Guided Review';commit('Dashboard percorsi aperta');render();window.scrollTo({top:0,behavior:'smooth'});}
 function setGuidedJourneyStep(index){
   const root=guidedPathsState(),journey=guidedJourneyDefinitions().find(item=>item.id===root.activeId);if(!journey)return;
   const target=Math.max(0,Math.min(Number(index),journey.steps.length-1)),current=guidedPathRecord(journey.id).current;
@@ -4235,6 +4290,10 @@ function bindView(){
  document.querySelectorAll('[data-wizard-tab]').forEach(button=>button.onclick=()=>navigateWizardTab(button.dataset.wizardTab));
  document.querySelectorAll('[data-wizard-summary]').forEach(button=>button.onclick=()=>openWizardSummary(button.dataset.wizardSummary));
  document.querySelectorAll('[data-report-export]').forEach(button=>button.onclick=openReportExport);
+ document.querySelectorAll('[data-plan-approve]').forEach(button=>button.onclick=()=>approveOperationalPlanItem(button.dataset.planId,button.dataset.planKind));
+ document.querySelectorAll('[data-plan-edit]').forEach(button=>button.onclick=()=>editOperationalPlanItem(button.dataset.planId,button.dataset.planKind));
+ document.querySelectorAll('[data-plan-done]').forEach(button=>button.onclick=()=>completeOperationalPlanItem(button.dataset.planId,button.dataset.planKind));
+ document.querySelectorAll('[data-plan-verify]').forEach(button=>button.onclick=()=>verifyOperationalPlanItem(button.dataset.planId,button.dataset.planKind));
  document.querySelectorAll('[data-import-target]').forEach(button=>button.onclick=()=>{state.ui.importTarget=button.dataset.importTarget;state.ui.activeView='Import';render();window.scrollTo({top:0,behavior:'smooth'});});
  document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.add));
  document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.edit,b.dataset.id));
@@ -4347,7 +4406,7 @@ function drawerFields(key,rec={}){
  migrations:[['oldUrl','Vecchia URL'],['newUrl','Nuova URL'],['redirectStatus','Stato redirect'],['canonicalStatus','Stato canonical'],['validation','Verifica'],['status','Stato'],['notes','Note']],
  issues:[['title','Issue'],['category','Category'],['url','URL'],['source','Source'],['severity','Severity'],['priority','Priority'],['status','Status'],['confidence','Confidence'],['whyNow','Why now']],
  opportunities:[['title','Opportunity'],['type','Type'],['impact','Impact'],['effort','Effort'],['confidence','Confidence'],['whyNow','Why now']],
- tasks:[['title','Task'],['priority','Priority'],['status','Status'],['owner','Owner'],['dueDate','Due Date'],['dependencies','Dependencies'],['description','Description']],
+ tasks:[['title','Attività'],['priority','Priorità'],['status','Stato'],['owner','Responsabile'],['dueDate','Scadenza'],['linkedUrl','Pagina o URL collegata'],['targetView','Modulo collegato'],['why','Perché è importante'],['steps','Passaggi da seguire'],['acceptanceCriteria','Come verificare il risultato'],['verificationEvidence','Prova della verifica'],['dependencies','Dipendenze'],['description','Descrizione']],
  milestones:[['name','Milestone'],['status','Status'],['progress','Progress'],['targetDate','Target Date'],['acceptanceCriteria','Acceptance Criteria']],
  decisions:[['title','Decision'],['status','Status'],['priority','Priority'],['confidence','Confidence'],['recommendation','Recommendation'],['result','Result'],['learning','Learning']],
  evidence:[['claim','Claim'],['observedValue','Observed Value'],['source','Source'],['freshness','Freshness'],['confidence','Confidence'],['notes','Notes']],
@@ -4361,7 +4420,7 @@ function drawerFields(key,rec={}){
  changeEvents:[['title','Change'],['type','Type'],['date','Date'],['result','Result'],['description','Description']],
  snapshots:[['name','Snapshot'],['reason','Reason']]
  }[key]||[['title','Title'],['status','Status'],['notes','Notes']];
- const textareas=['description','notes','whyNow','recommendation','learning','acceptanceCriteria','reason','userProblem','desiredOutcome'];
+ const textareas=['description','notes','whyNow','recommendation','learning','acceptanceCriteria','verificationEvidence','steps','why','reason','userProblem','desiredOutcome'];
  const selectMap={
    priority:['P1','P2','P3','P4'],
    severity:['CRITICAL','HIGH','MEDIUM','LOW'],
