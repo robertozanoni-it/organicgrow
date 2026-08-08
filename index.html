@@ -958,7 +958,7 @@ button,input,select,textarea{font-size:22px!important}
 @media(max-width:620px){.kw-item-row{grid-template-columns:1fr}.kw-item-row>input[type=checkbox],.kw-item-controls,.kw-item-actions{grid-column:1}.kw-item-controls{display:grid}.kw-item-actions .btn{width:100%}}
 
 
-/* V8.7 — FULL AUTO SEMANTIC + INTENT */
+/* V8.8 — FULL AUTO SEMANTIC AUDIT + INTENT */
 .kw-auto-note{margin:0 0 18px;padding:18px 20px;border-radius:18px;background:color-mix(in srgb,var(--success) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--success) 28%,var(--border))}.kw-auto-note strong{display:block;font-size:22px;margin-bottom:5px}.kw-auto-note p{margin:0;color:var(--muted);font-size:18px}
 </style>
 </head>
@@ -967,7 +967,7 @@ button,input,select,textarea{font-size:22px!important}
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V8.7.6 Performance</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V8.8 Semantic Audit</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -1159,7 +1159,6 @@ const currentProject=()=>state.projects.find(p=>p.id===state.currentProjectId)||
 
 let saveTimer=null;
 function commit(action='Aggiornamento'){
-  if(typeof invalidateKeywordMatchCaches==='function')invalidateKeywordMatchCaches();
   const p=currentProject();
   if(p) p.updatedAt=now();
   state.activity.unshift({id:uid('act'),projectId:state.currentProjectId,title:action,date:now()});
@@ -1662,7 +1661,17 @@ const GEO_TERMS=[
   'oristano','padova','palermo','parma','pavia','perugia','pesaro','pescara','piacenza','pisa','pistoia','pordenone',
   'potenza','prato','ragusa','ravenna','reggio calabria','reggio emilia','rieti','rimini','rovigo','salerno','sassari',
   'savona','siena','siracusa','sondrio','sud sardegna','taranto','terni','trapani','trento','treviso','trieste','udine',
-  'varese','venezia','verbania','vercelli','verona','vibo valentia','vicenza','viterbo','lombardia'
+  'varese','venezia','verbania','vercelli','verona','vibo valentia','vicenza','viterbo','lombardia',
+  /* V8.8: comuni e localita' della provincia di Bergamo. Il filtro resta configurabile
+     tramite Area SEO principale/secondarie, ma ora riconosce anche le query locali vicine. */
+  'albano sant alessandro','albino','almè','almenno san bartolomeo','almenno san salvatore','alzano lombardo','arcene','ardesio','azzano san paolo',
+  'bariano','bolgare','bonate sopra','bonate sotto','brembate','brembate di sopra','brusaporto','calcio','calusco d adda','capriate san gervasio',
+  'caravaggio','carobbio degli angeli','castelli calepio','cavernago','cenate sopra','cenate sotto','ciserano','clusone','cologno al serio','comun nuovo',
+  'costa di mezzate','curno','dalmine','fara gera d adda','fiorano al serio','fontanella','foresto sparso','gandino','gazzaniga','gorle','grassobbio',
+  'grumello del monte','leffe','levate','lovere','luzzana','mapello','martinengo','mozzo','nembro','osio sopra','osio sotto','paladina','palazzago',
+  'palosco','pedrengo','ponte nossa','ponte san pietro','pontirolo nuovo','pradalunga','predore','ranica','romano di lombardia','san paolo d argon',
+  'scanzorosciate','seriate','sarnico','selvino','sorisole','spirano','stezzano','trescore balneario','treviolo','treviglio','urgnano','valbrembo',
+  'verdellino','verdello','villa d adda','villa di serio','villongo','zandobbio','zanica','zogno'
 ];
 
 function normalizeGeoName(value){return keywordMatchNormalize(value).replace(/\s+/g,' ').trim();}
@@ -1728,15 +1737,19 @@ function textConcepts(value){
   Object.entries(KEYWORD_CONCEPTS_NORMALIZED).forEach(([concept,phrases])=>{if(phrases.some(p=>text.includes(p)))out.push(concept);});
   return out;
 }
-function pageMatchCorpus(page){return keywordMatchNormalize(`${page.primaryKeyword||''} ${page.title||''} ${page.h1||''} ${page.pageName||''} ${page.displayUrl||page.normalizedUrl||page.canonicalUrl||''} ${page.cluster||''}`);}
+function pageMatchCorpus(page){
+  /* V8.8: il matching usa anche meta, headings e testo reale della pagina quando
+     disponibili dal crawl. Il testo viene limitato per mantenere l'interfaccia fluida. */
+  return keywordMatchNormalize(`${page.primaryKeyword||''} ${page.title||''} ${page.h1||''} ${page.meta||''} ${page.headings||''} ${String(page.contentText||'').slice(0,14000)} ${page.pageName||''} ${page.displayUrl||page.normalizedUrl||page.canonicalUrl||''} ${page.cluster||''}`);
+}
 
 /* ============================================================
-   V8.5 — MOTORE SEMANTICO + SEARCH INTENT
-   Non si limita alle parole identiche: riconosce famiglie di significato
-   (es. costruzione/creazione/realizzazione siti) e separa intenti diversi
-   (es. realizzazione sito vs posizionamento SEO). Le associazioni vengono
-   applicate automaticamente solo quando semantica, intento e localita' sono
-   compatibili e il vantaggio sulla seconda pagina candidata e' sufficiente.
+   V8.8 — MOTORE SEMANTICO + INTENT + CONTENUTO REALE
+   - profilo pagina: title, H1, meta, H2/H3, testo principale, URL, cluster
+   - intent: scoring multi-segnale, non "prima regex che vince"
+   - navigazionale: brand del progetto dinamico, mai nomi hardcoded
+   - peer learning: usa solo mapping confermati dall'utente
+   - geografia: target + localita' riconosciute, senza auto-rinforzo
    ============================================================ */
 const SEMANTIC_FAMILIES={
   website_creation:['realizzazione sito','realizzazione siti','creazione sito','creazione siti','costruzione sito','costruzione siti','sviluppo sito','sviluppo siti','fare un sito','sito web aziendale','siti web aziendali','sito internet','siti internet','web design','sito responsive','siti responsive'],
@@ -1754,29 +1767,37 @@ const SEMANTIC_FAMILIES={
 const SEMANTIC_FAMILIES_NORMALIZED=Object.fromEntries(Object.entries(SEMANTIC_FAMILIES).map(([family,phrases])=>[family,phrases.map(keywordMatchNormalize)]));
 let pageSemanticRuntimeCache=new Map();
 let keywordPeerRuntimeCache=null;
+let keywordPeerRuntimeSignature='';
 function invalidateKeywordMatchCaches(){
   pageSemanticRuntimeCache.clear();
   keywordPeerRuntimeCache=null;
+  keywordPeerRuntimeSignature='';
   geoProfileRuntimeCache=null;
 }
+function trustedPeerSignature(){
+  return byProject(state.keywords).filter(item=>['manual-confirmed','group-confirmed'].includes(String(item.linkSource||''))&&item.targetUrl)
+    .map(item=>`${item.id}|${item.targetUrl}|${item.keyword}`).sort().join('||');
+}
 function keywordPeerIndex(){
-  if(keywordPeerRuntimeCache)return keywordPeerRuntimeCache;
+  const signature=trustedPeerSignature();
+  if(keywordPeerRuntimeCache&&keywordPeerRuntimeSignature===signature)return keywordPeerRuntimeCache;
   const map=new Map();
   byProject(state.keywords).forEach(item=>{
+    /* V8.8: un'automazione non diventa prova per un'altra automazione. */
+    if(!['manual-confirmed','group-confirmed'].includes(String(item.linkSource||'')))return;
     const target=String(item.targetUrl||'').trim();
     if(!target||!String(item.keyword||'').trim())return;
     if(!map.has(target))map.set(target,[]);
     map.get(target).push({id:item.id,tokens:keywordMatchTokens(item.keyword),families:semanticFamilies(item.keyword)});
   });
-  keywordPeerRuntimeCache=map;
+  keywordPeerRuntimeCache=map;keywordPeerRuntimeSignature=signature;
   return map;
 }
 
 const INTENT_RULES={
-  NAVIGATIONAL:[/\broberto\b/,/\bzanoni\b/,/\bcontatti?\b/,/\bchi siamo\b/,/\blogin\b/],
-  INFORMATIONAL:[/\bcome\b/,/\bcosa\b/,/\bperche\b/,/\bguida\b/,/\bidee\b/,/\bconsigli\b/,/\bcos[eè]\b/,/\bquanto costa\b/,/\bprezzi?\b/],
-  TRANSACTIONAL:[/\bpreventiv[oi]\b/,/\bservizi?\b/,/\bconsulenza\b/,/\bconsulente\b/,/\brealizzazione\b/,/\bcreazione\b/,/\bcostruzione\b/,/\bsviluppo\b/,/\bagenzia\b/,/\bprofessionista\b/,/\besperto\b/,/\bacquist/],
-  COMMERCIAL:[/\bmiglior[ei]\b/,/\bconfronto\b/,/\brecensioni?\b/,/\bprezzo\b/,/\bcosto\b/,/\bquanto costa\b/,/\bscelta\b/,/\bscegliere\b/]
+  INFORMATIONAL:[[/\bcome\b/,2.4],[/\bcosa\b/,2.1],[/\bperche\b/,2.2],[/\bguida\b/,2.0],[/\bidee\b/,1.7],[/\bconsigli\b/,1.8],[/\bcos[eè]\b/,2.0],[/\btutorial\b/,2.0],[/\bche cosa\b/,2.0]],
+  TRANSACTIONAL:[[/\bpreventiv[oi]\b/,3.0],[/\bservizi?\b/,1.5],[/\bconsulenza\b/,2.3],[/\bconsulente\b/,2.2],[/\brealizzazione\b/,2.4],[/\bcreazione\b/,2.2],[/\bcostruzione\b/,2.1],[/\bsviluppo\b/,2.1],[/\bagenzia\b/,1.8],[/\bprofessionista\b/,1.8],[/\besperto\b/,1.7],[/\bacquist/,2.8],[/\bprenot/,2.7],[/\brichied/,2.0]],
+  COMMERCIAL:[[/\bmiglior[ei]\b/,3.0],[/\bconfronto\b/,2.8],[/\brecensioni?\b/,2.6],[/\bprezz[oi]\b/,2.4],[/\bcost[oi]\b/,2.4],[/\bquanto costa\b/,3.1],[/\bscelta\b/,2.0],[/\bscegliere\b/,2.4],[/\bconviene\b/,2.1],[/\bvs\b/,2.3]]
 };
 function semanticFamilies(value){
   const text=` ${keywordMatchNormalize(value)} `,out=[];
@@ -1785,146 +1806,123 @@ function semanticFamilies(value){
   });
   return [...new Set(out)];
 }
-function inferSearchIntent(value,url='',pageType=''){
-  const text=keywordMatchNormalize(`${value||''} ${url||''}`),type=String(pageType||'').toLowerCase();
-  if(INTENT_RULES.NAVIGATIONAL.some(rx=>rx.test(text)))return 'NAVIGATIONAL';
-  if(INTENT_RULES.INFORMATIONAL.some(rx=>rx.test(text))||['article','guide','blog','faq'].includes(type))return 'INFORMATIONAL';
-  if(INTENT_RULES.TRANSACTIONAL.some(rx=>rx.test(text))||['service','landing','product'].includes(type))return 'TRANSACTIONAL';
-  if(INTENT_RULES.COMMERCIAL.some(rx=>rx.test(text)))return 'COMMERCIAL';
-  return 'COMMERCIAL';
+function projectBrandTerms(){
+  const p=currentProject()||{};
+  let host='';try{host=new URL(normalizeSiteDomain(p.domain)||'https://invalid.local').hostname.replace(/^www\./,'').split('.')[0]||'';}catch(e){}
+  const raw=[p.brand,p.name,host].filter(Boolean).map(keywordMatchNormalize);
+  const terms=new Set();
+  raw.forEach(value=>{if(value.length>=3)terms.add(value);value.split(' ').filter(x=>x.length>=4).forEach(x=>terms.add(x));});
+  return [...terms].filter(term=>!['nuovo progetto','progetto','website','sito'].includes(term));
 }
+function intentScoreCard(value,url='',pageType=''){
+  const text=keywordMatchNormalize(`${value||''} ${url||''}`),type=String(pageType||'').toLowerCase();
+  const scores={NAVIGATIONAL:0,INFORMATIONAL:0,TRANSACTIONAL:0,COMMERCIAL:0};
+  projectBrandTerms().forEach(term=>{if(term&&(` ${text} `).includes(` ${term} `)||text.includes(term))scores.NAVIGATIONAL+=3.2;});
+  if(/\b(contatti?|chi siamo|login|area riservata)\b/.test(text))scores.NAVIGATIONAL+=3;
+  Object.entries(INTENT_RULES).forEach(([intent,rules])=>rules.forEach(([rx,w])=>{if(rx.test(text))scores[intent]+=w;}));
+  if(['article','guide','blog','faq'].includes(type))scores.INFORMATIONAL+=2.4;
+  if(['service','landing','product'].includes(type))scores.TRANSACTIONAL+=2.4;
+  if(['category','hub','pillar'].includes(type))scores.COMMERCIAL+=.7;
+  if(type==='homepage')scores.NAVIGATIONAL+=.8;
+  /* "quanto costa" e ricerche di prezzo sono commercial-investigation anche se informative. */
+  if(/\bquanto costa\b|\bprezz[oi]\b|\bcost[oi]\b/.test(text))scores.COMMERCIAL+=1.2;
+  const ranked=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  return {intent:ranked[0][1]>0?ranked[0][0]:'COMMERCIAL',scores,margin:ranked[0][1]-(ranked[1]?.[1]||0)};
+}
+function inferSearchIntent(value,url='',pageType=''){return intentScoreCard(value,url,pageType).intent;}
 function pageSemanticProfile(page){
   const id=page.id||page.displayUrl||page.normalizedUrl||page.canonicalUrl||String(page.pageName||'');
-  const fingerprint=[page.primaryKeyword,page.title,page.h1,page.pageName,page.displayUrl,page.normalizedUrl,page.canonicalUrl,page.cluster,page.pageType,page.indexable].join('|');
+  const fingerprint=[page.primaryKeyword,page.title,page.h1,page.meta,page.headings,String(page.contentText||'').slice(0,14000),page.pageName,page.displayUrl,page.normalizedUrl,page.canonicalUrl,page.cluster,page.pageType,page.indexable].join('|');
   const cached=pageSemanticRuntimeCache.get(id);
   if(cached?.fingerprint===fingerprint)return cached.value;
-  const corpus=pageMatchCorpus(page),families=semanticFamilies(corpus),intent=inferSearchIntent(corpus,page.displayUrl||page.normalizedUrl||'',page.pageType||'');
-  const value={corpus,families,intent,words:corpus.split(' '),concepts:textConcepts(corpus),geo:geoTermsInText(corpus)};
+  const corpus=pageMatchCorpus(page),intentCard=intentScoreCard(corpus,page.displayUrl||page.normalizedUrl||'',page.pageType||'');
+  const value={corpus,families:semanticFamilies(corpus),intent:intentCard.intent,intentScores:intentCard.scores,words:corpus.split(' '),concepts:textConcepts(corpus),geo:geoTermsInText(corpus),contentRich:Boolean(String(page.contentText||'').trim()),contentWordCount:Number(page.contentWordCount||String(page.contentText||'').split(/\s+/).filter(Boolean).length)};
   pageSemanticRuntimeCache.set(id,{fingerprint,value});
   return value;
 }
 function semanticIntentCompatibility(keyword,page){
-  const query=keywordMatchNormalize(keyword.keyword),qFamilies=semanticFamilies(query),qIntent=inferSearchIntent(query,'',keyword.expectedContentType||'');
-  const p=pageSemanticProfile(page),common=qFamilies.filter(f=>p.families.includes(f));
+  const query=keywordMatchNormalize(keyword.keyword),qFamilies=semanticFamilies(query),qCard=intentScoreCard(query,'',keyword.expectedContentType||'');
+  const qIntent=qCard.intent,p=pageSemanticProfile(page),common=qFamilies.filter(f=>p.families.includes(f));
   const conflictingPairs=[
     ['website_creation','seo_positioning'],['website_creation','seo_optimization'],['website_creation','keyword_research'],['website_creation','seo_audit'],
     ['seo_positioning','website_creation'],['keyword_research','website_creation'],['seo_audit','website_creation'],['ecommerce','website_creation']
   ];
   const hardConflict=conflictingPairs.some(([qf,pf])=>qFamilies.includes(qf)&&p.families.includes(pf)&&!common.length);
-  let semantic=0;
-  if(qFamilies.length){semantic=common.length/qFamilies.length; if(common.length)semantic=Math.min(1,semantic+.18);}
-  else semantic=.45;
+  let semantic=qFamilies.length?common.length/qFamilies.length:.45;if(common.length)semantic=Math.min(1,semantic+.18);
   let intent=0;
   if(qIntent===p.intent)intent=1;
-  else if(['TRANSACTIONAL','COMMERCIAL'].includes(qIntent)&&['TRANSACTIONAL','COMMERCIAL'].includes(p.intent))intent=.82;
-  else if(qIntent==='INFORMATIONAL'&&p.intent==='COMMERCIAL')intent=.35;
-  else if(qIntent==='COMMERCIAL'&&p.intent==='INFORMATIONAL')intent=.45;
-  else intent=.25;
-  return {qFamilies,pageFamilies:p.families,common,semantic,intent,qIntent,pageIntent:p.intent,hardConflict};
+  else if(['TRANSACTIONAL','COMMERCIAL'].includes(qIntent)&&['TRANSACTIONAL','COMMERCIAL'].includes(p.intent))intent=.84;
+  else if(qIntent==='INFORMATIONAL'&&p.intent==='COMMERCIAL')intent=.34;
+  else if(qIntent==='COMMERCIAL'&&p.intent==='INFORMATIONAL')intent=.55;
+  else intent=.24;
+  return {qFamilies,pageFamilies:p.families,common,semantic,intent,qIntent,pageIntent:p.intent,hardConflict,qIntentScores:qCard.scores,pageIntentScores:p.intentScores};
 }
 function keywordPageMatch(keyword,page){
   const query=keywordMatchNormalize(keyword.keyword),tokens=keywordMatchTokens(keyword.keyword);if(!query||!tokens.length)return 0;
   const pageProfile=pageSemanticProfile(page),corpus=pageProfile.corpus,words=pageProfile.words;
   const url=keywordMatchNormalize(page.displayUrl||page.normalizedUrl||page.canonicalUrl||'');
-  const primary=keywordMatchNormalize(page.primaryKeyword||'');
-  const title=keywordMatchNormalize(page.title||'');
-  const h1=keywordMatchNormalize(page.h1||'');
-  const name=keywordMatchNormalize(page.pageName||'');
-  const queryConcepts=textConcepts(query),pageConcepts=pageProfile.concepts;
-  const compat=semanticIntentCompatibility(keyword,page);
+  const primary=keywordMatchNormalize(page.primaryKeyword||''),title=keywordMatchNormalize(page.title||''),h1=keywordMatchNormalize(page.h1||''),meta=keywordMatchNormalize(page.meta||''),name=keywordMatchNormalize(page.pageName||'');
+  const queryConcepts=textConcepts(query),pageConcepts=pageProfile.concepts,compat=semanticIntentCompatibility(keyword,page);
   const matched=tokens.filter(token=>words.some(word=>word===token||word.startsWith(token)||token.startsWith(word))).length;
-  let score=(matched/tokens.length)*.30;
-  if(primary===query)score+=.30;
-  else if(primary&&(primary.includes(query)||query.includes(primary)))score+=.18;
-  if(title===query||h1===query||name===query)score+=.20;
-  else if(title.includes(query)||h1.includes(query)||name.includes(query))score+=.12;
-  if(url&&tokens.filter(t=>url.includes(t)).length>=Math.max(1,Math.ceil(tokens.length*.6)))score+=.10;
-  /* Semantica e intento pesano piu' delle parole condivise. */
-  score+=compat.semantic*.28;
-  score+=compat.intent*.16;
-  if(compat.hardConflict)score-=.40;
+  let score=(matched/tokens.length)*.26;
+  if(primary===query)score+=.28;else if(primary&&(primary.includes(query)||query.includes(primary)))score+=.17;
+  if(title===query||h1===query||name===query)score+=.18;else if(title.includes(query)||h1.includes(query)||name.includes(query))score+=.11;
+  if(meta.includes(query))score+=.07;
+  if(url&&tokens.filter(t=>url.includes(t)).length>=Math.max(1,Math.ceil(tokens.length*.6)))score+=.09;
+  score+=compat.semantic*.27;score+=compat.intent*.17;
+  if(pageProfile.contentRich)score+=Math.min(.06,(matched/tokens.length)*.06);
+  if(compat.hardConflict)score-=.44;
   if(queryConcepts.length){
-    const common=queryConcepts.filter(c=>pageConcepts.includes(c));score+=Math.min(.14,common.length*.07);
+    const common=queryConcepts.filter(c=>pageConcepts.includes(c));score+=Math.min(.12,common.length*.06);
     const specific=queryConcepts.filter(c=>['agency','consulting','indexing','keyword','ecommerce','audit','app'].includes(c));
-    if(specific.length&&!specific.some(c=>pageConcepts.includes(c)))score-=.10;
+    if(specific.length&&!specific.some(c=>pageConcepts.includes(c)))score-=.12;
   }
-  /* apprendimento dai mapping gia' confermati */
-  const targetUrl=String(page.displayUrl||page.normalizedUrl||page.canonicalUrl||'');
-  const linkedPeers=(keywordPeerIndex().get(targetUrl)||[]).filter(peer=>peer.id!==keyword.id);
+  /* apprendimento soltanto da mapping confermati manualmente */
+  const targetUrl=String(page.displayUrl||page.normalizedUrl||page.canonicalUrl||''),linkedPeers=(keywordPeerIndex().get(targetUrl)||[]).filter(peer=>peer.id!==keyword.id);
   if(linkedPeers.length){
-    let peerBest=0;
-    linkedPeers.slice(0,60).forEach(peer=>{
-      const peerTokens=peer.tokens,peerFamilies=peer.families;
-      const tokenUnion=new Set([...tokens,...peerTokens]),commonTokens=tokens.filter(t=>peerTokens.includes(t)).length;
-      const tokenSimilarity=tokenUnion.size?commonTokens/tokenUnion.size:0;
-      const familyCommon=compat.qFamilies.filter(f=>peerFamilies.includes(f)).length;
-      const sim=(tokenSimilarity*.45)+(Math.min(1,familyCommon/Math.max(1,compat.qFamilies.length))*.55);
-      peerBest=Math.max(peerBest,sim);
-    });
-    if(peerBest>=.72)score+=.12;else if(peerBest>=.50)score+=.06;
+    let peerBest=0;linkedPeers.slice(0,40).forEach(peer=>{const tokenUnion=new Set([...tokens,...peer.tokens]),commonTokens=tokens.filter(t=>peer.tokens.includes(t)).length,tokenSimilarity=tokenUnion.size?commonTokens/tokenUnion.size:0,familyCommon=compat.qFamilies.filter(f=>peer.families.includes(f)).length,sim=(tokenSimilarity*.45)+(Math.min(1,familyCommon/Math.max(1,compat.qFamilies.length))*.55);peerBest=Math.max(peerBest,sim);});
+    if(peerBest>=.76)score+=.09;else if(peerBest>=.56)score+=.04;
   }
-  /* localita' */
-  const geoClass=classifyKeywordGeo(keyword);
-  if(geoClass.status==='OUT_OF_AREA')return 0;
-  const geo=geoTermsInText(keyword.keyword);
-  if(geo.length){
-    const pageGeo=pageProfile.geo;
-    if(geo.some(g=>pageGeo.includes(g)))score+=.10;
-    else if(pageGeo.length)score-=.30;
-    else score-=.03;
-  }
-  const path=String(page.displayUrl||page.normalizedUrl||''),type=String(page.pageType||'').toLowerCase();
-  const isGeneric=path==='/'||type==='homepage'||/^(servizi|services|homepage)$/i.test(String(page.cluster||''));
-  if(isGeneric&&compat.qFamilies.length&&!compat.common.length)score-=.12;
-  if(page.indexable===false)score-=.32;
+  const geoClass=classifyKeywordGeo(keyword);if(geoClass.status==='OUT_OF_AREA')return 0;
+  const geo=geoTermsInText(keyword.keyword);if(geo.length){const pageGeo=pageProfile.geo;if(geo.some(g=>pageGeo.includes(g)))score+=.10;else if(pageGeo.length)score-=.30;else score-=.03;}
+  const path=String(page.displayUrl||page.normalizedUrl||''),type=String(page.pageType||'').toLowerCase(),isGeneric=path==='/'||type==='homepage'||/^(servizi|services|homepage)$/i.test(String(page.cluster||''));
+  if(isGeneric&&compat.qFamilies.length&&!compat.common.length)score-=.14;
+  if(page.indexable===false)score-=.35;
   return Math.max(0,Math.min(1,score));
 }
 function keywordMatchSuggestions(keyword){
-  return byProject(state.pages).map(page=>({page,score:keywordPageMatch(keyword,page)}))
-    .filter(item=>(item.page.displayUrl||item.page.normalizedUrl))
-    .sort((a,b)=>b.score-a.score||String(a.page.pageName||'').localeCompare(String(b.page.pageName||''),'it',{sensitivity:'base'}));
+  return byProject(state.pages).map(page=>({page,score:keywordPageMatch(keyword,page)})).filter(item=>(item.page.displayUrl||item.page.normalizedUrl)).sort((a,b)=>b.score-a.score||String(a.page.pageName||'').localeCompare(String(b.page.pageName||''),'it',{sensitivity:'base'}));
 }
 function pageTypeIntentFit(page,queryIntent){
   const type=String(page?.pageType||'').toLowerCase();
-  if(queryIntent==='INFORMATIONAL')return ['article','guide','blog','faq','hub','pillar','category'].includes(type)?1:['service','landing','product'].includes(type)?.45:.72;
-  if(queryIntent==='TRANSACTIONAL')return ['service','landing','product'].includes(type)?1:['homepage','pillar'].includes(type)?.78:['article','guide','blog','faq'].includes(type)?.35:.65;
-  if(queryIntent==='COMMERCIAL')return ['service','landing','product','homepage','pillar'].includes(type)?.92:['article','guide','blog'].includes(type)?.68:.72;
-  if(queryIntent==='NAVIGATIONAL')return ['homepage','landing'].includes(type)?1:.72;
-  return .7;
+  if(queryIntent==='INFORMATIONAL')return ['article','guide','blog','faq','hub','pillar','category'].includes(type)?1:['service','landing','product'].includes(type)?.42:.70;
+  if(queryIntent==='TRANSACTIONAL')return ['service','landing','product'].includes(type)?1:['homepage','pillar'].includes(type)?.76:['article','guide','blog','faq'].includes(type)?.32:.62;
+  if(queryIntent==='COMMERCIAL')return ['service','landing','product','homepage','pillar'].includes(type)?.92:['article','guide','blog'].includes(type)?.72:.70;
+  if(queryIntent==='NAVIGATIONAL')return ['homepage','landing'].includes(type)?1:.68;
+  return .68;
 }
 function keywordAutoDecision(keyword,best,second){
   if(!best)return {decision:'NO_MATCH',reason:'Nessuna pagina disponibile'};
-  const compat=semanticIntentCompatibility(keyword,best.page);
-  const geoClass=classifyKeywordGeo(keyword);
-  const margin=best.score-(second?.score||0);
-  const typeFit=pageTypeIntentFit(best.page,compat.qIntent);
-  const tokenCount=keywordMatchTokens(keyword.keyword).length;
-  const pageCorpus=pageSemanticProfile(best.page).corpus;
-  const lexicalHits=keywordMatchTokens(keyword.keyword).filter(t=>pageCorpus.split(' ').some(w=>w===t||w.startsWith(t)||t.startsWith(w))).length;
-  const lexicalRatio=tokenCount?lexicalHits/tokenCount:0;
-  const familyFit=compat.qFamilies.length?compat.common.length/compat.qFamilies.length:.5;
-  const intentFit=compat.intent;
-  const outOfArea=geoClass.status==='OUT_OF_AREA';
-  if(outOfArea)return {decision:'EXCLUDE',reason:`Fuori area geografica: ${geoClass.detected?.join(', ')||'località non target'}`,compat,typeFit,margin};
+  const compat=semanticIntentCompatibility(keyword,best.page),geoClass=classifyKeywordGeo(keyword),margin=best.score-(second?.score||0),typeFit=pageTypeIntentFit(best.page,compat.qIntent),tokens=keywordMatchTokens(keyword.keyword),pageProfile=pageSemanticProfile(best.page),lexicalHits=tokens.filter(t=>pageProfile.words.some(w=>w===t||w.startsWith(t)||t.startsWith(w))).length,lexicalRatio=tokens.length?lexicalHits/tokens.length:0,familyFit=compat.qFamilies.length?compat.common.length/compat.qFamilies.length:.5,intentFit=compat.intent;
+  if(geoClass.status==='OUT_OF_AREA')return {decision:'EXCLUDE',reason:`Fuori area geografica: ${geoClass.found?.join(', ')||'località non target'}`,compat,typeFit,margin};
   if(compat.hardConflict)return {decision:'NO_MATCH',reason:'Tema o intento in conflitto con la pagina proposta',compat,typeFit,margin};
-  const strongSemantic=compat.common.length>0||compat.semantic>=.68||lexicalRatio>=.72;
-  const strongIntent=intentFit>=.80&&typeFit>=.68;
-  const uniqueEnough=margin>=.025||best.score>=.72||familyFit>=.8;
-  const safeAuto=strongSemantic&&strongIntent&&uniqueEnough&&best.score>=.56;
-  if(safeAuto)return {decision:'AUTO',reason:'Coerenza semantica + intento + tipo pagina verificati automaticamente',compat,typeFit,margin};
-  const acceptable=best.score>=.48&&intentFit>=.80&&typeFit>=.68&&(compat.common.length>0||lexicalRatio>=.58)&&margin>=.015;
-  if(acceptable)return {decision:'AUTO',reason:'Migliore pagina disponibile coerente per tema e intento',compat,typeFit,margin};
+  const strongSemantic=compat.common.length>0||compat.semantic>=.72||lexicalRatio>=.76;
+  const strongIntent=intentFit>=.82&&typeFit>=.70;
+  const uniqueEnough=margin>=.035||best.score>=.76||familyFit>=.85;
+  /* Con contenuto reale disponibile possiamo essere leggermente piu' fiduciosi; senza,
+     richiediamo uno score piu' alto. */
+  const scoreFloor=pageProfile.contentRich?.58:.64;
+  const safeAuto=strongSemantic&&strongIntent&&uniqueEnough&&best.score>=scoreFloor;
+  if(safeAuto)return {decision:'AUTO',reason:`Coerenza semantica + intento + tipo pagina${pageProfile.contentRich?' + contenuto reale':''} verificati automaticamente`,compat,typeFit,margin};
+  const acceptable=pageProfile.contentRich&&best.score>=.57&&intentFit>=.84&&typeFit>=.72&&(compat.common.length>0||lexicalRatio>=.64)&&margin>=.025;
+  if(acceptable)return {decision:'AUTO',reason:'Contenuto reale e intento indicano una pagina dominante',compat,typeFit,margin};
   return {decision:'NO_MATCH',reason:'Nessuna pagina abbastanza coerente: lasciata senza target invece di forzare un abbinamento',compat,typeFit,margin};
 }
 function keywordBestSuggestion(keyword){
   if(!keywordActiveForMapping(keyword))return null;
   const ranked=keywordMatchSuggestions(keyword),best=ranked[0],second=ranked[1];if(!best)return null;
-  const margin=best.score-(second?.score||0),confidence=Math.round(best.score*100);
-  const compat=semanticIntentCompatibility(keyword,best.page);
-  const decision=keywordAutoDecision(keyword,best,second);
-  const automatic=decision.decision==='AUTO';
-  const suggested=false;
-  return {page:best.page,score:best.score,confidence,margin,automatic,suggested,runnerUp:second?.page||null,semantic:compat.semantic,intentCompatibility:compat.intent,queryIntent:compat.qIntent,pageIntent:compat.pageIntent,families:compat.qFamilies,commonFamilies:compat.common,hardConflict:compat.hardConflict,reason:decision.reason,autoDecision:decision.decision,typeFit:decision.typeFit};
+  const margin=best.score-(second?.score||0),confidence=Math.round(best.score*100),compat=semanticIntentCompatibility(keyword,best.page),decision=keywordAutoDecision(keyword,best,second),automatic=decision.decision==='AUTO';
+  return {page:best.page,score:best.score,confidence,margin,automatic,suggested:false,runnerUp:second?.page||null,semantic:compat.semantic,intentCompatibility:compat.intent,queryIntent:compat.qIntent,pageIntent:compat.pageIntent,families:compat.qFamilies,commonFamilies:compat.common,hardConflict:compat.hardConflict,reason:decision.reason,autoDecision:decision.decision,typeFit:decision.typeFit};
 }
 function autoLinkKeywordsSilent(){
   let linked=0;
@@ -1932,7 +1930,7 @@ function autoLinkKeywordsSilent(){
     const match=keywordBestSuggestion(keyword);if(!match?.automatic)return;
     const url=match.page.displayUrl||match.page.normalizedUrl||'';
     if(url){
-      keyword.targetUrl=url;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='auto-semantic-v87';keyword.linkConfidence=match.confidence;
+      keyword.targetUrl=url;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='auto-semantic-v88';keyword.linkConfidence=match.confidence;
       keyword.keywordGroupUrl=url;keyword.keywordGroupName=match.page.pageName||match.page.title||url;keyword.keywordGroupStatus='AUTO_CONFIRMED';keyword.keywordGroupConfidence=match.confidence;
       linked++;
     }
@@ -1969,7 +1967,7 @@ function autoSetKeywordGroupsSilent(){
     const name=match.page.pageName||match.page.title||url;
     if(match.automatic&&url){
       if(currentTarget!==url||keyword.keywordGroupStatus!=='AUTO_CONFIRMED'||keyword.keywordGroupUrl!==url){changed++;}
-      keyword.targetUrl=url;keyword.linkedAt=keyword.linkedAt||now();keyword.updatedAt=now();keyword.linkSource='auto-semantic-v87';keyword.linkConfidence=match.confidence;
+      keyword.targetUrl=url;keyword.linkedAt=keyword.linkedAt||now();keyword.updatedAt=now();keyword.linkSource='auto-semantic-v88';keyword.linkConfidence=match.confidence;
       keyword.keywordGroupUrl=url;keyword.keywordGroupName=name;keyword.keywordGroupStatus='AUTO_CONFIRMED';keyword.keywordGroupConfidence=match.confidence;keyword.keywordGroupReason=match.reason||'';autoConfirmed++;return;
     }
     if(match.autoDecision==='EXCLUDE'){
@@ -1983,12 +1981,30 @@ function autoSetKeywordGroupsSilent(){
   return {autoConfirmed,suggested,manual,ungrouped,changed};
 }
 
-function autoSetKeywordGroups(){
+async function enrichSemanticPageContent(limit=36){
+  const pages=byProject(state.pages).filter(page=>page.indexable!==false&&!String(page.contentText||'').trim()&&absoluteSiteUrl(page.displayUrl||page.normalizedUrl));
+  if(!pages.length)return {read:0,failed:0};
+  let read=0,failed=0;
+  for(const page of pages.slice(0,limit)){
+    try{
+      const absolute=absoluteSiteUrl(page.displayUrl||page.normalizedUrl);
+      const result=await fetchPublicSiteText(absolute);
+      const signal=pageSignalsFromHtml(result.text,absolute);
+      if(signal.contentText){page.contentText=signal.contentText;page.contentWordCount=signal.contentWordCount||0;page.headings=signal.headings||page.headings||'';page.semanticScannedAt=now();page.updatedAt=now();read++;}
+    }catch(e){failed++;}
+  }
+  if(read)invalidateKeywordMatchCaches();
+  return {read,failed};
+}
+
+async function autoSetKeywordGroups(){
+  const btn=document.getElementById('autoSetKeywordGroups');if(btn){btn.disabled=true;btn.textContent='Analisi semantica…';}
+  const enriched=await enrichSemanticPageContent(36);
   invalidateKeywordMatchCaches();
   const result=autoSetKeywordGroupsSilent();
   const p=currentProject();if(p)p.keywordMappingInputSignature=keywordMappingInputSignature();
-  if(result.changed)commit(`Mapping keyword automatico: ${result.autoConfirmed} assegnate, ${result.ungrouped} senza target sicuro`);
-  toast(`${result.autoConfirmed} keyword assegnate automaticamente · ${result.ungrouped} valutate ma lasciate senza target sicuro. Nessuna verifica manuale richiesta.`);
+  if(result.changed||enriched.read)commit(`Mapping keyword V8.8: ${result.autoConfirmed} assegnate, ${result.ungrouped} senza target sicuro, ${enriched.read} pagine lette`);
+  toast(`${result.autoConfirmed} keyword assegnate automaticamente · ${result.ungrouped} senza target sicuro${enriched.read?` · ${enriched.read} pagine analizzate nel contenuto`:''}.`);
   runAutomationCycle(false);render();
 }
 function autoResolvePanel(){
@@ -3365,14 +3381,13 @@ function keywordMappingInputSignature(){
   const feed=value=>{const str=String(value??'');for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}h>>>=0;};
   feed(state.currentProjectId);
   const p=currentProject()||{};feed(p.geoPrimary);feed(p.geoSecondary);
-  byProject(state.pages).forEach(page=>{feed(page.id);feed(page.displayUrl);feed(page.normalizedUrl);feed(page.canonicalUrl);feed(page.pageName);feed(page.title);feed(page.h1);feed(page.primaryKeyword);feed(page.cluster);feed(page.pageType);feed(page.indexable);});
+  byProject(state.pages).forEach(page=>{feed(page.id);feed(page.displayUrl);feed(page.normalizedUrl);feed(page.canonicalUrl);feed(page.pageName);feed(page.title);feed(page.h1);feed(page.meta);feed(page.headings);feed(String(page.contentText||'').slice(0,14000));feed(page.primaryKeyword);feed(page.cluster);feed(page.pageType);feed(page.indexable);});
   byProject(state.keywords).forEach(keyword=>{feed(keyword.id);feed(keyword.keyword);feed(keyword.expectedContentType);feed(keyword.keywordGroupExcluded);const source=String(keyword.linkSource||'');if(['manual-confirmed','group-confirmed'].includes(source)){feed(source);feed(keyword.targetUrl);}});
   return String(h>>>0);
 }
 
 function runAutomationCycle(notify=false){
   const keywordsAdded=backfillKeywordsFromPages();
-  const geoClassified=applyGeoClassification();
   const keywordsDeduped=dedupeKeywordRecords();
   const p=currentProject();
   const mappingSignature=keywordMappingInputSignature();
@@ -3391,7 +3406,7 @@ function runAutomationCycle(notify=false){
   const createdOrUpdated=syncWizardTasks();
   const verified=autoVerifySystemTasks(true);
   syncWorkflowFromGates(notify);
-  const total=createdOrUpdated+verified+keywordsAdded+keywordsDeduped+geoClassified+keywordGroups.changed;
+  const total=createdOrUpdated+verified+keywordsAdded+keywordsDeduped+keywordGroups.changed;
   if(total)commit('Automazioni e piano operativo aggiornati');
   if(total&&notify)toast(`${total} attività aggiornate automaticamente`);
   return total;
@@ -3586,6 +3601,8 @@ async function readMissingPageFields(limit=25,onProgress){
       if(markPageField(entry.page,'h1',signal.h1,'site'))filled++;
       if(signal.canonicalUrl&&markPageField(entry.page,'canonicalUrl',normalizePageUrlForProject(signal.canonicalUrl),'site'))filled++;
       if(markPageField(entry.page,'schema',signal.schema,'site'))filled++;
+      if(signal.headings)entry.page.headings=signal.headings;
+      if(signal.contentText){entry.page.contentText=signal.contentText;entry.page.contentWordCount=signal.contentWordCount||0;entry.page.semanticScannedAt=now();}
       if(entry.page.indexable===undefined||entry.page.indexable===null){entry.page.indexable=signal.indexable;filled++;}
       if(!entry.page.statusCode)entry.page.statusCode=200;
       entry.page.lastScannedAt=now();entry.page.updatedAt=now();
@@ -3794,7 +3811,7 @@ function moveSingleKeywordToPage(id,url){
 }
 function excludeSingleKeywordFromGroup(id){
   const keyword=byProject(state.keywords).find(item=>item.id===id);if(!keyword)return;
-  if(['auto-group-v83','auto-semantic-v87','group-confirmed'].includes(String(keyword.linkSource||''))){keyword.targetUrl='';keyword.linkedAt='';keyword.linkConfidence=0;}
+  if(['auto-group-v83','auto-semantic-v88','group-confirmed'].includes(String(keyword.linkSource||''))){keyword.targetUrl='';keyword.linkedAt='';keyword.linkConfidence=0;}
   keyword.keywordGroupExcluded=true;keyword.keywordGroupUrl='';keyword.keywordGroupName='';keyword.keywordGroupStatus='EXCLUDED';keyword.keywordGroupConfidence=0;keyword.updatedAt=now();
   commit(`Keyword esclusa dal gruppo: ${keyword.keyword}`);toast(`“${keyword.keyword}” esclusa dal raggruppamento automatico.`);render();
 }
@@ -3810,14 +3827,17 @@ function toggleGroupKeywordSelection(url,checked){
   document.querySelectorAll(`[data-group-select="${CSS.escape(String(url||''))}"]`).forEach(input=>input.checked=Boolean(checked));
 }
 function confirmKeywordGroup(url){
-  const target=String(url||'');if(!target)return;
+  const target=String(url||'').trim();if(!target)return;
   let changed=0;
-  keywordUnlinked().forEach(keyword=>{
-    const match=keywordBestSuggestion(keyword);
-    const candidate=match?.page&&(match.page.displayUrl||match.page.normalizedUrl||'');
-    if(match?.suggested&&candidate===target){keyword.targetUrl=target;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='group-confirmed';keyword.linkConfidence=match.confidence;keyword.keywordGroupUrl=target;keyword.keywordGroupName=match.page.pageName||match.page.title||target;keyword.keywordGroupStatus='MANUAL_CONFIRMED';keyword.keywordGroupConfidence=100;changed++;}
+  byProject(state.keywords).forEach(keyword=>{
+    if(keyword.keywordGroupExcluded||!keywordActiveForMapping(keyword))return;
+    const proposed=String(keyword.keywordGroupUrl||'').trim();
+    if(proposed!==target||keyword.keywordGroupStatus!=='SUGGESTED')return;
+    keyword.targetUrl=target;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='group-confirmed';keyword.linkConfidence=100;
+    keyword.keywordGroupName=keywordPageNameByUrl(target);keyword.keywordGroupStatus='MANUAL_CONFIRMED';keyword.keywordGroupConfidence=100;changed++;
   });
-  if(changed){commit(`${changed} keyword confermate in gruppo`);runAutomationCycle(false);toast(`${changed} keyword collegate alla stessa pagina.`);}render();
+  if(changed){invalidateKeywordMatchCaches();commit(`${changed} keyword confermate in gruppo`);runAutomationCycle(false);toast(`${changed} keyword collegate alla stessa pagina.`);}else toast('Questo gruppo non richiede più conferma: il mapping automatico è già stato aggiornato.');
+  render();
 }
 function keywordLinkPanel(precomputedData=null){
   const rows=byProject(state.keywords).filter(keyword=>keyword.keyword&&keywordActiveForMapping(keyword)),unlinked=keywordUnlinked(),options=keywordPageOptions();
@@ -3848,7 +3868,7 @@ function keywordLinkPanel(precomputedData=null){
   const autoHtml=autoGroups.slice(0,8).map(g=>groupCard(g,'auto')).join('');
   const reviewHtml=reviewGroups.slice(0,8).map(g=>groupCard(g,'review')).join('');
   const manualRows=data.manual.slice(0,6).map(({keyword})=>`<div class="kw8-manual-row"><div><strong>${esc(keyword.keyword)}</strong><small>${esc(keyword.source||'Manuale')}</small></div><div style="display:flex;gap:8px"><select data-link-select="${esc(keyword.id)}"><option value="">Scegli pagina…</option>${options.map(o=>`<option value="${esc(o.url)}">${esc(o.label)}</option>`).join('')}</select><button class="btn primary" data-link-keyword="${esc(keyword.id)}">Collega</button></div></div>`).join('');
-  return `<section class="kw-group-auto"><div class="geo-focus-head"><div><h3>Gruppi keyword automatici</h3><p>Il sistema usa associazioni semantiche, intento di ricerca, località e specificità della pagina. Le corrispondenze coerenti vengono applicate automaticamente; restano da verificare solo i casi realmente ambigui.</p></div><button class="btn primary" id="autoSetKeywordGroups">Ricalcola mapping semantico</button></div><div class="kw-group-stats"><div class="kw-group-stat"><strong>${autoGroups.length}</strong><span>gruppi automatici</span></div><div class="kw-group-stat"><strong>${reviewGroups.length}</strong><span>gruppi da verificare</span></div><div class="kw-group-stat"><strong>${data.manual.length}</strong><span>eccezioni senza gruppo sicuro</span></div></div></section>`+
+  return `<section class="kw-group-auto"><div class="geo-focus-head"><div><h3>Gruppi keyword automatici</h3><p>Il sistema confronta automaticamente semantica, intento, località, tipo di pagina e — quando leggibile — il contenuto reale di ogni URL. Applica solo i target coerenti e lascia senza target quelli non sufficientemente sicuri.</p></div><button class="btn primary" id="autoSetKeywordGroups">Analizza e assegna automaticamente</button></div><div class="kw-group-stats"><div class="kw-group-stat"><strong>${autoGroups.length}</strong><span>gruppi automatici</span></div><div class="kw-group-stat"><strong>${reviewGroups.length}</strong><span>gruppi da verificare</span></div><div class="kw-group-stat"><strong>${data.manual.length}</strong><span>eccezioni senza gruppo sicuro</span></div></div></section>`+
   `<section class="kw8-stage"><h2>${unlinked.length?'Controlla solo ciò che è dubbio':'Mapping e gruppi completati ✓'}</h2><p>${unlinked.length?`Le corrispondenze forti sono già state impostate automaticamente. Restano ${reviewGroups.reduce((n,g)=>n+g.items.filter(x=>!x.keyword.targetUrl).length,0)} keyword in gruppi suggeriti e ${data.manual.length} vere eccezioni.`:'Le keyword nel focus geografico sono già organizzate per pagina target.'}</p>`+
   `${autoHtml?`<div style="margin-top:20px"><h2>Impostati automaticamente</h2><p>Questi gruppi hanno superato le soglie di sicurezza e non richiedono conferma.</p><div class="kw8-rail">${autoHtml}</div></div>`:''}`+
   `${reviewHtml?`<div style="height:28px"></div><h2>Gruppi da verificare</h2><p>Sono rimasti solo casi in cui semantica o intento non indicano una pagina nettamente dominante.</p><div class="kw8-rail">${reviewHtml}</div>`:''}`+
@@ -4246,19 +4266,19 @@ function pageSignalsFromHtml(html,url){
   const schemaTypes=[...schemas.matchAll(/"@type"\s*:\s*"([^"]+)"/g)].map(m=>m[1]);
   const title=(doc.querySelector('title')?.textContent||'').trim();
   const h1=(doc.querySelector('h1')?.textContent||'').replace(/\s+/g,' ').trim();
-  const description=meta('description');
-  const siteName=meta('og:site_name','property');
-  const lang=doc.documentElement.getAttribute('lang')||'';
-  let resolvedCanonical='';
-  try{resolvedCanonical=canonical?new URL(canonical,url).href:'';}catch(e){}
-  return {
-    url,title,h1,meta:description,canonicalUrl:resolvedCanonical,lang,siteName,
-    schema:[...new Set(schemaTypes)].join(', '),
-    indexable:!robots.includes('noindex'),
-    robots:robots.trim(),
-    viewport:Boolean(doc.querySelector('meta[name="viewport"]')),
-    links:[...doc.querySelectorAll('a[href]')].map(a=>{try{return new URL(a.getAttribute('href'),url).href;}catch(e){return '';}}).filter(Boolean)
-  };
+  const description=meta('description'),siteName=meta('og:site_name','property'),lang=doc.documentElement.getAttribute('lang')||'';
+  const headings=[...doc.querySelectorAll('h2,h3')].map(node=>(node.textContent||'').replace(/\s+/g,' ').trim()).filter(Boolean).slice(0,80).join(' · ');
+  const root=doc.querySelector('main,article,[role="main"]')||doc.body;
+  let contentText='';
+  if(root){
+    const clone=root.cloneNode(true);
+    clone.querySelectorAll('script,style,noscript,svg,form,nav,footer,header,aside,[aria-hidden="true"]').forEach(node=>node.remove());
+    contentText=(clone.textContent||'').replace(/\s+/g,' ').trim().slice(0,18000);
+  }
+  let resolvedCanonical='';try{resolvedCanonical=canonical?new URL(canonical,url).href:'';}catch(e){}
+  return {url,title,h1,meta:description,headings,contentText,contentWordCount:contentText?contentText.split(/\s+/).filter(Boolean).length:0,canonicalUrl:resolvedCanonical,lang,siteName,
+    schema:[...new Set(schemaTypes)].join(', '),indexable:!robots.includes('noindex'),robots:robots.trim(),viewport:Boolean(doc.querySelector('meta[name="viewport"]')),
+    links:[...doc.querySelectorAll('a[href]')].map(a=>{try{return new URL(a.getAttribute('href'),url).href;}catch(e){return '';}}).filter(Boolean)};
 }
 
 /* ============================================================
@@ -4537,8 +4557,8 @@ function upsertScannedPage(signal){
   Object.assign(page,{
     pageName:signal.h1||signal.title||guessPageNameFromUrl(display),displayUrl:display,normalizedUrl:display,
     pageType:new URL(signal.url).pathname.replace(/\/+$/,'')===''?'Homepage':page.pageType||'Other',
-    statusCode:200,title:signal.title,meta:signal.meta,h1:signal.h1,canonicalUrl:signal.canonicalUrl?normalizePageUrlForProject(signal.canonicalUrl):'',
-    schema:signal.schema,indexable:signal.indexable,sitemap:true,source:'AUTO SITE SCAN',lastScannedAt:now(),updatedAt:now()
+    statusCode:200,title:signal.title,meta:signal.meta,h1:signal.h1,headings:signal.headings||'',contentText:signal.contentText||'',contentWordCount:signal.contentWordCount||0,canonicalUrl:signal.canonicalUrl?normalizePageUrlForProject(signal.canonicalUrl):'',
+    schema:signal.schema,indexable:signal.indexable,sitemap:true,source:'AUTO SITE SCAN',lastScannedAt:now(),semanticScannedAt:now(),updatedAt:now()
   });
   return page;
 }
@@ -6874,7 +6894,7 @@ if(window.__OGOS_DEBUG__){
     currentProject,byProject,wizardState,render,
     analyzeCurrentWebsite,autoFillProjectFields,domainSeed,
     normalizeSiteDomain,fetchPublicSiteText,detectFromSiteFlow,
-    runAutomationCycle,backfillKeywordsFromPages,parseDelimitedText,normalizeImportHeader,normalizeImportedRecord,actionPlanRows
+    runAutomationCycle,backfillKeywordsFromPages,keywordBestSuggestion,keywordAutoDecision,inferSearchIntent,pageSemanticProfile,classifyKeywordGeo,enrichSemanticPageContent,parseDelimitedText,normalizeImportHeader,normalizeImportedRecord,actionPlanRows
   };
 }
 })();
