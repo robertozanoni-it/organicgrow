@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS V5.6: flusso operativo a fasi numerate, wizard con passi progressivi e piano attività verificabile.">
+<meta name="description" content="Organic Growth OS V5.7: flusso operativo a fasi numerate, wizard con passi progressivi e piano attività verificabile.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
 <title>Organic Growth OS</title>
@@ -544,6 +544,61 @@ html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,v
 .journey-step-scope .muted{font-weight:700}
 
 /* ============================================================
+   V5.7 — VERIFICHE SUI DATI
+   ============================================================ */
+.finding-list{display:grid;gap:14px}
+.finding-card{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:16px;align-items:start;border:1px solid var(--border);border-radius:16px;background:var(--surface-alt);padding:16px}
+.finding-order{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1px solid var(--border);font-weight:900}
+.finding-card h4{font-size:18px;margin:6px 0}
+.finding-card summary{font-weight:800;cursor:pointer;padding:6px 0}
+.finding-samples{margin-top:10px;font-size:13.6px;color:var(--muted);overflow-wrap:anywhere}
+@media(max-width:760px){.finding-card{grid-template-columns:38px minmax(0,1fr)}.finding-card>.task-actions{grid-column:1/-1}.finding-card .task-actions .btn{width:100%}}
+
+/* ============================================================
+   V5.7 — COLLEGAMENTO KEYWORD
+   ============================================================ */
+.link-panel{border:1px solid color-mix(in srgb,var(--accent) 30%,var(--border));background:color-mix(in srgb,var(--accent) 5%,var(--surface));border-radius:18px;padding:20px}
+.link-how{margin:12px 0 0;padding-left:22px;color:var(--muted)}
+.link-how li{margin:5px 0}
+.link-list{display:grid;gap:10px}
+.link-row{display:grid;grid-template-columns:34px minmax(0,1.1fr) minmax(0,1.4fr) auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px}
+.link-order{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--surface-alt);font-weight:900;font-size:13px}
+.link-keyword{min-width:0}
+.link-keyword strong{display:block;overflow:hidden;text-overflow:ellipsis}
+.link-control select{width:100%}
+@media(max-width:820px){.link-row{grid-template-columns:34px minmax(0,1fr)}.link-control,.link-row>.btn{grid-column:1/-1}.link-row>.btn{width:100%}}
+
+/* ============================================================
+   V5.7 — SCHEDA RECORD GUIDATA
+   ============================================================ */
+.record-guide{border:1px solid var(--border);background:var(--surface-alt);border-radius:14px;padding:16px 18px;margin-bottom:18px}
+.record-guide.is-ok{border-color:color-mix(in srgb,var(--success) 45%,var(--border));background:color-mix(in srgb,var(--success) 8%,var(--surface))}
+.record-guide.is-warn{border-color:color-mix(in srgb,var(--warning) 45%,var(--border));background:color-mix(in srgb,var(--warning) 8%,var(--surface))}
+.record-guide-list{margin:12px 0 0;padding-left:22px}
+.record-guide-list li{margin:6px 0}
+.field .field-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
+.field-req,.field-rec{font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+.field-req{background:color-mix(in srgb,var(--danger) 14%,var(--surface));color:var(--danger)}
+.field-rec{background:color-mix(in srgb,var(--info) 14%,var(--surface));color:var(--info)}
+.field-count{margin-left:auto;font-size:11.6px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+.field-count.ok{color:var(--success)}
+.field-count.out{color:var(--warning)}
+.field-note{font-size:13px;font-weight:700;margin-top:6px;color:var(--warning)}
+.field-note.missing{color:var(--danger)}
+.field.has-problem input,.field.has-problem textarea,.field.has-problem select{border-color:color-mix(in srgb,var(--warning) 60%,var(--border-control))}
+.field.has-problem.missing input,.field.has-problem.missing textarea,.field.has-problem.missing select{border-color:color-mix(in srgb,var(--danger) 60%,var(--border-control))}
+.field .form-help:empty{display:none}
+
+/* ============================================================
+   V5.7 — CAMPI DA CONFERMARE
+   ============================================================ */
+.field-flag.is-actionable{cursor:pointer;border-width:1px;border-style:solid;font:inherit;font-size:11.6px;font-weight:800;padding:3px 9px;border-radius:999px;min-height:0}
+.field-flag.is-actionable:hover{filter:brightness(1.08)}
+.field-flag.is-actionable:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.validate-bar{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid color-mix(in srgb,var(--warning) 45%,var(--border));background:color-mix(in srgb,var(--warning) 8%,var(--surface));border-radius:14px;padding:16px 18px}
+.validate-bar .muted{max-width:760px}
+
+/* ============================================================
    V5.6 — BOX ATTIVITA NUMERATE
    ============================================================ */
 .task-box{border:1px solid var(--border);border-radius:18px;background:var(--surface-alt);padding:18px;margin-top:20px}
@@ -560,7 +615,7 @@ html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,v
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.6</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.7</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -1013,10 +1068,37 @@ const configs={
 
 function fieldFlag(name){
   const origin=currentProject()?.autoFilled?.[name];
+  if(origin==='confirmed')return '<span class="field-flag verified" title="Valore confermato da te">\u2713 confermato</span>';
   if(!origin)return '';
-  return origin==='site'
-    ? '<span class="field-flag verified" title="Valore letto dai contenuti pubblici del sito">\u2713 dal sito</span>'
-    : '<span class="field-flag guessed" title="Valore dedotto automaticamente: controllalo prima di usarlo">\u2192 da validare</span>';
+  /* "dal sito" = letto testualmente dalle pagine pubbliche: si conferma con un clic.
+     "da validare" = dedotto: va letto e confermato. In entrambi i casi serve un'azione. */
+  const label=origin==='site'?'\u2713 dal sito':'\u2192 da validare';
+  const title=origin==='site'
+    ? 'Valore letto dai contenuti pubblici del sito. Clicca per confermarlo come definitivo.'
+    : 'Valore dedotto automaticamente. Leggilo, correggilo se serve, poi clicca per confermarlo.';
+  return `<button type="button" class="field-flag ${origin==='site'?'verified':'guessed'} is-actionable" data-validate-field="${esc(name)}" title="${esc(title)}">${label} \u00b7 Conferma</button>`;
+}
+/* Conferma di un singolo campo: il valore attualmente nel form diventa quello salvato. */
+function confirmAutoField(name){
+  const p=currentProject();if(!p.autoFilled||!p.autoFilled[name])return;
+  const input=document.querySelector(`[data-project-field="${CSS.escape(name)}"]`);
+  if(input)p[name]=input.value;
+  p.autoFilled[name]='confirmed';
+  commit(`Campo confermato: ${name}`);toast('Campo confermato.');render();
+}
+function pendingAutoFields(){
+  const auto=currentProject()?.autoFilled||{};
+  return Object.keys(auto).filter(key=>auto[key]&&auto[key]!=='confirmed');
+}
+function confirmAllAutoFields(){
+  const p=currentProject(),pending=pendingAutoFields();
+  if(!pending.length){toast('Non ci sono campi da confermare.');return;}
+  pending.forEach(name=>{
+    const input=document.querySelector(`[data-project-field="${CSS.escape(name)}"]`);
+    if(input)p[name]=input.value;
+    p.autoFilled[name]='confirmed';
+  });
+  commit(`${pending.length} campi confermati`);toast(`${pending.length} campi confermati.`);render();
 }
 function field(name,label,val,full=false){
   return `<div class="field ${full?'full':''}">
@@ -1056,6 +1138,8 @@ function operationalPlanView(){
   const items=operationalPlanItems(),verified=byProject(state.tasks).filter(task=>['VERIFIED','CLOSED'].includes(String(task.status||'').toUpperCase())),first=items[0],firstStatus=first?planStatusInfo(first.status):null;
   const firstAction=first?(firstStatus.key==='DONE'?`<button class="btn primary" data-plan-verify data-plan-id="${esc(first.id)}" data-plan-kind="${esc(first.kind)}">Verifica la priorità 1</button>`:['APPROVED','IN PROGRESS','BLOCKED'].includes(firstStatus.key)?`<button class="btn primary" data-nav="${esc(first.target)}">Continua la priorità 1</button>`:`<button class="btn primary" data-plan-approve data-plan-id="${esc(first.id)}" data-plan-kind="${esc(first.kind)}">Approva la priorità 1</button>`):'<button class="btn primary" data-nav="Dashboard">Torna ai wizard</button>';
   return `${pageIntro('6.5 Piano operativo','Ultimo passo prima dell’esecuzione: consulta, modifica, approva e verifica ogni attività direttamente nell’app.',[`${items.length} attività aperte`,`${verified.length} verificate`])}
+  ${dataFindingsPanel()}
+  <div style="height:18px"></div>
   ${safeFixPanelView()}
   <section class="dashboard-command" aria-labelledby="planNextTitle"><div><div class="dashboard-label">Prossima azione consigliata</div><h3 id="planNextTitle">${esc(first?.title||'Il piano è aggiornato')}</h3><p>${esc(first?.why||'Non risultano altre modifiche prioritarie con i dati disponibili.')}</p></div>${firstAction}</section>
   <div style="height:18px"></div>
@@ -1147,16 +1231,177 @@ function reportRows(){
 function actionPlanRows(){
   const priorityWeight={CRITICAL:1,HIGH:2,MEDIUM:3,LOW:4,INFO:5};
   return wizardChecks().filter(check=>!check.resolved()).sort((a,b)=>(priorityWeight[a.severity]||9)-(priorityWeight[b.severity]||9)||a.order-b.order).map((check,index)=>({
-    order:index+1,priority:check.severity,title:check.title,why:check.why,target:check.target,steps:check.steps||[],verification:check.simple
+    order:index+1,priority:check.severity,severity:check.severity,title:check.title,why:check.why,target:check.target,steps:check.steps||[],verification:check.simple
   }));
 }
+/* ============================================================
+   V5.7 — COSA FARE
+   I "wizard checks" coprono solo gli 8 passi di configurazione: quando sono
+   tutti superati il piano risultava vuoto anche con decine di pagine senza
+   title o keyword scollegate. Queste verifiche leggono i dati reali e
+   producono azioni concrete, con motivazione, passaggi e criterio di verifica.
+   ============================================================ */
+function dataQualityFindings(){
+  const pages=byProject(state.pages),keywords=byProject(state.keywords);
+  const insights=keywordJourneyInsights();
+  const auto=currentProject()?.autoFilled||{};
+  const pendingFields=Object.keys(auto).filter(key=>auto[key]&&auto[key]!=='confirmed');
+  const findings=[];
+  const push=(item)=>{if(item.count>0)findings.push(item);};
+  /* Concordanza singolare/plurale: "1 pagina", "9 pagine". */
+  const pl=(n,one,many)=>`${n} ${n===1?one:many}`;
+  const urls=list=>list.map(page=>page.displayUrl||page.normalizedUrl||page.pageName||'').filter(Boolean);
+
+  const noTitle=pages.filter(page=>!String(page.title||'').trim());
+  push({id:'pages_no_title',severity:'HIGH',count:noTitle.length,target:'Pages',
+    title:`${pl(noTitle.length,'pagina','pagine')} senza Title`,
+    why:'Il title \u00e8 il testo che Google mostra come titolo del risultato. Senza title, Google ne inventa uno dal contenuto e perdi il controllo su come appari.',
+    steps:['Apri Pagine del sito e ordina per priorit\u00e0.','Per ogni pagina apri la scheda e compila il campo Title (30\u201360 caratteri).','Scrivi un title unico per ogni pagina, che contenga la parola chiave principale.','Pubblica la modifica sul sito, poi aggiorna il valore anche qui.'],
+    verify:'Riapri la pagina: il campo Title \u00e8 compilato e il contatore caratteri \u00e8 verde.',
+    samples:urls(noTitle)});
+
+  const noH1=pages.filter(page=>!String(page.h1||'').trim());
+  push({id:'pages_no_h1',severity:'HIGH',count:noH1.length,target:'Pages',
+    title:`${pl(noH1.length,'pagina','pagine')} senza H1`,
+    why:'L\u2019H1 \u00e8 il titolo visibile nella pagina. Serve alle persone per capire subito dove sono e a Google per confermare l\u2019argomento principale.',
+    steps:['Apri la pagina sul sito e controlla se esiste davvero un titolo principale.','Se manca, aggiungilo nel contenuto: uno solo per pagina.','Fai in modo che sia coerente con il Title ma non identico.','Aggiorna il campo H1 nella scheda della pagina.'],
+    verify:'La pagina ha un solo H1 e il campo H1 nella scheda risulta compilato.',
+    samples:urls(noH1)});
+
+  const noMeta=pages.filter(page=>!String(page.meta||'').trim());
+  push({id:'pages_no_meta',severity:'MEDIUM',count:noMeta.length,target:'Pages',
+    title:`${pl(noMeta.length,'pagina','pagine')} senza meta description`,
+    why:'La meta description \u00e8 il testo sotto il titolo nei risultati. Non influisce sul posizionamento ma incide molto sul numero di clic.',
+    steps:['Apri la scheda della pagina.','Scrivi 70\u2013160 caratteri che spiegano cosa trova chi clicca.','Includi un motivo concreto per scegliere te.','Pubblica sul sito e aggiorna il campo qui.'],
+    verify:'Il contatore caratteri del campo Meta description \u00e8 verde su ogni pagina prioritaria.',
+    samples:urls(noMeta)});
+
+  const titleMap={};
+  pages.forEach(page=>{const key=String(page.title||'').trim().toLowerCase();if(key)(titleMap[key]||(titleMap[key]=[])).push(page);});
+  const dupTitles=Object.values(titleMap).filter(list=>list.length>1);
+  push({id:'pages_dup_title',severity:'MEDIUM',count:dupTitles.length,target:'Pages',
+    title:`${pl(dupTitles.length,'title duplicato','title duplicati')} su pi\u00f9 pagine`,
+    why:'Due pagine con lo stesso title competono tra loro e confondono chi legge i risultati di ricerca.',
+    steps:['Confronta le pagine che condividono lo stesso title.','Decidi quale deve posizionarsi per quell\u2019argomento.','Riscrivi gli altri title differenziando argomento o pubblico.','Se le pagine sono davvero equivalenti, valuta di unirle e reindirizzare.'],
+    verify:'Nessun title compare pi\u00f9 di una volta nell\u2019inventario pagine.',
+    samples:dupTitles.slice(0,10).map(list=>`${list[0].title} \u2192 ${urls(list).join(' / ')}`)});
+
+  const blocked=pages.filter(page=>page.indexable===false);
+  push({id:'pages_blocked',severity:'HIGH',count:blocked.length,target:'Indexation',
+    title:`${pl(blocked.length,'pagina non indicizzabile','pagine non indicizzabili')}`,
+    why:'Una pagina bloccata da noindex o robots non pu\u00f2 comparire su Google. A volte \u00e8 voluto (pagine legali, aree private), a volte \u00e8 un errore che azzera il traffico.',
+    steps:['Apri Indicizzazione e controlla l\u2019elenco.','Per ciascuna decidi: il blocco \u00e8 intenzionale?','Se non lo \u00e8, rimuovi noindex o la regola robots sul sito.','Richiedi la scansione in Search Console e verifica dopo qualche giorno.'],
+    verify:'Le pagine che devono posizionarsi hanno Indicizzabile = true.',
+    samples:urls(blocked)});
+
+  const noCanonical=pages.filter(page=>!String(page.canonicalUrl||'').trim());
+  push({id:'pages_no_canonical',severity:'MEDIUM',count:noCanonical.length,target:'Canonical',
+    title:`${pl(noCanonical.length,'pagina','pagine')} senza canonical dichiarata`,
+    why:'La canonical dice a Google qual \u00e8 la versione ufficiale di una pagina. Senza, contenuti raggiungibili da pi\u00f9 URL possono essere trattati come duplicati.',
+    steps:['Controlla se il tema o il plugin SEO gi\u00e0 inserisce la canonical.','Se manca, impostala uguale all\u2019URL della pagina stessa.','Compila il campo Canonical nella scheda della pagina.'],
+    verify:'Ogni pagina indicizzabile ha una canonical coerente con la propria URL.',
+    samples:urls(noCanonical)});
+
+  push({id:'keywords_unlinked',severity:'HIGH',count:insights.unmapped.length,target:'Keywords',
+    title:`${pl(insights.unmapped.length,'keyword','keyword')} senza pagina collegata`,
+    why:'Una keyword senza pagina target \u00e8 solo un\u2019idea: non si pu\u00f2 misurare, non genera attivit\u00e0 e non si pu\u00f2 verificare.',
+    steps:['Apri Parole chiave.','Usa il riquadro \u201cCome collegare le keyword\u201d in cima alla pagina.','Scegli la pagina dall\u2019elenco e premi Collega.','Se nessuna pagina risponde a quella ricerca, crea un contenuto nuovo oppure elimina la keyword.'],
+    verify:'Nel riquadro compare \u201cTutte le keyword sono collegate a una pagina\u201d.',
+    samples:insights.unmapped.slice(0,10).map(keyword=>keyword.keyword)});
+
+  const pendingIntent=keywords.filter(keyword=>/da validare/i.test(String(keyword.intent||'')));
+  push({id:'keywords_intent',severity:'MEDIUM',count:pendingIntent.length,target:'Keywords',
+    title:`${pl(pendingIntent.length,'keyword ha','keyword hanno')} l\u2019intento da validare`,
+    why:'L\u2019intento decide il tipo di contenuto: una ricerca informativa vuole una guida, una transazionale vuole una pagina servizio. Se l\u2019intento \u00e8 sbagliato, il contenuto non si posiziona.',
+    steps:['Apri la keyword.','Nel campo Intento di ricerca scegli il valore corretto dall\u2019elenco.','Controlla che la pagina collegata sia del tipo giusto per quell\u2019intento.','Salva.'],
+    verify:'Nessuna keyword riporta pi\u00f9 la dicitura \u201cda validare\u201d nell\u2019intento.',
+    samples:pendingIntent.slice(0,10).map(keyword=>keyword.keyword)});
+
+  push({id:'keywords_cannibal',severity:'MEDIUM',count:insights.cannibalizations.length,target:'Cannibalization',
+    title:`${pl(insights.cannibalizations.length,'keyword collegata','keyword collegate')} a pi\u00f9 pagine`,
+    why:'Pi\u00f9 pagine sullo stesso intento si tolgono forza a vicenda: Google fatica a capire quale mostrare.',
+    steps:['Confronta le pagine collegate alla stessa keyword.','Scegli la pagina principale per quella ricerca.','Differenzia le altre oppure uniscile con un redirect.','Aggiorna il collegamento delle keyword.'],
+    verify:'Ogni keyword ha una sola pagina target.',
+    samples:insights.cannibalizations.slice(0,10).map(group=>`${group.keyword}: ${group.items.map(item=>item.targetUrl).join(' / ')}`)});
+
+  const noFocus=pages.filter(page=>!String(page.primaryKeyword||'').trim());
+  push({id:'pages_no_focus',severity:'MEDIUM',count:noFocus.length,target:'Pages',
+    title:`${pl(noFocus.length,'pagina','pagine')} senza parola chiave principale`,
+    why:'Senza un focus dichiarato non si pu\u00f2 stabilire se la pagina sta funzionando, n\u00e9 evitare che si sovrapponga ad altre.',
+    steps:['Apri la scheda della pagina.','Indica la ricerca principale a cui deve rispondere.','Verifica che nessun\u2019altra pagina abbia lo stesso focus.'],
+    verify:'Ogni pagina indicizzabile ha una parola chiave principale diversa dalle altre.',
+    samples:urls(noFocus)});
+
+  const noParent=pages.filter(page=>!String(page.parent||'').trim()&&!String(page.cluster||'').trim());
+  push({id:'pages_no_structure',severity:'LOW',count:noParent.length,target:'Architecture',
+    title:`${pl(noParent.length,'pagina','pagine')} senza posizione nella struttura`,
+    why:'Senza pagina superiore o cluster il sistema non pu\u00f2 calcolare profondit\u00e0, pagine orfane e collegamenti mancanti: per questo il punteggio Architettura resta a zero.',
+    steps:['Apri la scheda della pagina.','Indica il cluster tematico, ad esempio \u201cservizi\u201d o \u201cblog\u201d.','Indica la pagina superiore da cui dipende.','Ripeti almeno per le pagine principali.'],
+    verify:'Il punteggio Architettura in dashboard smette di essere zero.',
+    samples:urls(noParent)});
+
+  push({id:'project_fields',severity:'MEDIUM',count:pendingFields.length,target:'Project',
+    title:`${pl(pendingFields.length,'campo del progetto','campi del progetto')} da confermare`,
+    why:'Sono valori compilati automaticamente dal sito. Finch\u00e9 non li confermi il sistema li tratta come non verificati e non li usa per calcolare le priorit\u00e0.',
+    steps:['Apri Configurazione progetto.','Leggi i campi con l\u2019etichetta arancione \u201cda validare\u201d.','Correggi il testo se serve.','Premi il badge del campo per confermarlo, oppure usa \u201cConferma tutti i campi\u201d.'],
+    verify:'La barra arancione in cima alla configurazione progetto scompare.',
+    samples:pendingFields});
+
+  const weight={CRITICAL:1,HIGH:2,MEDIUM:3,LOW:4};
+  return findings.sort((a,b)=>(weight[a.severity]||9)-(weight[b.severity]||9)||b.count-a.count);
+}
+/* Trasforma le verifiche sui dati in attivit\u00e0 del piano, senza duplicati. */
+function createTasksFromDataFindings(){
+  let added=0;
+  dataQualityFindings().forEach(finding=>{
+    const autoKey=`data:${finding.id}`;
+    const existing=byProject(state.tasks).find(task=>task.autoKey===autoKey);
+    if(existing){
+      if(!['VERIFIED','CLOSED'].includes(String(existing.status||'').toUpperCase())){
+        existing.title=finding.title;existing.updatedAt=now();
+      }
+      return;
+    }
+    state.tasks.push({id:uid('task'),projectId:state.currentProjectId,autoKey,systemGenerated:true,
+      title:finding.title,why:finding.why,steps:finding.steps,description:finding.why,
+      acceptanceCriteria:finding.verify,targetView:finding.target,
+      priority:finding.severity==='CRITICAL'||finding.severity==='HIGH'?'P1':finding.severity==='MEDIUM'?'P2':'P3',
+      status:'PROPOSED',createdAt:now(),updatedAt:now()});
+    added++;
+  });
+  commit(added?`${added} attivit\u00e0 create dalle verifiche sui dati`:'Verifiche sui dati aggiornate');
+  toast(added?`${added} nuove attivit\u00e0 aggiunte al piano.`:'Le attivit\u00e0 corrispondenti sono gi\u00e0 nel piano.');
+  render();
+}
+function dataFindingsPanel(){
+  const findings=dataQualityFindings();
+  if(!findings.length){
+    return `<section class="card"><h3>Verifiche sui dati</h3><div class="good-box"><strong>\u2713 Nessun problema rilevato nei dati del progetto</strong><div class="muted">Title, H1, meta description, canonical, collegamenti keyword e struttura risultano completi.</div></div></section>`;
+  }
+  const total=findings.reduce((sum,item)=>sum+item.count,0);
+  return `<section class="card"><div class="section-head"><div><h3>Cosa fare sui dati del progetto</h3><div class="muted">Controlli eseguiti sui dati reali gi\u00e0 presenti: ogni voce dice cosa correggere, perch\u00e9 e come verificare.</div></div><div class="page-actions"><span class="badge warning">${total===1?'1 elemento da sistemare':`${total} elementi da sistemare`}</span><button class="btn primary" id="createTasksFromFindings">Crea le attivit\u00e0 nel piano</button></div></div>
+  <div class="finding-list">${findings.map((finding,index)=>`<article class="finding-card"><div class="finding-order">${index+1}</div><div><div class="badges"><span class="badge ${finding.severity==='HIGH'||finding.severity==='CRITICAL'?'danger':finding.severity==='MEDIUM'?'warning':'info'}">${esc(finding.severity)}</span><span class="badge">${esc(navLabel(finding.target))}</span></div><h4>${esc(finding.title)}</h4><p class="task-why"><strong>Perch\u00e9 conta:</strong> ${esc(finding.why)}</p><details ${index===0?'open':''}><summary>Cosa fare, passo per passo</summary><ol class="task-steps">${finding.steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol>${finding.samples&&finding.samples.length?`<div class="finding-samples"><strong>Esempi:</strong> ${esc(finding.samples.slice(0,6).join(' \u00b7 '))}${finding.count>6?` \u2026 e altri ${finding.count-6}`:''}</div>`:''}</details><div class="task-check"><strong>Come verificare</strong><div>${esc(finding.verify)}</div></div></div><div class="task-actions"><button class="btn" data-nav="${esc(finding.target)}">Apri ${esc(navLabel(finding.target))}</button></div></article>`).join('')}</div></section>`;
+}
+
 function buildReportHtml(){
   const p=currentProject(),scan=p.websiteScan||{},w=wizardState(),s=scores(),rows=reportRows(),plan=actionPlanRows();
+  const dataFindings=dataQualityFindings();
+  /* Un solo elenco: i controlli di configurazione e le verifiche sui dati
+     vengono ordinati insieme per gravita', cosi' il numero 1 e' davvero
+     la cosa piu' urgente. */
+  const severityWeightReport={CRITICAL:1,HIGH:2,MEDIUM:3,LOW:4,INFO:5,P1:2,P2:3,P3:4,P4:5};
+  const todo=[
+    ...plan.map(item=>({severity:item.severity||item.priority,title:item.title,why:item.why,target:item.target,steps:item.steps,verify:item.verification,kind:'setup'})),
+    ...dataFindings.map(finding=>({severity:finding.severity,title:finding.title,why:finding.why,target:finding.target,steps:finding.steps,verify:finding.verify,samples:finding.samples,count:finding.count,kind:'data'}))
+  ].sort((a,b)=>(severityWeightReport[a.severity]||9)-(severityWeightReport[b.severity]||9));
+  const totalSteps=todo.length;
+  const todoHtml=todo.map((item,index)=>`<article class="card"><h3>${index+1}. ${esc(item.title)} <span class="${['HIGH','CRITICAL','P1'].includes(item.severity)?'warn':'muted'}">${esc(item.severity)}</span></h3><p><strong>Perch\u00e9 conta:</strong> ${esc(item.why)}</p><p><strong>Dove si lavora:</strong> ${esc(navLabel(item.target))}</p><p><strong>Cosa fare:</strong></p><ol>${(item.steps||[]).map(step=>`<li>${esc(step)}</li>`).join('')}</ol>${item.samples&&item.samples.length?`<p class="muted"><strong>Esempi:</strong> ${esc(item.samples.slice(0,8).join(' \u00b7 '))}${item.count>8?` \u2026 e altri ${item.count-8}`:''}</p>`:''}<p><strong>${item.kind==='data'?'Come verificare':'Cosa manca adesso'}:</strong> ${esc(item.verify||'Ripeti il controllo guidato dopo la modifica.')}</p></article>`).join('');
   const openIssues=byProject(state.issues).filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase()));
   const generated=new Date().toLocaleString('it-IT');
   const tableRows=rows.map(r=>`<tr><td>${esc(r.sezione)}</td><td>${esc(r.titolo)}</td><td>${esc(r.stato)}</td><td>${esc(r.priorita)}</td><td>${esc(r.url)}</td><td>${esc(r.dettaglio)}</td></tr>`).join('');
-  const planHtml=plan.length?plan.map(item=>`<article class="card"><h3>${item.order}. ${esc(item.title)} <span class="warn">${esc(item.priority)}</span></h3><p><strong>Perché:</strong> ${esc(item.why)}</p><p><strong>Modulo:</strong> ${esc(navLabel(item.target))}</p><ol>${item.steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol><p><strong>Verifica finale:</strong> ${esc(item.verification)}</p></article>`).join(''):'<section class="card"><h2>Piano operativo</h2><p class="good"><strong>Nessuna attività prioritaria aperta.</strong></p></section>';
-  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Report SEO · ${esc(p.name)}</title><style>body{font-family:Inter,Arial,sans-serif;color:#101828;line-height:1.6;margin:0;background:#f5f7fb;font-size:17px}main{max-width:1180px;margin:auto;padding:32px}.head,.card{background:#fff;border:1px solid #d5dbe5;border-radius:14px;padding:22px;margin-bottom:18px}.head h1{font-size:30px;margin:0 0 8px}.muted{color:#536176}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{background:#fff;border:1px solid #d5dbe5;border-radius:12px;padding:16px}.stat strong{display:block;font-size:28px}.good{color:#087a47}.warn{color:#a34f00}table{width:100%;border-collapse:collapse;background:#fff;font-size:15px}th,td{text-align:left;vertical-align:top;border:1px solid #d5dbe5;padding:9px;overflow-wrap:anywhere}th{background:#eef3fb}.print{margin-bottom:18px;padding:10px 16px;border:0;border-radius:9px;background:#155eef;color:#fff;font-weight:700}@media(max-width:760px){main{padding:16px}.stats{grid-template-columns:1fr 1fr}.table{overflow:auto}}@media print{body{background:#fff}.print{display:none}main{max-width:none;padding:0}.head,.card,.stat{break-inside:avoid}}</style></head><body><main><button class="print" onclick="window.print()">Stampa / salva PDF</button><section class="head"><h1>Report SEO e piano operativo · ${esc(p.name)}</h1><div class="muted">${esc(p.domain||'Dominio non impostato')} · generato il ${esc(generated)}</div><p>${esc(p.positioning||p.primarySeoGoal||'Riepilogo operativo del progetto Organic Growth OS.')}</p></section><section class="stats"><div class="stat"><strong>${byProject(state.pages).length}</strong>Pagine</div><div class="stat"><strong>${byProject(state.keywords).length}</strong>Keyword</div><div class="stat"><strong class="${openIssues.length?'warn':'good'}">${openIssues.length}</strong>Problemi aperti</div><div class="stat"><strong>${plan.length}</strong>Passi prioritari</div></section><section><h2>Piano operativo in ordine di priorità</h2>${planHtml}</section><section class="card"><h2>Stato del controllo</h2><p><strong>Analisi sito:</strong> ${scan.status==='completed'?'Completata':'Non completata'} · <strong>Pagine analizzate:</strong> ${scan.pagesAnalyzed||0} · <strong>Keyword rilevate:</strong> ${byProject(state.keywords).length}</p><p><strong>Wizard:</strong> ${esc(w.status||'non avviato')} · <strong>Ultimo aggiornamento:</strong> ${esc(w.updatedAt?fmtDate(w.updatedAt):'—')}</p><p><strong>Score disponibili:</strong> Tecnica ${s.technical??'—'} · Architettura ${s.arch??'—'} · Copertura ${s.coverage??'—'} · Indicizzazione ${s.indexed??'—'}</p></section><section class="card table"><h2>Dettaglio dati</h2>${rows.length?`<table><thead><tr><th>Sezione</th><th>Elemento</th><th>Stato</th><th>Priorità</th><th>URL/modulo</th><th>Dettaglio</th></tr></thead><tbody>${tableRows}</tbody></table>`:'<p>Nessun dato operativo disponibile.</p>'}</section><section class="card"><strong>Nota</strong><p>Le keyword rilevate automaticamente derivano da contenuti pubblici del sito. Volumi, difficoltà e posizionamenti richiedono dati Search Console o strumenti esterni.</p></section></main></body></html>`;
+  const emptyPlanHtml='<article class="card"><h3 class="good">\u2713 Nessuna correzione necessaria</h3><p>Tutti i controlli disponibili risultano superati: configurazione completa, dati coerenti e nessun campo mancante tra quelli verificabili.</p></article>';
+  return `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Report SEO · ${esc(p.name)}</title><style>body{font-family:Inter,Arial,sans-serif;color:#101828;line-height:1.6;margin:0;background:#f5f7fb;font-size:17px}main{max-width:1180px;margin:auto;padding:32px}.head,.card{background:#fff;border:1px solid #d5dbe5;border-radius:14px;padding:22px;margin-bottom:18px}.head h1{font-size:30px;margin:0 0 8px}.muted{color:#536176}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{background:#fff;border:1px solid #d5dbe5;border-radius:12px;padding:16px}.stat strong{display:block;font-size:28px}.good{color:#087a47}.warn{color:#a34f00}table{width:100%;border-collapse:collapse;background:#fff;font-size:15px}th,td{text-align:left;vertical-align:top;border:1px solid #d5dbe5;padding:9px;overflow-wrap:anywhere}th{background:#eef3fb}.print{margin-bottom:18px;padding:10px 16px;border:0;border-radius:9px;background:#155eef;color:#fff;font-weight:700}@media(max-width:760px){main{padding:16px}.stats{grid-template-columns:1fr 1fr}.table{overflow:auto}}@media print{body{background:#fff}.print{display:none}main{max-width:none;padding:0}.head,.card,.stat{break-inside:avoid}}</style></head><body><main><button class="print" onclick="window.print()">Stampa / salva PDF</button><section class="head"><h1>Report SEO e piano operativo · ${esc(p.name)}</h1><div class="muted">${esc(p.domain||'Dominio non impostato')} · generato il ${esc(generated)}</div><p>${esc(p.positioning||p.primarySeoGoal||'Riepilogo operativo del progetto Organic Growth OS.')}</p></section><section class="stats"><div class="stat"><strong>${byProject(state.pages).length}</strong>Pagine</div><div class="stat"><strong>${byProject(state.keywords).length}</strong>Keyword</div><div class="stat"><strong class="${openIssues.length?'warn':'good'}">${openIssues.length}</strong>Problemi aperti</div><div class="stat"><strong class="${totalSteps?'warn':'good'}">${totalSteps}</strong>Cose da fare</div></section><section class="card"><h2>Come leggere questo report</h2><ol><li><strong>Cosa fare</strong> \u2014 l\u2019elenco numerato qui sotto \u00e8 il lavoro da svolgere, gi\u00e0 ordinato per priorit\u00e0. Ogni voce dice perch\u00e9 conta, i passaggi concreti e come capire se \u00e8 riuscita.</li><li><strong>Stato del controllo</strong> \u2014 fotografia di ci\u00f2 che il sistema ha potuto leggere.</li><li><strong>Dettaglio dati</strong> \u2014 l\u2019inventario completo, utile come allegato: non \u00e8 la lista delle cose da fare.</li></ol><p class="muted">Un punteggio a zero non significa \u201csito rotto\u201d: significa che mancano i dati per calcolarlo. Il punto 1 spiega quali.</p></section>
+  <section><h2>Cosa fare, in ordine di priorit\u00e0 (${totalSteps})</h2>${totalSteps?todoHtml:emptyPlanHtml}</section><section class="card"><h2>Stato del controllo</h2><p><strong>Analisi sito:</strong> ${scan.status==='completed'?'Completata':'Non completata'} · <strong>Pagine analizzate:</strong> ${scan.pagesAnalyzed||0} · <strong>Keyword rilevate:</strong> ${byProject(state.keywords).length}</p><p><strong>Wizard:</strong> ${esc(w.status||'non avviato')} · <strong>Ultimo aggiornamento:</strong> ${esc(w.updatedAt?fmtDate(w.updatedAt):'—')}</p><p><strong>Score disponibili:</strong> Tecnica ${s.technical??'—'} · Architettura ${s.arch??'—'} · Copertura ${s.coverage??'—'} · Indicizzazione ${s.indexed??'—'}</p></section><section class="card table"><h2>Dettaglio dati</h2>${rows.length?`<table><thead><tr><th>Sezione</th><th>Elemento</th><th>Stato</th><th>Priorità</th><th>URL/modulo</th><th>Dettaglio</th></tr></thead><tbody>${tableRows}</tbody></table>`:'<p>Nessun dato operativo disponibile.</p>'}</section><section class="card"><strong>Nota</strong><p>Le keyword rilevate automaticamente derivano da contenuti pubblici del sito. Volumi, difficoltà e posizionamenti richiedono dati Search Console o strumenti esterni.</p></section></main></body></html>`;
 }
 function downloadHtmlReport(){downloadTextFile(buildReportHtml(),'text/html','html');toast('Report HTML scaricato.');}
 function downloadCsvReport(){
@@ -1972,6 +2217,7 @@ function projectViewV2(){
     </div>`:''}
   </div>
   <div style="height:16px"></div>
+  ${(()=>{const pending=pendingAutoFields();return pending.length?`<div class="validate-bar"><div><strong>${pending.length} campi compilati automaticamente da confermare</strong><div class="muted">I campi con l\u2019etichetta arancione sono stati dedotti dal sito: leggili, correggili se serve e conferma. Finch\u00e9 non li confermi restano segnalati come non verificati.</div></div><button class="btn primary" type="button" id="confirmAllAutoFields">Conferma tutti i campi</button></div><div style="height:16px"></div>`:'';})()}
   <div class="card"><form id="projectForm" class="form-grid">
    <div class="field"><label for="name">Nome progetto</label><input id="name" name="name" value="${esc(p.name)}" required aria-describedby="nameHelp"><div class="form-help" id="nameHelp">Un nome riconoscibile per identificare il progetto.</div></div>
    <div class="field"><label for="domain">Dominio del sito</label><input id="domain" name="domain" type="url" inputmode="url" value="${esc(p.domain)}" placeholder="https://esempio.it" required aria-describedby="domainHelp domainError"><div class="form-help" id="domainHelp">Inserisci l’indirizzo completo, ad esempio https://esempio.it.</div><div class="field-error" id="domainError" hidden></div></div>
@@ -2341,11 +2587,94 @@ function pagesInventoryView(){
     </div>`}`;
 }
 
+/* ============================================================
+   V5.7 — COLLEGAMENTO KEYWORD → PAGINA
+   "Collegare una keyword" significa indicare quale pagina del sito deve
+   posizionarsi per quella ricerca. Senza questo collegamento la keyword
+   resta un'idea e non può generare attività verificabili.
+   ============================================================ */
+function keywordPageOptions(){
+  return byProject(state.pages).map(page=>({
+    url:page.displayUrl||page.normalizedUrl||'',
+    label:page.pageName||page.title||page.displayUrl||page.normalizedUrl||''
+  })).filter(option=>option.url);
+}
+function keywordUnlinked(){
+  return byProject(state.keywords).filter(keyword=>keyword.keyword&&!String(keyword.targetUrl||'').trim());
+}
+function keywordIntentPending(){
+  return byProject(state.keywords).filter(keyword=>/da validare/i.test(String(keyword.intent||'')));
+}
+function linkKeywordToPage(id,url){
+  const keyword=byProject(state.keywords).find(item=>item.id===id);
+  if(!keyword){toast('Keyword non trovata.');return;}
+  const value=String(url||'').trim();
+  if(!value){toast('Scegli prima una pagina.');return;}
+  keyword.targetUrl=value;keyword.linkedAt=now();keyword.updatedAt=now();
+  commit(`Keyword collegata: ${keyword.keyword}`);
+  runAutomationCycle(false);
+  toast(`“${keyword.keyword}” collegata a ${value}.`);
+  render();
+}
+function setKeywordIntent(id,intent){
+  const keyword=byProject(state.keywords).find(item=>item.id===id);
+  if(!keyword)return;
+  keyword.intent=intent;keyword.intentValidated=true;keyword.updatedAt=now();
+  commit(`Intento confermato: ${keyword.keyword}`);toast('Intento confermato.');render();
+}
+/* Collegamento automatico: usa solo corrispondenze verificabili tra la
+   keyword e title/H1/URL della pagina. Non inventa associazioni. */
+function autoLinkKeywords(){
+  const pages=byProject(state.pages),unlinked=keywordUnlinked();
+  const normalize=value=>String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+  let linked=0;
+  unlinked.forEach(keyword=>{
+    const target=normalize(keyword.keyword);
+    if(!target)return;
+    const words=target.split(' ').filter(word=>word.length>2);
+    if(!words.length)return;
+    let best=null,bestScore=0;
+    pages.forEach(page=>{
+      const haystack=normalize(`${page.pageName||''} ${page.title||''} ${page.h1||''} ${page.displayUrl||''}`);
+      if(!haystack)return;
+      const hits=words.filter(word=>haystack.includes(word)).length;
+      const score=hits/words.length;
+      if(score>bestScore){bestScore=score;best=page;}
+    });
+    if(best&&bestScore>=0.75){
+      keyword.targetUrl=best.displayUrl||best.normalizedUrl||'';
+      keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='auto-match';
+      if(keyword.targetUrl)linked++;
+    }
+  });
+  if(linked){commit(`${linked} keyword collegate automaticamente`);runAutomationCycle(false);}
+  toast(linked?`${linked} keyword collegate per corrispondenza verificabile. Le restanti richiedono una scelta manuale.`:'Nessuna corrispondenza sufficientemente affidabile: collega le keyword manualmente.');
+  render();
+}
+function keywordLinkPanel(){
+  const unlinked=keywordUnlinked(),pending=keywordIntentPending(),options=keywordPageOptions();
+  if(!unlinked.length&&!pending.length){
+    return `<div class="good-box"><strong>✓ Tutte le keyword sono collegate a una pagina</strong><div class="muted">Ogni ricerca ha una destinazione e un intento confermato. Le attività del piano possono essere verificate.</div></div><div style="height:16px"></div>`;
+  }
+  if(!options.length){
+    return `<div class="callout"><strong>Prima servono le pagine del sito</strong><p class="muted">Per collegare una keyword devi poter scegliere una pagina. Rileva o importa prima le pagine.</p><button class="btn primary" data-nav="Pages">Apri Pagine del sito</button></div><div style="height:16px"></div>`;
+  }
+  const select=id=>`<select data-link-select="${esc(id)}" aria-label="Scegli la pagina da collegare"><option value="">Scegli la pagina…</option>${options.map(option=>`<option value="${esc(option.url)}">${esc(option.label)} — ${esc(option.url)}</option>`).join('')}</select>`;
+  const rows=unlinked.slice(0,12).map((keyword,index)=>`<div class="link-row"><div class="link-order">${index+1}</div><div class="link-keyword"><strong>${esc(keyword.keyword)}</strong><div class="muted">${esc(keyword.source||'Manuale')}</div></div><div class="link-control">${select(keyword.id)}</div><button class="btn primary" data-link-keyword="${esc(keyword.id)}">Collega</button></div>`).join('');
+  return `<section class="link-panel">
+    <div class="section-head"><div><h3>Come collegare le keyword</h3><div class="muted">Collegare una keyword significa dire <strong>quale pagina del sito deve rispondere a quella ricerca</strong>. Finché manca il collegamento, la keyword non entra nel piano operativo e non può essere verificata.</div></div><span class="badge ${unlinked.length?'warning':'success'}">${unlinked.length} da collegare</span></div>
+    <ol class="link-how"><li>Scegli la pagina nell’elenco a destra della keyword.</li><li>Premi <strong>Collega</strong>: il valore finisce nel campo “Pagina target”.</li><li>Se più keyword puntano alla stessa pagina, il sistema segnala una possibile cannibalizzazione.</li></ol>
+    ${unlinked.length?`<div class="page-actions" style="margin:14px 0"><button class="btn" id="autoLinkKeywords">Collega automaticamente quelle evidenti</button><span class="muted">Associa solo quando la keyword corrisponde a title, H1 o URL della pagina.</span></div><div class="link-list">${rows}</div>${unlinked.length>12?`<div class="muted" style="margin-top:10px">Altre ${unlinked.length-12} keyword da collegare: compaiono man mano che completi queste.</div>`:''}`:''}
+    ${pending.length?`<div class="callout" style="margin-top:16px"><strong>${pending.length} keyword hanno un intento ancora da validare</strong><p class="muted">L’intento “COMMERCIAL / INFORMATIONAL — da validare” significa che il sistema non ha potuto dedurlo con certezza. Apri la keyword e scegli l’intento corretto dall’elenco: serve a capire che tipo di contenuto deve avere la pagina.</p><button class="btn" data-edit="keywords" data-id="${esc(pending[0].id)}">Apri la prima keyword da validare</button></div>`:''}
+  </section><div style="height:16px"></div>`;
+}
+
 function keywordIntelligenceView(){
   const rows=byProject(state.keywords),pages=byProject(state.pages);
   return `${pageIntro('Keyword Intelligence','Proposte ricavate automaticamente da title, H1 e URL delle pagine. Non vengono inventati volumi o posizionamenti.',[`${rows.length} keyword`,`${pages.length} pagine`])}
   <div class="section-head"><div><div class="muted">Ogni proposta mantiene la pagina target e indica chiaramente l’origine. Puoi modificarla o integrarla con i dati Search Console.</div></div><div class="page-actions"><button class="btn primary" id="generateKeywordsFromPages">Rileva keyword dalle pagine</button><button class="btn" data-import-target="keywords">Importa keyword</button><button class="btn" data-add="keywords">+ Aggiungi manualmente</button></div></div>
-  ${rows.length?`<div class="toolbar"><input data-search-table="keywords" aria-label="Cerca keyword" placeholder="Cerca keyword o URL"><div class="spacer"></div><span class="muted">${rows.length} record</span></div><div class="table-wrap" tabindex="0" role="region" aria-label="Keyword collegate alle pagine"><table><thead><tr>${configs.keywords.cols.map(c=>`<th scope="col">${c.label}</th>`).join('')}<th scope="col">Origine</th><th scope="col">Azioni</th></tr></thead><tbody>${rows.map(r=>`<tr data-table-row="keywords">${configs.keywords.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td>${esc(r.source||'Manuale')}</td><td><button class="btn" data-edit="keywords" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="card empty"><strong>Nessuna keyword collegata</strong><p>${pages.length?`Sono già presenti ${pages.length} pagine: posso generare ora una prima mappa keyword senza inventare metriche.`:'Prima rileva o importa le pagine del sito; poi potrò proporre una keyword per ciascuna URL.'}</p>${pages.length?'<button class="btn primary" id="generateKeywordsFromPages2">Genera keyword dalle pagine esistenti</button>':'<button class="btn primary" data-nav="Pages">Apri Pagine del sito</button>'}</div>`}`;
+  ${rows.length?keywordLinkPanel():''}
+  ${rows.length?`<div class="toolbar"><input data-search-table="keywords" aria-label="Cerca keyword" placeholder="Cerca keyword o URL"><div class="spacer"></div><span class="muted">${rows.length} record</span></div><div class="table-wrap" tabindex="0" role="region" aria-label="Keyword collegate alle pagine"><table><thead><tr>${configs.keywords.cols.map(c=>`<th scope="col">${c.label}</th>`).join('')}<th scope="col">Origine</th><th scope="col">Azioni</th></tr></thead><tbody>${rows.map(r=>`<tr data-table-row="keywords">${configs.keywords.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td>${esc(r.source||'Manuale')}</td><td>${String(r.targetUrl||'').trim()?'<span class="badge success">collegata</span> ':'<span class="badge warning">da collegare</span> '}<button class="btn" data-edit="keywords" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="card empty"><strong>Nessuna keyword collegata</strong><p>${pages.length?`Sono già presenti ${pages.length} pagine: posso generare ora una prima mappa keyword senza inventare metriche.`:'Prima rileva o importa le pagine del sito; poi potrò proporre una keyword per ciascuna URL.'}</p>${pages.length?'<button class="btn primary" id="generateKeywordsFromPages2">Genera keyword dalle pagine esistenti</button>':'<button class="btn primary" data-nav="Pages">Apri Pagine del sito</button>'}</div>`}`;
 }
 
 function extractUrlsFromText(text){
@@ -4575,6 +4904,15 @@ function bindView(){
    state.tasks.push(t); runAutomationCycle(false); commit('Task creato dal Guided Review'); toast('Task creato'); state.ui.activeView='Tasks'; render();
  });
  document.querySelectorAll('[data-monitor-action]').forEach(b=>b.onclick=()=>toast('Azione marcata per monitoraggio manuale.'));
+ document.querySelectorAll('[data-validate-field]').forEach(b=>b.onclick=()=>confirmAutoField(b.dataset.validateField));
+ document.querySelectorAll('[data-link-keyword]').forEach(b=>b.onclick=()=>{
+   const id=b.dataset.linkKeyword;
+   const select=document.querySelector(`[data-link-select="${CSS.escape(id)}"]`);
+   linkKeywordToPage(id,select?select.value:'');
+ });
+ document.querySelectorAll('[data-link-select]').forEach(select=>select.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();linkKeywordToPage(select.dataset.linkSelect,select.value);}});
+ const alk=document.getElementById('autoLinkKeywords'); if(alk) alk.onclick=autoLinkKeywords;
+ const cfa=document.getElementById('confirmAllAutoFields'); if(cfa) cfa.onclick=confirmAllAutoFields;
  const pf=document.getElementById('projectForm');
  if(pf){
    const domainInput=pf.querySelector('#domain'),domainError=pf.querySelector('#domainError');
@@ -4594,6 +4932,7 @@ function bindView(){
  }
  const importInput=document.getElementById('importFile');if(importInput)importInput.onchange=()=>{const list=document.getElementById('selectedImportFiles');const files=[...importInput.files];list.innerHTML=files.map(file=>`<div class="import-file-item"><strong>${esc(file.name)}</strong> · ${Math.max(1,Math.round(file.size/1024))} KB</div>`).join('');};
  const ib=document.getElementById('doImportBtn'); if(ib) ib.onclick=handleImportV2;
+ const ctf=document.getElementById('createTasksFromFindings'); if(ctf) ctf.onclick=createTasksFromDataFindings;
  const rop=document.getElementById('refreshOperationalPlan'); if(rop) rop.onclick=()=>{runAutomationCycle(false);commit('Piano operativo aggiornato');toast('Piano aggiornato con i dati disponibili.');render();};
  const eb=document.getElementById('exportBackup'); if(eb) eb.onclick=()=>storage.export(state);
  const cs=document.getElementById('createSnapshot'); if(cs) cs.onclick=createSnapshot;
@@ -4627,9 +4966,12 @@ function bindView(){
  document.querySelectorAll('[data-project-field]').forEach(input=>{
    input.addEventListener('input',()=>{
      const p=currentProject();
-     if(p.autoFilled&&p.autoFilled[input.dataset.projectField]){
-       delete p.autoFilled[input.dataset.projectField];
-       input.closest('.field')?.querySelector('.field-flag')?.remove();
+     const key=input.dataset.projectField;
+     if(p.autoFilled&&p.autoFilled[key]&&p.autoFilled[key]!=='confirmed'){
+       /* Se l'utente riscrive il valore, il campo e' di fatto validato da lui. */
+       p.autoFilled[key]='confirmed';
+       const flag=input.closest('.field')?.querySelector('.field-flag');
+       if(flag){flag.outerHTML='<span class="field-flag verified" title="Valore modificato e confermato da te">\u2713 confermato</span>';}
      }
    });
  });
@@ -4667,6 +5009,114 @@ function bindView(){
 
 }
 
+/* ============================================================
+   V5.7 — SCHEDA RECORD GUIDATA
+   Ogni campo ha un'etichetta comprensibile, una spiegazione di cosa
+   scriverci e, dove possibile, una regola verificabile. La scheda si apre
+   con un riquadro che dice subito cosa manca e cosa correggere.
+   ============================================================ */
+const drawerFieldListCache={};
+function drawerFieldList(key){
+  if(!drawerFieldListCache[key])drawerFields(key,{});
+  return drawerFieldListCache[key]||[];
+}
+const recordFieldHelp={
+  pages:{
+    pageName:{label:'Nome della pagina',help:'Come chiami questa pagina internamente. Serve solo a te per riconoscerla.'},
+    displayUrl:{label:'URL della pagina',help:'Indirizzo della pagina, ad esempio /blog/nome-articolo.',required:true},
+    pageType:{label:'Tipo di pagina',help:'Homepage, servizio, articolo, legale... Serve a capire il ruolo della pagina nel sito.',recommended:true},
+    statusCode:{label:'Codice HTTP',help:'200 = pagina raggiungibile. 404 = non esiste. 301 = reindirizzata.'},
+    canonicalUrl:{label:'URL canonical',help:'La versione ufficiale di questa pagina. Se non ci sono duplicati, coincide con l\u2019URL stessa.',recommended:true},
+    expectedCanonical:{label:'Canonical attesa',help:'Quale canonical dovrebbe avere secondo te. Compila solo se sospetti un errore.'},
+    primaryKeyword:{label:'Parola chiave principale',help:'La ricerca a cui questa pagina deve rispondere. Una sola, la pi\u00f9 importante.',recommended:true},
+    intent:{label:'Intento di ricerca',help:'Cosa vuole chi cerca: informarsi, confrontare, acquistare o raggiungere una pagina precisa.'},
+    cluster:{label:'Cluster tematico',help:'Il gruppo di argomenti a cui appartiene la pagina, ad esempio \u201cservizi SEO\u201d.'},
+    parent:{label:'Pagina superiore',help:'La pagina da cui questa dipende nella struttura del sito. Serve a calcolare la profondit\u00e0.'},
+    title:{label:'Title (titolo per Google)',help:'Il titolo mostrato nei risultati di ricerca. Indicativamente 30\u201360 caratteri, unico per ogni pagina.',recommended:true,len:[30,60]},
+    meta:{label:'Meta description',help:'Il testo sotto il titolo nei risultati. Indicativamente 70\u2013160 caratteri, deve invogliare al clic.',recommended:true,len:[70,160]},
+    h1:{label:'H1 (titolo nella pagina)',help:'Il titolo principale visibile nella pagina. Uno solo, coerente con il contenuto.',recommended:true},
+    schema:{label:'Dati strutturati',help:'Tipo di schema presente, ad esempio Article, LocalBusiness, FAQPage.'},
+    indexable:{label:'Indicizzabile',help:'true = Google pu\u00f2 inserirla nei risultati. false = bloccata da noindex o robots.'},
+    indexed:{label:'Indicizzata',help:'true = risulta effettivamente nei risultati di Google.'},
+    sitemap:{label:'Presente in sitemap',help:'true = la pagina compare nella sitemap XML del sito.'},
+    gscStatus:{label:'Stato Search Console',help:'Lo stato riportato da Google Search Console, se lo conosci.'},
+    priority:{label:'Priorit\u00e0',help:'P1 = da sistemare subito. P4 = pu\u00f2 aspettare.'}
+  },
+  keywords:{
+    keyword:{label:'Parola chiave',help:'La ricerca esatta digitata dalle persone.',required:true},
+    intent:{label:'Intento di ricerca',help:'Informational = vuole sapere. Transactional = vuole comprare. Navigational = cerca te.',recommended:true},
+    secondaryIntent:{label:'Intento secondario',help:'Compila solo se la ricerca ha un doppio significato.'},
+    expectedContentType:{label:'Tipo di contenuto atteso',help:'Cosa si aspetta di trovare: guida, pagina servizio, scheda prodotto, confronto.'},
+    userProblem:{label:'Problema di chi cerca',help:'Il bisogno reale dietro la ricerca.'},
+    desiredOutcome:{label:'Risultato desiderato',help:'Cosa deve ottenere la persona dopo aver letto la pagina.'},
+    targetUrl:{label:'Pagina target',help:'La pagina del sito che deve posizionarsi per questa ricerca. Scegli tra le pagine gi\u00e0 rilevate.',required:true},
+    position:{label:'Posizione media',help:'Solo da Search Console. Lascia vuoto se non hai dati reali.'},
+    impressions:{label:'Impression',help:'Solo da Search Console. Lascia vuoto se non hai dati reali.'},
+    priority:{label:'Priorit\u00e0',help:'Quanto conta questa keyword per il progetto.'}
+  },
+  issues:{
+    title:{label:'Problema',help:'Descrivi il problema in una riga, senza gergo.',required:true},
+    category:{label:'Categoria',help:'Tecnico, contenuto, architettura, indicizzazione.'},
+    url:{label:'URL interessata',help:'La pagina su cui si presenta il problema.',recommended:true},
+    source:{label:'Origine',help:'Da dove arriva la segnalazione: scansione automatica, Search Console, controllo manuale.'},
+    severity:{label:'Gravit\u00e0',help:'Quanto \u00e8 grave se resta cos\u00ec.'},
+    priority:{label:'Priorit\u00e0',help:'In che ordine affrontarlo.'},
+    status:{label:'Stato',help:'TODO = da fare. DONE = fatto ma da verificare. VERIFIED = verificato.'},
+    confidence:{label:'Affidabilit\u00e0 (%)',help:'Quanto sei sicuro che sia un problema reale e non un falso positivo.'},
+    whyNow:{label:'Perch\u00e9 affrontarlo ora',help:'Cosa succede se non lo risolvi.',recommended:true}
+  },
+  tasks:{
+    title:{label:'Attivit\u00e0',help:'Cosa va fatto, in una riga.',required:true},
+    priority:{label:'Priorit\u00e0',help:'P1 = blocca il resto. P4 = miglioria.'},
+    status:{label:'Stato',help:'TODO \u2192 DONE (fatto, da verificare) \u2192 VERIFIED (verificato).'},
+    owner:{label:'Responsabile',help:'Chi la esegue.'},
+    dueDate:{label:'Scadenza',help:'Formato aaaa-mm-gg.'},
+    linkedUrl:{label:'Pagina o URL collegata',help:'Su quale pagina si interviene.'},
+    targetView:{label:'Modulo collegato',help:'Dove si lavora dentro l\u2019app.'},
+    why:{label:'Perch\u00e9 \u00e8 importante',help:'La motivazione: serve a te fra un mese e a chi legge il report.',recommended:true},
+    steps:{label:'Passaggi da seguire',help:'Un passaggio per riga. Devono essere azioni concrete.',recommended:true},
+    acceptanceCriteria:{label:'Come verificare il risultato',help:'La prova oggettiva che il lavoro \u00e8 riuscito.',recommended:true},
+    verificationEvidence:{label:'Prova della verifica',help:'Cosa hai controllato di preciso. Si compila alla chiusura.'},
+    dependencies:{label:'Dipendenze',help:'Cosa deve essere fatto prima.'},
+    description:{label:'Descrizione',help:'Dettagli aggiuntivi.'}
+  }
+};
+function recordFieldInfo(key,name,fallbackLabel){
+  const info=(recordFieldHelp[key]||{})[name]||{};
+  return {label:info.label||fallbackLabel,help:info.help||'',required:!!info.required,recommended:!!info.recommended,len:info.len||null};
+}
+/* Diagnostica: cosa manca o cosa non torna in questo record. */
+function recordDiagnostics(key,rec,fields){
+  const problems=[];
+  fields.forEach(([name,fallback])=>{
+    const info=recordFieldInfo(key,name,fallback);
+    const raw=rec[name];
+    const value=raw===undefined||raw===null?'':String(raw).trim();
+    if(!value){
+      if(info.required)problems.push({name,level:'missing',label:info.label,message:'Campo obbligatorio: senza questo dato il record non \u00e8 utilizzabile.'});
+      else if(info.recommended)problems.push({name,level:'todo',label:info.label,message:'Da compilare: \u00e8 uno dei campi che determinano le priorit\u00e0.'});
+      return;
+    }
+    if(info.len){
+      const n=value.length;
+      if(n<info.len[0])problems.push({name,level:'todo',label:info.label,message:`Troppo corto: ${n} caratteri, indicativamente ne servono almeno ${info.len[0]}.`});
+      else if(n>info.len[1])problems.push({name,level:'todo',label:info.label,message:`Troppo lungo: ${n} caratteri, oltre ${info.len[1]} rischia il troncamento.`});
+    }
+    if(name==='intent'&&/da validare/i.test(value))problems.push({name,level:'todo',label:info.label,message:'Intento dedotto automaticamente: scegli quello corretto dall\u2019elenco.'});
+  });
+  if(key==='pages'&&rec.indexable===false)problems.push({name:'indexable',level:'missing',label:'Indicizzabile',message:'La pagina \u00e8 bloccata: verifica se il blocco \u00e8 voluto.'});
+  if(key==='keywords'&&rec.targetUrl&&!byProject(state.pages).some(page=>[page.displayUrl,page.normalizedUrl,page.canonicalUrl].includes(rec.targetUrl)))
+    problems.push({name:'targetUrl',level:'todo',label:'Pagina target',message:'La URL indicata non compare tra le pagine del progetto: controlla che sia scritta come nell\u2019inventario.'});
+  return problems;
+}
+function recordDiagnosticsPanel(key,rec,fields,isNew){
+  if(isNew)return `<div class="record-guide"><strong>Nuovo record</strong><div class="muted">I campi contrassegnati come obbligatori vanno compilati. Gli altri servono a rendere pi\u00f9 affidabili le priorit\u00e0 del piano.</div></div>`;
+  const problems=recordDiagnostics(key,rec,fields);
+  if(!problems.length)return `<div class="record-guide is-ok"><strong>\u2713 Questo record \u00e8 completo</strong><div class="muted">Tutti i campi controllati risultano compilati e coerenti. Puoi chiudere senza modifiche.</div></div>`;
+  const missing=problems.filter(p=>p.level==='missing').length;
+  return `<div class="record-guide is-warn"><strong>Cosa correggere in questa scheda</strong><div class="muted">${missing?`${missing} campi bloccanti e `:''}${problems.length-missing} campi da migliorare. Sono evidenziati in arancione qui sotto.</div><ol class="record-guide-list">${problems.map(p=>`<li><strong>${esc(p.label)}</strong> \u2014 ${esc(p.message)}</li>`).join('')}</ol></div>`;
+}
+
 function drawerFields(key,rec={}){
  const common={pages:[
    ['pageName','Pagina'],['displayUrl','URL'],['pageType','Tipo'],['statusCode','HTTP'],['canonicalUrl','Canonical'],['expectedCanonical','Expected Canonical'],['primaryKeyword','Primary Keyword'],['intent','Intent'],['cluster','Cluster'],['parent','Parent'],['title','Title'],['meta','Meta'],['h1','H1'],['schema','Schema'],['indexable','Indexable'],['indexed','Indexed'],['sitemap','Sitemap'],['gscStatus','GSC Status'],['priority','Priority']
@@ -4690,6 +5140,7 @@ function drawerFields(key,rec={}){
  changeEvents:[['title','Change'],['type','Type'],['date','Date'],['result','Result'],['description','Description']],
  snapshots:[['name','Snapshot'],['reason','Reason']]
  }[key]||[['title','Title'],['status','Status'],['notes','Notes']];
+ drawerFieldListCache[key]=common;
  const textareas=['description','notes','whyNow','recommendation','learning','acceptanceCriteria','verificationEvidence','steps','why','reason','userProblem','desiredOutcome'];
  const selectMap={
    priority:['P1','P2','P3','P4'],
@@ -4702,21 +5153,47 @@ function drawerFields(key,rec={}){
    indexed:['true','false'],
    sitemap:['true','false']
  };
- return common.map(([n,l])=>{
+ const problems=recordDiagnostics(key,rec,common);
+ const problemByField={};problems.forEach(p=>{if(!problemByField[p.name])problemByField[p.name]=p;});
+ /* Elenco delle pagine del progetto: permette di collegare una keyword
+    scegliendo una URL reale invece di riscriverla a mano. */
+ const pageOptions=byProject(state.pages).map(page=>page.displayUrl||page.normalizedUrl).filter(Boolean);
+ const listId=`record_${key}_pages_list`;
+ const datalist=pageOptions.length?`<datalist id="${listId}">${[...new Set(pageOptions)].map(url=>`<option value="${esc(url)}"></option>`).join('')}</datalist>`:'';
+ return datalist+common.map(([n,l])=>{
+   const info=recordFieldInfo(key,n,l);
    const full=textareas.includes(n);
    const controlId=`record_${key}_${n}`;
+   const helpId=`${controlId}_help`;
+   const problem=problemByField[n];
+   const linksToPage=(n==='targetUrl'&&key==='keywords')||(n==='linkedUrl'&&key==='tasks')||(n==='url'&&key==='issues');
    let control='';
    if(selectMap[n]){
      const vals=[...new Set([rec[n],...selectMap[n]].filter(Boolean))];
-     control=`<select id="${controlId}" name="${n}">${vals.map(v=>`<option ${String(rec[n]||'')===String(v)?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
-   } else if(full) control=`<textarea id="${controlId}" name="${n}" placeholder="Inserisci informazioni utili e verificabili">${esc(rec[n]||'')}</textarea>`;
-   else control=`<input id="${controlId}" name="${n}" value="${esc(rec[n]??'')}" placeholder="${esc(l)}">`;
-   return `<div class="field ${full?'full':''}"><label for="${controlId}">${l}</label>${control}</div>`;
+     control=`<select id="${controlId}" name="${n}" aria-describedby="${helpId}">${vals.map(v=>`<option ${String(rec[n]||'')===String(v)?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
+   } else if(full) control=`<textarea id="${controlId}" name="${n}" aria-describedby="${helpId}" placeholder="${esc(info.help||'Inserisci informazioni utili e verificabili')}">${esc(rec[n]||'')}</textarea>`;
+   else control=`<input id="${controlId}" name="${n}" ${linksToPage&&pageOptions.length?`list="${listId}"`:''} value="${esc(rec[n]??'')}" aria-describedby="${helpId}" placeholder="${esc(info.label)}">`;
+   const badge=info.required?'<span class="field-req">obbligatorio</span>':info.recommended?'<span class="field-rec">consigliato</span>':'';
+   const counter=info.len?`<span class="field-count" data-count-for="${controlId}" data-count-min="${info.len[0]}" data-count-max="${info.len[1]}">${String(rec[n]||'').length} car.</span>`:'';
+   const note=problem?`<div class="field-note ${problem.level}">${esc(problem.message)}</div>`:'';
+   const helpText=info.help?`<div class="form-help" id="${helpId}">${esc(info.help)}</div>`:`<div class="form-help" id="${helpId}"></div>`;
+   return `<div class="field ${full?'full':''} ${problem?'has-problem '+problem.level:''}"><div class="field-head"><label for="${controlId}">${esc(info.label)}</label>${badge}${counter}</div>${control}${note}${helpText}${linksToPage&&pageOptions.length?'<div class="form-help">Inizia a scrivere: compare l\u2019elenco delle pagine gi\u00e0 rilevate nel progetto.</div>':''}</div>`;
  }).join('');
 }
+const recordDrawerTitles={pages:'Pagina del sito',keywords:'Parola chiave',issues:'Problema',tasks:'Attivit\u00e0',competitors:'Concorrente',redirects:'Redirect',migrations:'Migrazione',entities:'Entit\u00e0',opportunities:'Opportunit\u00e0',milestones:'Traguardo',decisions:'Decisione',evidence:'Evidenza'};
 function openRecordDrawer(key,id=null){
  const rec=id?state[key].find(x=>x.id===id):{};
- openDrawer(id?'Modifica record':'Nuovo record',`<form id="recordForm" class="form-grid">${drawerFields(key,rec)}<div class="field full" style="display:flex;flex-direction:row;gap:8px"><button class="btn primary" type="submit">Salva</button>${id?'<button class="btn danger" type="button" id="deleteRecord">Elimina</button>':''}</div></form>`);
+ const fields=drawerFields(key,rec);
+ const label=recordDrawerTitles[key]||'Record';
+ const guide=recordDiagnosticsPanel(key,rec,drawerFieldList(key),!id);
+ openDrawer(id?`${label}: cosa correggere`:`Nuovo/a ${label.toLowerCase()}`,`${guide}<form id="recordForm" class="form-grid">${fields}<div class="field full" style="display:flex;flex-direction:row;gap:8px"><button class="btn primary" type="submit">Salva</button>${id?'<button class="btn danger" type="button" id="deleteRecord">Elimina</button>':''}</div></form>`);
+ /* Contatori caratteri live per Title e Meta description. */
+ document.querySelectorAll('[data-count-for]').forEach(counter=>{
+   const input=document.getElementById(counter.dataset.countFor);if(!input)return;
+   const min=Number(counter.dataset.countMin),max=Number(counter.dataset.countMax);
+   const update=()=>{const n=input.value.length;counter.textContent=`${n} car.`;counter.className='field-count'+(n===0?'':n<min||n>max?' out':' ok');};
+   input.addEventListener('input',update);update();
+ });
  document.getElementById('recordForm').onsubmit=e=>{
    e.preventDefault(); const data=Object.fromEntries(new FormData(e.target).entries());
    ['confidence','impact','effort','position','impressions','statusCode','progress'].forEach(k=>{if(data[k]!==undefined&&data[k]!=='') data[k]=Number(data[k]);});
