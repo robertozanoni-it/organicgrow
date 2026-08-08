@@ -7,7 +7,7 @@
 <meta name="description" content="Organic Growth OS V8: flusso operativo a fasi numerate, wizard con passi progressivi e piano attività verificabile.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
-<title>Organic Growth OS V8.3</title>
+<title>Organic Growth OS V8.4</title>
 <script>
 /* Tema applicato prima del primo disegno: evita il lampo di bianco
    quando l'utente ha scelto il tema scuro. */
@@ -930,7 +930,7 @@ button,input,select,textarea{font-size:22px!important}
 @media(max-width:720px){.geo-query-row{grid-template-columns:1fr}}
 
 /* ============================================================
-   V8.3 — AUTO KEYWORD GROUPS
+   V8.4 — AUTO KEYWORD GROUPS + GRANULAR CONTROL
    Raggruppamento persistente per pagina target con conferma automatica
    solo quando il matching supera soglie conservative.
    ============================================================ */
@@ -941,6 +941,21 @@ button,input,select,textarea{font-size:22px!important}
 .kw-group-status{display:inline-flex;align-items:center;gap:6px;font-size:14px!important;font-weight:850;padding:6px 9px;border-radius:999px}.kw-group-status.auto{background:var(--joy-mint);color:var(--success)}.kw-group-status.review{background:var(--joy-sun);color:var(--warning)}
 @media(max-width:720px){.kw-group-stats{grid-template-columns:1fr}}
 
+/* V8.4 — controllo granulare delle keyword dentro ogni gruppo */
+.kw-item-editor{margin-top:16px;border-top:1px solid var(--border);padding-top:14px}
+.kw-item-editor>summary{cursor:pointer;font-weight:900;font-size:17px;color:var(--accent);padding:4px 0}
+.kw-item-toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.kw-item-list{display:grid;gap:9px}
+.kw-item-row{display:grid;grid-template-columns:26px minmax(210px,1fr) minmax(250px,.9fr) auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface)}
+.kw-item-row input[type=checkbox]{width:20px;min-height:20px;margin:0}
+.kw-item-keyword strong{display:block;font-size:16px}.kw-item-keyword small{display:block;font-size:13px!important;color:var(--muted);margin-top:2px}
+.kw-item-controls{display:flex;gap:8px;align-items:center}.kw-item-controls select{width:100%;min-width:0;font-size:16px!important;min-height:46px}
+.kw-item-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.kw-item-actions .btn{font-size:14px!important;min-height:42px!important;padding:8px 11px!important}
+.kw-item-row.is-confirmed{background:color-mix(in srgb,var(--success) 5%,var(--surface));border-color:color-mix(in srgb,var(--success) 35%,var(--border))}
+.kw-item-row.is-excluded{opacity:.72;background:var(--surface-alt)}
+@media(max-width:980px){.kw-item-row{grid-template-columns:26px 1fr}.kw-item-controls,.kw-item-actions{grid-column:2}.kw-item-actions{justify-content:flex-start}}
+@media(max-width:620px){.kw-item-row{grid-template-columns:1fr}.kw-item-row>input[type=checkbox],.kw-item-controls,.kw-item-actions{grid-column:1}.kw-item-controls{display:grid}.kw-item-actions .btn{width:100%}}
+
 </style>
 </head>
 <body>
@@ -948,7 +963,7 @@ button,input,select,textarea{font-size:22px!important}
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V8.3</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V8.4</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -1801,6 +1816,7 @@ function autoSetKeywordGroupsSilent(){
   const pageByTarget=url=>pages.find(page=>[page.displayUrl,page.normalizedUrl,page.canonicalUrl].includes(url));
   byProject(state.keywords).forEach(keyword=>{
     if(!keyword.keyword||!keywordActiveForMapping(keyword))return;
+    if(keyword.keywordGroupExcluded===true){ungrouped++;return;}
     const currentTarget=String(keyword.targetUrl||'').trim();
     const source=String(keyword.linkSource||'');
     if(currentTarget&&['manual-confirmed','group-confirmed'].includes(source)){
@@ -3605,6 +3621,42 @@ function keywordSuggestionGroups(){
   manual.sort((a,b)=>String(a.keyword.keyword).localeCompare(String(b.keyword.keyword),'it',{sensitivity:'base'}));
   return {groups:list,manual};
 }
+function keywordPageNameByUrl(url){
+  const value=String(url||'').trim();
+  const page=byProject(state.pages).find(p=>[p.displayUrl,p.normalizedUrl,p.canonicalUrl].includes(value));
+  return page?.pageName||page?.title||value;
+}
+function confirmSingleKeywordInGroup(id,url){
+  const keyword=byProject(state.keywords).find(item=>item.id===id);if(!keyword)return;
+  const target=String(url||keyword.keywordGroupUrl||'').trim();if(!target){toast('Scegli una pagina prima di confermare.');return;}
+  keyword.targetUrl=target;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='manual-confirmed';keyword.linkConfidence=100;
+  keyword.keywordGroupUrl=target;keyword.keywordGroupName=keywordPageNameByUrl(target);keyword.keywordGroupStatus='MANUAL_CONFIRMED';keyword.keywordGroupConfidence=100;keyword.keywordGroupExcluded=false;
+  commit(`Keyword confermata: ${keyword.keyword}`);runAutomationCycle(false);toast(`“${keyword.keyword}” confermata su ${keyword.keywordGroupName}.`);render();
+}
+function moveSingleKeywordToPage(id,url){
+  const keyword=byProject(state.keywords).find(item=>item.id===id);if(!keyword)return;
+  const target=String(url||'').trim();if(!target){toast('Scegli la nuova pagina.');return;}
+  keyword.targetUrl=target;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='manual-confirmed';keyword.linkConfidence=100;
+  keyword.keywordGroupUrl=target;keyword.keywordGroupName=keywordPageNameByUrl(target);keyword.keywordGroupStatus='MANUAL_CONFIRMED';keyword.keywordGroupConfidence=100;keyword.keywordGroupExcluded=false;
+  commit(`Keyword spostata: ${keyword.keyword}`);runAutomationCycle(false);toast(`“${keyword.keyword}” spostata su ${keyword.keywordGroupName}.`);render();
+}
+function excludeSingleKeywordFromGroup(id){
+  const keyword=byProject(state.keywords).find(item=>item.id===id);if(!keyword)return;
+  if(['auto-group-v83','group-confirmed'].includes(String(keyword.linkSource||''))){keyword.targetUrl='';keyword.linkedAt='';keyword.linkConfidence=0;}
+  keyword.keywordGroupExcluded=true;keyword.keywordGroupUrl='';keyword.keywordGroupName='';keyword.keywordGroupStatus='EXCLUDED';keyword.keywordGroupConfidence=0;keyword.updatedAt=now();
+  commit(`Keyword esclusa dal gruppo: ${keyword.keyword}`);toast(`“${keyword.keyword}” esclusa dal raggruppamento automatico.`);render();
+}
+function confirmSelectedKeywordsInGroup(url){
+  const target=String(url||'').trim();if(!target)return;
+  const checks=[...document.querySelectorAll(`[data-group-select="${CSS.escape(target)}"]:checked`)];
+  if(!checks.length){toast('Seleziona almeno una keyword.');return;}
+  let changed=0;
+  checks.forEach(check=>{const keyword=byProject(state.keywords).find(item=>item.id===check.dataset.keywordId);if(!keyword)return;keyword.targetUrl=target;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='manual-confirmed';keyword.linkConfidence=100;keyword.keywordGroupUrl=target;keyword.keywordGroupName=keywordPageNameByUrl(target);keyword.keywordGroupStatus='MANUAL_CONFIRMED';keyword.keywordGroupConfidence=100;keyword.keywordGroupExcluded=false;changed++;});
+  if(changed){commit(`${changed} keyword selezionate confermate`);runAutomationCycle(false);toast(`${changed} keyword confermate sulla pagina ${keywordPageNameByUrl(target)}.`);}render();
+}
+function toggleGroupKeywordSelection(url,checked){
+  document.querySelectorAll(`[data-group-select="${CSS.escape(String(url||''))}"]`).forEach(input=>input.checked=Boolean(checked));
+}
 function confirmKeywordGroup(url){
   const target=String(url||'');if(!target)return;
   let changed=0;
@@ -3630,8 +3682,17 @@ function keywordLinkPanel(){
     const isAuto=mode==='auto',isReview=mode==='review';
     const statusLabel=isAuto?'✓ Gruppo impostato automaticamente':isReview?'Da verificare':'✓ Confermato';
     const statusClass=isAuto?'auto':'review';
-    const action=isReview?`<button class="btn primary" data-confirm-keyword-group="${esc(url)}">Conferma gruppo</button>`:'';
-    return `<article class="kw8-group ${isAuto?'auto-confirmed':isReview?'needs-review':''}"><div class="kw8-group-head"><div class="kw8-page"><strong>${esc(label)}</strong><small>${esc(url)}</small></div><div><div class="kw8-group-count">${g.items.length} keyword</div><div style="margin-top:7px"><span class="kw-group-status ${statusClass}">${statusLabel}</span></div></div></div><div class="kw8-chips">${g.items.slice(0,12).map(({keyword,match})=>`<span class="kw8-chip">${esc(keyword.keyword)} <small>${match.confidence||keyword.keywordGroupConfidence||0}%</small></span>`).join('')}${g.items.length>12?`<span class="kw8-chip">+${g.items.length-12} altre</span>`:''}</div><div class="kw8-group-actions">${action}<span class="kw8-confidence">Corrispondenza media ${g.confidence}%${isAuto?' · già collegato alla pagina':''}</span></div></article>`;
+    const action=isReview?`<button class="btn primary" data-confirm-keyword-group="${esc(url)}">Conferma tutto il gruppo</button>`:'';
+    const itemRows=g.items.map(({keyword,match})=>{
+      const confidence=match.confidence||keyword.keywordGroupConfidence||0;
+      const current=String(keyword.targetUrl||'').trim();
+      const proposed=String(keyword.keywordGroupUrl||url).trim();
+      const selectedUrl=current||proposed;
+      const confirmed=keyword.keywordGroupStatus==='MANUAL_CONFIRMED'||Boolean(current&&keyword.linkSource==='manual-confirmed');
+      return `<div class="kw-item-row ${confirmed?'is-confirmed':''}" data-keyword-row="${esc(keyword.id)}"><input type="checkbox" data-group-select="${esc(url)}" data-keyword-id="${esc(keyword.id)}" ${isReview&&!confirmed?'checked':''} aria-label="Seleziona ${esc(keyword.keyword)}"><div class="kw-item-keyword"><strong>${esc(keyword.keyword)}</strong><small>${confidence}% · ${confirmed?'confermata manualmente':isAuto?'assegnata automaticamente':'proposta dal sistema'}</small></div><div class="kw-item-controls"><select data-keyword-page-select="${esc(keyword.id)}" aria-label="Pagina target per ${esc(keyword.keyword)}">${options.map(o=>`<option value="${esc(o.url)}" ${o.url===selectedUrl?'selected':''}>${esc(o.label)} · ${esc(o.url)}</option>`).join('')}</select></div><div class="kw-item-actions"><button class="btn primary" type="button" data-confirm-single-keyword="${esc(keyword.id)}" data-default-url="${esc(url)}">${confirmed?'Conferma qui':'✓ Conferma qui'}</button><button class="btn" type="button" data-move-single-keyword="${esc(keyword.id)}">Cambia pagina</button><button class="btn" type="button" data-exclude-single-keyword="${esc(keyword.id)}">Escludi dal gruppo</button></div></div>`;
+    }).join('');
+    const granular=`<details class="kw-item-editor" ${isReview?'open':''}><summary>Gestisci singole keyword (${g.items.length})</summary><div class="kw-item-toolbar"><button class="btn" type="button" data-select-all-group="${esc(url)}">Seleziona tutte</button><button class="btn" type="button" data-deselect-all-group="${esc(url)}">Deseleziona tutte</button>${isReview?`<button class="btn primary" type="button" data-confirm-selected-group="${esc(url)}">Conferma solo le selezionate</button>`:''}<span class="muted">Puoi confermare, spostare o escludere ogni keyword senza uscire dalla card.</span></div><div class="kw-item-list">${itemRows}</div></details>`;
+    return `<article class="kw8-group ${isAuto?'auto-confirmed':isReview?'needs-review':''}"><div class="kw8-group-head"><div class="kw8-page"><strong>${esc(label)}</strong><small>${esc(url)}</small></div><div><div class="kw8-group-count">${g.items.length} keyword</div><div style="margin-top:7px"><span class="kw-group-status ${statusClass}">${statusLabel}</span></div></div></div><div class="kw8-chips">${g.items.slice(0,12).map(({keyword,match})=>`<span class="kw8-chip">${esc(keyword.keyword)} <small>${match.confidence||keyword.keywordGroupConfidence||0}%</small></span>`).join('')}${g.items.length>12?`<span class="kw8-chip">+${g.items.length-12} altre</span>`:''}</div><div class="kw8-group-actions">${action}<span class="kw8-confidence">Corrispondenza media ${g.confidence}%${isAuto?' · già collegato alla pagina':''}</span></div>${granular}</article>`;
   };
   const autoHtml=autoGroups.slice(0,8).map(g=>groupCard(g,'auto')).join('');
   const reviewHtml=reviewGroups.slice(0,8).map(g=>groupCard(g,'review')).join('');
@@ -3652,7 +3713,7 @@ function keywordIntelligenceView(){
   const groups=keywordSuggestionGroups(),geo=projectGeoProfile();
   const excludedPreview=excluded.slice(0,12).map(k=>`<div class="geo-query-row"><div><strong>${esc(k.keyword)}</strong><small>${esc(k.source||'')} ${k.observedPage?`· pagina osservata: ${esc(k.observedPage)}`:''}</small></div><span class="geo-query-tag">${esc(k.detectedGeo||'altra area')}</span></div>`).join('');
   const geoBox=`<section class="geo-focus-card"><div class="geo-focus-head"><div><h3>Filtro geografico automatico</h3><p>${geo.primary?`Il focus locale rilevato è <strong>${esc(geo.primary)}</strong>. Le query che contengono un'altra città vengono conservate come dato Search Console, ma escluse automaticamente dal mapping.`:'Non ho ancora rilevato un focus geografico certo. Impostalo in Configurazione progetto.'}</p></div>${geo.primary?`<span class="geo-pill">◎ ${esc(geo.primary)}</span>`:'<button class="btn" data-nav="Project">Imposta area SEO</button>'}</div>${excluded.length?`<details class="geo-excluded"><summary>${excluded.length} query fuori area escluse automaticamente</summary><div class="geo-query-list">${excludedPreview}</div>${excluded.length>12?`<div class="muted" style="margin-top:8px">… e altre ${excluded.length-12} query fuori area.</div>`:''}<div class="muted" style="margin-top:10px">Non vengono eliminate: restano nell'archivio completo e nei dati Search Console, ma non richiedono una pagina target.</div></details>`:'<div class="good-box" style="margin-top:14px"><strong>Nessuna query fuori area da gestire</strong></div>'}</section>`;
-  return `<div class="kw8-shell">${geoBox}<section class="kw8-hero"><h1>Le keyword trovano la pagina giusta.</h1><p>Il sistema raggruppa le decisioni e ti mostra solo ciò che merita davvero attenzione. Le query fuori area vengono filtrate automaticamente.</p><div class="kw8-kpis"><div class="kw8-kpi"><strong>${rows.length}</strong><span>keyword nel focus</span></div><div class="kw8-kpi"><strong>${linked}</strong><span>già collegate</span></div><div class="kw8-kpi"><strong>${excluded.length}</strong><span>fuori area escluse</span></div><div class="kw8-kpi"><strong>${pct}%</strong><span>mapping completato</span></div></div></section><div class="kw8-main"><div>${keywordLinkPanel()}</div><aside class="kw8-side"><section class="kw8-side-card"><h3>Il tuo progresso</h3><div class="kw8-big">${pct}%</div><div class="kw8-progress"><span style="width:${pct}%"></span></div><p>${linked} collegate · ${unlinked} ancora da completare · ${excluded.length} escluse per area.</p>${groups.groups.length?`<button class="btn primary" data-confirm-keyword-group="${esc(groups.groups[0].page.displayUrl||groups.groups[0].page.normalizedUrl||'')}">Conferma il primo gruppo</button>`:''}</section><section class="kw8-side-card"><h3>Il modo più semplice</h3><p>1. Il filtro geografico elimina il rumore.<br>2. Conferma i gruppi più coerenti.<br>3. Lascia per ultime solo le vere eccezioni.</p></section><section class="kw8-side-card"><h3>Aggiungi dati</h3><p>Puoi aggiornare la mappa senza interrompere il lavoro.</p><div class="kw8-tools"><button class="btn" id="generateKeywordsFromPages">Rileva dalle pagine</button><button class="btn" data-import-target="keywords">Importa</button><button class="btn" data-add="keywords">+ Keyword</button></div></section></aside></div><details class="kw8-archive"><summary>Archivio completo (${allRows.length} keyword, incluse fuori area)</summary><div class="toolbar"><input data-search-table="keywords" placeholder="Cerca keyword o URL"><span class="muted">${allRows.length} record</span></div><div class="table-wrap"><table><thead><tr>${configs.keywords.cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Area</th><th>Gruppo automatico</th><th>Azioni</th></tr></thead><tbody>${allRows.map(r=>`<tr data-table-row="keywords">${configs.keywords.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td><span class="badge ${r.geoStatus==='OUT_OF_AREA'?'danger':r.geoStatus==='TARGET'?'success':'info'}">${r.geoStatus==='OUT_OF_AREA'?'Fuori area':r.geoStatus==='TARGET'?'Target':'Generica'}</span></td><td>${r.geoStatus==='OUT_OF_AREA'?'<span class="muted">Esclusa</span>':r.keywordGroupName?`<strong>${esc(r.keywordGroupName)}</strong><div class="muted">${r.keywordGroupStatus==='AUTO_CONFIRMED'?'Automatico':r.keywordGroupStatus==='MANUAL_CONFIRMED'?'Confermato':'Suggerito'} · ${esc(r.keywordGroupConfidence||0)}%</div>`:'<span class="muted">Da assegnare</span>'}</td><td><button class="btn" data-edit="keywords" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div></details></div>`;
+  return `<div class="kw8-shell">${geoBox}<section class="kw8-hero"><h1>Le keyword trovano la pagina giusta.</h1><p>Il sistema raggruppa le decisioni e ti mostra solo ciò che merita davvero attenzione. Le query fuori area vengono filtrate automaticamente.</p><div class="kw8-kpis"><div class="kw8-kpi"><strong>${rows.length}</strong><span>keyword nel focus</span></div><div class="kw8-kpi"><strong>${linked}</strong><span>già collegate</span></div><div class="kw8-kpi"><strong>${excluded.length}</strong><span>fuori area escluse</span></div><div class="kw8-kpi"><strong>${pct}%</strong><span>mapping completato</span></div></div></section><div class="kw8-main"><div>${keywordLinkPanel()}</div><aside class="kw8-side"><section class="kw8-side-card"><h3>Il tuo progresso</h3><div class="kw8-big">${pct}%</div><div class="kw8-progress"><span style="width:${pct}%"></span></div><p>${linked} collegate · ${unlinked} ancora da completare · ${excluded.length} escluse per area.</p>${groups.groups.find(g=>g.status==='SUGGESTED')?`<button class="btn primary" data-confirm-keyword-group="${esc((groups.groups.find(g=>g.status==='SUGGESTED').page.displayUrl||groups.groups.find(g=>g.status==='SUGGESTED').page.normalizedUrl||''))}">Conferma il primo gruppo da verificare</button>`:''}</section><section class="kw8-side-card"><h3>Il modo più semplice</h3><p>1. Il filtro geografico elimina il rumore.<br>2. Conferma i gruppi più coerenti.<br>3. Lascia per ultime solo le vere eccezioni.</p></section><section class="kw8-side-card"><h3>Aggiungi dati</h3><p>Puoi aggiornare la mappa senza interrompere il lavoro.</p><div class="kw8-tools"><button class="btn" id="generateKeywordsFromPages">Rileva dalle pagine</button><button class="btn" data-import-target="keywords">Importa</button><button class="btn" data-add="keywords">+ Keyword</button></div></section></aside></div><details class="kw8-archive"><summary>Archivio completo (${allRows.length} keyword, incluse fuori area)</summary><div class="toolbar"><input data-search-table="keywords" placeholder="Cerca keyword o URL"><span class="muted">${allRows.length} record</span></div><div class="table-wrap"><table><thead><tr>${configs.keywords.cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Area</th><th>Gruppo automatico</th><th>Azioni</th></tr></thead><tbody>${allRows.map(r=>`<tr data-table-row="keywords">${configs.keywords.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td><span class="badge ${r.geoStatus==='OUT_OF_AREA'?'danger':r.geoStatus==='TARGET'?'success':'info'}">${r.geoStatus==='OUT_OF_AREA'?'Fuori area':r.geoStatus==='TARGET'?'Target':'Generica'}</span></td><td>${r.geoStatus==='OUT_OF_AREA'?'<span class="muted">Esclusa</span>':r.keywordGroupName?`<strong>${esc(r.keywordGroupName)}</strong><div class="muted">${r.keywordGroupStatus==='AUTO_CONFIRMED'?'Automatico':r.keywordGroupStatus==='MANUAL_CONFIRMED'?'Confermato':'Suggerito'} · ${esc(r.keywordGroupConfidence||0)}%</div>`:'<span class="muted">Da assegnare</span>'}</td><td><button class="btn" data-edit="keywords" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div></details></div>`;
 }
 function extractUrlsFromText(text){
   const lines=String(text||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
@@ -5891,6 +5952,12 @@ function bindView(){
  document.querySelectorAll('[data-validate-field]').forEach(b=>b.onclick=()=>confirmAutoField(b.dataset.validateField));
  document.querySelectorAll('[data-link-suggested]').forEach(b=>b.onclick=()=>linkKeywordToPage(b.dataset.linkSuggested,b.dataset.linkUrl));
  document.querySelectorAll('[data-confirm-keyword-group]').forEach(b=>b.onclick=()=>confirmKeywordGroup(b.dataset.confirmKeywordGroup));
+ document.querySelectorAll('[data-confirm-single-keyword]').forEach(b=>b.onclick=()=>{const sel=document.querySelector(`[data-keyword-page-select="${CSS.escape(b.dataset.confirmSingleKeyword)}"]`);confirmSingleKeywordInGroup(b.dataset.confirmSingleKeyword,sel?.value||b.dataset.defaultUrl||'');});
+ document.querySelectorAll('[data-move-single-keyword]').forEach(b=>b.onclick=()=>{const sel=document.querySelector(`[data-keyword-page-select="${CSS.escape(b.dataset.moveSingleKeyword)}"]`);moveSingleKeywordToPage(b.dataset.moveSingleKeyword,sel?.value||'');});
+ document.querySelectorAll('[data-exclude-single-keyword]').forEach(b=>b.onclick=()=>excludeSingleKeywordFromGroup(b.dataset.excludeSingleKeyword));
+ document.querySelectorAll('[data-confirm-selected-group]').forEach(b=>b.onclick=()=>confirmSelectedKeywordsInGroup(b.dataset.confirmSelectedGroup));
+ document.querySelectorAll('[data-select-all-group]').forEach(b=>b.onclick=()=>toggleGroupKeywordSelection(b.dataset.selectAllGroup,true));
+ document.querySelectorAll('[data-deselect-all-group]').forEach(b=>b.onclick=()=>toggleGroupKeywordSelection(b.dataset.deselectAllGroup,false));
   const autoGroupBtn=document.getElementById('autoSetKeywordGroups');if(autoGroupBtn)autoGroupBtn.onclick=autoSetKeywordGroups;
   document.querySelectorAll('[data-link-keyword]').forEach(b=>b.onclick=()=>{
    const id=b.dataset.linkKeyword;
