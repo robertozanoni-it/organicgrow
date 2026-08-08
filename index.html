@@ -663,6 +663,32 @@ html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,v
 .plan-state.blocked::before{background:var(--danger)}
 @media(max-width:760px){.journey-flow-node{min-width:118px}}
 
+
+/* ============================================================
+   V6 — GUIDED-FIRST REDESIGN
+   ============================================================ */
+html,body{font-size:17px!important}
+body{background:var(--bg)}
+.app{grid-template-columns:260px minmax(0,1fr)}
+.sidebar{padding:18px 14px;background:var(--surface);border-right:1px solid var(--border)}
+.brand{border-bottom:0;margin-bottom:8px}.brand-mark{border-radius:14px}
+#nav .nav-phase{border:0!important;background:transparent!important;margin:4px 0}
+#nav .nav-phase>summary{padding:12px 10px;font-size:14px}
+#nav .nav-btn{grid-template-columns:28px 1fr 18px;padding:11px 10px;font-size:15px;border-radius:10px}
+.topbar{min-height:68px;padding:10px 22px}.topbar-actions{gap:7px}.topbar-actions #globalSearch{max-width:260px}
+.content{max-width:1320px;padding:28px 34px 54px}
+.v6-shell{max-width:1120px;margin:0 auto}.v6-kicker{font-size:13px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.v6-title{font-size:42px;line-height:1.08;margin:8px 0 10px;letter-spacing:-.035em}.v6-lead{font-size:19px;line-height:1.6;color:var(--muted);max-width:780px}
+.v6-command{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;padding:30px;border:1px solid color-mix(in srgb,var(--accent) 25%,var(--border));background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 8%,var(--surface)),var(--surface));border-radius:22px;margin:22px 0}
+.v6-command h3{font-size:30px!important;line-height:1.18;margin:6px 0 8px}.v6-command p{margin:0;color:var(--muted);max-width:720px}.v6-command .btn{min-width:220px;font-size:18px!important;padding:14px 18px!important}
+.v6-flow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:22px 0}.v6-flow-step{border:1px solid var(--border);background:var(--surface);border-radius:15px;padding:14px;min-height:110px;position:relative}.v6-flow-step strong{display:block;font-size:15px;margin-top:8px}.v6-flow-step span{font-size:13px;color:var(--muted)}.v6-flow-step.done{border-color:color-mix(in srgb,var(--success) 45%,var(--border))}.v6-flow-step.active{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--surface))}.v6-flow-num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--surface-alt);font-weight:900}.v6-flow-step.done .v6-flow-num{background:var(--success);color:#fff}.v6-flow-step.active .v6-flow-num{background:var(--accent);color:var(--on-accent)}
+.v6-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:16px}.v6-panel{border:1px solid var(--border);background:var(--surface);border-radius:18px;padding:20px}.v6-panel h3{font-size:21px!important;margin:0 0 12px}.v6-stat{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--border)}.v6-stat:last-child{border-bottom:0}.v6-stat b{font-size:20px}
+.v6-step-page{max-width:920px;margin:0 auto}.v6-step-head{margin-bottom:20px}.v6-step-head h2{font-size:36px;line-height:1.14;margin:8px 0 8px}.v6-step-head p{font-size:18px;color:var(--muted);margin:0}.v6-step-card{border:1px solid var(--border);background:var(--surface);border-radius:22px;padding:28px}.v6-step-card h3{font-size:27px!important;margin:0 0 8px}.v6-explain{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}.v6-explain>div{background:var(--surface-alt);border:1px solid var(--border);border-radius:14px;padding:15px}.v6-explain strong{display:block;margin-bottom:4px}.v6-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.v6-actions .btn.primary{font-size:18px!important;padding:13px 18px!important}.v6-mini-note{margin-top:14px;color:var(--muted);font-size:14px}
+.v6-advanced-note{margin-top:20px;padding:14px 16px;border:1px dashed var(--border);border-radius:14px;color:var(--muted);background:var(--surface-alt)}
+.guided-nav-note{display:none!important}
+@media(max-width:1000px){.v6-flow{grid-template-columns:repeat(3,1fr)}.v6-grid{grid-template-columns:1fr}.v6-command{grid-template-columns:1fr}.v6-command .btn{width:100%}}
+@media(max-width:720px){.content{padding:20px 14px 40px}.v6-title{font-size:32px}.v6-flow{grid-template-columns:1fr 1fr}.v6-explain{grid-template-columns:1fr}.v6-step-card{padding:20px}}
+
 </style>
 </head>
 <body>
@@ -5847,6 +5873,63 @@ document.addEventListener('keydown',e=>{
    if(focusable.length){const first=focusable[0],last=focusable[focusable.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
  }
 });
+
+/* ============================================================
+   V6 — GUIDED-FIRST EXPERIENCE OVERRIDES
+   ============================================================ */
+const V6_PHASES=[
+  {id:'site',n:1,title:'Collega il sito',desc:'Dominio e pagine da analizzare'},
+  {id:'data',n:2,title:'Prepara i dati',desc:'Pagine, Search Console e keyword'},
+  {id:'analysis',n:3,title:'Analizza',desc:'Problemi tecnici e contenuti'},
+  {id:'plan',n:4,title:'Crea il piano',desc:'Priorità e attività operative'},
+  {id:'execute',n:5,title:'Esegui',desc:'Una modifica alla volta'},
+  {id:'verify',n:6,title:'Verifica',desc:'Controlla risultati e report'}
+];
+function v6State(){
+ const p=currentProject(),pages=byProject(state.pages),gsc=byProject(state.gscRecords),tasks=byProject(state.tasks),open=operationalPlanItems();
+ const scan=p.websiteScan?.status==='completed';
+ const completed=tasks.filter(t=>['VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase())).length;
+ const current=!normalizeSiteDomain(p.domain)?1:!pages.length?1:!scan?3:open.length?4:6;
+ return {p,pages,gsc,tasks,open,scan,completed,current};
+}
+function v6Flow(active){
+ const st=v6State();
+ return `<div class="v6-flow">${V6_PHASES.map(ph=>{const done=ph.n<st.current,act=(active||st.current)===ph.n;return `<div class="v6-flow-step ${done?'done':''} ${act?'active':''}"><div class="v6-flow-num">${done?'✓':ph.n}</div><strong>${esc(ph.title)}</strong><span>${esc(ph.desc)}</span></div>`}).join('')}</div>`;
+}
+function v6NextAction(){
+ const st=v6State();
+ if(!normalizeSiteDomain(st.p.domain))return {phase:1,title:'Inserisci il sito da analizzare',text:'È l’unica informazione necessaria per iniziare. Dopo il salvataggio proverò a rilevare automaticamente pagine e dati pubblici.',label:'Inserisci il sito',view:'Project'};
+ if(!st.pages.length)return {phase:1,title:'Rileva le pagine del sito',text:'Creo l’elenco delle URL da controllare usando sitemap e link interni. Non devi inserirle una per una.',label:'Rileva le pagine',view:'Pages'};
+ if(!st.scan)return {phase:3,title:'Avvia l’analisi completa',text:'Controllo title, H1, meta description, canonical, indicizzabilità e problemi verificabili. Il sito non viene modificato.',label:'Avvia analisi',action:'scan'};
+ if(st.open.length){const x=st.open[0];return {phase:4,title:x.title,text:x.why||'Questa è la prima attività da affrontare secondo le priorità disponibili.',label:'Apri il piano',view:'Operational Plan'};}
+ return {phase:6,title:'Il controllo disponibile è completato',text:'Non risultano altre attività prioritarie con i dati presenti. Puoi rivedere il report o ripetere l’analisi.',label:'Apri report e verifiche',view:'Backup'};
+}
+renderNav=function(){
+ const nav=document.getElementById('nav');if(!nav)return;nav.innerHTML='';
+ if(state.ui.experienceMode!=='guided'){const flow=navFlow,signals=navStepSignals();flow.forEach(group=>{const d=document.createElement('details');d.className='nav-phase'+(group.n?'':' nav-phase-system');d.open=group.items.includes(state.ui.activeView)||group.n===1;const sm=document.createElement('summary');sm.innerHTML=`<span class="nav-phase-num">${group.n||'⚙'}</span><span class="nav-phase-text"><span class="nav-phase-title">${esc(group.label)}</span><span class="nav-phase-hint">${esc(group.hint||'')}</span></span>`;d.appendChild(sm);group.items.forEach((item,i)=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">${group.n?group.n+'.'+(i+1):'·'}</span><span class="nav-text">${esc(navLabel(item))}</span><span class="nav-state"></span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d)});return;}
+ const items=[['Dashboard','Home'],['Project','1. Collega il sito'],['Pages','2. Pagine e dati'],['Guided Review','3. Analisi guidata'],['Operational Plan','4. Piano operativo'],['Tasks','5. Esegui attività'],['Backup','6. Verifica e report']];
+ items.forEach(([view,label],i)=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===view?' active':'');b.innerHTML=`<span class="nav-num">${i?i:'⌂'}</span><span class="nav-text">${esc(label)}</span><span class="nav-state"></span>`;b.onclick=()=>{state.ui.activeView=view;render();closeMobile()};nav.appendChild(b)});
+ const d=document.createElement('details');d.className='nav-phase nav-phase-system';const sm=document.createElement('summary');sm.innerHTML='<span class="nav-phase-num">⚙</span><span class="nav-phase-text"><span class="nav-phase-title">Strumenti avanzati</span><span class="nav-phase-hint">Solo quando servono</span></span>';d.appendChild(sm);['Keywords','Search Console','Issues','Technical SEO','Canonical','Indexation','Internal Links','On-Page','Structured Data','Architecture','Topical Map','Content Strategy','Settings'].forEach(item=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">·</span><span class="nav-text">${esc(navLabel(item))}</span><span class="nav-state"></span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d);
+};
+guidedDashboardView=function(){
+ const st=v6State(),next=v6NextAction(),issues=byProject(state.issues).filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase()));
+ return `<div class="v6-shell"><div class="v6-kicker">Organic Growth OS · percorso guidato</div><h1 class="v6-title">Sai sempre cosa fare dopo.</h1><p class="v6-lead">Inserisci il sito, raccogli i dati, analizza, crea il piano, esegui una modifica alla volta e verifica il risultato. Le funzioni tecniche restano disponibili, ma non interrompono il percorso.</p>${v6Flow()}
+ <section class="v6-command"><div><div class="v6-kicker">Prossima azione · fase ${next.phase} di 6</div><h3>${esc(next.title)}</h3><p>${esc(next.text)}</p></div>${next.action==='scan'?'<button class="btn primary" id="v6RunScan">Avvia analisi</button>':`<button class="btn primary" data-nav="${esc(next.view)}">${esc(next.label)}</button>`}</section>
+ <div class="v6-grid"><section class="v6-panel"><h3>Stato del progetto</h3><div class="v6-stat"><span>Sito collegato</span><b>${normalizeSiteDomain(st.p.domain)?'✓':'—'}</b></div><div class="v6-stat"><span>Pagine rilevate</span><b>${st.pages.length}</b></div><div class="v6-stat"><span>Problemi aperti</span><b>${issues.length}</b></div><div class="v6-stat"><span>Attività da fare</span><b>${st.open.length}</b></div><div class="v6-stat"><span>Attività verificate</span><b>${st.completed}</b></div></section>
+ <section class="v6-panel"><h3>Come funziona</h3><p class="muted">Non devi scegliere quale strumento SEO usare. Il sistema ti porta al passo corretto e mantiene il piano aggiornato.</p><div class="v6-advanced-note"><strong>Hai bisogno dei dettagli tecnici?</strong><div>Apri “Strumenti avanzati” nella barra laterale. Il percorso guidato rimane sempre disponibile.</div></div></section></div>
+ ${st.open.length?`<div style="height:18px"></div>${numberedTaskBox({limit:3,title:'Le prime attività da affrontare'})}`:''}</div>`;
+};
+smartWizardView=function(){
+ const st=v6State();
+ if(!normalizeSiteDomain(st.p.domain))return v6PhaseView(1,'Collega il sito','Inserisci il dominio principale. Da qui parte tutto il controllo.','Serve per riconoscere correttamente le URL e associare tutti i dati al progetto giusto.','Dopo il salvataggio potremo rilevare automaticamente le pagine.','Project','Inserisci il dominio');
+ if(!st.pages.length)return v6PhaseView(1,'Rileva le pagine','Non serve creare il Page Inventory a mano: prova prima il rilevamento automatico.','Senza l’elenco delle pagine non possiamo controllare struttura, contenuti e indicizzazione.','Otterrai l’inventario delle URL del sito.','Pages','Rileva le pagine');
+ if(!st.scan)return `<div class="v6-step-page">${v6Flow(3)}<div class="v6-step-head"><div class="v6-kicker">Fase 3 di 6</div><h2>Analizza il sito</h2><p>Adesso abbiamo abbastanza dati per cercare problemi reali.</p></div><section class="v6-step-card"><h3>Avvia il controllo automatico</h3><p class="muted">Leggo le pagine pubbliche e aggiorno i dati disponibili. Non modifico il sito.</p><div class="v6-explain"><div><strong>Cosa controllo</strong><span class="muted">Title, H1, meta, canonical, indicizzabilità, sitemap e dati strutturati.</span></div><div><strong>Cosa ottieni</strong><span class="muted">Problemi ordinati e attività concrete da inserire nel piano.</span></div></div><div class="v6-actions"><button class="btn primary" id="v6RunScan">Avvia analisi completa</button><button class="btn" data-nav="Pages">Controlla prima le pagine</button></div></section></div>`;
+ return `<div class="v6-step-page">${v6Flow(4)}<div class="v6-step-head"><div class="v6-kicker">Analisi completata</div><h2>Adesso trasformiamo i risultati in lavoro.</h2><p>Il controllo è stato eseguito. Non devi interpretare i dati: apri il piano operativo e parti dalla priorità 1.</p></div><section class="v6-step-card"><h3>${st.open.length?`${st.open.length} attività da affrontare`:'Nessuna attività prioritaria aperta'}</h3><p class="muted">Il piano unisce problemi tecnici, campi mancanti e controlli ancora da completare.</p><div class="v6-actions"><button class="btn primary" data-nav="Operational Plan">Apri il piano operativo</button><button class="btn" id="v6RunScan">Ripeti analisi</button></div></section></div>`;
+};
+function v6PhaseView(n,title,lead,why,result,view,label){return `<div class="v6-step-page">${v6Flow(n)}<div class="v6-step-head"><div class="v6-kicker">Fase ${n} di 6</div><h2>${esc(title)}</h2><p>${esc(lead)}</p></div><section class="v6-step-card"><div class="v6-explain"><div><strong>Perché serve</strong><span class="muted">${esc(why)}</span></div><div><strong>Risultato atteso</strong><span class="muted">${esc(result)}</span></div></div><div class="v6-actions"><button class="btn primary" data-nav="${esc(view)}">${esc(label)}</button><button class="btn" data-nav="Dashboard">Torna alla Home</button></div></section></div>`}
+const _v6BindView=bindView;
+bindView=function(){_v6BindView();document.querySelectorAll('#v6RunScan').forEach(b=>b.onclick=async()=>{await analyzeCurrentWebsite({force:true});state.ui.activeView='Guided Review';render();});};
+
 /* --- avvio --- */
 document.getElementById('scanCancelBtn').onclick=()=>{
   if(scanAbort){scanAbort.abort();scanLog('Annullamento richiesto…','err');}
