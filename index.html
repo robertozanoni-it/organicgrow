@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS V7: flusso operativo a fasi numerate, wizard con passi progressivi e piano attività verificabile.">
+<meta name="description" content="Organic Growth OS V8: flusso operativo a fasi numerate, wizard con passi progressivi e piano attività verificabile.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
-<title>Organic Growth OS V7</title>
+<title>Organic Growth OS V8</title>
 <script>
 /* Tema applicato prima del primo disegno: evita il lampo di bianco
    quando l'utente ha scelto il tema scuro. */
@@ -863,6 +863,57 @@ html[data-theme="light"] .sidebar{background:rgba(255,255,255,.94)}
 @media(max-width:980px){.v7-hero{grid-template-columns:1fr}.v7-hero-side{justify-content:flex-start}.v7-steps,.v7-summary{grid-template-columns:1fr 1fr}.v7-command{grid-template-columns:1fr}.v7-command .btn.primary{justify-self:start}.app{grid-template-columns:220px minmax(0,1fr)}}
 @media(max-width:800px){.app{display:block}.content{padding:20px 16px 40px}.v7-steps,.v7-summary,.v7-action-grid{grid-template-columns:1fr}.v7-command{padding:22px}.v7-command h2{font-size:26px!important}.v7-command .btn.primary{width:100%}.v7-list-row{grid-template-columns:34px 1fr}.v7-list-row .btn{grid-column:1/-1;width:100%}.v7-progress-ring{width:96px;height:96px}.v7-hero h1{font-size:38px!important}}
 
+
+/* ============================================================
+   V8 — FOCUS UI / BIG TYPE / GROUPED KEYWORD DECISIONS
+   ============================================================ */
+html,body{font-size:24px!important}
+body{line-height:1.62!important}
+button,input,select,textarea{font-size:22px!important}
+.btn{font-size:21px!important;min-height:56px!important;padding:14px 20px!important;border-radius:15px!important}
+.brand h1{font-size:27px!important}.brand p{font-size:19px!important}
+#nav .nav-btn{font-size:21px!important;padding:15px!important}
+#nav .nav-btn .nav-num{font-size:18px!important;width:36px;height:36px}
+.topbar h2{font-size:28px!important}.muted{font-size:20px!important}
+.badge{font-size:18px!important;padding:7px 11px!important}
+.content{max-width:1500px;padding:34px 42px 64px}
+.page-intro h3{font-size:44px!important;letter-spacing:-.035em}.page-intro p{font-size:24px!important;max-width:1050px}
+
+/* Keyword Mission Control: completely new hierarchy */
+.kw8-shell{max-width:1380px;margin:0 auto}
+.kw8-hero{position:relative;overflow:hidden;border-radius:34px;padding:38px 42px;margin:8px 0 28px;background:linear-gradient(120deg,#172554 0%,#312e81 52%,#7c3aed 100%);color:#fff;box-shadow:0 26px 70px rgba(40,30,100,.23)}
+.kw8-hero:after{content:"";position:absolute;width:330px;height:330px;border-radius:50%;right:-80px;top:-100px;background:radial-gradient(circle,#60a5fa 0,rgba(96,165,250,.15) 48%,transparent 70%)}
+.kw8-hero h1{font-size:clamp(46px,5vw,76px)!important;line-height:1.02;letter-spacing:-.05em;margin:0 0 14px;max-width:920px;position:relative;z-index:1}
+.kw8-hero p{font-size:25px!important;line-height:1.5;max-width:930px;margin:0;color:#e0e7ff;position:relative;z-index:1}
+.kw8-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:28px;position:relative;z-index:1}
+.kw8-kpi{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.18);border-radius:22px;padding:20px;backdrop-filter:blur(8px)}
+.kw8-kpi strong{display:block;font-size:38px!important;line-height:1}.kw8-kpi span{display:block;font-size:18px!important;color:#dbeafe;margin-top:7px}
+.kw8-main{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:22px;align-items:start}
+.kw8-stage{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:28px}
+.kw8-stage h2{font-size:36px!important;letter-spacing:-.03em;margin:0 0 8px}.kw8-stage>p{font-size:22px!important;color:var(--muted);margin:0 0 24px;max-width:930px}
+.kw8-rail{display:grid;gap:16px}
+.kw8-group{border:1px solid var(--border);border-radius:22px;padding:22px;background:var(--surface-alt)}
+.kw8-group-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}
+.kw8-page strong{display:block;font-size:25px!important}.kw8-page small{display:block;font-size:18px!important;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+.kw8-group-count{min-width:84px;text-align:center;padding:10px 12px;border-radius:16px;background:color-mix(in srgb,var(--accent) 10%,var(--surface));font-size:18px!important;font-weight:900;color:var(--accent)}
+.kw8-chips{display:flex;flex-wrap:wrap;gap:9px;margin:17px 0}
+.kw8-chip{display:inline-flex;align-items:center;gap:7px;padding:10px 13px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:18px!important;font-weight:750}
+.kw8-chip small{font-size:15px!important;color:var(--muted)}
+.kw8-group-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.kw8-confidence{font-size:17px!important;color:var(--muted)}
+.kw8-side{display:grid;gap:16px;position:sticky;top:92px}
+.kw8-side-card{border-radius:24px;padding:22px;background:var(--surface);border:1px solid var(--border)}
+.kw8-side-card h3{font-size:26px!important;margin:0 0 8px}.kw8-side-card p{font-size:19px!important;color:var(--muted);margin:0 0 16px}
+.kw8-progress{height:14px;background:var(--surface-alt);border-radius:999px;overflow:hidden;margin:14px 0}.kw8-progress span{display:block;height:100%;background:linear-gradient(90deg,#7c3aed,#38bdf8);border-radius:999px}
+.kw8-big{font-size:52px!important;font-weight:950;line-height:1}
+.kw8-manual{display:grid;gap:12px;margin-top:18px}.kw8-manual-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.8fr);gap:12px;align-items:center;padding:18px;border-radius:18px;background:var(--surface-alt);border:1px solid var(--border)}
+.kw8-manual-row strong{font-size:21px!important}.kw8-manual-row small{display:block;font-size:17px!important;color:var(--muted);margin-top:3px}.kw8-manual-row select{width:100%;font-size:19px!important}
+.kw8-tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.kw8-empty{padding:26px;border-radius:20px;background:color-mix(in srgb,var(--success) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--success) 25%,var(--border))}
+.kw8-empty strong{font-size:27px!important}.kw8-empty p{font-size:20px!important;color:var(--muted)}
+.kw8-archive summary{font-size:21px!important;font-weight:850;padding:16px 0;cursor:pointer}
+@media(max-width:1100px){.kw8-main{grid-template-columns:1fr}.kw8-side{position:static}.kw8-kpis{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){html,body{font-size:21px!important}.content{padding:20px 14px 40px}.kw8-hero{padding:26px 22px;border-radius:24px}.kw8-hero h1{font-size:44px!important}.kw8-hero p{font-size:21px!important}.kw8-kpis{grid-template-columns:1fr 1fr}.kw8-stage{padding:20px}.kw8-group-head,.kw8-manual-row{grid-template-columns:1fr}.kw8-group-count{justify-self:start}.kw8-side-card{padding:18px}}
+
 </style>
 </head>
 <body>
@@ -870,7 +921,7 @@ html[data-theme="light"] .sidebar{background:rgba(255,255,255,.94)}
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V7</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V8</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -3309,53 +3360,50 @@ function autoLinkKeywords(){
   toast(linked?`${linked} keyword collegate automaticamente con alta affidabilità. ${remaining} restano da confermare o assegnare.`:`Non trovo associazioni abbastanza sicure da applicare senza conferma. Ti mostro comunque le pagine suggerite.`);
   render();
 }
+
+function keywordSuggestionGroups(){
+  const unlinked=keywordUnlinked();
+  const groups=new Map(),manual=[];
+  unlinked.forEach(keyword=>{
+    const match=keywordBestSuggestion(keyword);
+    if(!match?.suggested){manual.push({keyword,match});return;}
+    const url=match.page.displayUrl||match.page.normalizedUrl||'';
+    if(!groups.has(url))groups.set(url,{page:match.page,items:[],confidence:0});
+    const g=groups.get(url);g.items.push({keyword,match});g.confidence+=match.confidence||0;
+  });
+  const list=[...groups.values()].map(g=>({...g,confidence:Math.round(g.confidence/Math.max(1,g.items.length))}))
+    .sort((a,b)=>b.items.length-a.items.length||b.confidence-a.confidence);
+  return {groups:list,manual};
+}
+function confirmKeywordGroup(url){
+  const target=String(url||'');if(!target)return;
+  let changed=0;
+  keywordUnlinked().forEach(keyword=>{
+    const match=keywordBestSuggestion(keyword);
+    const candidate=match?.page&&(match.page.displayUrl||match.page.normalizedUrl||'');
+    if(match?.suggested&&candidate===target){keyword.targetUrl=target;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='group-confirmed';keyword.linkConfidence=match.confidence;changed++;}
+  });
+  if(changed){commit(`${changed} keyword confermate in gruppo`);runAutomationCycle(false);toast(`${changed} keyword collegate alla stessa pagina.`);}render();
+}
 function keywordLinkPanel(){
-  const unlinked=keywordUnlinked(),pending=keywordIntentPending(),options=keywordPageOptions();
-  if(!unlinked.length&&!pending.length){
-    return `<div class="good-box"><strong>🎉 Tutte le keyword hanno una pagina</strong><div class="muted">Il mapping è completo. Ora puoi usare questi collegamenti nel piano operativo e controllare eventuali sovrapposizioni.</div></div><div style="height:16px"></div>`;
-  }
-  if(!options.length){
-    return `<div class="callout"><strong>👋 Prima servono le pagine del sito</strong><p class="muted">Per assegnare una keyword devo sapere quali pagine esistono. Rileva o importa prima il sito: poi torneremo qui automaticamente.</p><button class="btn primary" data-nav="Pages">Vai alle pagine del sito</button></div><div style="height:16px"></div>`;
-  }
-  const matches=unlinked.map(keyword=>({keyword,match:keywordBestSuggestion(keyword)}));
-  matches.sort((a,b)=>Number(Boolean(b.match?.automatic))-Number(Boolean(a.match?.automatic))||Number(Boolean(b.match?.suggested))-Number(Boolean(a.match?.suggested))||(b.match?.confidence||0)-(a.match?.confidence||0));
-  const autoItems=matches.filter(item=>item.match?.automatic),suggestedItems=matches.filter(item=>!item.match?.automatic&&item.match?.suggested),manualItems=matches.filter(item=>!item.match?.suggested);
-  const autoCount=autoItems.length,suggestedCount=suggestedItems.length,manualCount=manualItems.length;
-  const pageLabel=page=>page?.pageName||page?.title||page?.displayUrl||page?.normalizedUrl||'Pagina';
-  const pageUrl=page=>page?.displayUrl||page?.normalizedUrl||'';
-  const select=(id,suggestedUrl='')=>`<select class="kw-manual-select" data-link-select="${esc(id)}" aria-label="Scegli la pagina da collegare"><option value="">Scegli la pagina…</option>${options.map(option=>`<option value="${esc(option.url)}" ${suggestedUrl===option.url?'selected':''}>${esc(option.label)} — ${esc(option.url)}</option>`).join('')}</select>`;
-  const row=({keyword,match})=>{
-    const suggestedUrl=match?.suggested?pageUrl(match.page):'';
-    const confidence=match?.confidence||0;
-    const status=match?.automatic?'Pronta':match?.suggested?'Da confermare':'Da scegliere';
-    const badgeClass=match?.automatic?'success':match?.suggested?'info':'warning';
-    return `<div class="kw-review-row">
-      <div class="kw-keyword"><strong>${esc(keyword.keyword)}</strong><small>${esc(keyword.source||'Manuale')}</small></div>
-      <div class="kw-suggestion">${match?.suggested?`<strong>${esc(pageLabel(match.page))}</strong><small>${esc(suggestedUrl)}</small>`:select(keyword.id,'')}</div>
-      <div class="kw-confidence"><span class="badge ${badgeClass}">${status}</span>${match?.suggested?`<div class="bar"><span style="width:${percentWidth(confidence)}%"></span></div><small>${confidence}% corrispondenza</small>`:'<small>serve una scelta</small>'}</div>
-      ${match?.suggested?`<button class="btn ${match.automatic?'':'primary'}" data-link-suggested="${esc(keyword.id)}" data-link-url="${esc(suggestedUrl)}">${match.automatic?'Collega':'Conferma'}</button>`:`<button class="btn primary" data-link-keyword="${esc(keyword.id)}">Collega</button>`}
-    </div>`;
-  };
-  const priority=[...suggestedItems,...manualItems,...autoItems].slice(0,8);
-  const remaining=Math.max(0,matches.length-priority.length);
-  return `<section class="kw-command">
-    <div class="kw-command-head"><div><div class="dashboard-label">MAPPING KEYWORD → PAGINE</div><h3>Ci penso io dove posso. Tu confermi solo i casi dubbi.</h3><p>Confronto ogni query con Title, H1, keyword principale e URL delle ${options.length} pagine. Le associazioni sicure possono essere applicate in blocco; quelle dubbie restano sotto il tuo controllo.</p></div><div class="kw-big-number"><strong>${unlinked.length}</strong><span>ancora da collegare</span></div></div>
-    <div class="kw-stats"><div class="kw-stat"><strong>${autoCount}</strong><span>✨ pronte in automatico</span></div><div class="kw-stat"><strong>${suggestedCount}</strong><span>👍 da confermare</span></div><div class="kw-stat"><strong>${manualCount}</strong><span>🧭 da scegliere</span></div></div>
-    <div class="kw-actions">${autoCount?`<button class="btn primary" id="autoLinkKeywords">✨ Collega automaticamente ${autoCount} sicure</button>`:''}<button class="btn" data-nav="Operational Plan">Vedi il piano operativo</button><span class="muted">I collegamenti già confermati non vengono sovrascritti.</span></div>
-  </section>
-  <div class="kw-section-title"><div><h3>Da controllare adesso</h3><p>Parto dalle proposte che richiedono una tua decisione. Una volta confermate, spariscono dalla coda.</p></div><span class="badge">${Math.min(priority.length,matches.length)} mostrate</span></div>
-  <div class="kw-review">${priority.length?priority.map(row).join(''):'<div class="good-box"><strong>Niente da controllare manualmente 🎉</strong></div>'}</div>
-  ${remaining?`<details class="kw-all-details"><summary>Mostra le altre ${remaining} keyword non collegate</summary><div class="kw-review" style="padding:6px 0 12px">${matches.slice(priority.length,priority.length+30).map(row).join('')}</div>${remaining>30?`<div class="muted" style="padding:0 0 12px">Sono mostrate le prossime 30. Le successive compariranno automaticamente dopo che completi queste.</div>`:''}</details>`:''}
-  ${pending.length?`<div class="callout" style="margin-top:16px"><strong>💡 ${pending.length} keyword hanno ancora l’intento da confermare</strong><p class="muted">È un controllo separato dal collegamento alla pagina. Prima completiamo il mapping; poi potrai confermare gli intenti rimasti dubbi.</p><button class="btn" data-edit="keywords" data-id="${esc(pending[0].id)}">Controlla il primo intento</button></div>`:''}
-  <div style="height:18px"></div>`;
+  const rows=byProject(state.keywords),unlinked=keywordUnlinked(),options=keywordPageOptions();
+  if(!rows.length)return '';
+  if(!options.length)return `<div class="kw8-empty"><strong>Prima servono le pagine del sito</strong><p>Rileva o importa le pagine: poi il sistema potrà proporre automaticamente i collegamenti.</p><button class="btn primary" data-nav="Pages">Vai alle pagine</button></div>`;
+  if(!unlinked.length)return `<div class="kw8-empty"><strong>Mapping completato ✓</strong><p>Tutte le keyword hanno una pagina collegata. Ora puoi passare al piano operativo.</p><button class="btn primary" data-nav="Operational Plan">Apri piano operativo</button></div>`;
+  const data=keywordSuggestionGroups();
+  const suggestedTotal=data.groups.reduce((n,g)=>n+g.items.length,0);
+  const groupedActions=data.groups.slice(0,8).map(g=>{
+    const url=g.page.displayUrl||g.page.normalizedUrl||'';
+    const label=g.page.pageName||g.page.title||url||'Pagina';
+    return `<article class="kw8-group"><div class="kw8-group-head"><div class="kw8-page"><strong>${esc(label)}</strong><small>${esc(url)}</small></div><div class="kw8-group-count">${g.items.length} keyword</div></div><div class="kw8-chips">${g.items.slice(0,10).map(({keyword,match})=>`<span class="kw8-chip">${esc(keyword.keyword)} <small>${match.confidence}%</small></span>`).join('')}${g.items.length>10?`<span class="kw8-chip">+${g.items.length-10} altre</span>`:''}</div><div class="kw8-group-actions"><button class="btn primary" data-confirm-keyword-group="${esc(url)}">Conferma gruppo</button><span class="kw8-confidence">Corrispondenza media ${g.confidence}% · puoi sempre modificarle dopo</span></div></article>`;
+  }).join('');
+  const manualRows=data.manual.slice(0,6).map(({keyword})=>`<div class="kw8-manual-row"><div><strong>${esc(keyword.keyword)}</strong><small>${esc(keyword.source||'Manuale')}</small></div><div style="display:flex;gap:8px"><select data-link-select="${esc(keyword.id)}"><option value="">Scegli pagina…</option>${options.map(o=>`<option value="${esc(o.url)}">${esc(o.label)}</option>`).join('')}</select><button class="btn primary" data-link-keyword="${esc(keyword.id)}">Collega</button></div></div>`).join('');
+  return `<section class="kw8-stage"><h2>Conferma per pagina, non keyword per keyword</h2><p>Ho raggruppato le proposte che puntano alla stessa pagina. Invece di ${unlinked.length} decisioni separate, devi controllare soprattutto ${data.groups.length} gruppi e ${data.manual.length} eccezioni.</p>${groupedActions||'<div class="kw8-empty"><strong>Nessun gruppo abbastanza coerente</strong><p>Restano soltanto casi che richiedono una scelta manuale.</p></div>'}${data.groups.length>8?`<details class="kw8-archive"><summary>Mostra altri ${data.groups.length-8} gruppi suggeriti</summary><div class="muted">Compariranno automaticamente dopo che confermi i primi gruppi, così la schermata resta semplice.</div></details>`:''}${data.manual.length?`<div style="height:28px"></div><h2>Solo le eccezioni davvero dubbie</h2><p>Queste non hanno una corrispondenza abbastanza chiara. Sono le uniche che richiedono una scelta puntuale.</p><div class="kw8-manual">${manualRows}</div>${data.manual.length>6?`<div class="muted" style="margin-top:12px">Altre ${data.manual.length-6} eccezioni compariranno man mano che completi queste.</div>`:''}`:''}</section>`;
 }
 function keywordIntelligenceView(){
-  const rows=byProject(state.keywords),pages=byProject(state.pages),linked=rows.filter(item=>String(item.targetUrl||'').trim()).length,unlinked=rows.length-linked;
-  return `${pageIntro('Keyword e pagine','Qui decidiamo quale pagina deve rispondere a ogni ricerca. Il sistema fa automaticamente le associazioni sicure e ti chiede conferma solo quando serve.',[`${rows.length} keyword`,`${linked} collegate`,`${unlinked} da completare`])}
-  <div class="friendly-strip"><div class="friendly-mini"><div class="emoji">🔎</div><strong>${rows.length}</strong><span>keyword totali</span></div><div class="friendly-mini"><div class="emoji">🔗</div><strong>${linked}</strong><span>già collegate</span></div><div class="friendly-mini"><div class="emoji">📄</div><strong>${pages.length}</strong><span>pagine disponibili</span></div><div class="friendly-mini"><div class="emoji">✅</div><strong>${rows.length?Math.round(linked/rows.length*100):0}%</strong><span>mapping completato</span></div></div>
-  <div class="section-head"><div><strong>Cosa vuoi fare?</strong><div class="muted">Se hai appena importato Search Console, parti dal collegamento automatico qui sotto.</div></div><div class="page-actions"><button class="btn" id="generateKeywordsFromPages">Rileva nuove keyword dalle pagine</button><button class="btn" data-import-target="keywords">Importa keyword</button><button class="btn" data-add="keywords">+ Aggiungi</button></div></div>
-  ${rows.length?keywordLinkPanel():''}
-  ${rows.length?`<details class="kw-all-details"><summary>Apri archivio completo delle ${rows.length} keyword</summary><div class="toolbar" style="margin-top:10px"><input data-search-table="keywords" aria-label="Cerca keyword" placeholder="Cerca keyword o URL"><div class="spacer"></div><span class="muted">${rows.length} record</span></div><div class="table-wrap" tabindex="0" role="region" aria-label="Archivio keyword"><table><thead><tr>${configs.keywords.cols.map(c=>`<th scope="col">${c.label}</th>`).join('')}<th scope="col">Origine</th><th scope="col">Azioni</th></tr></thead><tbody>${rows.map(r=>`<tr data-table-row="keywords">${configs.keywords.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td>${esc(r.source||'Manuale')}</td><td>${String(r.targetUrl||'').trim()?'<span class="badge success">collegata</span> ':'<span class="badge warning">da collegare</span> '}<button class="btn" data-edit="keywords" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div></details>`:`<div class="card empty"><strong>🔎 Nessuna keyword ancora</strong><p>${pages.length?`Ho già ${pages.length} pagine: posso creare una prima mappa dalle informazioni reali presenti in Title e H1.`:'Prima rileva o importa le pagine del sito; poi potrò proporre le keyword da collegare.'}</p>${pages.length?'<button class="btn primary" id="generateKeywordsFromPages2">Rileva keyword dalle pagine</button>':'<button class="btn primary" data-nav="Pages">Vai alle pagine del sito</button>'}</div>`}`;
+  const rows=byProject(state.keywords),pages=byProject(state.pages),linked=rows.filter(k=>String(k.targetUrl||'').trim()).length,unlinked=rows.length-linked,pct=rows.length?Math.round(linked/rows.length*100):0;
+  const groups=keywordSuggestionGroups();
+  return `<div class="kw8-shell"><section class="kw8-hero"><h1>Le keyword trovano la pagina giusta.</h1><p>Il sistema raggruppa le decisioni e ti mostra solo ciò che merita davvero attenzione. Niente più conferme ripetitive una per una.</p><div class="kw8-kpis"><div class="kw8-kpi"><strong>${rows.length}</strong><span>keyword totali</span></div><div class="kw8-kpi"><strong>${linked}</strong><span>già collegate</span></div><div class="kw8-kpi"><strong>${pages.length}</strong><span>pagine disponibili</span></div><div class="kw8-kpi"><strong>${pct}%</strong><span>mapping completato</span></div></div></section><div class="kw8-main"><div>${keywordLinkPanel()}</div><aside class="kw8-side"><section class="kw8-side-card"><h3>Il tuo progresso</h3><div class="kw8-big">${pct}%</div><div class="kw8-progress"><span style="width:${pct}%"></span></div><p>${linked} collegate · ${unlinked} ancora da completare.</p>${groups.groups.length?`<button class="btn primary" data-confirm-keyword-group="${esc(groups.groups[0].page.displayUrl||groups.groups[0].page.normalizedUrl||'')}">Conferma il primo gruppo</button>`:''}</section><section class="kw8-side-card"><h3>Il modo più semplice</h3><p>1. Conferma i gruppi più grandi.<br>2. Lascia per ultime le eccezioni.<br>3. Non creare nuove pagine finché una pagina esistente può rispondere bene.</p></section><section class="kw8-side-card"><h3>Aggiungi dati</h3><p>Puoi aggiornare la mappa senza interrompere il lavoro.</p><div class="kw8-tools"><button class="btn" id="generateKeywordsFromPages">Rileva dalle pagine</button><button class="btn" data-import-target="keywords">Importa</button><button class="btn" data-add="keywords">+ Keyword</button></div></section></aside></div><details class="kw8-archive"><summary>Archivio completo (${rows.length} keyword)</summary><div class="toolbar"><input data-search-table="keywords" placeholder="Cerca keyword o URL"><span class="muted">${rows.length} record</span></div><div class="table-wrap"><table><thead><tr>${configs.keywords.cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Azioni</th></tr></thead><tbody>${rows.map(r=>`<tr data-table-row="keywords">${configs.keywords.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td><button class="btn" data-edit="keywords" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div></details></div>`;
 }
 function extractUrlsFromText(text){
   const lines=String(text||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
@@ -5586,6 +5634,7 @@ function bindView(){
  document.querySelectorAll('[data-monitor-action]').forEach(b=>b.onclick=()=>toast('Azione marcata per monitoraggio manuale.'));
  document.querySelectorAll('[data-validate-field]').forEach(b=>b.onclick=()=>confirmAutoField(b.dataset.validateField));
  document.querySelectorAll('[data-link-suggested]').forEach(b=>b.onclick=()=>linkKeywordToPage(b.dataset.linkSuggested,b.dataset.linkUrl));
+ document.querySelectorAll('[data-confirm-keyword-group]').forEach(b=>b.onclick=()=>confirmKeywordGroup(b.dataset.confirmKeywordGroup));
   document.querySelectorAll('[data-link-keyword]').forEach(b=>b.onclick=()=>{
    const id=b.dataset.linkKeyword;
    const select=document.querySelector(`[data-link-select="${CSS.escape(id)}"]`);
