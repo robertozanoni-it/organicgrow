@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS V5.7: flusso operativo a fasi numerate, wizard con passi progressivi e piano attività verificabile.">
+<meta name="description" content="Organic Growth OS V5.8: flusso operativo a fasi numerate, wizard con passi progressivi e piano attività verificabile.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
 <title>Organic Growth OS</title>
@@ -342,7 +342,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .hero-action{background:var(--surface);border:1px solid var(--border);box-shadow:none;padding:24px}
 .table-wrap{max-width:100%;overscroll-behavior-inline:contain;box-shadow:inset -10px 0 16px -18px var(--overlay-tint)}
 th{z-index:1}.toolbar input{min-width:min(360px,100%)}
-.drawer{width:min(640px,100%);transition:transform .2s ease;visibility:hidden}
+.drawer{width:min(1180px,100%);transition:transform .2s ease;visibility:hidden}
 .drawer.open{visibility:visible}.backdrop{backdrop-filter:blur(2px)}
 .toast{border-left:4px solid var(--accent)}
 .dashboard-command{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:center;padding:30px;border:1px solid var(--border);background:var(--surface);border-radius:18px}
@@ -544,6 +544,61 @@ html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,v
 .journey-step-scope .muted{font-weight:700}
 
 /* ============================================================
+   V5.8 — RISOLUZIONE AUTOMATICA E PROSSIMA ATTIVITA
+   ============================================================ */
+.auto-resolve{border:1px solid color-mix(in srgb,var(--accent) 32%,var(--border));background:color-mix(in srgb,var(--accent) 5%,var(--surface));border-radius:18px;padding:20px}
+.auto-resolve-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:14px}
+.auto-resolve-card{border:1px solid var(--border);background:var(--surface);border-radius:14px;padding:16px}
+.auto-resolve-card.can{border-color:color-mix(in srgb,var(--success) 45%,var(--border))}
+.auto-resolve-card.can strong{color:var(--success)}
+.auto-resolve-card.cannot{border-color:color-mix(in srgb,var(--warning) 45%,var(--border))}
+.auto-resolve-card.cannot strong{color:var(--warning)}
+.auto-resolve-card ul{margin:10px 0 0;padding-left:20px}
+.auto-resolve-card li{margin:5px 0}
+.is-next-up{outline:3px solid var(--accent);outline-offset:3px;animation:nextUpPulse 1.6s ease-out 1}
+@keyframes nextUpPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent)}100%{box-shadow:0 0 0 18px transparent}}
+@media(prefers-reduced-motion:reduce){.is-next-up{animation:none}}
+
+/* ============================================================
+   V5.8 — COMPILAZIONE AUTOMATICA PAGINE
+   ============================================================ */
+.fill-levels{display:grid;gap:12px;margin:16px 0}
+.fill-level{display:grid;grid-template-columns:26px minmax(0,1fr);gap:12px;align-items:start;border:1px solid var(--border);background:var(--surface-alt);border-radius:14px;padding:14px;cursor:pointer}
+.fill-level:hover{border-color:var(--accent)}
+.fill-level input{width:22px;min-height:22px;margin-top:2px}
+.fill-level span{display:block}
+.fill-level strong{display:block;margin-bottom:4px}
+.fill-level .badge{margin-bottom:6px}
+.fill-level .muted{font-size:13.6px;line-height:1.5}
+.fill-level input:disabled+span{opacity:.5}
+.field-origin{font-size:11px;font-weight:900;letter-spacing:.03em;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.field-origin.site{background:color-mix(in srgb,var(--success) 14%,var(--surface));color:var(--success)}
+.field-origin.inferred{background:color-mix(in srgb,var(--info) 14%,var(--surface));color:var(--info)}
+.field-origin.draft{background:color-mix(in srgb,var(--warning) 16%,var(--surface));color:var(--warning)}
+
+/* ============================================================
+   V5.8 — SCHEDA RECORD ORIZZONTALE
+   Il pannello laterale era largo 640px: con etichetta, aiuto e nota
+   ogni campo occupava troppa altezza e serviva scorrere all'infinito.
+   Ora il pannello e' largo e i campi si dispongono su piu' colonne.
+   ============================================================ */
+.drawer.is-wide{width:min(1600px,100%)}
+.drawer-head{position:sticky;top:-20px;background:var(--surface);z-index:2;padding-top:4px;margin-top:-4px}
+.drawer-head-actions{display:flex;gap:8px;align-items:center}
+.drawer #recordForm.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:1100px){.drawer #recordForm.form-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 20px}}
+@media(min-width:1500px){.drawer.is-wide #recordForm.form-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:720px){.drawer #recordForm.form-grid{grid-template-columns:1fr}}
+.drawer .field{background:var(--surface-alt);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.drawer .field.has-problem{background:color-mix(in srgb,var(--warning) 6%,var(--surface))}
+.drawer .field.has-problem.missing{background:color-mix(in srgb,var(--danger) 6%,var(--surface))}
+.drawer .field .form-help{font-size:12.6px;line-height:1.4;color:var(--muted);margin-top:6px}
+.drawer .field-note{font-size:12.6px}
+.drawer .form-actions,.drawer .field.full[style*="flex-direction:row"]{grid-column:1/-1}
+.drawer .record-guide{position:sticky;top:44px;z-index:1}
+.record-guide-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:6px 24px;margin:12px 0 0;padding-left:20px}
+
+/* ============================================================
    V5.7 — VERIFICHE SUI DATI
    ============================================================ */
 .finding-list{display:grid;gap:14px}
@@ -615,7 +670,7 @@ html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,v
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.7</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V5.8</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -654,7 +709,10 @@ html[data-theme="dark"] .btn:hover:not(:disabled){background:color-mix(in srgb,v
 <aside class="drawer" id="drawer" aria-modal="true" role="dialog" aria-labelledby="drawerTitle" aria-hidden="true" tabindex="-1">
   <div class="drawer-head">
     <h3 id="drawerTitle">Dettaglio</h3>
-    <button class="btn" type="button" id="drawerClose" aria-label="Chiudi finestra">✕</button>
+    <div class="drawer-head-actions">
+      <button class="btn" type="button" id="drawerWide" aria-pressed="false" title="Allarga il pannello a tutta pagina">⤡ Allarga</button>
+      <button class="btn" type="button" id="drawerClose" aria-label="Chiudi finestra">✕</button>
+    </div>
   </div>
   <div id="drawerBody"></div>
 </aside>
@@ -1138,13 +1196,15 @@ function operationalPlanView(){
   const items=operationalPlanItems(),verified=byProject(state.tasks).filter(task=>['VERIFIED','CLOSED'].includes(String(task.status||'').toUpperCase())),first=items[0],firstStatus=first?planStatusInfo(first.status):null;
   const firstAction=first?(firstStatus.key==='DONE'?`<button class="btn primary" data-plan-verify data-plan-id="${esc(first.id)}" data-plan-kind="${esc(first.kind)}">Verifica la priorità 1</button>`:['APPROVED','IN PROGRESS','BLOCKED'].includes(firstStatus.key)?`<button class="btn primary" data-nav="${esc(first.target)}">Continua la priorità 1</button>`:`<button class="btn primary" data-plan-approve data-plan-id="${esc(first.id)}" data-plan-kind="${esc(first.kind)}">Approva la priorità 1</button>`):'<button class="btn primary" data-nav="Dashboard">Torna ai wizard</button>';
   return `${pageIntro('6.5 Piano operativo','Ultimo passo prima dell’esecuzione: consulta, modifica, approva e verifica ogni attività direttamente nell’app.',[`${items.length} attività aperte`,`${verified.length} verificate`])}
+  ${autoResolvePanel()}
+  <div style="height:18px"></div>
   ${dataFindingsPanel()}
   <div style="height:18px"></div>
   ${safeFixPanelView()}
   <section class="dashboard-command" aria-labelledby="planNextTitle"><div><div class="dashboard-label">Prossima azione consigliata</div><h3 id="planNextTitle">${esc(first?.title||'Il piano è aggiornato')}</h3><p>${esc(first?.why||'Non risultano altre modifiche prioritarie con i dati disponibili.')}</p></div>${firstAction}</section>
   <div style="height:18px"></div>
   <div class="section-head"><div><h3>Modifiche consigliate in ordine di priorità</h3><div class="muted">Approva prima il piano, esegui la modifica e verifica il risultato prima di chiuderla.</div></div><div class="page-actions"><button class="btn" id="refreshOperationalPlan">Aggiorna piano</button><button class="btn" data-report-export>Scarica report</button></div></div>
-  <div class="journey-problem-list">${items.length?items.map((item,index)=>{const status=planStatusInfo(item.status);return `<article class="journey-problem" data-plan-card="${esc(item.id)}"><div class="section-head"><div><div class="badges"><span class="badge ${item.priority==='P1'?'danger':item.priority==='P2'?'warning':'info'}">${esc(item.priority)}</span><span class="plan-state ${status.className}">${esc(status.label)}</span></div><h4>${index+1}. ${esc(item.title)}</h4></div><span class="badge">${esc(navLabel(item.target))}</span></div><p><strong>Perché è importante:</strong> ${esc(item.why)}</p>${item.url?`<div class="journey-problem-url">${esc(item.url)}</div>`:''}${item.steps.length?`<details ${index===0?'open':''}><summary>Passaggi da seguire</summary><ol class="task-steps">${item.steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol></details>`:''}<div class="callout"><strong>Come verifichiamo</strong><div class="muted">${esc(item.verification)}</div>${item.verificationEvidence?`<div style="margin-top:8px"><strong>Prova registrata:</strong> ${esc(item.verificationEvidence)}</div>`:''}</div><div class="plan-approval">${operationalPlanActions(item)}</div></article>`;}).join(''):'<div class="journey-empty"><strong>Nessuna modifica prioritaria aperta</strong><p class="muted">Tutti i controlli disponibili risultano completati oppure non richiedono interventi.</p><button class="btn primary" data-nav="Dashboard">Torna ai wizard</button></div>'}</div>
+  <div class="journey-problem-list">${items.length?items.map((item,index)=>{const status=planStatusInfo(item.status);return `<article class="journey-problem ${state.ui.focusPlanItemId===item.id?'is-next-up':''}" data-plan-card="${esc(item.id)}"><div class="section-head"><div><div class="badges"><span class="badge ${item.priority==='P1'?'danger':item.priority==='P2'?'warning':'info'}">${esc(item.priority)}</span><span class="plan-state ${status.className}">${esc(status.label)}</span></div><h4>${index+1}. ${esc(item.title)}</h4></div><span class="badge">${esc(navLabel(item.target))}</span></div><p><strong>Perché è importante:</strong> ${esc(item.why)}</p>${item.url?`<div class="journey-problem-url">${esc(item.url)}</div>`:''}${item.steps.length?`<details ${index===0?'open':''}><summary>Passaggi da seguire</summary><ol class="task-steps">${item.steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol></details>`:''}<div class="callout"><strong>Come verifichiamo</strong><div class="muted">${esc(item.verification)}</div>${item.verificationEvidence?`<div style="margin-top:8px"><strong>Prova registrata:</strong> ${esc(item.verificationEvidence)}</div>`:''}</div><div class="plan-approval">${operationalPlanActions(item)}</div></article>`;}).join(''):'<div class="journey-empty"><strong>Nessuna modifica prioritaria aperta</strong><p class="muted">Tutti i controlli disponibili risultano completati oppure non richiedono interventi.</p><button class="btn primary" data-nav="Dashboard">Torna ai wizard</button></div>'}</div>
   ${verified.length?`<div style="height:18px"></div><details class="card completed-history"><summary>Attività verificate (${verified.length})</summary>${verified.map(task=>`<div class="completed-row"><div><strong>${esc(task.title||'Attività')}</strong><div class="muted">${esc(task.verifiedAt?`Verificata il ${fmtDate(task.verifiedAt)}`:'Verificata')}</div></div><button class="btn" data-plan-edit data-plan-id="${esc(task.id)}" data-plan-kind="task">Rivedi</button></div>`).join('')}</details>`:''}`;
 }
 function ensureOperationalPlanTask(id,kind){
@@ -1168,19 +1228,143 @@ function completeOperationalPlanItem(id,kind){
   const task=ensureOperationalPlanTask(id,kind);if(!task){toast('Attività non trovata.');return;}
   if(!task.approvedByUser&&!['APPROVED','IN PROGRESS'].includes(String(task.status||'').toUpperCase())){toast('Approva prima l’attività, così il piano registra la decisione.');return;}
   task.status='DONE';task.completedAt=now();task.updatedAt=now();commit(`Attività eseguita, da verificare: ${task.title}`);toast('Attività registrata come eseguita. Ora verifica il risultato.');render();
+  state.ui.focusPlanItemId=task.id;setTimeout(scrollToFocusedPlanItem,60);
 }
 function openManualPlanVerification(task){
   openDrawer('Verifica e approva il risultato',`<form id="planVerificationForm"><div class="callout"><strong>Cosa stai verificando</strong><p class="muted">${esc(task.acceptanceCriteria||task.verification||'Controlla che la modifica produca il risultato atteso.')}</p></div><div class="field" style="margin-top:14px"><label for="planVerificationEvidence">Prova o controllo eseguito</label><textarea id="planVerificationEvidence" name="evidence" required placeholder="Esempio: ho riaperto la pagina, controllato il title e verificato che il valore corretto sia visibile.">${esc(task.verificationEvidence||'')}</textarea><div class="form-help">Descrivi ciò che hai controllato. Non dichiareremo il successo senza questa conferma.</div></div><label style="display:flex;gap:10px;align-items:flex-start;margin-top:14px"><input type="checkbox" name="confirmed" value="yes" required style="width:22px;min-height:22px"><span><strong>Confermo che il risultato è corretto</strong><span class="muted" style="display:block">Questa approvazione verrà registrata nel piano.</span></span></label><div style="margin-top:18px"><button class="btn primary" type="submit">Approva verifica</button></div></form>`);
-  document.getElementById('planVerificationForm').onsubmit=event=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.target).entries());if(data.confirmed!=='yes'||!String(data.evidence||'').trim()){toast('Inserisci la prova e conferma il risultato.');return;}task.status='VERIFIED';task.verificationEvidence=String(data.evidence).trim();task.verifiedAt=now();task.verifiedByUser=true;task.updatedAt=now();commit(`Risultato verificato e approvato: ${task.title}`);closeDrawer();render();toast('Risultato verificato e approvato. Il piano è stato aggiornato.');};
+  document.getElementById('planVerificationForm').onsubmit=event=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.target).entries());if(data.confirmed!=='yes'||!String(data.evidence||'').trim()){toast('Inserisci la prova e conferma il risultato.');return;}task.status='VERIFIED';task.verificationEvidence=String(data.evidence).trim();task.verifiedAt=now();task.verifiedByUser=true;task.updatedAt=now();commit(`Risultato verificato e approvato: ${task.title}`);closeDrawer();announceNextPlanItem(task.id,'Risultato verificato.');render();setTimeout(scrollToFocusedPlanItem,60);};
 }
 function verifyOperationalPlanItem(id,kind){
   const task=ensureOperationalPlanTask(id,kind);if(!task){toast('Attività non trovata.');return;}
   const finding=wizardChecks().find(check=>check.id===task.wizardFindingId);
   if(finding){
     if(!finding.resolved()){task.status='DONE';task.updatedAt=now();commit(`Verifica non superata: ${task.title}`);toast('La verifica rileva ancora il problema. L’attività resta “Da verificare”.');render();return;}
-    task.status='VERIFIED';task.verifiedAt=now();task.verificationEvidence=`Verifica automatica superata: ${finding.simple}`;task.updatedAt=now();commit(`Risultato verificato automaticamente: ${task.title}`);toast('Verifica automatica superata. Attività approvata e chiusa.');render();return;
+    task.status='VERIFIED';task.verifiedAt=now();task.verificationEvidence=`Verifica automatica superata: ${finding.simple}`;task.updatedAt=now();commit(`Risultato verificato automaticamente: ${task.title}`);announceNextPlanItem(task.id,'Verifica superata.');render();setTimeout(scrollToFocusedPlanItem,60);return;
   }
   openManualPlanVerification(task);
+}
+
+/* ============================================================
+   V5.8 — AVANZAMENTO AUTOMATICO
+   Chiusa un'attivita', il sistema calcola subito la successiva, la porta
+   in cima e la evidenzia. Cosi' non serve tornare indietro a cercarla.
+   ============================================================ */
+function focusNextPlanItem(excludeId){
+  const next=operationalPlanItems().find(item=>item.id!==excludeId);
+  state.ui.focusPlanItemId=next?next.id:'';
+  return next;
+}
+function announceNextPlanItem(excludeId,doneMessage){
+  const next=focusNextPlanItem(excludeId);
+  if(!next){toast(`${doneMessage} Non restano attivit\u00e0 aperte nel piano.`);return null;}
+  toast(`${doneMessage} Passo alla prossima: \u201c${next.title}\u201d.`);
+  return next;
+}
+function scrollToFocusedPlanItem(){
+  const id=state.ui.focusPlanItemId;
+  if(!id)return;
+  const card=document.querySelector(`[data-plan-card="${CSS.escape(id)}"],[data-task-card="${CSS.escape(id)}"]`);
+  if(!card)return;
+  card.classList.add('is-next-up');
+  if(typeof card.scrollIntoView==='function'){
+    try{card.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){try{card.scrollIntoView();}catch(err){}}
+  }
+  const action=card.querySelector('.btn.primary');
+  if(action)setTimeout(()=>{try{action.focus({preventScroll:true});}catch(e){}},260);
+}
+
+/* ============================================================
+   V5.8 — RISOLUZIONE AUTOMATICA
+   Distinzione netta e dichiarata:
+     - l'app puo' sistemare da sola i propri dati (archivio locale)
+     - l'app NON puo' modificare il sito online: title, meta e H1 vanno
+       pubblicati su WordPress, qui si registra solo il valore.
+   ============================================================ */
+function autoResolvableSummary(){
+  const safe=safeAutomaticFixCandidates().length;
+  const plan=pageCompletionPlan();
+  const inferredFields=plan.inferred.reduce((sum,entry)=>sum+entry.fields.length,0);
+  const readableFields=plan.readable.reduce((sum,entry)=>sum+entry.fields.length,0);
+  const unlinked=keywordUnlinked().length;
+  const manual=dataQualityFindings().filter(finding=>['pages_no_title','pages_no_h1','pages_no_meta','pages_dup_title','pages_blocked'].includes(finding.id));
+  return {safe,inferredFields,readableFields,unlinked,manual,
+    automatic:safe+inferredFields+readableFields+unlinked,
+    manualCount:manual.reduce((sum,finding)=>sum+finding.count,0)};
+}
+/* Ricontrolla le attivita' aperte: quelle il cui controllo automatico ora
+   passa vengono chiuse come verificate, con prova registrata. */
+function reverifyOpenTasks(){
+  const checks=wizardChecks();let verified=0;
+  byProject(state.tasks).forEach(task=>{
+    if(['VERIFIED','CLOSED'].includes(String(task.status||'').toUpperCase()))return;
+    const finding=checks.find(check=>check.id===task.wizardFindingId);
+    if(finding&&finding.resolved()){
+      task.status='VERIFIED';task.verifiedAt=now();task.updatedAt=now();
+      task.verificationEvidence=`Verifica automatica superata: ${finding.simple}`;
+      verified++;
+    }
+  });
+  return verified;
+}
+async function runAutoResolve(options={}){
+  const steps=[];
+  if(options.readSite!==false){
+    const plan=pageCompletionPlan();
+    if(plan.readable.length){
+      toast('Sto rileggendo le pagine incomplete dal sito\u2026');
+      try{
+        const result=await readMissingPageFields(30);
+        if(result.filled)steps.push(`${result.filled} campi copiati dalle pagine online`);
+        if(result.failed)steps.push(`${result.failed} pagine non leggibili dal browser`);
+      }catch(e){steps.push('Lettura dal sito non riuscita');}
+    }
+  }
+  const safeResult=applySafeAutomaticDataFixes({apply:true});
+  if(safeResult.applied)steps.push(`${safeResult.verified} correzioni sicure applicate e verificate`);
+  const inferred=applyInferredPageFields();
+  if(inferred)steps.push(`${inferred} campi strutturali dedotti dalle URL`);
+  const before=keywordUnlinked().length;
+  autoLinkKeywordsSilent();
+  const linked=before-keywordUnlinked().length;
+  if(linked)steps.push(`${linked} keyword collegate per corrispondenza verificabile`);
+  runAutomationCycle(false);
+  const verified=reverifyOpenTasks();
+  if(verified)steps.push(`${verified} attivit\u00e0 chiuse perch\u00e9 il controllo ora risulta superato`);
+  commit('Risoluzione automatica eseguita');
+  const rest=autoResolvableSummary();
+  render();
+  return {steps,rest};
+}
+/* Variante senza toast/render: usata dentro la risoluzione automatica. */
+function autoLinkKeywordsSilent(){
+  const pages=byProject(state.pages),unlinked=keywordUnlinked();
+  const normalize=value=>String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+  let linked=0;
+  unlinked.forEach(keyword=>{
+    const target=normalize(keyword.keyword);if(!target)return;
+    const words=target.split(' ').filter(word=>word.length>2);if(!words.length)return;
+    let best=null,bestScore=0;
+    pages.forEach(page=>{
+      const haystack=normalize(`${page.pageName||''} ${page.title||''} ${page.h1||''} ${page.displayUrl||''}`);
+      if(!haystack)return;
+      const score=words.filter(word=>haystack.includes(word)).length/words.length;
+      if(score>bestScore){bestScore=score;best=page;}
+    });
+    if(best&&bestScore>=0.75){
+      const url=best.displayUrl||best.normalizedUrl||'';
+      if(url){keyword.targetUrl=url;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='auto-match';linked++;}
+    }
+  });
+  return linked;
+}
+function autoResolvePanel(){
+  const summary=autoResolvableSummary();
+  const manualList=summary.manual.filter(finding=>finding.count>0);
+  return `<section class="auto-resolve"><div class="section-head"><div><div class="dashboard-label">Risoluzione automatica</div><h3>Posso risolverne una parte da solo</h3><p class="muted">Sistemo i dati dentro l\u2019app e li verifico. <strong>Non posso modificare il sito online:</strong> i testi vanno pubblicati sul tuo WordPress, qui registro il valore e controllo il risultato.</p></div><button class="btn primary" type="button" id="runAutoResolve" ${summary.automatic?'':'disabled'}>Risolvi in automatico${summary.automatic?` (${summary.automatic})`:''}</button></div>
+  <div class="auto-resolve-grid">
+    <div class="auto-resolve-card can"><strong>\u2713 Posso farlo io</strong><ul>${summary.readableFields?`<li>${summary.readableFields} campi da rileggere dalle pagine online</li>`:''}${summary.inferredFields?`<li>${summary.inferredFields} campi strutturali da dedurre dalle URL</li>`:''}${summary.unlinked?`<li>${summary.unlinked} keyword da collegare (solo corrispondenze certe)</li>`:''}${summary.safe?`<li>${summary.safe} normalizzazioni e duplicati da unire</li>`:''}${summary.automatic?'':'<li class="muted">Nulla da fare: i dati sono gi\u00e0 a posto.</li>'}</ul></div>
+    <div class="auto-resolve-card cannot"><strong>\u2717 Devi farlo tu sul sito</strong><ul>${manualList.length?manualList.map(finding=>`<li>${esc(finding.title)}</li>`).join(''):'<li class="muted">Nessun intervento richiesto sul sito.</li>'}</ul><div class="muted" style="margin-top:8px">Posso generare le <strong>bozze</strong> di title e meta description da \u201cPagine del sito \u2192 Compila i campi mancanti\u201d, ma la pubblicazione resta a te.</div></div>
+  </div></section>`;
 }
 
 function nextActionsView(){
@@ -2538,7 +2722,7 @@ function taskManagementViewV2(){
   const completed=tasks.filter(t=>['VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase())).sort((a,b)=>(b.verifiedAt||b.completedAt||b.updatedAt||'').localeCompare(a.verifiedAt||a.completedAt||a.updatedAt||''));
   const taskCard=(t,index)=>{
     const finding=checks.find(f=>f.id===t.wizardFindingId),target=taskResolutionTarget(t),steps=normalizeTaskSteps(finding?.steps||t.steps),why=finding?.why||t.why||t.description||'Attività aggiunta al piano operativo.',status=planStatusInfo(t.status),planItem={id:t.id,kind:'task',target:t.targetView||target.view,status:t.status};
-    return `<article class="task-plan-card ${index===0?'current':''}"><div class="task-order">${index+1}</div><div><div class="badges"><span class="badge ${t.priority==='P1'?'danger':t.priority==='P2'?'warning':''}">${esc(t.priority||'P3')}</span><span class="plan-state ${status.className}">${esc(status.label)}</span>${index===0?'<span class="badge info">DA FARE ADESSO</span>':'<span class="badge">PASSO SUCCESSIVO</span>'}</div><h4>${esc(t.title||'Attività')}</h4><p class="task-why">${esc(why)}</p>${steps.length?`<details ${index===0?'open':''}><summary>Passaggi da seguire</summary><ol class="task-steps">${steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol></details>`:''}<div class="task-check"><strong>Quando è completata</strong><div>${esc(t.acceptanceCriteria||finding?.simple||'Quando il risultato è stato verificato e lo stato passa a Completata.')}</div></div></div><div class="task-actions">${operationalPlanActions(planItem)}</div></article>`;
+    return `<article class="task-plan-card ${index===0?'current':''} ${state.ui.focusPlanItemId===t.id?'is-next-up':''}" data-task-card="${esc(t.id)}"><div class="task-order">${index+1}</div><div><div class="badges"><span class="badge ${t.priority==='P1'?'danger':t.priority==='P2'?'warning':''}">${esc(t.priority||'P3')}</span><span class="plan-state ${status.className}">${esc(status.label)}</span>${index===0?'<span class="badge info">DA FARE ADESSO</span>':'<span class="badge">PASSO SUCCESSIVO</span>'}</div><h4>${esc(t.title||'Attività')}</h4><p class="task-why">${esc(why)}</p>${steps.length?`<details ${index===0?'open':''}><summary>Passaggi da seguire</summary><ol class="task-steps">${steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol></details>`:''}<div class="task-check"><strong>Quando è completata</strong><div>${esc(t.acceptanceCriteria||finding?.simple||'Quando il risultato è stato verificato e lo stato passa a Completata.')}</div></div></div><div class="task-actions">${operationalPlanActions(planItem)}</div></article>`;
   };
   const completedTitle=t=>{const rule=systemTaskRules().find(r=>r.match(t));return rule?`Completato: ${rule.label}`:`Completato: ${t.title||'Attività'}`;};
   return `${pageIntro('7.1 Attività da eseguire','Una sola priorità alla volta, in ordine numerato. Completa la 1, verifica il risultato e il sistema porterà in cima l’attività successiva.',[`${active.length} da fare`,`${completed.length} completate`])}
@@ -2548,23 +2732,255 @@ function taskManagementViewV2(){
 }
 
 
+/* ============================================================
+   V5.8 — COMPILAZIONE AUTOMATICA DELLE PAGINE
+   Tre livelli, tenuti separati perche' hanno affidabilita' diversa:
+     'site'     = letto davvero dall'HTML della pagina (verificabile)
+     'inferred' = dedotto da URL e struttura del progetto (deterministico)
+     'draft'    = bozza di testo generata da dati reali (DA RIVEDERE)
+   Nessun livello sovrascrive un valore gia' scritto dalla persona e
+   nessun livello modifica il sito online: qui si compila solo l'archivio.
+   ============================================================ */
+function pageFieldOrigin(page,name){return (page&&page.autoFilledFields||{})[name]||'';}
+function markPageField(page,name,value,origin){
+  if(value===undefined||value===null||String(value).trim()==='')return false;
+  const current=page[name];
+  if(current!==undefined&&current!==null&&String(current).trim()!=='')return false;
+  page[name]=value;
+  page.autoFilledFields=page.autoFilledFields||{};
+  page.autoFilledFields[name]=origin;
+  page.updatedAt=now();
+  return true;
+}
+function pagePathOf(page){
+  const url=page.displayUrl||page.normalizedUrl||page.canonicalUrl||'';
+  return String(url).replace(/^https?:\/\/[^/]+/,'')||'/';
+}
+const PAGE_TYPE_RULES=[
+  [/^\/?$/,'Homepage'],
+  [/(privacy|cookie|termini|condizioni|politica|legal)/,'Legal'],
+  [/(contatt|contact)/,'Landing'],
+  [/(blog|news|articol|magazine)\/.+/,'Article'],
+  [/^\/(blog|news|articol|magazine)\/?$/,'Hub'],
+  [/(servizi|services|prestazioni)\/.+/,'Service'],
+  [/^\/(servizi|services|prestazioni)\/?$/,'Pillar'],
+  [/(prodott|shop|store|product)\/.+/,'Product'],
+  [/(categoria|category|tag)\//,'Category'],
+  [/(tool|strumenti|risorse|guide)\/.+/,'Guide'],
+  [/(faq|domande)/,'FAQ']
+];
+function inferPageType(path){
+  const value=String(path||'').toLowerCase();
+  for(const [pattern,type] of PAGE_TYPE_RULES){if(pattern.test(value))return type;}
+  return 'Other';
+}
+function inferClusterFromPath(path){
+  const segments=String(path||'').split('/').filter(Boolean);
+  if(!segments.length)return 'Homepage';
+  return titleCaseWords(segments[0].replace(/[-_]+/g,' '));
+}
+function inferParentPath(path,knownPaths){
+  const segments=String(path||'').split('/').filter(Boolean);
+  if(segments.length<1)return '';
+  for(let i=segments.length-1;i>0;i--){
+    const candidate='/'+segments.slice(0,i).join('/');
+    if(knownPaths.has(candidate))return candidate;
+  }
+  return knownPaths.has('/')&&path!=='/'?'/':'';
+}
+function draftTitleFor(page,project){
+  const base=String(page.h1||page.pageName||guessPageNameFromUrl(pagePathOf(page))||'').trim();
+  if(!base)return '';
+  const brand=String(project.brand||project.name||'').trim();
+  const clean=base.replace(/\s+/g,' ').replace(/\s*[|\u2013-]\s*$/,'');
+  if(!brand||clean.toLowerCase().includes(brand.toLowerCase()))return clean.slice(0,60);
+  const withBrand=`${clean} | ${brand}`;
+  return withBrand.length<=60?withBrand:clean.slice(0,60);
+}
+function draftMetaFor(page,project){
+  const base=String(page.h1||page.pageName||'').trim();
+  if(!base)return '';
+  const keyword=String(page.primaryKeyword||base).trim();
+  const brand=String(project.brand||project.name||'').trim();
+  const place=String(project.country||'').trim();
+  const parts=[`${base}.`];
+  if(keyword&&keyword.toLowerCase()!==base.toLowerCase())parts.push(`Scopri ${keyword.toLowerCase()}:`);
+  else parts.push('Scopri come funziona,');
+  parts.push('cosa comprende e come richiedere informazioni.');
+  if(brand)parts.push(`A cura di ${brand}${place&&place.length<20?` \u2014 ${place}`:''}.`);
+  return parts.join(' ').replace(/\s+/g,' ').trim().slice(0,158);
+}
+/* Calcola cosa si potrebbe compilare, senza applicare nulla. */
+function pageCompletionPlan(){
+  const pages=byProject(state.pages),project=currentProject();
+  const knownPaths=new Set(pages.map(page=>pagePathOf(page)));
+  const readable=[],inferred=[],drafts=[];
+  pages.forEach(page=>{
+    const path=pagePathOf(page);
+    const missingFromSite=['title','meta','h1','canonicalUrl','schema'].filter(name=>!String(page[name]||'').trim());
+    if(missingFromSite.length&&absoluteSiteUrl(page.displayUrl||page.normalizedUrl))
+      readable.push({page,fields:missingFromSite});
+    const deducible=[];
+    if(!String(page.canonicalUrl||'').trim())deducible.push('canonicalUrl');
+    if(!String(page.pageType||'').trim()||page.pageType==='Other')deducible.push('pageType');
+    if(!String(page.cluster||'').trim())deducible.push('cluster');
+    if(!String(page.parent||'').trim()&&inferParentPath(path,knownPaths))deducible.push('parent');
+    if(!String(page.primaryKeyword||'').trim()&&(page.h1||page.title||path!=='/'))deducible.push('primaryKeyword');
+    if(!String(page.intent||'').trim()&&(page.primaryKeyword||page.h1||page.title))deducible.push('intent');
+    if(deducible.length)inferred.push({page,fields:deducible});
+    const draftFields=[];
+    if(!String(page.title||'').trim()&&draftTitleFor(page,project))draftFields.push('title');
+    if(!String(page.meta||'').trim()&&draftMetaFor(page,project))draftFields.push('meta');
+    if(draftFields.length)drafts.push({page,fields:draftFields});
+  });
+  return {readable,inferred,drafts,total:pages.length};
+}
+/* Livello 2: deduzioni deterministiche, nessuna rete, nessuna invenzione. */
+function applyInferredPageFields(){
+  const pages=byProject(state.pages);
+  const knownPaths=new Set(pages.map(page=>pagePathOf(page)));
+  let changed=0;
+  pages.forEach(page=>{
+    const path=pagePathOf(page);
+    if(markPageField(page,'canonicalUrl',path,'inferred'))changed++;
+    if(!String(page.pageType||'').trim()||page.pageType==='Other'){
+      const type=inferPageType(path);
+      if(type!=='Other'){page.pageType=type;page.autoFilledFields=page.autoFilledFields||{};page.autoFilledFields.pageType='inferred';page.updatedAt=now();changed++;}
+      else if(markPageField(page,'pageType',type,'inferred'))changed++;
+    }
+    if(markPageField(page,'cluster',inferClusterFromPath(path),'inferred'))changed++;
+    const parent=inferParentPath(path,knownPaths);
+    if(parent&&markPageField(page,'parent',parent,'inferred'))changed++;
+    const keywordBase=page.h1||page.title||guessPageNameFromUrl(path);
+    if(keywordBase&&markPageField(page,'primaryKeyword',keywordFromSignal({title:page.title||'',h1:page.h1||'',url:path}),'inferred'))changed++;
+    const focus=page.primaryKeyword||keywordBase;
+    if(focus){
+      const intent=keywordIntent(focus,path);
+      /* Se la regola non arriva a una conclusione certa lascio il campo
+         vuoto: meglio un campo da compilare che un valore fasullo. */
+      if(!/da validare/i.test(intent)&&markPageField(page,'intent',intent,'inferred'))changed++;
+    }
+  });
+  return changed;
+}
+/* Livello 3: bozze di testo. Vengono scritte solo nell'archivio e vanno
+   riviste e pubblicate a mano sul sito. */
+function applyDraftPageTexts(){
+  const project=currentProject();let changed=0;
+  byProject(state.pages).forEach(page=>{
+    if(markPageField(page,'title',draftTitleFor(page,project),'draft'))changed++;
+    if(markPageField(page,'meta',draftMetaFor(page,project),'draft'))changed++;
+  });
+  return changed;
+}
+/* Livello 1: rilettura reale delle pagine incomplete. */
+async function readMissingPageFields(limit=25,onProgress){
+  const plan=pageCompletionPlan();
+  const targets=plan.readable.slice(0,limit);
+  let filled=0,read=0,failed=0;
+  for(const entry of targets){
+    const absolute=absoluteSiteUrl(entry.page.displayUrl||entry.page.normalizedUrl);
+    if(!absolute){failed++;continue;}
+    try{
+      const result=await fetchPublicSiteText(absolute);
+      const signal=pageSignalsFromHtml(result.text,absolute);
+      read++;
+      if(markPageField(entry.page,'title',signal.title,'site'))filled++;
+      if(markPageField(entry.page,'meta',signal.meta,'site'))filled++;
+      if(markPageField(entry.page,'h1',signal.h1,'site'))filled++;
+      if(signal.canonicalUrl&&markPageField(entry.page,'canonicalUrl',normalizePageUrlForProject(signal.canonicalUrl),'site'))filled++;
+      if(markPageField(entry.page,'schema',signal.schema,'site'))filled++;
+      if(entry.page.indexable===undefined||entry.page.indexable===null){entry.page.indexable=signal.indexable;filled++;}
+      if(!entry.page.statusCode)entry.page.statusCode=200;
+      entry.page.lastScannedAt=now();entry.page.updatedAt=now();
+    }catch(e){failed++;}
+    if(typeof onProgress==='function')onProgress({read,failed,total:targets.length});
+  }
+  return {read,filled,failed,pending:Math.max(0,plan.readable.length-targets.length)};
+}
+/* Esecuzione completa con backup, verifica e annullamento. */
+async function runPageAutoComplete(levels){
+  const project=currentProject();
+  const snapshot=safeFixProjectSnapshot(),batchId=uid('pageFill');
+  const summary={read:0,filled:0,failed:0,pending:0,inferred:0,drafts:0};
+  if(levels.site){
+    toast('Sto rileggendo le pagine incomplete dal sito\u2026');
+    const result=await readMissingPageFields(30);
+    Object.assign(summary,{read:result.read,filled:result.filled,failed:result.failed,pending:result.pending});
+  }
+  if(levels.inferred)summary.inferred=applyInferredPageFields();
+  if(levels.drafts)summary.drafts=applyDraftPageTexts();
+  const totalChanges=summary.filled+summary.inferred+summary.drafts;
+  if(totalChanges){
+    project.safeFixUndo={batchId,createdAt:now(),snapshot,titles:[`Compilazione automatica pagine (${totalChanges} campi)`]};
+    project.safeFixHistory=Array.isArray(project.safeFixHistory)?project.safeFixHistory:[];
+    project.safeFixHistory.unshift({batchId,date:now(),applied:totalChanges,verified:summary.filled+summary.inferred,failed:0,titles:[`Compilazione automatica pagine (${totalChanges} campi)`]});
+    project.safeFixHistory=project.safeFixHistory.slice(0,20);
+  }
+  commit(`Compilazione automatica pagine: ${totalChanges} campi`);
+  runAutomationCycle(false);
+  render();
+  return summary;
+}
+function openPageAutoCompleteDrawer(){
+  const plan=pageCompletionPlan();
+  if(!plan.total){toast('Aggiungi prima le pagine del sito.');return;}
+  const readableFields=plan.readable.reduce((sum,entry)=>sum+entry.fields.length,0);
+  const inferredFields=plan.inferred.reduce((sum,entry)=>sum+entry.fields.length,0);
+  const draftFields=plan.drafts.reduce((sum,entry)=>sum+entry.fields.length,0);
+  if(!readableFields&&!inferredFields&&!draftFields){
+    openDrawer('Compila le pagine',`<div class="good-box"><strong>\u2713 Le pagine risultano gi\u00e0 complete</strong><div class="muted">Non ci sono campi vuoti tra quelli che posso compilare automaticamente.</div></div>`);
+    return;
+  }
+  openDrawer('Compila automaticamente le pagine',`<form id="pageFillForm">
+    <div class="callout"><strong>Cosa succede e cosa NON succede</strong><p class="muted">Compilo l\u2019archivio dentro l\u2019app. <strong>Il sito online non viene toccato:</strong> title, meta description e H1 vanno poi pubblicati sul tuo WordPress. Prima di modificare qualsiasi cosa creo un backup annullabile e non sovrascrivo mai un campo che hai gi\u00e0 compilato tu.</p></div>
+    <div class="fill-levels">
+      <label class="fill-level"><input type="checkbox" name="level" value="site" ${readableFields?'checked':'disabled'}><span><strong>1. Leggi i valori reali dal sito</strong><span class="badge success">verificabile</span><span class="muted">${plan.readable.length} pagine da rileggere \u00b7 ${readableFields} campi vuoti. Scarico l\u2019HTML pubblico e copio title, meta description, H1, canonical e dati strutturati esattamente come sono online.</span></span></label>
+      <label class="fill-level"><input type="checkbox" name="level" value="inferred" ${inferredFields?'checked':'disabled'}><span><strong>2. Deduci i campi strutturali</strong><span class="badge info">deterministico</span><span class="muted">${plan.inferred.length} pagine \u00b7 ${inferredFields} campi. Ricavo canonical, tipo di pagina, cluster, pagina superiore, parola chiave principale e intento dalla struttura delle URL. Nessuna invenzione: regole fisse e ripetibili.</span></span></label>
+      <label class="fill-level"><input type="checkbox" name="level" value="drafts"><span><strong>3. Scrivi bozze di title e meta description</strong><span class="badge warning">da rivedere</span><span class="muted">${plan.drafts.length} pagine \u00b7 ${draftFields} campi. Genero un testo di partenza da H1, nome pagina e marchio. Sono <strong>bozze</strong>: vanno lette, migliorate e poi pubblicate. Restano marcate come \u201cda rivedere\u201d finch\u00e9 non le confermi.</span></span></label>
+    </div>
+    <div class="plan-approval"><button class="btn primary" type="submit">Compila le pagine</button><button class="btn" type="button" id="cancelPageFill">Annulla</button></div>
+  </form>`);
+  document.getElementById('cancelPageFill').onclick=closeDrawer;
+  document.getElementById('pageFillForm').onsubmit=async event=>{
+    event.preventDefault();
+    const selected=[...new FormData(event.target).getAll('level')];
+    if(!selected.length){toast('Seleziona almeno un livello.');return;}
+    const button=event.target.querySelector('button[type="submit"]');
+    button.disabled=true;button.textContent='Compilazione in corso\u2026';
+    closeDrawer();
+    try{
+      const summary=await runPageAutoComplete({site:selected.includes('site'),inferred:selected.includes('inferred'),drafts:selected.includes('drafts')});
+      const parts=[];
+      if(summary.read)parts.push(`${summary.read} pagine rilette dal sito`);
+      if(summary.filled)parts.push(`${summary.filled} campi reali copiati`);
+      if(summary.inferred)parts.push(`${summary.inferred} campi dedotti`);
+      if(summary.drafts)parts.push(`${summary.drafts} bozze da rivedere`);
+      if(summary.failed)parts.push(`${summary.failed} pagine non leggibili`);
+      toast(parts.length?parts.join(' \u00b7 '):'Nessun campo da compilare.');
+    }catch(e){toast(`Compilazione non completata: ${e.message||e}`);}
+  };
+}
+
 function pagesInventoryView(){
   const rows=byProject(state.pages);
   const hasDomain=Boolean(normalizeSiteDomain(currentProject().domain));
   return `${pageIntro('Pagine del sito','L’elenco delle pagine che vogliamo analizzare. Puoi farlo rilevare automaticamente, importarlo da un file o incollarlo.',[`${rows.length} pagine`])}
   <div class="section-head">
     <div>
-      <div class="muted">Il modo più rapido è “Rileva dal sito”: legge sitemap e link interni al posto tuo.</div>
+      <div class="muted">Il modo più rapido è “Rileva dal sito”: legge sitemap e link interni al posto tuo. Poi usa “Compila i campi mancanti” per riempire title, meta, H1, canonical, cluster e keyword.</div>
       ${hasDomain?'':'<div class="hint-inline">Per il rilevamento automatico serve prima il dominio: te lo chiederò al clic.</div>'}
     </div>
     <div class="page-actions">
       <button class="btn primary" id="autoAnalyzePages">Rileva dal sito</button>
+      <button class="btn primary" id="pagesAutoComplete">Compila i campi mancanti</button>
       <button class="btn" id="pagesImportCsv">Importa CSV</button>
       <button class="btn" id="pagesBulkPaste">Incolla elenco URL</button>
       <button class="btn" data-add="pages">+ Aggiungi pagina</button>
     </div>
   </div>
   ${rows.length?`
+    ${(()=>{const plan=pageCompletionPlan();const missing=plan.readable.reduce((n,e)=>n+e.fields.length,0)+plan.inferred.reduce((n,e)=>n+e.fields.length,0);return missing?`<div class="validate-bar"><div><strong>${missing} campi vuoti su ${rows.length} pagine</strong><div class="muted">Posso compilarli io: prima rileggo i valori reali dal sito, poi deduco i campi strutturali dalle URL. Non sovrascrivo nulla di gi\u00e0 compilato e puoi annullare.</div></div><button class="btn primary" type="button" id="pagesAutoComplete2">Compila i campi mancanti</button></div><div style="height:16px"></div>`:'<div class="good-box"><strong>\u2713 Le pagine risultano complete</strong><div class="muted">Tutti i campi compilabili automaticamente sono valorizzati.</div></div><div style="height:16px"></div>';})()}
     <div class="toolbar">
       <input data-search-table="pages" aria-label="Cerca una pagina o un URL" placeholder="Cerca pagina o URL">
       <div class="spacer"></div>
@@ -2625,28 +3041,7 @@ function setKeywordIntent(id,intent){
 /* Collegamento automatico: usa solo corrispondenze verificabili tra la
    keyword e title/H1/URL della pagina. Non inventa associazioni. */
 function autoLinkKeywords(){
-  const pages=byProject(state.pages),unlinked=keywordUnlinked();
-  const normalize=value=>String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
-  let linked=0;
-  unlinked.forEach(keyword=>{
-    const target=normalize(keyword.keyword);
-    if(!target)return;
-    const words=target.split(' ').filter(word=>word.length>2);
-    if(!words.length)return;
-    let best=null,bestScore=0;
-    pages.forEach(page=>{
-      const haystack=normalize(`${page.pageName||''} ${page.title||''} ${page.h1||''} ${page.displayUrl||''}`);
-      if(!haystack)return;
-      const hits=words.filter(word=>haystack.includes(word)).length;
-      const score=hits/words.length;
-      if(score>bestScore){bestScore=score;best=page;}
-    });
-    if(best&&bestScore>=0.75){
-      keyword.targetUrl=best.displayUrl||best.normalizedUrl||'';
-      keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='auto-match';
-      if(keyword.targetUrl)linked++;
-    }
-  });
+  const linked=autoLinkKeywordsSilent();
   if(linked){commit(`${linked} keyword collegate automaticamente`);runAutomationCycle(false);}
   toast(linked?`${linked} keyword collegate per corrispondenza verificabile. Le restanti richiedono una scelta manuale.`:'Nessuna corrispondenza sufficientemente affidabile: collega le keyword manualmente.');
   render();
@@ -4470,7 +4865,7 @@ function numberedTaskBox(options={}){
   const shown=items.slice(0,limit);
   const cards=shown.map((item,index)=>{
     const status=planStatusInfo(item.status);
-    return `<article class="task-plan-card ${index===0?'current':''}"><div class="task-order">${index+1}</div><div><div class="badges"><span class="badge ${item.priority==='P1'?'danger':item.priority==='P2'?'warning':'info'}">${esc(item.priority)}</span><span class="plan-state ${status.className}">${esc(status.label)}</span>${index===0?'<span class="badge info">DA FARE ADESSO</span>':`<span class="badge">PASSO ${index+1}</span>`}</div><h4>${esc(item.title)}</h4><p class="task-why">${esc(item.why)}</p>${item.url?`<div class="journey-problem-url">${esc(item.url)}</div>`:''}${item.steps.length?`<details ${index===0?'open':''}><summary>Passaggi da seguire</summary><ol class="task-steps">${item.steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol></details>`:''}<div class="task-check"><strong>Quando è completata</strong><div>${esc(item.verification)}</div></div></div><div class="task-actions">${operationalPlanActions(item)}</div></article>`;
+    return `<article class="task-plan-card ${index===0?'current':''} ${state.ui.focusPlanItemId===item.id?'is-next-up':''}" data-task-card="${esc(item.id)}"><div class="task-order">${index+1}</div><div><div class="badges"><span class="badge ${item.priority==='P1'?'danger':item.priority==='P2'?'warning':'info'}">${esc(item.priority)}</span><span class="plan-state ${status.className}">${esc(status.label)}</span>${index===0?'<span class="badge info">DA FARE ADESSO</span>':`<span class="badge">PASSO ${index+1}</span>`}</div><h4>${esc(item.title)}</h4><p class="task-why">${esc(item.why)}</p>${item.url?`<div class="journey-problem-url">${esc(item.url)}</div>`:''}${item.steps.length?`<details ${index===0?'open':''}><summary>Passaggi da seguire</summary><ol class="task-steps">${item.steps.map(step=>`<li>${esc(step)}</li>`).join('')}</ol></details>`:''}<div class="task-check"><strong>Quando è completata</strong><div>${esc(item.verification)}</div></div></div><div class="task-actions">${operationalPlanActions(item)}</div></article>`;
   }).join('');
   return `<section class="task-box"><div class="task-box-head"><h4>${esc(title)}</h4><span class="badge">${items.length} attività aperte</span></div><div class="task-plan">${cards}</div>${items.length>shown.length?`<div class="muted" style="margin-top:12px">Altre ${items.length-shown.length} attività sono nel piano completo.</div>`:''}<div class="plan-approval"><button class="btn primary" data-nav="Operational Plan">Apri il piano completo</button><button class="btn" data-nav="Tasks">Vedi tutte le attività</button></div></section>`;
 }
@@ -4933,6 +5328,17 @@ function bindView(){
  const importInput=document.getElementById('importFile');if(importInput)importInput.onchange=()=>{const list=document.getElementById('selectedImportFiles');const files=[...importInput.files];list.innerHTML=files.map(file=>`<div class="import-file-item"><strong>${esc(file.name)}</strong> · ${Math.max(1,Math.round(file.size/1024))} KB</div>`).join('');};
  const ib=document.getElementById('doImportBtn'); if(ib) ib.onclick=handleImportV2;
  const ctf=document.getElementById('createTasksFromFindings'); if(ctf) ctf.onclick=createTasksFromDataFindings;
+ const rar=document.getElementById('runAutoResolve');
+ if(rar) rar.onclick=async()=>{
+   rar.disabled=true;const label=rar.textContent;rar.textContent='Risoluzione in corso\u2026';
+   try{
+     const result=await runAutoResolve();
+     toast(result.steps.length?result.steps.join(' \u00b7 '):'Non c\u2019era nulla da risolvere in automatico.');
+   }catch(e){toast(`Risoluzione non completata: ${e.message||e}`);}
+   const button=document.getElementById('runAutoResolve');
+   if(button){button.disabled=false;button.textContent=label;}
+ };
+ if(state.ui.focusPlanItemId)setTimeout(scrollToFocusedPlanItem,80);
  const rop=document.getElementById('refreshOperationalPlan'); if(rop) rop.onclick=()=>{runAutomationCycle(false);commit('Piano operativo aggiornato');toast('Piano aggiornato con i dati disponibili.');render();};
  const eb=document.getElementById('exportBackup'); if(eb) eb.onclick=()=>storage.export(state);
  const cs=document.getElementById('createSnapshot'); if(cs) cs.onclick=createSnapshot;
@@ -4991,6 +5397,8 @@ function bindView(){
 
  const pic=document.getElementById('pagesImportCsv'); if(pic) pic.onclick=()=>{state.ui.activeView='Import';render();setTimeout(()=>{const t=document.getElementById('importTarget');if(t)t.value='pages';},0);};
  const pic2=document.getElementById('pagesImportCsv2'); if(pic2) pic2.onclick=()=>{state.ui.activeView='Import';render();setTimeout(()=>{const t=document.getElementById('importTarget');if(t)t.value='pages';},0);};
+ const pac=document.getElementById('pagesAutoComplete'); if(pac) pac.onclick=openPageAutoCompleteDrawer;
+ const pac2=document.getElementById('pagesAutoComplete2'); if(pac2) pac2.onclick=openPageAutoCompleteDrawer;
  const pbp=document.getElementById('pagesBulkPaste'); if(pbp) pbp.onclick=openBulkPastePages;
  const pbp2=document.getElementById('pagesBulkPaste2'); if(pbp2) pbp2.onclick=openBulkPastePages;
 
@@ -5114,7 +5522,7 @@ function recordDiagnosticsPanel(key,rec,fields,isNew){
   const problems=recordDiagnostics(key,rec,fields);
   if(!problems.length)return `<div class="record-guide is-ok"><strong>\u2713 Questo record \u00e8 completo</strong><div class="muted">Tutti i campi controllati risultano compilati e coerenti. Puoi chiudere senza modifiche.</div></div>`;
   const missing=problems.filter(p=>p.level==='missing').length;
-  return `<div class="record-guide is-warn"><strong>Cosa correggere in questa scheda</strong><div class="muted">${missing?`${missing} campi bloccanti e `:''}${problems.length-missing} campi da migliorare. Sono evidenziati in arancione qui sotto.</div><ol class="record-guide-list">${problems.map(p=>`<li><strong>${esc(p.label)}</strong> \u2014 ${esc(p.message)}</li>`).join('')}</ol></div>`;
+  return `<div class="record-guide is-warn"><strong>Cosa correggere in questa scheda</strong><div class="muted">${missing?`${missing} campi bloccanti e `:''}${problems.length-missing} campi da migliorare. Sono evidenziati in arancione qui sotto.</div><ol class="record-guide-list record-guide-cols">${problems.map(p=>`<li><strong>${esc(p.label)}</strong> \u2014 ${esc(p.message)}</li>`).join('')}</ol></div>`;
 }
 
 function drawerFields(key,rec={}){
@@ -5173,7 +5581,11 @@ function drawerFields(key,rec={}){
      control=`<select id="${controlId}" name="${n}" aria-describedby="${helpId}">${vals.map(v=>`<option ${String(rec[n]||'')===String(v)?'selected':''}>${esc(v)}</option>`).join('')}</select>`;
    } else if(full) control=`<textarea id="${controlId}" name="${n}" aria-describedby="${helpId}" placeholder="${esc(info.help||'Inserisci informazioni utili e verificabili')}">${esc(rec[n]||'')}</textarea>`;
    else control=`<input id="${controlId}" name="${n}" ${linksToPage&&pageOptions.length?`list="${listId}"`:''} value="${esc(rec[n]??'')}" aria-describedby="${helpId}" placeholder="${esc(info.label)}">`;
-   const badge=info.required?'<span class="field-req">obbligatorio</span>':info.recommended?'<span class="field-rec">consigliato</span>':'';
+   const origin=key==='pages'?pageFieldOrigin(rec,n):'';
+   const originBadge=origin==='site'?'<span class="field-origin site" title="Valore letto davvero dalla pagina online">\u2713 dal sito</span>'
+     :origin==='inferred'?'<span class="field-origin inferred" title="Valore dedotto dalla struttura delle URL: controllalo">\u2192 dedotto</span>'
+     :origin==='draft'?'<span class="field-origin draft" title="Bozza generata automaticamente: va riscritta e pubblicata sul sito">\u270e bozza da rivedere</span>':'';
+   const badge=(info.required?'<span class="field-req">obbligatorio</span>':info.recommended?'<span class="field-rec">consigliato</span>':'')+originBadge;
    const counter=info.len?`<span class="field-count" data-count-for="${controlId}" data-count-min="${info.len[0]}" data-count-max="${info.len[1]}">${String(rec[n]||'').length} car.</span>`:'';
    const note=problem?`<div class="field-note ${problem.level}">${esc(problem.message)}</div>`:'';
    const helpText=info.help?`<div class="form-help" id="${helpId}">${esc(info.help)}</div>`:`<div class="form-help" id="${helpId}"></div>`;
@@ -5206,12 +5618,26 @@ function openRecordDrawer(key,id=null){
  const del=document.getElementById('deleteRecord'); if(del) del.onclick=()=>{ if(confirm('Eliminare questo record?')){state[key]=state[key].filter(x=>x.id!==id);commit(`${key} eliminato`);closeDrawer();render();}};
 }
 let lastFocusedElement=null;
+function applyDrawerWidth(){
+  const drawer=document.getElementById('drawer'),button=document.getElementById('drawerWide');
+  if(!drawer||!button)return;
+  const wide=state.ui.drawerWide===true;
+  drawer.classList.toggle('is-wide',wide);
+  button.setAttribute('aria-pressed',wide?'true':'false');
+  button.textContent=wide?'\u2922 Restringi':'\u2921 Allarga';
+}
+function toggleDrawerWidth(){
+  state.ui.drawerWide=!state.ui.drawerWide;
+  applyDrawerWidth();
+  storage.save(state);
+}
 function openDrawer(title,body,kind='generic'){
   const drawer=document.getElementById('drawer'),backdrop=document.getElementById('backdrop');
   lastFocusedElement=document.activeElement;
   document.getElementById('drawerTitle').textContent=title;
   document.getElementById('drawerBody').innerHTML=body;
   drawer.dataset.kind=kind;drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');drawer.setAttribute('aria-modal',kind==='search'?'false':'true');
+  applyDrawerWidth();
   if(kind!=='search'){backdrop.classList.add('show');backdrop.setAttribute('aria-hidden','false');document.body.classList.add('overlay-open');}
   if(kind!=='search')setTimeout(()=>{const target=drawer.querySelector('input:not([disabled]),select:not([disabled]),textarea:not([disabled]),button:not([disabled])');(target||drawer).focus();},0);
 }
@@ -5367,6 +5793,7 @@ function quickActions(){
 document.getElementById('projectSelect').onchange=e=>{state.currentProjectId=e.target.value;commit('Progetto cambiato');render();};
 document.getElementById('newProjectBtn').onclick=newProject;
 document.getElementById('drawerClose').onclick=closeDrawer;
+document.getElementById('drawerWide').onclick=toggleDrawerWidth;
 document.getElementById('backdrop').onclick=()=>{if(document.getElementById('drawer').classList.contains('open'))closeDrawer();else closeMobile();};
 document.getElementById('mobileMenuBtn').onclick=openMobile;
 document.getElementById('quickBtn').onclick=quickActions;
