@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS Web App V10.1: audit SEO centrale con routing automatico per WordPress, ChatGPT Sites e altri siti.">
+<meta name="description" content="Organic Growth OS Web App V10.2.1: audit SEO centrale con routing automatico per WordPress, ChatGPT Sites e altri siti.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
-<title>Organic Growth OS Web App V10.1</title>
+<title>Organic Growth OS Web App V10.2.1</title>
 <script>
 /* Tema applicato prima del primo disegno: evita il lampo di bianco
    quando l'utente ha scelto il tema scuro. */
@@ -965,7 +965,7 @@ button,input,select,textarea{font-size:22px!important}
 /* V9.1 — SECOND AUDIT CYCLE + RELIABILITY HARDENING */
 .kw-candidate-note{font-size:14px!important;color:var(--muted);margin-top:5px}.kw-candidate-select{width:100%;min-width:0}.kw-auto-state{display:inline-flex;align-items:center;gap:6px;font-size:14px!important;font-weight:850;padding:6px 9px;border-radius:999px;background:var(--surface-alt)}.kw-auto-state.no-match{background:var(--joy-sun);color:var(--warning)}.kw-auto-state.out{background:var(--joy-rose);color:var(--danger)}.kw-auto-state.ok{background:var(--joy-mint);color:var(--success)}
 
-/* V10.1 — PLATFORM ROUTING */
+/* V10.2 — PLATFORM ROUTING + INTENT AUTO-MAPPING */
 .platform-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}.platform-card{border:1px solid var(--border);border-radius:18px;padding:16px;background:var(--surface);text-align:left}.platform-card.active{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--surface))}.platform-card strong{display:block;margin-bottom:4px}.platform-card span{display:block;color:var(--muted);font-size:14px}.platform-status{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.platform-note{padding:14px 16px;border-radius:16px;background:var(--surface-alt);border:1px solid var(--border)}@media(max-width:850px){.platform-grid{grid-template-columns:1fr}}
 
 /* V10 — WordPress Connector */
@@ -977,7 +977,7 @@ button,input,select,textarea{font-size:22px!important}
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · Web App V10.1</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · Web App V10.2</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -1817,7 +1817,9 @@ function applyGeoClassification(){
     }
     if(prev!==keyword.geoStatus)changed++;
   });
-  if(profile.primary){const p=currentProject();p.geoLastClassifiedAt=now();}
+  /* V10.2.1: currentProject() puo' essere undefined su uno stato ripristinato
+     senza progetti; l'assegnazione diretta lanciava un TypeError. */
+  if(profile.primary){const p=currentProject();if(p)p.geoLastClassifiedAt=now();}
   return changed;
 }
 function keywordActiveForMapping(keyword){return classifyKeywordGeo(keyword).status!=='OUT_OF_AREA';}
@@ -1926,7 +1928,20 @@ function projectBrandTerms(){
 function intentScoreCard(value,url='',pageType=''){
   const text=keywordMatchNormalize(`${value||''} ${url||''}`),type=String(pageType||'').toLowerCase();
   const scores={NAVIGATIONAL:0,INFORMATIONAL:0,TRANSACTIONAL:0,COMMERCIAL:0};
-  projectBrandTerms().forEach(term=>{if(term&&normalizedPhraseInText(text,term))scores.NAVIGATIONAL+=3.2;});
+  /* V10.2.1 — Il bonus navigazionale veniva sommato una volta per OGNI variante
+     di brand riconosciuta ("studio zirafa", "studio", "zirafa", "studiozirafa"),
+     arrivando a +9.6 e schiacciando ogni altro segnale di intento. Ora vale una
+     volta sola e si attenua quando la query porta contenuto oltre al brand:
+     "studio zirafa impianti dentali" e' una query di servizio, non di brand. */
+  const brandTerms=projectBrandTerms();
+  if(brandTerms.some(term=>term&&normalizedPhraseInText(text,term))){
+    const brandTokens=new Set(brandTerms.flatMap(term=>keywordMatchNormalize(term).split(' ')).filter(Boolean));
+    /* Se la query porta un tema proprio il brand e' solo un modificatore e non
+       deve decidere l'intento: "studio zirafa impianti dentali" resta una query
+       di servizio. Se invece resta solo il brand, il segnale e' pieno. */
+    const carriesOwnTopic=keywordCoreTokens(text).some(token=>!brandTokens.has(token));
+    if(!carriesOwnTopic)scores.NAVIGATIONAL+=3.2;
+  }
   if(/\b(contatti?|chi siamo|login|area riservata)\b/.test(text))scores.NAVIGATIONAL+=3;
   Object.entries(INTENT_RULES).forEach(([intent,rules])=>rules.forEach(([rx,w])=>{if(rx.test(text))scores[intent]+=w;}));
   if(['article','guide','blog','faq'].includes(type))scores.INFORMATIONAL+=2.4;
@@ -2028,11 +2043,142 @@ function pageTypeIntentFit(page,queryIntent){
   if(queryIntent==='NAVIGATIONAL')return ['homepage','landing'].includes(type)?1:.68;
   return .68;
 }
+
+/* ============================================================
+   V10.2 — INTENT-FIRST AUTO MAPPING
+   Seconda rete di sicurezza per le keyword rimaste senza target:
+   1) intento dominante + tipo pagina;
+   2) pagina osservata in Search Console, solo se coerente;
+   3) consenso di keyword simili gia' mappate con alta affidabilita';
+   4) predominanza netta della migliore pagina rispetto alla seconda.
+   Non forza un target in presenza di conflitti semantici o geografici.
+   ============================================================ */
+const INTENT_GENERIC_TOKENS=new Set('come cosa perche guida idee consigli tutorial migliore migliori confronto recensione recensioni prezzo prezzi costo costi quanto scegliere scelta conviene vs preventivo preventivi servizio servizi online web sito siti pagina pagine'.split(/\s+/));
+function keywordCoreTokens(value){
+  const geoNorm=new Set(GEO_TERM_PAIRS.map(([,norm])=>norm).flatMap(x=>x.split(' ')));
+  return keywordMatchTokens(value).filter(t=>!INTENT_GENERIC_TOKENS.has(t)&&!geoNorm.has(t));
+}
+function tokenSimilarity(a,b){
+  const aa=[...new Set(a||[])],bb=[...new Set(b||[])];if(!aa.length||!bb.length)return 0;
+  const bs=new Set(bb),common=aa.filter(x=>bs.has(x)).length,union=new Set([...aa,...bb]).size;
+  return union?common/union:0;
+}
+function keywordResolvedIntent(keyword){
+  const manual=keyword?.intentValidated?canonicalManualIntent(keyword.intent):'';
+  return manual||intentScoreCard(keyword?.keyword||'','',keyword?.expectedContentType||'').intent;
+}
+function findPageByAnyUrl(url){
+  const raw=String(url||'').trim();if(!raw)return null;
+  const norm=normalizePageUrlForProject(raw);
+  return byProject(state.pages).find(p=>[p.displayUrl,p.normalizedUrl,p.canonicalUrl].some(v=>String(v||'').trim()===raw||String(v||'').trim()===norm))||null;
+}
+function keywordObservedPageEvidence(keyword){
+  const page=findPageByAnyUrl(keyword?.observedPage||'');if(!page||!validProjectPage(page)||page.indexable===false)return null;
+  const compat=semanticIntentCompatibility(keyword,page),typeFit=pageTypeIntentFit(page,compat.qIntent),score=keywordPageMatch(keyword,page);
+  if(compat.hardConflict||compat.intent<.80||typeFit<.68||score<.34)return null;
+  return {page,score,compat,typeFit};
+}
+function trustedIntentConsensus(keyword){
+  const qIntent=keywordResolvedIntent(keyword),qFamilies=semanticFamilies(keyword.keyword),qConcepts=textConcepts(keyword.keyword),qTokens=keywordCoreTokens(keyword.keyword);
+  const votes=new Map();
+  byProject(state.keywords).forEach(peer=>{
+    if(peer===keyword||!peer.targetUrl||!peer.keyword||!keywordActiveForMapping(peer))return;
+    const src=String(peer.linkSource||''),conf=Number(peer.linkConfidence||0);
+    const trusted=['manual-confirmed','group-confirmed'].includes(src)||(src.startsWith('auto-semantic')&&conf>=72);
+    if(!trusted)return;
+    if(keywordResolvedIntent(peer)!==qIntent)return;
+    const pFamilies=semanticFamilies(peer.keyword),pConcepts=textConcepts(peer.keyword),pTokens=keywordCoreTokens(peer.keyword);
+    const familyCommon=qFamilies.filter(f=>pFamilies.includes(f)).length;
+    const conceptCommon=qConcepts.filter(c=>pConcepts.includes(c)).length;
+    const lexical=tokenSimilarity(qTokens,pTokens);
+    const related=familyCommon>0||conceptCommon>0||lexical>=.40;
+    if(!related)return;
+    const target=String(peer.targetUrl),weight=(familyCommon?1.35:1)+(conceptCommon?0.30:0)+(lexical*.55)+(conf/100*.35);
+    const item=votes.get(target)||{target,weight:0,count:0};item.weight+=weight;item.count++;votes.set(target,item);
+  });
+  const ranked=[...votes.values()].sort((a,b)=>b.weight-a.weight||b.count-a.count);const winner=ranked[0],runner=ranked[1];
+  if(!winner||winner.count<2||winner.weight<(runner?.weight||0)*1.28)return null;
+  const page=findPageByAnyUrl(winner.target);if(!page)return null;
+  const compat=semanticIntentCompatibility(keyword,page),typeFit=pageTypeIntentFit(page,qIntent),score=keywordPageMatch(keyword,page);
+  if(compat.hardConflict||compat.intent<.80||typeFit<.70||score<.30)return null;
+  return {page,score,compat,typeFit,count:winner.count,weight:winner.weight};
+}
+function brandNavigationalTarget(keyword){
+  if(keywordResolvedIntent(keyword)!=='NAVIGATIONAL')return null;
+  const text=keywordMatchNormalize(keyword.keyword),brandTerms=projectBrandTerms();
+  const hasBrand=brandTerms.some(term=>normalizedPhraseInText(text,term));if(!hasBrand)return null;
+  /* V10.2.1: la homepage vale solo per query di SOLO brand (eventualmente
+     con localita' o termini generici). "studio zirafa impianti dentali"
+     contiene il brand ma chiede un servizio: deve restare sulla pagina
+     di servizio, non finire in homepage. */
+  const brandTokens=new Set(brandTerms.flatMap(term=>keywordMatchNormalize(term).split(' ')).filter(Boolean));
+  if(keywordCoreTokens(keyword.keyword).some(token=>!brandTokens.has(token)))return null;
+  return byProject(state.pages).find(p=>validProjectPage(p)&&(String(p.pageType||'').toLowerCase()==='homepage'||['/',''].includes(String(p.displayUrl||p.normalizedUrl||''))))||null;
+}
+function intentFallbackDecision(keyword,best,second,compat,typeFit,lexicalRatio,margin,pageProfile){
+  const qIntent=compat.qIntent;
+  const brandPage=brandNavigationalTarget(keyword);
+  if(brandPage){
+    /* V10.2.1: il confronto precedente metteva a confronto una URL con un id
+       (best.page.displayUrl === brandPage.id), sempre falso. */
+    const same=best.page===brandPage||best.page.id===brandPage.id;
+    if(same||keywordPageMatch(keyword,brandPage)>=.28)return {decision:'AUTO_INTENT',page:brandPage,reason:'Query navigazionale di brand: homepage assegnata automaticamente'};
+  }
+  const observed=keywordObservedPageEvidence(keyword);
+  if(observed&&observed.page===best.page&&best.score>=.40&&margin>=.018){
+    return {decision:'AUTO_INTENT',page:best.page,reason:'Intento coerente e pagina gia osservata da Search Console: target confermato automaticamente'};
+  }
+  const consensus=trustedIntentConsensus(keyword);
+  if(consensus&&consensus.page===best.page&&best.score>=.34){
+    return {decision:'AUTO_INTENT',page:best.page,reason:`Intento coerente con ${consensus.count} keyword simili gia mappate sulla stessa pagina`};
+  }
+  const commonConcepts=textConcepts(keyword.keyword).filter(c=>pageProfile.concepts.includes(c)).length;
+  const hasTopicEvidence=compat.common.length>0||commonConcepts>0||lexicalRatio>=.46;
+  const intentDominant=compat.intent>=.84&&typeFit>=.78;
+  const dominantCandidate=margin>=.055||(best.score>=.55&&margin>=.028);
+  const threshold=pageProfile.contentRich?.46:.50;
+  if(intentDominant&&hasTopicEvidence&&dominantCandidate&&best.score>=threshold){
+    return {decision:'AUTO_INTENT',page:best.page,reason:'Migliore pagina dominante per intento, tema e tipo di contenuto'};
+  }
+  if(pageProfile.contentRich&&compat.intent>=.88&&typeFit>=.86&&lexicalRatio>=.38&&margin>=.075&&best.score>=.43){
+    return {decision:'AUTO_INTENT',page:best.page,reason:'Contenuto reale + intento forte rendono la pagina nettamente dominante'};
+  }
+  return null;
+}
+function applyIntentConsensusPass(){
+  let linked=0;
+  const pending=byProject(state.keywords).filter(k=>k.keyword&&keywordActiveForMapping(k)&&!k.targetUrl&&!k.keywordGroupExcluded);
+  pending.forEach(keyword=>{
+    const ranked=keywordTopCandidates(keyword,3),best=ranked[0],second=ranked[1];if(!best)return;
+    const compat=semanticIntentCompatibility(keyword,best.page),typeFit=pageTypeIntentFit(best.page,compat.qIntent),tokens=keywordMatchTokens(keyword.keyword),profile=pageSemanticProfile(best.page),hits=tokens.filter(t=>profile.words.some(w=>tokenCompatible(w,t))).length,lex=tokens.length?hits/tokens.length:0,margin=best.score-(second?.score||0);
+    if(compat.hardConflict||classifyKeywordGeo(keyword).status==='OUT_OF_AREA')return;
+    const fallback=intentFallbackDecision(keyword,best,second,compat,typeFit,lex,margin,profile);if(!fallback)return;
+    const page=fallback.page||best.page,url=page.displayUrl||page.normalizedUrl||page.canonicalUrl||'';if(!url)return;
+    /* V10.2.1: la confidenza usava sempre best.score anche quando la decisione
+       sceglieva una pagina diversa (es. la homepage per una query di brand),
+       riportando un valore riferito a un'altra pagina. */
+    const chosenScore=page===best.page?best.score:keywordPageMatch(keyword,page);
+    keyword.targetUrl=url;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='auto-intent-v102';keyword.linkConfidence=Math.max(55,Math.round(chosenScore*100));
+    keyword.keywordGroupUrl=url;keyword.keywordGroupName=page.pageName||page.title||url;keyword.keywordGroupStatus='AUTO_CONFIRMED';keyword.keywordGroupConfidence=keyword.linkConfidence;keyword.keywordGroupReason=fallback.reason;linked++;
+  });
+  if(linked)invalidateKeywordMatchCaches();
+  return linked;
+}
+
 function keywordAutoDecision(keyword,best,second){
   if(!best)return {decision:'NO_MATCH',reason:'Nessuna pagina disponibile'};
   const compat=semanticIntentCompatibility(keyword,best.page),geoClass=classifyKeywordGeo(keyword),margin=best.score-(second?.score||0),typeFit=pageTypeIntentFit(best.page,compat.qIntent),tokens=keywordMatchTokens(keyword.keyword),pageProfile=pageSemanticProfile(best.page),lexicalHits=tokens.filter(t=>pageProfile.words.some(w=>tokenCompatible(w,t))).length,lexicalRatio=tokens.length?lexicalHits/tokens.length:0,familyFit=compat.qFamilies.length?compat.common.length/compat.qFamilies.length:.5,intentFit=compat.intent;
   if(geoClass.status==='OUT_OF_AREA')return {decision:'EXCLUDE',reason:`Fuori area geografica: ${geoClass.found?.join(', ')||'località non target'}`,compat,typeFit,margin};
   if(compat.hardConflict)return {decision:'NO_MATCH',reason:'Tema o intento in conflitto con la pagina proposta',compat,typeFit,margin};
+  /* V10.2.1 — La regola brand→homepage viveva solo dentro intentFallbackDecision,
+     cioe' l'ultima risorsa: bastava che un'altra pagina superasse le soglie
+     generiche per vincere prima (es. "studio zirafa" finiva su /contatti, che
+     ha intent navigazionale e typeFit 1). Una query di solo brand appartiene
+     alla homepage: la decisione va presa qui, prima dei rami generici. */
+  const brandHomepage=brandNavigationalTarget(keyword);
+  if(brandHomepage&&!semanticIntentCompatibility(keyword,brandHomepage).hardConflict){
+    return {decision:'AUTO',reason:'Query navigazionale di brand: homepage assegnata automaticamente',compat,typeFit,margin,overridePage:brandHomepage};
+  }
   const strongSemantic=compat.common.length>0||compat.semantic>=.72||lexicalRatio>=.76;
   const strongIntent=intentFit>=.82&&typeFit>=.70;
   const uniqueEnough=margin>=.035||best.score>=.76||familyFit>=.85;
@@ -2043,13 +2189,21 @@ function keywordAutoDecision(keyword,best,second){
   if(safeAuto)return {decision:'AUTO',reason:`Coerenza semantica + intento + tipo pagina${pageProfile.contentRich?' + contenuto reale':''} verificati automaticamente`,compat,typeFit,margin};
   const acceptable=pageProfile.contentRich&&best.score>=.57&&intentFit>=.84&&typeFit>=.72&&(compat.common.length>0||lexicalRatio>=.64)&&margin>=.025;
   if(acceptable)return {decision:'AUTO',reason:'Contenuto reale e intento indicano una pagina dominante',compat,typeFit,margin};
-  return {decision:'NO_MATCH',reason:'Nessuna pagina abbastanza coerente: lasciata senza target invece di forzare un abbinamento',compat,typeFit,margin};
+  const fallback=intentFallbackDecision(keyword,best,second,compat,typeFit,lexicalRatio,margin,pageProfile);
+  if(fallback)return {decision:'AUTO',reason:fallback.reason,compat,typeFit,margin,overridePage:fallback.page||best.page};
+  return {decision:'NO_MATCH',reason:'Nessuna pagina abbastanza coerente anche dopo analisi di intento: lasciata senza target',compat,typeFit,margin};
 }
 function keywordBestSuggestion(keyword){
   if(!keywordActiveForMapping(keyword))return null;
   const ranked=keywordMatchSuggestions(keyword),best=ranked[0],second=ranked[1];if(!best)return null;
-  const margin=best.score-(second?.score||0),confidence=Math.round(best.score*100),compat=semanticIntentCompatibility(keyword,best.page),decision=keywordAutoDecision(keyword,best,second),automatic=decision.decision==='AUTO';
-  return {page:best.page,score:best.score,confidence,margin,automatic,suggested:false,runnerUp:second?.page||null,semantic:compat.semantic,intentCompatibility:compat.intent,queryIntent:compat.qIntent,pageIntent:compat.pageIntent,families:compat.qFamilies,commonFamilies:compat.common,hardConflict:compat.hardConflict,reason:decision.reason,autoDecision:decision.decision,typeFit:decision.typeFit};
+  const decision=keywordAutoDecision(keyword,best,second),chosen=decision.overridePage&&decision.overridePage!==best.page?{page:decision.overridePage,score:keywordPageMatch(keyword,decision.overridePage)}:best;
+  /* V10.2.1: con un overridePage il margine veniva calcolato come
+     chosen.score - best.score, quindi sempre negativo (best e' il massimo).
+     Il margine e' un distacco: si misura sul secondo classificato diverso
+     dalla pagina scelta e non puo' essere negativo. */
+  const runnerScore=chosen.page===best.page?(second?.score||0):best.score,
+    margin=Math.max(0,chosen.score-runnerScore),confidence=Math.round(chosen.score*100),compat=semanticIntentCompatibility(keyword,chosen.page),automatic=decision.decision==='AUTO';
+  return {page:chosen.page,score:chosen.score,confidence,margin,automatic,suggested:false,runnerUp:second?.page||null,semantic:compat.semantic,intentCompatibility:compat.intent,queryIntent:compat.qIntent,pageIntent:compat.pageIntent,families:compat.qFamilies,commonFamilies:compat.common,hardConflict:compat.hardConflict,reason:decision.reason,autoDecision:decision.decision,typeFit:decision.typeFit};
 }
 function autoLinkKeywordsSilent(){
   let linked=0;
@@ -2075,7 +2229,19 @@ function autoSetKeywordGroupsSilent(){
   const pages=byProject(state.pages);
   const pageByTarget=url=>pages.find(page=>[page.displayUrl,page.normalizedUrl,page.canonicalUrl].includes(url));
   byProject(state.keywords).forEach(keyword=>{
-    if(!keyword.keyword||!keywordActiveForMapping(keyword))return;
+    if(!keyword.keyword)return;
+    /* V10.2.1 — Le keyword fuori area uscivano da qui senza stato: restavano con
+       keywordGroupStatus vuoto, non entravano nei conteggi mostrati all'utente e
+       rendevano irraggiungibile il ramo AUTO_EXCLUDED piu' sotto (codice morto,
+       perche' anche keywordBestSuggestion filtra le keyword non attive).
+       Ora vengono etichettate esplicitamente. */
+    if(!keywordActiveForMapping(keyword)){
+      const geoClass=classifyKeywordGeo(keyword);
+      if(keyword.keywordGroupStatus!=='AUTO_EXCLUDED'||keyword.keywordGroupUrl)changed++;
+      keyword.keywordGroupUrl='';keyword.keywordGroupName='';keyword.keywordGroupStatus='AUTO_EXCLUDED';keyword.keywordGroupConfidence=0;
+      keyword.keywordGroupReason=`Fuori area geografica: ${geoClass.found?.join(', ')||'località non target'}`;
+      ungrouped++;return;
+    }
     if(keyword.keywordGroupExcluded===true){ungrouped++;return;}
     const currentTarget=String(keyword.targetUrl||'').trim();
     const source=String(keyword.linkSource||'');
@@ -2094,7 +2260,11 @@ function autoSetKeywordGroupsSilent(){
     const name=match.page.pageName||match.page.title||url;
     if(match.automatic&&url){
       if(currentTarget!==url||keyword.keywordGroupStatus!=='AUTO_CONFIRMED'||keyword.keywordGroupUrl!==url){changed++;}
-      keyword.targetUrl=url;keyword.linkedAt=keyword.linkedAt||now();keyword.updatedAt=now();keyword.linkSource='auto-semantic-v90';keyword.linkConfidence=match.confidence;
+      /* V10.2.1: la seconda passata sovrascriveva 'auto-intent-v102' con
+         'auto-semantic-v90', cancellando proprio la traccia che permette di
+         capire quali keyword ha risolto la nuova logica di intento V10.2. */
+      const keepIntentSource=String(keyword.linkSource||'')==='auto-intent-v102'&&currentTarget===url;
+      keyword.targetUrl=url;keyword.linkedAt=keyword.linkedAt||now();keyword.updatedAt=now();keyword.linkSource=keepIntentSource?'auto-intent-v102':'auto-semantic-v90';keyword.linkConfidence=match.confidence;
       keyword.keywordGroupUrl=url;keyword.keywordGroupName=name;keyword.keywordGroupStatus='AUTO_CONFIRMED';keyword.keywordGroupConfidence=match.confidence;keyword.keywordGroupReason=match.reason||'';autoConfirmed++;return;
     }
     if(match.autoDecision==='EXCLUDE'){
@@ -2138,10 +2308,12 @@ async function autoSetKeywordGroups(){
   try{
     const enriched=await enrichSemanticPageContent(48);
     invalidateKeywordMatchCaches();
-    const result=autoSetKeywordGroupsSilent();
+    let result=autoSetKeywordGroupsSilent();
+    const intentLinked=applyIntentConsensusPass();
+    if(intentLinked)result=autoSetKeywordGroupsSilent();
     const p=currentProject();if(p)p.keywordMappingInputSignature=keywordMappingInputSignature();
-    if(result.changed||enriched.read)commit(`Mapping keyword V9.1: ${result.autoConfirmed} assegnate, ${result.ungrouped} senza target sicuro, ${enriched.read} pagine lette`);
-    toast(`${result.autoConfirmed} keyword assegnate automaticamente · ${result.ungrouped} senza target sicuro${enriched.read?` · ${enriched.read} pagine analizzate nel contenuto`:''}.`);
+    if(result.changed||enriched.read||intentLinked)commit(`Mapping keyword V10.2: ${result.autoConfirmed} assegnate, ${intentLinked} risolte per intento, ${result.ungrouped} senza target, ${enriched.read} pagine lette`);
+    toast(`${result.autoConfirmed} keyword assegnate automaticamente${intentLinked?` · ${intentLinked} risolte con analisi di intento`:''} · ${result.ungrouped} senza target${enriched.read?` · ${enriched.read} pagine analizzate`:''}.`);
     runAutomationCycle(false);
   }catch(e){console.error(e);toast(`Analisi semantica non completata: ${e.message||e}`);}
   finally{render();}
@@ -2645,9 +2817,43 @@ async function handleImportV2(){
   finally{if(button){button.disabled=false;button.textContent='Analizza i file';}}
 }
 
+/* ============================================================
+   V10.2.1 — PARSING NUMERICO CONSAPEVOLE DEL LOCALE
+   Gli export italiani di Search Console usano il punto come separatore
+   delle migliaia ("1.234" = 1234) e la virgola come separatore decimale
+   ("3,2"). La versione precedente leggeva "1.234" come 1,234: un errore
+   di fattore 1000 che si propagava a posizione media ponderata, CTR
+   ricalcolato, opportunity scoring e dashboard.
+   Regola: nei campi che non ammettono decimali (clic, impression,
+   volume) un gruppo di 3 cifre dopo un separatore e' sempre migliaia.
+   ============================================================ */
+const INTEGER_IMPORT_FIELDS=new Set(['clicks','impressions','volume','statusCode','h1Count','metaDescriptionCount','canonicalCount']);
+function parseLocaleNumber(value,integer=false){
+  if(value===undefined||value===null||value==='')return null;
+  if(typeof value==='number')return Number.isFinite(value)?(integer?Math.round(value):value):null;
+  let raw=String(value).trim().replace(/[\s\u00a0\u202f]/g,'').replace(/%/g,'').replace(/[€$£]/g,'');
+  if(!raw)return null;
+  const negative=/^[-−]/.test(raw);if(negative)raw=raw.replace(/^[-−+]/,'');
+  if(!/^[0-9]+([.,][0-9]+)*$/.test(raw))return null;
+  const dots=(raw.match(/\./g)||[]).length,commas=(raw.match(/,/g)||[]).length;
+  if(dots&&commas){
+    /* Entrambi presenti: l'ultimo separatore incontrato e' quello decimale. */
+    raw=raw.lastIndexOf(',')>raw.lastIndexOf('.')?raw.replace(/\./g,'').replace(/,/g,'.'):raw.replace(/,/g,'');
+  }else if(commas){
+    if(/^[0-9]{1,3}(,[0-9]{3})+$/.test(raw)&&(integer||commas>1))raw=raw.replace(/,/g,'');
+    else raw=raw.replace(/,/g,'.');
+  }else if(dots){
+    if(/^[0-9]{1,3}(\.[0-9]{3})+$/.test(raw)&&(integer||dots>1))raw=raw.replace(/\./g,'');
+  }
+  if((raw.match(/\./g)||[]).length>1)return null;
+  const parsed=Number(raw);
+  if(!Number.isFinite(parsed))return null;
+  const signed=negative?-parsed:parsed;
+  return integer?Math.round(signed):signed;
+}
 function normalizeImportedRecord(target,row){
   const out={};Object.entries(row||{}).forEach(([k,v])=>{const key=String(k||'').trim();out[key]=typeof v==='string'?v.trim():v;});
-  const toNum=k=>{if(out[k]===undefined||out[k]==='')return;let raw=String(out[k]).trim().replace(/\s/g,'').replace('%','');if(raw.includes(',')&&raw.includes('.'))raw=raw.lastIndexOf(',')>raw.lastIndexOf('.')?raw.replace(/\./g,'').replace(',','.'):raw.replace(/,/g,'');else if(raw.includes(','))raw=raw.replace(',','.');if(!Number.isNaN(Number(raw)))out[k]=Number(raw);};
+  const toNum=k=>{const parsed=parseLocaleNumber(out[k],INTEGER_IMPORT_FIELDS.has(k));if(parsed!==null)out[k]=parsed;};
   const toBool=k=>{if(out[k]===undefined||out[k]==='')return;const v=String(out[k]).toLowerCase();if(['true','1','yes','si','sì'].includes(v))out[k]=true;else if(['false','0','no'].includes(v))out[k]=false;};
   if(target==='pages'){
     if(!out.displayUrl&&(out.page||out.url))out.displayUrl=out.page||out.url;
@@ -3514,7 +3720,9 @@ function runAutomationCycle(notify=false){
   if(!p||p.keywordMappingInputSignature!==mappingSignature){
     invalidateKeywordMatchCaches();
     keywordGroups=autoSetKeywordGroupsSilent();
-    if(p)p.keywordMappingInputSignature=mappingSignature;
+    const intentLinked=applyIntentConsensusPass();
+    if(intentLinked)keywordGroups=autoSetKeywordGroupsSilent();
+    if(p)p.keywordMappingInputSignature=keywordMappingInputSignature();
   }
   if(p&&byProject(state.pages).length&&p.autoFilled&&!p.contextRepairedV51){
     const sc=p.strategyCanvas||{};
@@ -3942,12 +4150,12 @@ function keywordLinkPanel(precomputedData=null){
   const autoHtml=autoGroups.slice(0,8).map(g=>groupCard(g,'auto')).join('');
   const reviewHtml=reviewGroups.slice(0,8).map(g=>groupCard(g,'review')).join('');
   const manualRows=data.manual.slice(0,8).map(({keyword,match,candidates})=>{const shortlist=(candidates||keywordTopCandidates(keyword,3)).filter(c=>c.score>=.30&&!semanticIntentCompatibility(keyword,c.page).hardConflict);return `<div class="kw8-manual-row"><div><strong>${esc(keyword.keyword)}</strong><small>${esc(keyword.source||'Manuale')}</small><div class="kw-candidate-note">${match?.reason?esc(match.reason):'Nessun target abbastanza sicuro: scegli solo tra le alternative più coerenti.'}</div></div><div style="display:flex;gap:8px"><select class="kw-candidate-select" data-link-select="${esc(keyword.id)}"><option value="">Nessun target / scegli alternativa…</option>${shortlist.map(c=>{const u=c.page.displayUrl||c.page.normalizedUrl||c.page.canonicalUrl||'';const l=c.page.pageName||c.page.title||u;return `<option value="${esc(u)}">${esc(l)} · ${Math.round(c.score*100)}%</option>`;}).join('')}</select><button class="btn primary" data-link-keyword="${esc(keyword.id)}">Collega</button></div></div>`;}).join('');
-  return `<section class="kw-group-auto"><div class="geo-focus-head"><div><h3>Gruppi keyword automatici</h3><p>Il sistema confronta semantica, intento, gerarchia geografica, tipo di pagina e contenuto reale. Assegna automaticamente solo i target sicuri; negli altri casi mostra una shortlist massima di 3 alternative.</p></div><button class="btn primary" id="autoSetKeywordGroups">Analizza e assegna automaticamente</button></div><div class="kw-group-stats"><div class="kw-group-stat"><strong>${autoGroups.length}</strong><span>gruppi automatici</span></div><div class="kw-group-stat"><strong>${data.manual.length}</strong><span>senza target sicuro</span></div><div class="kw-group-stat"><strong>${excludedCount}</strong><span>fuori area automatiche</span></div></div></section>`+
+  return `<section class="kw-group-auto"><div class="geo-focus-head"><div><h3>Gruppi keyword automatici</h3><p>Il sistema esegue due passaggi automatici: prima semantica+contenuto, poi intento+tipo pagina+Search Console+consenso tra keyword simili. Le eccezioni vengono ridotte automaticamente; solo i casi senza evidenza sufficiente mostrano fino a 3 alternative.</p></div><button class="btn primary" id="autoSetKeywordGroups">Analizza e assegna automaticamente</button></div><div class="kw-group-stats"><div class="kw-group-stat"><strong>${autoGroups.length}</strong><span>gruppi automatici</span></div><div class="kw-group-stat"><strong>${data.manual.length}</strong><span>senza target sicuro</span></div><div class="kw-group-stat"><strong>${excludedCount}</strong><span>fuori area automatiche</span></div></div></section>`+
   `<section class="kw8-stage"><h2>${unlinked.length?'Alternative solo dove serve':'Mapping e gruppi completati ✓'}</h2><p>${unlinked.length?`Le corrispondenze forti sono già state impostate automaticamente. Restano ${reviewGroups.reduce((n,g)=>n+g.items.filter(x=>!x.keyword.targetUrl).length,0)} keyword in gruppi suggeriti e ${data.manual.length} vere eccezioni.`:'Le keyword nel focus geografico sono già organizzate per pagina target.'}</p>`+
   `${autoHtml?`<div style="margin-top:20px"><h2>Impostati automaticamente</h2><p>Questi gruppi hanno superato le soglie di sicurezza e non richiedono conferma.</p><div class="kw8-rail">${autoHtml}</div></div>`:''}`+
   `${reviewHtml?`<div style="height:28px"></div><h2>Alternative non automatiche</h2><p>Questi casi non vengono forzati: scegli soltanto tra le 3 pagine semanticamente più plausibili.</p><div class="kw8-rail">${reviewHtml}</div>`:''}`+
   `${confirmedGroups.length?`<details class="kw8-archive"><summary>${confirmedGroups.length} gruppi già confermati manualmente</summary><div class="muted">Restano memorizzati e non vengono sovrascritti dall'automazione.</div></details>`:''}`+
-  `${data.manual.length?`<div style="height:28px"></div><h2>Keyword senza target sicuro</h2><p>Il sistema non forza l’abbinamento. Il menu mostra soltanto fino a 3 pagine realmente plausibili, non l’intero sito.</p><div class="kw8-manual">${manualRows}</div>${data.manual.length>6?`<div class="muted" style="margin-top:12px">Altre ${data.manual.length-6} eccezioni compariranno man mano che completi queste.</div>`:''}`:''}</section>`;
+  `${data.manual.length?`<div style="height:28px"></div><h2>Keyword senza target sicuro</h2><p>Il motore ha già eseguito anche il secondo passaggio basato su intento, tipo di pagina, Search Console e consenso tra keyword simili. Solo i casi senza evidenza sufficiente restano qui; il menu mostra al massimo 3 alternative plausibili.</p><div class="kw8-manual">${manualRows}</div>${data.manual.length>6?`<div class="muted" style="margin-top:12px">Altre ${data.manual.length-8} keyword restano senza target certo: non devi lavorarle una per una; premi “Analizza e assegna automaticamente” dopo aver aggiornato pagine o contenuti.</div>`:''}`:''}</section>`;
 }
 function keywordIntelligenceView(){
   const allRows=[...byProject(state.keywords)].sort((a,b)=>String(a.keyword||'').localeCompare(String(b.keyword||''),'it',{sensitivity:'base'}));
@@ -4538,14 +4746,28 @@ const PROJECT_FIELD_LABELS={
 const keywordStopWords=new Set('a ad al alla alle allo ai agli anche che chi con da dal dalla dalle dei del della delle di e ed è gli ha il in la le lo ma nel nella nelle o per più se su tra un una uno the and for from with your our this that home homepage sito website ufficiale pagina'.split(/\s+/));
 function keywordFromSignal(signal){
   const p=currentProject();
-  const brandWords=String(p.brand||p.name||'').toLowerCase().split(/\W+/).filter(Boolean);
   const source=String(signal.h1||signal.title||guessPageNameFromUrl(signal.url)||'')
     .split(/[|–—]/)[0].replace(/[_/]+/g,' ').replace(/[^\p{L}\p{N}\s'-]/gu,' ').replace(/\s+/g,' ').trim();
-  const words=source.split(/\s+/).filter(word=>{
-    const clean=word.toLowerCase().replace(/^['-]+|['-]+$/g,'');
-    return clean.length>1&&!keywordStopWords.has(clean)&&!brandWords.includes(clean);
+  /* V10.2.1 — Il brand veniva rimosso ovunque nella frase, non solo agli
+     estremi: con brand "Studio Zirafa" l'H1 "Studio dentistico a Bergamo"
+     produceva la keyword rotta "dentistico Bergamo". Ora il brand viene
+     tolto solo da inizio e fine, dove compare davvero come firma del sito. */
+  const clean=word=>String(word).toLowerCase().replace(/^['-]+|['-]+$/g,'');
+  /* Il brand va tolto come FRASE intera ("studio zirafa"), non token per token:
+     in "Studio dentistico a Bergamo" la parola "studio" e' contenuto, non firma. */
+  const brandPhrases=[String(p.brand||''),String(p.name||'')]
+    .map(value=>String(value).toLowerCase().split(/\W+/).filter(Boolean))
+    .filter(tokens=>tokens.length).sort((a,b)=>b.length-a.length);
+  let words=source.split(/\s+/).filter(word=>clean(word).length>1);
+  const stripEdge=()=>brandPhrases.some(phrase=>{
+    if(words.length>=phrase.length&&phrase.every((token,i)=>clean(words[i])===token)){words=words.slice(phrase.length);return true;}
+    const tail=words.length-phrase.length;
+    if(tail>=0&&phrase.every((token,i)=>clean(words[tail+i])===token)){words=words.slice(0,tail);return true;}
+    return false;
   });
-  const candidate=words.slice(0,7).join(' ').trim();
+  while(words.length&&stripEdge());
+  words=words.filter(word=>!keywordStopWords.has(clean(word)));
+  const candidate=words.slice(0,7).join(' ').trim().toLowerCase();
   if(candidate)return candidate;
   const fallback=guessPageNameFromUrl(normalizePageUrlForProject(signal.url)).toLowerCase();
   return fallback==='homepage'?'':fallback;
