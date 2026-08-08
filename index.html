@@ -7,7 +7,7 @@
 <meta name="description" content="Organic Growth OS V8: flusso operativo a fasi numerate, wizard con passi progressivi e piano attività verificabile.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
-<title>Organic Growth OS V8.4</title>
+<title>Organic Growth OS V8.5</title>
 <script>
 /* Tema applicato prima del primo disegno: evita il lampo di bianco
    quando l'utente ha scelto il tema scuro. */
@@ -930,7 +930,7 @@ button,input,select,textarea{font-size:22px!important}
 @media(max-width:720px){.geo-query-row{grid-template-columns:1fr}}
 
 /* ============================================================
-   V8.4 — AUTO KEYWORD GROUPS + GRANULAR CONTROL
+   V8.5 — SEMANTIC + INTENT AUTO MAPPING
    Raggruppamento persistente per pagina target con conferma automatica
    solo quando il matching supera soglie conservative.
    ============================================================ */
@@ -941,7 +941,7 @@ button,input,select,textarea{font-size:22px!important}
 .kw-group-status{display:inline-flex;align-items:center;gap:6px;font-size:14px!important;font-weight:850;padding:6px 9px;border-radius:999px}.kw-group-status.auto{background:var(--joy-mint);color:var(--success)}.kw-group-status.review{background:var(--joy-sun);color:var(--warning)}
 @media(max-width:720px){.kw-group-stats{grid-template-columns:1fr}}
 
-/* V8.4 — controllo granulare delle keyword dentro ogni gruppo */
+/* V8.5 — controllo granulare + mapping semantico/intento automatico */
 .kw-item-editor{margin-top:16px;border-top:1px solid var(--border);padding-top:14px}
 .kw-item-editor>summary{cursor:pointer;font-weight:900;font-size:17px;color:var(--accent);padding:4px 0}
 .kw-item-toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0}
@@ -963,7 +963,7 @@ button,input,select,textarea{font-size:22px!important}
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V8.4</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V8.5</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -1717,6 +1717,72 @@ function textConcepts(value){
   return out;
 }
 function pageMatchCorpus(page){return keywordMatchNormalize(`${page.primaryKeyword||''} ${page.title||''} ${page.h1||''} ${page.pageName||''} ${page.displayUrl||page.normalizedUrl||page.canonicalUrl||''} ${page.cluster||''}`);}
+
+/* ============================================================
+   V8.5 — MOTORE SEMANTICO + SEARCH INTENT
+   Non si limita alle parole identiche: riconosce famiglie di significato
+   (es. costruzione/creazione/realizzazione siti) e separa intenti diversi
+   (es. realizzazione sito vs posizionamento SEO). Le associazioni vengono
+   applicate automaticamente solo quando semantica, intento e localita' sono
+   compatibili e il vantaggio sulla seconda pagina candidata e' sufficiente.
+   ============================================================ */
+const SEMANTIC_FAMILIES={
+  website_creation:['realizzazione sito','realizzazione siti','creazione sito','creazione siti','costruzione sito','costruzione siti','sviluppo sito','sviluppo siti','fare un sito','sito web aziendale','siti web aziendali','sito internet','siti internet','web design','sito responsive','siti responsive'],
+  seo_positioning:['posizionamento seo','posizionamento sito','posizionamento siti','posizionamento google','primi posti google','prima pagina google','ranking google','visibilita google'],
+  seo_consulting:['consulente seo','consulenza seo','seo specialist','specialista seo','esperto seo','professionista seo'],
+  seo_optimization:['ottimizzazione seo','ottimizzazione sito','ottimizzazione siti','seo on page','seo tecnica','technical seo'],
+  keyword_research:['analisi keyword','analisi keywords','keyword research','ricerca keyword','ricerca parole chiave','parole chiave seo'],
+  seo_audit:['audit seo','analisi seo sito','check seo','controllo seo','seo audit'],
+  web_agency:['agenzia web','web agency','agenzia seo','seo agency','agenzia digitale'],
+  ecommerce:['ecommerce','e commerce','negozio online','shop online','woocommerce','realizzazione ecommerce','creazione ecommerce'],
+  web_app:['web app','app web','applicazione web','sviluppo web app'],
+  social_media:['social media','social media manager','gestione social','facebook marketing','instagram marketing'],
+  digital_marketing:['web marketing','digital marketing','marketing digitale','consulenza marketing','comunicazione internet']
+};
+const INTENT_RULES={
+  NAVIGATIONAL:[/\broberto\b/,/\bzanoni\b/,/\bcontatti?\b/,/\bchi siamo\b/,/\blogin\b/],
+  INFORMATIONAL:[/\bcome\b/,/\bcosa\b/,/\bperche\b/,/\bguida\b/,/\bidee\b/,/\bconsigli\b/,/\bcos[eè]\b/,/\bquanto costa\b/,/\bprezzi?\b/],
+  TRANSACTIONAL:[/\bpreventiv[oi]\b/,/\bservizi?\b/,/\bconsulenza\b/,/\bconsulente\b/,/\brealizzazione\b/,/\bcreazione\b/,/\bcostruzione\b/,/\bsviluppo\b/,/\bagenzia\b/,/\bprofessionista\b/,/\besperto\b/,/\bacquist/],
+  COMMERCIAL:[/\bmiglior[ei]\b/,/\bconfronto\b/,/\brecensioni?\b/,/\bprezzo\b/,/\bcosto\b/,/\bquanto costa\b/,/\bscelta\b/,/\bscegliere\b/]
+};
+function semanticFamilies(value){
+  const text=` ${keywordMatchNormalize(value)} `,out=[];
+  Object.entries(SEMANTIC_FAMILIES).forEach(([family,phrases])=>{
+    if(phrases.some(p=>text.includes(` ${keywordMatchNormalize(p)} `)||text.includes(keywordMatchNormalize(p))))out.push(family);
+  });
+  return [...new Set(out)];
+}
+function inferSearchIntent(value,url='',pageType=''){
+  const text=keywordMatchNormalize(`${value||''} ${url||''}`),type=String(pageType||'').toLowerCase();
+  if(INTENT_RULES.NAVIGATIONAL.some(rx=>rx.test(text)))return 'NAVIGATIONAL';
+  if(INTENT_RULES.INFORMATIONAL.some(rx=>rx.test(text))||['article','guide','blog','faq'].includes(type))return 'INFORMATIONAL';
+  if(INTENT_RULES.TRANSACTIONAL.some(rx=>rx.test(text))||['service','landing','product'].includes(type))return 'TRANSACTIONAL';
+  if(INTENT_RULES.COMMERCIAL.some(rx=>rx.test(text)))return 'COMMERCIAL';
+  return 'COMMERCIAL';
+}
+function pageSemanticProfile(page){
+  const corpus=pageMatchCorpus(page),families=semanticFamilies(corpus),intent=inferSearchIntent(corpus,page.displayUrl||page.normalizedUrl||'',page.pageType||'');
+  return {corpus,families,intent};
+}
+function semanticIntentCompatibility(keyword,page){
+  const query=keywordMatchNormalize(keyword.keyword),qFamilies=semanticFamilies(query),qIntent=inferSearchIntent(query,'',keyword.expectedContentType||'');
+  const p=pageSemanticProfile(page),common=qFamilies.filter(f=>p.families.includes(f));
+  const conflictingPairs=[
+    ['website_creation','seo_positioning'],['website_creation','seo_optimization'],['website_creation','keyword_research'],['website_creation','seo_audit'],
+    ['seo_positioning','website_creation'],['keyword_research','website_creation'],['seo_audit','website_creation'],['ecommerce','website_creation']
+  ];
+  const hardConflict=conflictingPairs.some(([qf,pf])=>qFamilies.includes(qf)&&p.families.includes(pf)&&!common.length);
+  let semantic=0;
+  if(qFamilies.length){semantic=common.length/qFamilies.length; if(common.length)semantic=Math.min(1,semantic+.18);}
+  else semantic=.45;
+  let intent=0;
+  if(qIntent===p.intent)intent=1;
+  else if(['TRANSACTIONAL','COMMERCIAL'].includes(qIntent)&&['TRANSACTIONAL','COMMERCIAL'].includes(p.intent))intent=.82;
+  else if(qIntent==='INFORMATIONAL'&&p.intent==='COMMERCIAL')intent=.35;
+  else if(qIntent==='COMMERCIAL'&&p.intent==='INFORMATIONAL')intent=.45;
+  else intent=.25;
+  return {qFamilies,pageFamilies:p.families,common,semantic,intent,qIntent,pageIntent:p.intent,hardConflict};
+}
 function keywordPageMatch(keyword,page){
   const query=keywordMatchNormalize(keyword.keyword),tokens=keywordMatchTokens(keyword.keyword);if(!query||!tokens.length)return 0;
   const corpus=pageMatchCorpus(page),words=corpus.split(' ');
@@ -1726,54 +1792,52 @@ function keywordPageMatch(keyword,page){
   const h1=keywordMatchNormalize(page.h1||'');
   const name=keywordMatchNormalize(page.pageName||'');
   const queryConcepts=textConcepts(query),pageConcepts=textConcepts(corpus);
+  const compat=semanticIntentCompatibility(keyword,page);
   const matched=tokens.filter(token=>words.some(word=>word===token||word.startsWith(token)||token.startsWith(word))).length;
-  let score=(matched/tokens.length)*.44;
-  /* segnali testuali forti */
-  if(primary===query)score+=.34;
-  else if(primary&&(primary.includes(query)||query.includes(primary)))score+=.22;
-  if(title===query||h1===query||name===query)score+=.25;
-  else if(title.includes(query)||h1.includes(query)||name.includes(query))score+=.18;
-  if(url&&tokens.filter(t=>url.includes(t)).length>=Math.max(1,Math.ceil(tokens.length*.6)))score+=.14;
-  /* corrispondenza di concetto: evita che "search engine optimization" resti orfana da SEO */
+  let score=(matched/tokens.length)*.30;
+  if(primary===query)score+=.30;
+  else if(primary&&(primary.includes(query)||query.includes(primary)))score+=.18;
+  if(title===query||h1===query||name===query)score+=.20;
+  else if(title.includes(query)||h1.includes(query)||name.includes(query))score+=.12;
+  if(url&&tokens.filter(t=>url.includes(t)).length>=Math.max(1,Math.ceil(tokens.length*.6)))score+=.10;
+  /* Semantica e intento pesano piu' delle parole condivise. */
+  score+=compat.semantic*.28;
+  score+=compat.intent*.16;
+  if(compat.hardConflict)score-=.40;
   if(queryConcepts.length){
-    const common=queryConcepts.filter(c=>pageConcepts.includes(c));
-    score+=Math.min(.30,common.length*.15);
+    const common=queryConcepts.filter(c=>pageConcepts.includes(c));score+=Math.min(.14,common.length*.07);
     const specific=queryConcepts.filter(c=>['agency','consulting','indexing','keyword','ecommerce','audit','app'].includes(c));
-    if(specific.length&&!specific.some(c=>pageConcepts.includes(c)))score-=.13;
+    if(specific.length&&!specific.some(c=>pageConcepts.includes(c)))score-=.10;
   }
-  /* apprendimento locale: usa mapping già confermati come evidenza, non come verità assoluta. */
+  /* apprendimento dai mapping gia' confermati */
   const targetUrl=String(page.displayUrl||page.normalizedUrl||page.canonicalUrl||'');
   const linkedPeers=byProject(state.keywords).filter(k=>k!==keyword&&String(k.targetUrl||'')===targetUrl&&String(k.keyword||'').trim());
   if(linkedPeers.length){
     let peerBest=0;
     linkedPeers.slice(0,60).forEach(peer=>{
-      const peerTokens=keywordMatchTokens(peer.keyword),peerConcepts=textConcepts(peer.keyword);
-      const tokenUnion=new Set([...tokens,...peerTokens]);
-      const common=tokens.filter(t=>peerTokens.includes(t)).length;
-      const tokenSimilarity=tokenUnion.size?common/tokenUnion.size:0;
-      const conceptCommon=queryConcepts.filter(c=>peerConcepts.includes(c)).length;
-      const qGeo=tokens.filter(t=>GEO_TERMS.includes(t)),pGeo=peerTokens.filter(t=>GEO_TERMS.includes(t));
-      const geoCompatible=!qGeo.length||!pGeo.length||qGeo.some(g=>pGeo.includes(g));
-      const sim=(tokenSimilarity*.65)+(Math.min(1,conceptCommon/2)*.35);
-      if(geoCompatible)peerBest=Math.max(peerBest,sim);
+      const peerTokens=keywordMatchTokens(peer.keyword),peerFamilies=semanticFamilies(peer.keyword);
+      const tokenUnion=new Set([...tokens,...peerTokens]),commonTokens=tokens.filter(t=>peerTokens.includes(t)).length;
+      const tokenSimilarity=tokenUnion.size?commonTokens/tokenUnion.size:0;
+      const familyCommon=compat.qFamilies.filter(f=>peerFamilies.includes(f)).length;
+      const sim=(tokenSimilarity*.45)+(Math.min(1,familyCommon/Math.max(1,compat.qFamilies.length))*.55);
+      peerBest=Math.max(peerBest,sim);
     });
-    if(peerBest>=.70)score+=.16;
-    else if(peerBest>=.48)score+=.09;
+    if(peerBest>=.72)score+=.12;else if(peerBest>=.50)score+=.06;
   }
-  /* località: una query locale non deve finire su una landing di un'altra città */
-  const geo=tokens.filter(t=>GEO_TERMS.includes(t));
+  /* localita' */
+  const geoClass=classifyKeywordGeo(keyword);
+  if(geoClass.status==='OUT_OF_AREA')return 0;
+  const geo=geoTermsInText(keyword.keyword);
   if(geo.length){
-    const pageGeo=GEO_TERMS.filter(g=>corpus.includes(g));
-    if(geo.every(g=>corpus.includes(g)))score+=.12;
-    else if(pageGeo.length)score-=.26;
-    else score-=.05;
+    const pageGeo=geoTermsInText(corpus);
+    if(geo.some(g=>pageGeo.includes(g)))score+=.10;
+    else if(pageGeo.length)score-=.30;
+    else score-=.03;
   }
-  /* preferisci landing specifiche a homepage/pagine generiche */
-  const path=String(page.displayUrl||page.normalizedUrl||'');
-  const type=String(page.pageType||'').toLowerCase();
+  const path=String(page.displayUrl||page.normalizedUrl||''),type=String(page.pageType||'').toLowerCase();
   const isGeneric=path==='/'||type==='homepage'||/^(servizi|services|homepage)$/i.test(String(page.cluster||''));
-  if(isGeneric&&queryConcepts.some(c=>['agency','consulting','indexing','keyword','ecommerce','audit','app'].includes(c)))score-=.08;
-  if(page.indexable===false)score-=.28;
+  if(isGeneric&&compat.qFamilies.length&&!compat.common.length)score-=.12;
+  if(page.indexable===false)score-=.32;
   return Math.max(0,Math.min(1,score));
 }
 function keywordMatchSuggestions(keyword){
@@ -1785,11 +1849,14 @@ function keywordBestSuggestion(keyword){
   if(!keywordActiveForMapping(keyword))return null;
   const ranked=keywordMatchSuggestions(keyword),best=ranked[0],second=ranked[1];if(!best)return null;
   const margin=best.score-(second?.score||0),confidence=Math.round(best.score*100);
-  const concepts=textConcepts(keyword.keyword),specific=concepts.some(c=>['agency','consulting','indexing','keyword','ecommerce','audit','app'].includes(c));
-  /* Soglie meno rigide quando il tema specifico coincide e il secondo risultato è nettamente peggiore. */
-  const automatic=(best.score>=.74&&margin>=.08)||(specific&&best.score>=.68&&margin>=.14);
-  const suggested=best.score>=.42&&(margin>=.035||best.score>=.62);
-  return {page:best.page,score:best.score,confidence,margin,automatic,suggested,runnerUp:second?.page||null};
+  const compat=semanticIntentCompatibility(keyword,best.page);
+  const semanticStrong=compat.semantic>=.70||compat.common.length>=1;
+  const intentStrong=compat.intent>=.80;
+  /* V8.5: auto solo se non c'e' conflitto semantico e intento + semantica concordano. */
+  const automatic=!compat.hardConflict&&semanticStrong&&intentStrong&&best.score>=.68&&margin>=.07;
+  const suggested=!compat.hardConflict&&best.score>=.50&&(margin>=.04||best.score>=.66);
+  const reason=compat.hardConflict?'Intento/tema in conflitto':automatic?'Semantica, intento e pagina coerenti':suggested?'Corrispondenza plausibile ma non dominante':'Nessuna pagina abbastanza coerente';
+  return {page:best.page,score:best.score,confidence,margin,automatic,suggested,runnerUp:second?.page||null,semantic:compat.semantic,intentCompatibility:compat.intent,queryIntent:compat.qIntent,pageIntent:compat.pageIntent,families:compat.qFamilies,commonFamilies:compat.common,hardConflict:compat.hardConflict,reason};
 }
 function autoLinkKeywordsSilent(){
   let linked=0;
@@ -1797,7 +1864,7 @@ function autoLinkKeywordsSilent(){
     const match=keywordBestSuggestion(keyword);if(!match?.automatic)return;
     const url=match.page.displayUrl||match.page.normalizedUrl||'';
     if(url){
-      keyword.targetUrl=url;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='auto-group-v83';keyword.linkConfidence=match.confidence;
+      keyword.targetUrl=url;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='auto-semantic-v85';keyword.linkConfidence=match.confidence;
       keyword.keywordGroupUrl=url;keyword.keywordGroupName=match.page.pageName||match.page.title||url;keyword.keywordGroupStatus='AUTO_CONFIRMED';keyword.keywordGroupConfidence=match.confidence;
       linked++;
     }
@@ -1805,7 +1872,7 @@ function autoLinkKeywordsSilent(){
   return linked;
 }
 
-/* V8.3 — assegna automaticamente ogni keyword valida a un gruppo pagina.
+/* V8.5 — assegna automaticamente ogni keyword valida a un gruppo pagina usando semantica + intent.
    - AUTO_CONFIRMED: target applicato senza intervento umano, solo con match forte.
    - SUGGESTED: gruppo proposto ma target NON applicato, quindi resta da controllare.
    - MANUAL_CONFIRMED: mapping già scelto dall'utente, rispettato e mai sovrascritto. */
@@ -1834,7 +1901,7 @@ function autoSetKeywordGroupsSilent(){
     const name=match.page.pageName||match.page.title||url;
     if(match.automatic&&url){
       if(currentTarget!==url||keyword.keywordGroupStatus!=='AUTO_CONFIRMED'||keyword.keywordGroupUrl!==url){changed++;}
-      keyword.targetUrl=url;keyword.linkedAt=keyword.linkedAt||now();keyword.updatedAt=now();keyword.linkSource='auto-group-v83';keyword.linkConfidence=match.confidence;
+      keyword.targetUrl=url;keyword.linkedAt=keyword.linkedAt||now();keyword.updatedAt=now();keyword.linkSource='auto-semantic-v85';keyword.linkConfidence=match.confidence;
       keyword.keywordGroupUrl=url;keyword.keywordGroupName=name;keyword.keywordGroupStatus='AUTO_CONFIRMED';keyword.keywordGroupConfidence=match.confidence;autoConfirmed++;return;
     }
     if(match.suggested&&url){
@@ -3642,7 +3709,7 @@ function moveSingleKeywordToPage(id,url){
 }
 function excludeSingleKeywordFromGroup(id){
   const keyword=byProject(state.keywords).find(item=>item.id===id);if(!keyword)return;
-  if(['auto-group-v83','group-confirmed'].includes(String(keyword.linkSource||''))){keyword.targetUrl='';keyword.linkedAt='';keyword.linkConfidence=0;}
+  if(['auto-group-v83','auto-semantic-v85','group-confirmed'].includes(String(keyword.linkSource||''))){keyword.targetUrl='';keyword.linkedAt='';keyword.linkConfidence=0;}
   keyword.keywordGroupExcluded=true;keyword.keywordGroupUrl='';keyword.keywordGroupName='';keyword.keywordGroupStatus='EXCLUDED';keyword.keywordGroupConfidence=0;keyword.updatedAt=now();
   commit(`Keyword esclusa dal gruppo: ${keyword.keyword}`);toast(`“${keyword.keyword}” esclusa dal raggruppamento automatico.`);render();
 }
@@ -3697,10 +3764,10 @@ function keywordLinkPanel(){
   const autoHtml=autoGroups.slice(0,8).map(g=>groupCard(g,'auto')).join('');
   const reviewHtml=reviewGroups.slice(0,8).map(g=>groupCard(g,'review')).join('');
   const manualRows=data.manual.slice(0,6).map(({keyword})=>`<div class="kw8-manual-row"><div><strong>${esc(keyword.keyword)}</strong><small>${esc(keyword.source||'Manuale')}</small></div><div style="display:flex;gap:8px"><select data-link-select="${esc(keyword.id)}"><option value="">Scegli pagina…</option>${options.map(o=>`<option value="${esc(o.url)}">${esc(o.label)}</option>`).join('')}</select><button class="btn primary" data-link-keyword="${esc(keyword.id)}">Collega</button></div></div>`).join('');
-  return `<section class="kw-group-auto"><div class="geo-focus-head"><div><h3>Gruppi keyword automatici</h3><p>Il sistema assegna da solo le keyword alla pagina più coerente. Applica automaticamente soltanto i gruppi con affidabilità alta; quelli dubbi restano da verificare.</p></div><button class="btn primary" id="autoSetKeywordGroups">Ricalcola gruppi automaticamente</button></div><div class="kw-group-stats"><div class="kw-group-stat"><strong>${autoGroups.length}</strong><span>gruppi automatici</span></div><div class="kw-group-stat"><strong>${reviewGroups.length}</strong><span>gruppi da verificare</span></div><div class="kw-group-stat"><strong>${data.manual.length}</strong><span>eccezioni senza gruppo sicuro</span></div></div></section>`+
+  return `<section class="kw-group-auto"><div class="geo-focus-head"><div><h3>Gruppi keyword automatici</h3><p>Il sistema usa associazioni semantiche, intento di ricerca, località e specificità della pagina. Le corrispondenze coerenti vengono applicate automaticamente; restano da verificare solo i casi realmente ambigui.</p></div><button class="btn primary" id="autoSetKeywordGroups">Ricalcola mapping semantico</button></div><div class="kw-group-stats"><div class="kw-group-stat"><strong>${autoGroups.length}</strong><span>gruppi automatici</span></div><div class="kw-group-stat"><strong>${reviewGroups.length}</strong><span>gruppi da verificare</span></div><div class="kw-group-stat"><strong>${data.manual.length}</strong><span>eccezioni senza gruppo sicuro</span></div></div></section>`+
   `<section class="kw8-stage"><h2>${unlinked.length?'Controlla solo ciò che è dubbio':'Mapping e gruppi completati ✓'}</h2><p>${unlinked.length?`Le corrispondenze forti sono già state impostate automaticamente. Restano ${reviewGroups.reduce((n,g)=>n+g.items.filter(x=>!x.keyword.targetUrl).length,0)} keyword in gruppi suggeriti e ${data.manual.length} vere eccezioni.`:'Le keyword nel focus geografico sono già organizzate per pagina target.'}</p>`+
   `${autoHtml?`<div style="margin-top:20px"><h2>Impostati automaticamente</h2><p>Questi gruppi hanno superato le soglie di sicurezza e non richiedono conferma.</p><div class="kw8-rail">${autoHtml}</div></div>`:''}`+
-  `${reviewHtml?`<div style="height:28px"></div><h2>Gruppi da verificare</h2><p>Il sistema ha già fatto il raggruppamento, ma non applica il target finché la corrispondenza non è abbastanza forte.</p><div class="kw8-rail">${reviewHtml}</div>`:''}`+
+  `${reviewHtml?`<div style="height:28px"></div><h2>Gruppi da verificare</h2><p>Sono rimasti solo casi in cui semantica o intento non indicano una pagina nettamente dominante.</p><div class="kw8-rail">${reviewHtml}</div>`:''}`+
   `${confirmedGroups.length?`<details class="kw8-archive"><summary>${confirmedGroups.length} gruppi già confermati manualmente</summary><div class="muted">Restano memorizzati e non vengono sovrascritti dall'automazione.</div></details>`:''}`+
   `${data.manual.length?`<div style="height:28px"></div><h2>Solo le eccezioni vere</h2><p>Queste keyword non hanno una pagina dominante abbastanza chiara. Sono le sole che richiedono una scelta manuale.</p><div class="kw8-manual">${manualRows}</div>${data.manual.length>6?`<div class="muted" style="margin-top:12px">Altre ${data.manual.length-6} eccezioni compariranno man mano che completi queste.</div>`:''}`:''}</section>`;
 }
@@ -3713,7 +3780,7 @@ function keywordIntelligenceView(){
   const groups=keywordSuggestionGroups(),geo=projectGeoProfile();
   const excludedPreview=excluded.slice(0,12).map(k=>`<div class="geo-query-row"><div><strong>${esc(k.keyword)}</strong><small>${esc(k.source||'')} ${k.observedPage?`· pagina osservata: ${esc(k.observedPage)}`:''}</small></div><span class="geo-query-tag">${esc(k.detectedGeo||'altra area')}</span></div>`).join('');
   const geoBox=`<section class="geo-focus-card"><div class="geo-focus-head"><div><h3>Filtro geografico automatico</h3><p>${geo.primary?`Il focus locale rilevato è <strong>${esc(geo.primary)}</strong>. Le query che contengono un'altra città vengono conservate come dato Search Console, ma escluse automaticamente dal mapping.`:'Non ho ancora rilevato un focus geografico certo. Impostalo in Configurazione progetto.'}</p></div>${geo.primary?`<span class="geo-pill">◎ ${esc(geo.primary)}</span>`:'<button class="btn" data-nav="Project">Imposta area SEO</button>'}</div>${excluded.length?`<details class="geo-excluded"><summary>${excluded.length} query fuori area escluse automaticamente</summary><div class="geo-query-list">${excludedPreview}</div>${excluded.length>12?`<div class="muted" style="margin-top:8px">… e altre ${excluded.length-12} query fuori area.</div>`:''}<div class="muted" style="margin-top:10px">Non vengono eliminate: restano nell'archivio completo e nei dati Search Console, ma non richiedono una pagina target.</div></details>`:'<div class="good-box" style="margin-top:14px"><strong>Nessuna query fuori area da gestire</strong></div>'}</section>`;
-  return `<div class="kw8-shell">${geoBox}<section class="kw8-hero"><h1>Le keyword trovano la pagina giusta.</h1><p>Il sistema raggruppa le decisioni e ti mostra solo ciò che merita davvero attenzione. Le query fuori area vengono filtrate automaticamente.</p><div class="kw8-kpis"><div class="kw8-kpi"><strong>${rows.length}</strong><span>keyword nel focus</span></div><div class="kw8-kpi"><strong>${linked}</strong><span>già collegate</span></div><div class="kw8-kpi"><strong>${excluded.length}</strong><span>fuori area escluse</span></div><div class="kw8-kpi"><strong>${pct}%</strong><span>mapping completato</span></div></div></section><div class="kw8-main"><div>${keywordLinkPanel()}</div><aside class="kw8-side"><section class="kw8-side-card"><h3>Il tuo progresso</h3><div class="kw8-big">${pct}%</div><div class="kw8-progress"><span style="width:${pct}%"></span></div><p>${linked} collegate · ${unlinked} ancora da completare · ${excluded.length} escluse per area.</p>${groups.groups.find(g=>g.status==='SUGGESTED')?`<button class="btn primary" data-confirm-keyword-group="${esc((groups.groups.find(g=>g.status==='SUGGESTED').page.displayUrl||groups.groups.find(g=>g.status==='SUGGESTED').page.normalizedUrl||''))}">Conferma il primo gruppo da verificare</button>`:''}</section><section class="kw8-side-card"><h3>Il modo più semplice</h3><p>1. Il filtro geografico elimina il rumore.<br>2. Conferma i gruppi più coerenti.<br>3. Lascia per ultime solo le vere eccezioni.</p></section><section class="kw8-side-card"><h3>Aggiungi dati</h3><p>Puoi aggiornare la mappa senza interrompere il lavoro.</p><div class="kw8-tools"><button class="btn" id="generateKeywordsFromPages">Rileva dalle pagine</button><button class="btn" data-import-target="keywords">Importa</button><button class="btn" data-add="keywords">+ Keyword</button></div></section></aside></div><details class="kw8-archive"><summary>Archivio completo (${allRows.length} keyword, incluse fuori area)</summary><div class="toolbar"><input data-search-table="keywords" placeholder="Cerca keyword o URL"><span class="muted">${allRows.length} record</span></div><div class="table-wrap"><table><thead><tr>${configs.keywords.cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Area</th><th>Gruppo automatico</th><th>Azioni</th></tr></thead><tbody>${allRows.map(r=>`<tr data-table-row="keywords">${configs.keywords.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td><span class="badge ${r.geoStatus==='OUT_OF_AREA'?'danger':r.geoStatus==='TARGET'?'success':'info'}">${r.geoStatus==='OUT_OF_AREA'?'Fuori area':r.geoStatus==='TARGET'?'Target':'Generica'}</span></td><td>${r.geoStatus==='OUT_OF_AREA'?'<span class="muted">Esclusa</span>':r.keywordGroupName?`<strong>${esc(r.keywordGroupName)}</strong><div class="muted">${r.keywordGroupStatus==='AUTO_CONFIRMED'?'Automatico':r.keywordGroupStatus==='MANUAL_CONFIRMED'?'Confermato':'Suggerito'} · ${esc(r.keywordGroupConfidence||0)}%</div>`:'<span class="muted">Da assegnare</span>'}</td><td><button class="btn" data-edit="keywords" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div></details></div>`;
+  return `<div class="kw8-shell">${geoBox}<section class="kw8-hero"><h1>Le keyword trovano la pagina giusta.</h1><p>Il sistema raggruppa le decisioni e ti mostra solo ciò che merita davvero attenzione. Le query fuori area vengono filtrate automaticamente.</p><div class="kw8-kpis"><div class="kw8-kpi"><strong>${rows.length}</strong><span>keyword nel focus</span></div><div class="kw8-kpi"><strong>${linked}</strong><span>già collegate</span></div><div class="kw8-kpi"><strong>${excluded.length}</strong><span>fuori area escluse</span></div><div class="kw8-kpi"><strong>${pct}%</strong><span>mapping completato</span></div></div></section><div class="kw8-main"><div>${keywordLinkPanel()}</div><aside class="kw8-side"><section class="kw8-side-card"><h3>Il tuo progresso</h3><div class="kw8-big">${pct}%</div><div class="kw8-progress"><span style="width:${pct}%"></span></div><p>${linked} collegate · ${unlinked} ancora da completare · ${excluded.length} escluse per area.</p>${groups.groups.find(g=>g.status==='SUGGESTED')?`<button class="btn primary" data-confirm-keyword-group="${esc((groups.groups.find(g=>g.status==='SUGGESTED').page.displayUrl||groups.groups.find(g=>g.status==='SUGGESTED').page.normalizedUrl||''))}">Conferma il primo gruppo da verificare</button>`:''}</section><section class="kw8-side-card"><h3>Il modo più semplice</h3><p>1. Il filtro geografico elimina il rumore.<br>2. Il motore semantico distingue realizzazione, SEO, keyword research, e-commerce e altri intenti.<br>3. Tu intervieni solo sui casi realmente ambigui.</p></section><section class="kw8-side-card"><h3>Aggiungi dati</h3><p>Puoi aggiornare la mappa senza interrompere il lavoro.</p><div class="kw8-tools"><button class="btn" id="generateKeywordsFromPages">Rileva dalle pagine</button><button class="btn" data-import-target="keywords">Importa</button><button class="btn" data-add="keywords">+ Keyword</button></div></section></aside></div><details class="kw8-archive"><summary>Archivio completo (${allRows.length} keyword, incluse fuori area)</summary><div class="toolbar"><input data-search-table="keywords" placeholder="Cerca keyword o URL"><span class="muted">${allRows.length} record</span></div><div class="table-wrap"><table><thead><tr>${configs.keywords.cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Area</th><th>Gruppo automatico</th><th>Azioni</th></tr></thead><tbody>${allRows.map(r=>`<tr data-table-row="keywords">${configs.keywords.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td><span class="badge ${r.geoStatus==='OUT_OF_AREA'?'danger':r.geoStatus==='TARGET'?'success':'info'}">${r.geoStatus==='OUT_OF_AREA'?'Fuori area':r.geoStatus==='TARGET'?'Target':'Generica'}</span></td><td>${r.geoStatus==='OUT_OF_AREA'?'<span class="muted">Esclusa</span>':r.keywordGroupName?`<strong>${esc(r.keywordGroupName)}</strong><div class="muted">${r.keywordGroupStatus==='AUTO_CONFIRMED'?'Automatico':r.keywordGroupStatus==='MANUAL_CONFIRMED'?'Confermato':'Suggerito'} · ${esc(r.keywordGroupConfidence||0)}%</div>`:'<span class="muted">Da assegnare</span>'}</td><td><button class="btn" data-edit="keywords" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div></details></div>`;
 }
 function extractUrlsFromText(text){
   const lines=String(text||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
