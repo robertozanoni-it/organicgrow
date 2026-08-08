@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS V6.3: flusso operativo a fasi numerate, wizard con passi progressivi e piano attività verificabile.">
+<meta name="description" content="Organic Growth OS V7: flusso operativo a fasi numerate, wizard con passi progressivi e piano attività verificabile.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
-<title>Organic Growth OS V6.3</title>
+<title>Organic Growth OS V7</title>
 <script>
 /* Tema applicato prima del primo disegno: evita il lampo di bianco
    quando l'utente ha scelto il tema scuro. */
@@ -815,6 +815,54 @@ input,select,textarea{border-radius:13px;background:var(--surface);border-color:
 @media(max-width:800px){.content{padding:18px 14px 38px}.kw-command-head{grid-template-columns:1fr}.kw-big-number{text-align:left}.kw-stats{grid-template-columns:1fr}.kw-review-row{grid-template-columns:1fr}.kw-review-row>.btn{width:100%}.friendly-strip{grid-template-columns:1fr 1fr}.dashboard-command{padding:24px}.dashboard-command:after{display:none}}
 @media(max-width:520px){.friendly-strip{grid-template-columns:1fr}.kw-actions .btn{width:100%}}
 
+
+
+/* ============================================================
+   V7 — SIMPLE FIRST / 4 STEP PRODUCT EXPERIENCE
+   ============================================================ */
+:root{
+  --v7-purple:#6d5dfc;--v7-blue:#3b82f6;--v7-green:#22a06b;--v7-yellow:#f4b740;--v7-red:#e5484d;
+  --v7-bg:#f6f8fc;--v7-soft:#eef2ff;--v7-soft2:#eaf8f2;--v7-soft3:#fff7df;--v7-ink:#172033;
+}
+html[data-theme="light"] body{background:linear-gradient(180deg,#f8faff 0,#f4f7fb 42%,#f8fafc 100%)}
+html[data-theme="light"] .sidebar{background:rgba(255,255,255,.94)}
+.app{grid-template-columns:248px minmax(0,1fr)}
+.sidebar{padding:18px 14px;border-right:1px solid color-mix(in srgb,var(--border) 75%,transparent)}
+.brand{border-bottom:0;padding:6px 8px 16px}.brand-mark{border-radius:14px;background:linear-gradient(135deg,var(--v7-purple),var(--v7-blue));box-shadow:0 8px 22px rgba(109,93,252,.24)}
+.brand h1{font-size:18px!important}.brand p{font-size:13px!important}
+.project-switcher{background:var(--surface-alt);padding:8px;border-radius:14px;margin:4px 4px 18px}
+.project-switcher select{border:0;background:transparent;font-size:14px!important;min-height:40px}
+#nav{display:grid;gap:5px}
+#nav .nav-btn{display:flex!important;grid-template-columns:none!important;gap:10px!important;padding:12px 12px!important;border:0!important;border-radius:13px!important;font-size:14.5px!important;color:var(--muted);margin:0!important}
+#nav .nav-btn .nav-num{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--surface-alt);font-size:12px!important;text-align:center!important;flex:none}
+#nav .nav-btn.active{background:color-mix(in srgb,var(--v7-purple) 10%,var(--surface));color:var(--text);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--v7-purple) 18%,transparent)}
+#nav .nav-btn.active .nav-num{background:var(--v7-purple);color:#fff}
+#nav .nav-phase-system{margin-top:12px!important;border-top:1px solid var(--border)!important;padding-top:10px!important}
+#nav .nav-phase-system>summary{border-radius:12px!important;padding:10px 12px!important;color:var(--muted)!important}
+.topbar{min-height:68px;padding:10px 24px;border-bottom:1px solid color-mix(in srgb,var(--border) 70%,transparent);background:color-mix(in srgb,var(--surface) 90%,transparent)}
+.content{max-width:1240px;padding:30px 32px 52px}
+
+.v7-shell{max-width:1120px;margin:auto}.v7-hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.5fr);gap:28px;align-items:end;margin:8px 0 26px}
+.v7-hero h1{font-size:clamp(34px,5vw,58px)!important;line-height:1.02;letter-spacing:-.045em;margin:0 0 14px;max-width:780px}
+.v7-hero p{font-size:18px!important;line-height:1.6;color:var(--muted);max-width:720px;margin:0}
+.v7-hero-side{display:flex;justify-content:flex-end}.v7-progress-ring{width:124px;height:124px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--v7-purple) calc(var(--p)*1%),var(--surface-alt) 0);position:relative}
+.v7-progress-ring:after{content:"";position:absolute;inset:11px;border-radius:50%;background:var(--surface)}.v7-progress-ring div{position:relative;z-index:1;text-align:center}.v7-progress-ring strong{display:block;font-size:28px}.v7-progress-ring span{font-size:12px;color:var(--muted)}
+.v7-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:22px}.v7-step{border:1px solid var(--border);background:var(--surface);border-radius:16px;padding:14px 14px 13px;min-height:102px}.v7-step-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.v7-step-num{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;background:var(--surface-alt);font-weight:900;font-size:13px}.v7-step.done .v7-step-num{background:var(--v7-green);color:#fff}.v7-step.active{border-color:color-mix(in srgb,var(--v7-purple) 45%,var(--border));background:color-mix(in srgb,var(--v7-purple) 5%,var(--surface))}.v7-step.active .v7-step-num{background:var(--v7-purple);color:#fff}.v7-step strong{display:block;font-size:15px;margin-top:10px}.v7-step p{font-size:12.5px!important;line-height:1.4;color:var(--muted);margin:4px 0 0}
+.v7-command{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:center;border:0;border-radius:24px;padding:28px 30px;background:linear-gradient(135deg,color-mix(in srgb,var(--v7-purple) 12%,var(--surface)),color-mix(in srgb,var(--v7-blue) 8%,var(--surface)));box-shadow:0 18px 50px rgba(28,38,66,.08);margin-bottom:20px}.v7-command-label{font-size:13px;font-weight:850;color:var(--v7-purple);margin-bottom:6px}.v7-command h2{font-size:30px!important;letter-spacing:-.025em;margin:0 0 8px}.v7-command p{font-size:16px!important;color:var(--muted);margin:0;max-width:720px}.v7-command .btn.primary{min-width:190px;background:linear-gradient(135deg,var(--v7-purple),var(--v7-blue));border:0;box-shadow:0 10px 24px rgba(109,93,252,.22)}
+.v7-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px}.v7-summary-item{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px}.v7-summary-item span{display:block;color:var(--muted);font-size:12.5px}.v7-summary-item strong{display:block;font-size:24px;margin-top:3px}.v7-summary-item.ok{background:color-mix(in srgb,var(--v7-green) 6%,var(--surface))}.v7-summary-item.warn{background:color-mix(in srgb,var(--v7-yellow) 8%,var(--surface))}
+.v7-panel{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:22px;margin-top:14px}.v7-panel h3{font-size:20px!important;margin:0 0 8px}.v7-panel>p{margin:0;color:var(--muted)}
+.v7-list{display:grid;gap:8px;margin-top:16px}.v7-list-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border-radius:14px;background:var(--surface-alt)}.v7-list-icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--surface);font-weight:900}.v7-list-row.done .v7-list-icon{background:color-mix(in srgb,var(--v7-green) 14%,var(--surface));color:var(--v7-green)}.v7-list-row strong{display:block;font-size:14px}.v7-list-row small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}.v7-list-row .btn{min-height:38px!important;padding:8px 11px!important;font-size:13px!important}
+.v7-page-head{max-width:760px;margin:2px 0 22px}.v7-page-head .back{display:inline-flex;margin-bottom:12px;color:var(--muted);font-weight:750;font-size:13px}.v7-page-head h1{font-size:clamp(32px,4vw,48px)!important;letter-spacing:-.04em;line-height:1.06;margin:0 0 10px}.v7-page-head p{font-size:17px!important;color:var(--muted);margin:0;line-height:1.55}
+.v7-action-card{border:1px solid var(--border);background:var(--surface);border-radius:22px;padding:24px}.v7-action-card h2{font-size:25px!important;margin:0 0 8px}.v7-action-card p{color:var(--muted);margin:0 0 18px}.v7-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.v7-mini{border-radius:15px;padding:15px;background:var(--surface-alt)}.v7-mini strong{display:block;margin-bottom:4px}.v7-mini span{color:var(--muted);font-size:13.5px}.v7-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+
+/* Data-heavy screens: less chrome, clearer hierarchy */
+.page-intro h3{font-size:28px!important}.page-intro p{font-size:16px!important}.card,.task-box,.link-panel,.auto-resolve,.safe-fix-panel{border-radius:18px!important;box-shadow:none!important}.table-wrap{border-radius:16px}.toolbar{padding:4px 0}.toolbar input{background:var(--surface);border-radius:12px}.drawer{background:var(--bg);padding:20px 22px}.drawer-head{background:var(--bg)}.drawer .field{border-radius:14px;background:var(--surface)}
+.kw-command{border-radius:20px!important;box-shadow:none!important;background:linear-gradient(135deg,color-mix(in srgb,var(--v7-purple) 10%,var(--surface)),color-mix(in srgb,var(--v7-blue) 6%,var(--surface)))!important}
+.task-plan-card{border-radius:17px!important}.task-plan-card.current{border:1px solid color-mix(in srgb,var(--v7-purple) 45%,var(--border))!important;background:color-mix(in srgb,var(--v7-purple) 4%,var(--surface))!important}
+
+@media(max-width:980px){.v7-hero{grid-template-columns:1fr}.v7-hero-side{justify-content:flex-start}.v7-steps,.v7-summary{grid-template-columns:1fr 1fr}.v7-command{grid-template-columns:1fr}.v7-command .btn.primary{justify-self:start}.app{grid-template-columns:220px minmax(0,1fr)}}
+@media(max-width:800px){.app{display:block}.content{padding:20px 16px 40px}.v7-steps,.v7-summary,.v7-action-grid{grid-template-columns:1fr}.v7-command{padding:22px}.v7-command h2{font-size:26px!important}.v7-command .btn.primary{width:100%}.v7-list-row{grid-template-columns:34px 1fr}.v7-list-row .btn{grid-column:1/-1;width:100%}.v7-progress-ring{width:96px;height:96px}.v7-hero h1{font-size:38px!important}}
+
 </style>
 </head>
 <body>
@@ -822,7 +870,7 @@ input,select,textarea{border-radius:13px;background:var(--surface);border-color:
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V6.3</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · V7</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -6213,6 +6261,65 @@ smartWizardView=function(){
 function v6PhaseView(n,title,lead,why,result,view,label){return `<div class="v6-step-page">${v6Flow(n)}<div class="v6-step-head"><div class="v6-kicker">Fase ${n} di 6</div><h2>${esc(title)}</h2><p>${esc(lead)}</p></div><section class="v6-step-card"><div class="v6-explain"><div><strong>Perché serve</strong><span class="muted">${esc(why)}</span></div><div><strong>Risultato atteso</strong><span class="muted">${esc(result)}</span></div></div><div class="v6-actions"><button class="btn primary" data-nav="${esc(view)}">${esc(label)}</button><button class="btn" data-nav="Dashboard">Torna alla Home</button></div></section></div>`}
 const _v6BindView=bindView;
 bindView=function(){_v6BindView();document.querySelectorAll('#v6RunScan').forEach(b=>b.onclick=async()=>{await analyzeCurrentWebsite({force:true});state.ui.activeView='Guided Review';render();});};
+
+
+
+/* ============================================================
+   V7 — FOUR STEP GUIDED EXPERIENCE
+   ============================================================ */
+const V7_PHASES=[
+  {n:1,id:'start',title:'Inizia',desc:'Sito e dati essenziali'},
+  {n:2,id:'check',title:'Controlla',desc:'Analisi e problemi reali'},
+  {n:3,id:'fix',title:'Sistema',desc:'Piano e attività'},
+  {n:4,id:'verify',title:'Verifica',desc:'Risultati e report'}
+];
+function v7Snapshot(){
+  const p=currentProject(),pages=byProject(state.pages),gsc=byProject(state.gscRecords),keywords=byProject(state.keywords),tasks=byProject(state.tasks),issues=byProject(state.issues).filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase())),open=operationalPlanItems();
+  const domain=Boolean(normalizeSiteDomain(p.domain)),scan=p.websiteScan?.status==='completed',verified=tasks.filter(t=>['VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase())).length;
+  const phase=!domain||!pages.length?1:!scan?2:open.length?3:4;
+  const startDone=domain&&pages.length>0,checkDone=scan,fixDone=scan&&open.length===0,doneCount=[startDone,checkDone,fixDone,phase===4].filter(Boolean).length;
+  const progress=Math.min(100,Math.round((doneCount/4)*100));
+  return {p,pages,gsc,keywords,tasks,issues,open,domain,scan,verified,phase,progress,startDone,checkDone,fixDone};
+}
+function v7Steps(active){const s=v7Snapshot();return `<div class="v7-steps">${V7_PHASES.map(ph=>{const done=ph.n<s.phase||(ph.n===1&&s.startDone)||(ph.n===2&&s.checkDone)||(ph.n===3&&s.fixDone),isActive=(active||s.phase)===ph.n;return `<div class="v7-step ${done?'done':''} ${isActive?'active':''}"><div class="v7-step-top"><span class="v7-step-num">${done?'✓':ph.n}</span>${isActive?'<span class="badge info">Adesso</span>':''}</div><strong>${esc(ph.title)}</strong><p>${esc(ph.desc)}</p></div>`}).join('')}</div>`}
+function v7Next(){const s=v7Snapshot();
+  if(!s.domain)return {phase:1,title:'Inserisci il tuo sito',text:'Basta il dominio. Poi provo a rilevare automaticamente tutto ciò che posso.',label:'Inserisci il sito',view:'Project'};
+  if(!s.pages.length)return {phase:1,title:'Rileva le pagine',text:'Creo l’elenco delle URL usando sitemap e link interni. Non devi inserirle una per una.',label:'Rileva automaticamente',view:'Pages'};
+  if(!s.scan)return {phase:2,title:'Controlla il sito',text:'Analizzo le pagine e trasformo i dati tecnici in problemi comprensibili e verificabili.',label:'Avvia il controllo',action:'scan'};
+  if(s.open.length){const x=s.open[0];return {phase:3,title:x.title,text:x.why||'Questa è la prima attività da affrontare.',label:'Apri cosa fare',view:'Operational Plan'};}
+  return {phase:4,title:'Verifica e conserva il risultato',text:'Non risultano altre attività prioritarie. Controlla il riepilogo e salva il report.',label:'Apri verifica e report',view:'Backup'};
+}
+renderNav=function(){
+ const nav=document.getElementById('nav');if(!nav)return;nav.innerHTML='';
+ if(state.ui.experienceMode!=='guided'){
+   const flow=navFlow;flow.forEach(group=>{const d=document.createElement('details');d.className='nav-phase'+(group.n?'':' nav-phase-system');d.open=group.items.includes(state.ui.activeView)||group.n===1;const sm=document.createElement('summary');sm.innerHTML=`<span class="nav-phase-num">${group.n||'⚙'}</span><span class="nav-phase-text"><span class="nav-phase-title">${esc(group.label)}</span><span class="nav-phase-hint">${esc(group.hint||'')}</span></span>`;d.appendChild(sm);group.items.forEach((item,i)=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">${group.n?group.n+'.'+(i+1):'·'}</span><span class="nav-text">${esc(navLabel(item))}</span><span class="nav-state"></span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d)});return;
+ }
+ const main=[['Dashboard','⌂','Home'],['Project','1','Inizia'],['Guided Review','2','Controlla'],['Operational Plan','3','Sistema'],['Backup','4','Verifica']];
+ main.forEach(([view,num,label])=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===view?' active':'');b.innerHTML=`<span class="nav-num">${num}</span><span class="nav-text">${label}</span>`;b.onclick=()=>{state.ui.activeView=view;render();closeMobile()};nav.appendChild(b)});
+ const d=document.createElement('details');d.className='nav-phase nav-phase-system';const sm=document.createElement('summary');sm.innerHTML='<span class="nav-phase-num">＋</span><span class="nav-phase-text"><span class="nav-phase-title">Strumenti avanzati</span><span class="nav-phase-hint">Aprili solo quando ti servono</span></span>';d.appendChild(sm);
+ ['Pages','Keywords','Search Console','Tasks','Issues','Technical SEO','Canonical','Indexation','Internal Links','On-Page','Structured Data','Architecture','Topical Map','Content Strategy','Settings'].forEach(item=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">·</span><span class="nav-text">${esc(navLabel(item))}</span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d);
+};
+function v7StartChecklist(){const s=v7Snapshot();const k=s.keywords.length,gs=s.gsc.length;return `<div class="v7-list">
+ <div class="v7-list-row ${s.domain?'done':''}"><span class="v7-list-icon">${s.domain?'✓':'1'}</span><div><strong>Sito collegato</strong><small>${s.domain?esc(s.p.domain):'Inserisci il dominio principale'}</small></div><button class="btn" data-nav="Project">${s.domain?'Controlla':'Inserisci'}</button></div>
+ <div class="v7-list-row ${s.pages.length?'done':''}"><span class="v7-list-icon">${s.pages.length?'✓':'2'}</span><div><strong>Pagine del sito</strong><small>${s.pages.length?`${s.pages.length} pagine rilevate`:'Rileva automaticamente sitemap e URL'}</small></div><button class="btn" data-nav="Pages">${s.pages.length?'Rivedi':'Rileva'}</button></div>
+ <div class="v7-list-row ${gs?'done':''}"><span class="v7-list-icon">${gs?'✓':'3'}</span><div><strong>Search Console <span class="muted">(facoltativo)</span></strong><small>${gs?`${gs} record importati`:'Aggiunge dati reali su query, click e impression'}</small></div><button class="btn" data-nav="Search Console">${gs?'Rivedi':'Importa'}</button></div>
+ <div class="v7-list-row ${k?'done':''}"><span class="v7-list-icon">${k?'✓':'4'}</span><div><strong>Keyword <span class="muted">(gestite automaticamente)</span></strong><small>${k?`${k} keyword disponibili`:'Posso ricavarle dalle pagine o da Search Console'}</small></div><button class="btn" data-nav="Keywords">${k?'Rivedi':'Genera'}</button></div>
+ </div>`}
+guidedDashboardView=function(){const s=v7Snapshot(),next=v7Next();return `<div class="v7-shell"><section class="v7-hero"><div><h1>Un passo alla volta.<br>Il prossimo è sempre chiaro.</h1><p>Non devi conoscere tutti gli strumenti SEO. Segui quattro passaggi: inizia, controlla, sistema e verifica.</p></div><div class="v7-hero-side"><div class="v7-progress-ring" style="--p:${s.progress}"><div><strong>${s.progress}%</strong><span>percorso</span></div></div></div></section>${v7Steps()}
+ <section class="v7-command"><div><div class="v7-command-label">Cosa fare adesso · Passaggio ${next.phase} di 4</div><h2>${esc(next.title)}</h2><p>${esc(next.text)}</p></div>${next.action==='scan'?'<button class="btn primary" id="v7RunScan">Avvia controllo</button>':`<button class="btn primary" data-nav="${esc(next.view)}">${esc(next.label)}</button>`}</section>
+ <div class="v7-summary"><div class="v7-summary-item ${s.domain?'ok':'warn'}"><span>Sito</span><strong>${s.domain?'Collegato':'Da inserire'}</strong></div><div class="v7-summary-item"><span>Pagine</span><strong>${s.pages.length}</strong></div><div class="v7-summary-item ${s.issues.length?'warn':'ok'}"><span>Problemi aperti</span><strong>${s.issues.length}</strong></div><div class="v7-summary-item"><span>Attività da fare</span><strong>${s.open.length}</strong></div></div>
+ <section class="v7-panel"><h3>Cosa hai già preparato</h3><p>Questa è solo una panoramica. Apri un elemento solo se vuoi controllarlo.</p>${v7StartChecklist()}</section></div>`};
+smartWizardView=function(){const s=v7Snapshot();if(!s.domain||!s.pages.length)return `<div class="v7-shell">${v7Steps(1)}<div class="v7-page-head"><span class="back">Passaggio 1 di 4</span><h1>Prima prepariamo il sito.</h1><p>Non serve configurare tutto. Per iniziare bastano il dominio e l’elenco delle pagine.</p></div><section class="v7-action-card"><h2>Completa ciò che manca</h2><p>Quando dominio e pagine sono pronti, il controllo parte senza altri passaggi tecnici.</p>${v7StartChecklist()}</section></div>`;
+ if(!s.scan)return `<div class="v7-shell">${v7Steps(2)}<div class="v7-page-head"><span class="back">Passaggio 2 di 4</span><h1>Ora controllo il sito.</h1><p>Tu non devi interpretare canonical, H1, meta o codici HTTP: li trasformo in risultati semplici.</p></div><section class="v7-action-card"><h2>Avvia un controllo completo</h2><p>Leggo le pagine pubbliche, aggiorno i dati e preparo i problemi realmente verificabili.</p><div class="v7-action-grid"><div class="v7-mini"><strong>Controllo</strong><span>Title, H1, meta, canonical, indicizzazione, sitemap e dati strutturati.</span></div><div class="v7-mini"><strong>Non faccio</strong><span>Non modifico il sito e non pubblico nulla senza il tuo intervento.</span></div></div><div class="v7-actions"><button class="btn primary" id="v7RunScan">Avvia il controllo</button><button class="btn" data-nav="Pages">Rivedi prima le pagine</button></div></section></div>`;
+ return `<div class="v7-shell">${v7Steps(2)}<div class="v7-page-head"><span class="back">Passaggio 2 di 4 · completato</span><h1>Il controllo è pronto.</h1><p>${s.issues.length?`Ho trovato ${s.issues.length} problemi ancora aperti. Non devi analizzarli qui: li ho già trasformati in attività.`:'Non risultano problemi prioritari aperti nei dati disponibili.'}</p></div><section class="v7-action-card"><h2>${s.open.length?`Ci sono ${s.open.length} attività nel piano`:'Non ci sono attività prioritarie'}</h2><p>${s.open.length?'Passa a “Sistema”: troverai cosa fare in ordine, una voce alla volta.':'Puoi passare direttamente alla verifica finale.'}</p><div class="v7-actions"><button class="btn primary" data-nav="${s.open.length?'Operational Plan':'Backup'}">${s.open.length?'Vai a Sistema':'Vai a Verifica'}</button><button class="btn" id="v7RunScan">Ripeti controllo</button></div></section></div>`};
+const _v7OperationalPlanView=operationalPlanView;
+operationalPlanView=function(){const s=v7Snapshot();if(!s.scan)return `<div class="v7-shell">${v7Steps(3)}<div class="v7-page-head"><span class="back">Passaggio 3 di 4</span><h1>Prima serve il controllo.</h1><p>Il piano operativo viene creato dai risultati reali dell’analisi.</p></div><section class="v7-action-card"><div class="v7-actions"><button class="btn primary" data-nav="Guided Review">Vai a Controlla</button></div></section></div>`;const base=_v7OperationalPlanView();return `<div class="v7-shell">${v7Steps(3)}<div class="v7-page-head"><span class="back">Passaggio 3 di 4</span><h1>Sistema una cosa alla volta.</h1><p>Parti dalla prima attività. Quando è fatta, verificala: solo dopo comparirà come completata.</p></div>${base}</div>`};
+const _v7BackupView=backupView;
+backupView=function(){const s=v7Snapshot();return `<div class="v7-shell">${v7Steps(4)}<div class="v7-page-head"><span class="back">Passaggio 4 di 4</span><h1>Verifica prima di chiudere.</h1><p>${s.open.length?`Restano ${s.open.length} attività aperte. Puoi comunque esportare un report intermedio.`:'Il piano non contiene attività prioritarie aperte. Puoi conservare il risultato.'}</p></div><div class="v7-summary"><div class="v7-summary-item"><span>Pagine controllate</span><strong>${s.pages.length}</strong></div><div class="v7-summary-item ${s.open.length?'warn':'ok'}"><span>Da fare</span><strong>${s.open.length}</strong></div><div class="v7-summary-item ok"><span>Verificate</span><strong>${s.verified}</strong></div><div class="v7-summary-item"><span>Search Console</span><strong>${s.gsc.length}</strong></div></div>${_v7BackupView()}</div>`};
+const _v7SetupTopbar=setupTopbar;
+setupTopbar=function(){_v7SetupTopbar();const guided=state.ui.experienceMode==='guided';const search=document.getElementById('globalSearch'),report=document.getElementById('topReportBtn');if(search)search.hidden=guided;if(report)report.hidden=guided;};
+const _v7BindView=bindView;
+bindView=function(){_v7BindView();document.querySelectorAll('#v7RunScan').forEach(b=>b.onclick=async()=>{b.disabled=true;b.textContent='Controllo in corso…';await analyzeCurrentWebsite({force:true});state.ui.activeView='Guided Review';render();});};
 
 /* --- avvio --- */
 document.getElementById('scanCancelBtn').onclick=()=>{
