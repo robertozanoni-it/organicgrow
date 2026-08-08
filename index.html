@@ -1590,44 +1590,108 @@ async function runAutoResolve(options={}){
 function keywordMatchNormalize(value){
   return String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
 }
-const KEYWORD_MATCH_STOP=new Set('a ad al alla alle allo ai agli anche che chi con da dal dalla dalle dei del della delle di e ed gli il in la le lo nel nella nelle o per su tra un una uno sito siti pagina pagine web www com it'.split(/\s+/));
+/* V8.1 — matching semantico: conserva i termini che distinguono davvero
+   una landing (web, seo, agenzia, consulenza...) e raggruppa sinonimi utili. */
+const KEYWORD_MATCH_STOP=new Set('a ad al alla alle allo ai agli anche che chi con da dal dalla dalle dei del della delle di e ed gli il in la le lo nel nella nelle o per su tra un una uno www com it'.split(/\s+/));
+const KEYWORD_CONCEPTS={
+  seo:['seo','search engine optimization','posizionamento google','ottimizzazione seo','posizionamento seo'],
+  agency:['agenzia','agency','web agency','agenzie'],
+  consulting:['consulenza','consulente','consulting','specialist','specialista','esperto'],
+  website:['sito','siti','website','web design','realizzazione siti','realizzazione sito'],
+  ecommerce:['ecommerce','e commerce','woocommerce','shop online','negozio online'],
+  indexing:['indicizzazione','indicizzare','indexing','indexation','indice google'],
+  keyword:['keyword','keywords','parole chiave','analisi keyword','keyword research'],
+  audit:['audit','analisi seo','check seo','controllo seo'],
+  local:['locale','local seo','seo locale'],
+  app:['web app','applicazione web','app web']
+};
+const GEO_TERMS=['bergamo','milano','roma','guidonia','brescia','monza','torino','bologna','napoli','firenze','italia'];
 function keywordMatchTokens(value){return keywordMatchNormalize(value).split(' ').filter(word=>word.length>2&&!KEYWORD_MATCH_STOP.has(word));}
+function textConcepts(value){
+  const text=keywordMatchNormalize(value),out=[];
+  Object.entries(KEYWORD_CONCEPTS).forEach(([concept,phrases])=>{if(phrases.some(p=>text.includes(keywordMatchNormalize(p))))out.push(concept);});
+  return out;
+}
+function pageMatchCorpus(page){return keywordMatchNormalize(`${page.primaryKeyword||''} ${page.title||''} ${page.h1||''} ${page.pageName||''} ${page.displayUrl||page.normalizedUrl||page.canonicalUrl||''} ${page.cluster||''}`);}
 function keywordPageMatch(keyword,page){
   const query=keywordMatchNormalize(keyword.keyword),tokens=keywordMatchTokens(keyword.keyword);if(!query||!tokens.length)return 0;
+  const corpus=pageMatchCorpus(page),words=corpus.split(' ');
   const url=keywordMatchNormalize(page.displayUrl||page.normalizedUrl||page.canonicalUrl||'');
   const primary=keywordMatchNormalize(page.primaryKeyword||'');
   const title=keywordMatchNormalize(page.title||'');
   const h1=keywordMatchNormalize(page.h1||'');
   const name=keywordMatchNormalize(page.pageName||'');
-  const cluster=keywordMatchNormalize(page.cluster||'');
-  const strongest=`${primary} ${title} ${h1} ${name} ${url}`.trim();
-  const coverage=tokens.filter(token=>strongest.split(' ').some(word=>word===token||word.startsWith(token)||token.startsWith(word))).length/tokens.length;
-  let score=coverage*.62;
-  if(primary&&primary===query)score+=.28;
-  else if(primary&&primary.includes(query))score+=.18;
-  if(title&&title.includes(query))score+=.18;
-  if(h1&&h1.includes(query))score+=.16;
-  if(url&&url.includes(query.replace(/ /g,' ')))score+=.12;
-  const phrase=tokens.slice(0,2).join(' ');if(phrase.length>4&&(title.includes(phrase)||h1.includes(phrase)||primary.includes(phrase)||url.includes(phrase)))score+=.10;
-  const geo=tokens.filter(t=>['bergamo','milano','roma','guidonia','brescia','monza','torino','bologna','napoli','firenze'].includes(t));
-  if(geo.length){const geoText=`${strongest} ${cluster}`;score+=geo.every(g=>geoText.includes(g))?.10:-.14;}
-  if(page.indexable===false)score-=.20;
+  const queryConcepts=textConcepts(query),pageConcepts=textConcepts(corpus);
+  const matched=tokens.filter(token=>words.some(word=>word===token||word.startsWith(token)||token.startsWith(word))).length;
+  let score=(matched/tokens.length)*.44;
+  /* segnali testuali forti */
+  if(primary===query)score+=.34;
+  else if(primary&&(primary.includes(query)||query.includes(primary)))score+=.22;
+  if(title===query||h1===query||name===query)score+=.25;
+  else if(title.includes(query)||h1.includes(query)||name.includes(query))score+=.18;
+  if(url&&tokens.filter(t=>url.includes(t)).length>=Math.max(1,Math.ceil(tokens.length*.6)))score+=.14;
+  /* corrispondenza di concetto: evita che "search engine optimization" resti orfana da SEO */
+  if(queryConcepts.length){
+    const common=queryConcepts.filter(c=>pageConcepts.includes(c));
+    score+=Math.min(.30,common.length*.15);
+    const specific=queryConcepts.filter(c=>['agency','consulting','indexing','keyword','ecommerce','audit','app'].includes(c));
+    if(specific.length&&!specific.some(c=>pageConcepts.includes(c)))score-=.13;
+  }
+  /* apprendimento locale: usa mapping già confermati come evidenza, non come verità assoluta. */
+  const targetUrl=String(page.displayUrl||page.normalizedUrl||page.canonicalUrl||'');
+  const linkedPeers=byProject(state.keywords).filter(k=>k!==keyword&&String(k.targetUrl||'')===targetUrl&&String(k.keyword||'').trim());
+  if(linkedPeers.length){
+    let peerBest=0;
+    linkedPeers.slice(0,60).forEach(peer=>{
+      const peerTokens=keywordMatchTokens(peer.keyword),peerConcepts=textConcepts(peer.keyword);
+      const tokenUnion=new Set([...tokens,...peerTokens]);
+      const common=tokens.filter(t=>peerTokens.includes(t)).length;
+      const tokenSimilarity=tokenUnion.size?common/tokenUnion.size:0;
+      const conceptCommon=queryConcepts.filter(c=>peerConcepts.includes(c)).length;
+      const qGeo=tokens.filter(t=>GEO_TERMS.includes(t)),pGeo=peerTokens.filter(t=>GEO_TERMS.includes(t));
+      const geoCompatible=!qGeo.length||!pGeo.length||qGeo.some(g=>pGeo.includes(g));
+      const sim=(tokenSimilarity*.65)+(Math.min(1,conceptCommon/2)*.35);
+      if(geoCompatible)peerBest=Math.max(peerBest,sim);
+    });
+    if(peerBest>=.70)score+=.16;
+    else if(peerBest>=.48)score+=.09;
+  }
+  /* località: una query locale non deve finire su una landing di un'altra città */
+  const geo=tokens.filter(t=>GEO_TERMS.includes(t));
+  if(geo.length){
+    const pageGeo=GEO_TERMS.filter(g=>corpus.includes(g));
+    if(geo.every(g=>corpus.includes(g)))score+=.12;
+    else if(pageGeo.length)score-=.26;
+    else score-=.05;
+  }
+  /* preferisci landing specifiche a homepage/pagine generiche */
+  const path=String(page.displayUrl||page.normalizedUrl||'');
+  const type=String(page.pageType||'').toLowerCase();
+  const isGeneric=path==='/'||type==='homepage'||/^(servizi|services|homepage)$/i.test(String(page.cluster||''));
+  if(isGeneric&&queryConcepts.some(c=>['agency','consulting','indexing','keyword','ecommerce','audit','app'].includes(c)))score-=.08;
+  if(page.indexable===false)score-=.28;
   return Math.max(0,Math.min(1,score));
 }
 function keywordMatchSuggestions(keyword){
-  return byProject(state.pages).map(page=>({page,score:keywordPageMatch(keyword,page)})).filter(item=>(item.page.displayUrl||item.page.normalizedUrl)).sort((a,b)=>b.score-a.score);
+  return byProject(state.pages).map(page=>({page,score:keywordPageMatch(keyword,page)}))
+    .filter(item=>(item.page.displayUrl||item.page.normalizedUrl))
+    .sort((a,b)=>b.score-a.score||String(a.page.pageName||'').localeCompare(String(b.page.pageName||''),'it',{sensitivity:'base'}));
 }
 function keywordBestSuggestion(keyword){
   const ranked=keywordMatchSuggestions(keyword),best=ranked[0],second=ranked[1];if(!best)return null;
   const margin=best.score-(second?.score||0),confidence=Math.round(best.score*100);
-  return {page:best.page,score:best.score,confidence,margin,automatic:best.score>=.76&&margin>=.10,suggested:best.score>=.52};
+  const concepts=textConcepts(keyword.keyword),specific=concepts.some(c=>['agency','consulting','indexing','keyword','ecommerce','audit','app'].includes(c));
+  /* Soglie meno rigide quando il tema specifico coincide e il secondo risultato è nettamente peggiore. */
+  const automatic=(best.score>=.74&&margin>=.08)||(specific&&best.score>=.68&&margin>=.14);
+  const suggested=best.score>=.42&&(margin>=.035||best.score>=.62);
+  return {page:best.page,score:best.score,confidence,margin,automatic,suggested,runnerUp:second?.page||null};
 }
 function autoLinkKeywordsSilent(){
   let linked=0;
   keywordUnlinked().forEach(keyword=>{
     const match=keywordBestSuggestion(keyword);if(!match?.automatic)return;
     const url=match.page.displayUrl||match.page.normalizedUrl||'';
-    if(url){keyword.targetUrl=url;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='auto-match';keyword.linkConfidence=match.confidence;linked++;}
+    if(url){keyword.targetUrl=url;keyword.linkedAt=now();keyword.updatedAt=now();keyword.linkSource='auto-match-v81';keyword.linkConfidence=match.confidence;linked++;}
   });
   return linked;
 }
@@ -3327,11 +3391,12 @@ function keywordPageOptions(){
   return byProject(state.pages).map(page=>({
     url:page.displayUrl||page.normalizedUrl||'',
     label:page.pageName||page.title||page.displayUrl||page.normalizedUrl||''
-  })).filter(option=>option.url);
+  })).filter(option=>option.url).sort((a,b)=>String(a.label||a.url).localeCompare(String(b.label||b.url),'it',{sensitivity:'base'}));
 }
 function keywordUnlinked(){
-  return byProject(state.keywords).filter(keyword=>keyword.keyword&&!String(keyword.targetUrl||'').trim());
+  return byProject(state.keywords).filter(keyword=>keyword.keyword&&!String(keyword.targetUrl||'').trim()).sort((a,b)=>String(a.keyword).localeCompare(String(b.keyword),'it',{sensitivity:'base'}));
 }
+
 function keywordIntentPending(){
   return byProject(state.keywords).filter(keyword=>/da validare/i.test(String(keyword.intent||'')));
 }
@@ -3371,8 +3436,9 @@ function keywordSuggestionGroups(){
     if(!groups.has(url))groups.set(url,{page:match.page,items:[],confidence:0});
     const g=groups.get(url);g.items.push({keyword,match});g.confidence+=match.confidence||0;
   });
-  const list=[...groups.values()].map(g=>({...g,confidence:Math.round(g.confidence/Math.max(1,g.items.length))}))
-    .sort((a,b)=>b.items.length-a.items.length||b.confidence-a.confidence);
+  const list=[...groups.values()].map(g=>({...g,items:g.items.sort((a,b)=>String(a.keyword.keyword).localeCompare(String(b.keyword.keyword),'it',{sensitivity:'base'})),confidence:Math.round(g.confidence/Math.max(1,g.items.length))}))
+    .sort((a,b)=>b.items.length-a.items.length||b.confidence-a.confidence||String(a.page.pageName||'').localeCompare(String(b.page.pageName||''),'it',{sensitivity:'base'}));
+  manual.sort((a,b)=>String(a.keyword.keyword).localeCompare(String(b.keyword.keyword),'it',{sensitivity:'base'}));
   return {groups:list,manual};
 }
 function confirmKeywordGroup(url){
@@ -3398,10 +3464,10 @@ function keywordLinkPanel(){
     return `<article class="kw8-group"><div class="kw8-group-head"><div class="kw8-page"><strong>${esc(label)}</strong><small>${esc(url)}</small></div><div class="kw8-group-count">${g.items.length} keyword</div></div><div class="kw8-chips">${g.items.slice(0,10).map(({keyword,match})=>`<span class="kw8-chip">${esc(keyword.keyword)} <small>${match.confidence}%</small></span>`).join('')}${g.items.length>10?`<span class="kw8-chip">+${g.items.length-10} altre</span>`:''}</div><div class="kw8-group-actions"><button class="btn primary" data-confirm-keyword-group="${esc(url)}">Conferma gruppo</button><span class="kw8-confidence">Corrispondenza media ${g.confidence}% · puoi sempre modificarle dopo</span></div></article>`;
   }).join('');
   const manualRows=data.manual.slice(0,6).map(({keyword})=>`<div class="kw8-manual-row"><div><strong>${esc(keyword.keyword)}</strong><small>${esc(keyword.source||'Manuale')}</small></div><div style="display:flex;gap:8px"><select data-link-select="${esc(keyword.id)}"><option value="">Scegli pagina…</option>${options.map(o=>`<option value="${esc(o.url)}">${esc(o.label)}</option>`).join('')}</select><button class="btn primary" data-link-keyword="${esc(keyword.id)}">Collega</button></div></div>`).join('');
-  return `<section class="kw8-stage"><h2>Conferma per pagina, non keyword per keyword</h2><p>Ho raggruppato le proposte che puntano alla stessa pagina. Invece di ${unlinked.length} decisioni separate, devi controllare soprattutto ${data.groups.length} gruppi e ${data.manual.length} eccezioni.</p>${groupedActions||'<div class="kw8-empty"><strong>Nessun gruppo abbastanza coerente</strong><p>Restano soltanto casi che richiedono una scelta manuale.</p></div>'}${data.groups.length>8?`<details class="kw8-archive"><summary>Mostra altri ${data.groups.length-8} gruppi suggeriti</summary><div class="muted">Compariranno automaticamente dopo che confermi i primi gruppi, così la schermata resta semplice.</div></details>`:''}${data.manual.length?`<div style="height:28px"></div><h2>Solo le eccezioni davvero dubbie</h2><p>Queste non hanno una corrispondenza abbastanza chiara. Sono le uniche che richiedono una scelta puntuale.</p><div class="kw8-manual">${manualRows}</div>${data.manual.length>6?`<div class="muted" style="margin-top:12px">Altre ${data.manual.length-6} eccezioni compariranno man mano che completi queste.</div>`:''}`:''}</section>`;
+  return `<section class="kw8-stage"><h2>Conferma per pagina, non keyword per keyword</h2><p>Ho raggruppato le proposte che puntano alla stessa pagina. Invece di ${unlinked.length} decisioni separate, devi controllare soprattutto ${data.groups.length} gruppi e ${data.manual.length} eccezioni.</p><div class="kw8-group-actions" style="margin:18px 0 22px"><button class="btn primary" id="autoLinkKeywords">Collega automaticamente le corrispondenze sicure</button><span class="kw8-confidence">Il nuovo motore usa tema, intento, località e specificità della pagina.</span></div>${groupedActions||'<div class="kw8-empty"><strong>Nessun gruppo abbastanza coerente</strong><p>Le restanti keyword non hanno ancora una pagina chiaramente dominante. Non verranno assegnate a caso.</p></div>'}${data.groups.length>8?`<details class="kw8-archive"><summary>Mostra altri ${data.groups.length-8} gruppi suggeriti</summary><div class="muted">Compariranno automaticamente dopo che confermi i primi gruppi, così la schermata resta semplice.</div></details>`:''}${data.manual.length?`<div style="height:28px"></div><h2>Solo le eccezioni davvero dubbie</h2><p>Queste non hanno una corrispondenza abbastanza chiara. Sono le uniche che richiedono una scelta puntuale.</p><div class="kw8-manual">${manualRows}</div>${data.manual.length>6?`<div class="muted" style="margin-top:12px">Altre ${data.manual.length-6} eccezioni compariranno man mano che completi queste.</div>`:''}`:''}</section>`;
 }
 function keywordIntelligenceView(){
-  const rows=byProject(state.keywords),pages=byProject(state.pages),linked=rows.filter(k=>String(k.targetUrl||'').trim()).length,unlinked=rows.length-linked,pct=rows.length?Math.round(linked/rows.length*100):0;
+  const rows=[...byProject(state.keywords)].sort((a,b)=>String(a.keyword||'').localeCompare(String(b.keyword||''),'it',{sensitivity:'base'})),pages=byProject(state.pages),linked=rows.filter(k=>String(k.targetUrl||'').trim()).length,unlinked=rows.length-linked,pct=rows.length?Math.round(linked/rows.length*100):0;
   const groups=keywordSuggestionGroups();
   return `<div class="kw8-shell"><section class="kw8-hero"><h1>Le keyword trovano la pagina giusta.</h1><p>Il sistema raggruppa le decisioni e ti mostra solo ciò che merita davvero attenzione. Niente più conferme ripetitive una per una.</p><div class="kw8-kpis"><div class="kw8-kpi"><strong>${rows.length}</strong><span>keyword totali</span></div><div class="kw8-kpi"><strong>${linked}</strong><span>già collegate</span></div><div class="kw8-kpi"><strong>${pages.length}</strong><span>pagine disponibili</span></div><div class="kw8-kpi"><strong>${pct}%</strong><span>mapping completato</span></div></div></section><div class="kw8-main"><div>${keywordLinkPanel()}</div><aside class="kw8-side"><section class="kw8-side-card"><h3>Il tuo progresso</h3><div class="kw8-big">${pct}%</div><div class="kw8-progress"><span style="width:${pct}%"></span></div><p>${linked} collegate · ${unlinked} ancora da completare.</p>${groups.groups.length?`<button class="btn primary" data-confirm-keyword-group="${esc(groups.groups[0].page.displayUrl||groups.groups[0].page.normalizedUrl||'')}">Conferma il primo gruppo</button>`:''}</section><section class="kw8-side-card"><h3>Il modo più semplice</h3><p>1. Conferma i gruppi più grandi.<br>2. Lascia per ultime le eccezioni.<br>3. Non creare nuove pagine finché una pagina esistente può rispondere bene.</p></section><section class="kw8-side-card"><h3>Aggiungi dati</h3><p>Puoi aggiornare la mappa senza interrompere il lavoro.</p><div class="kw8-tools"><button class="btn" id="generateKeywordsFromPages">Rileva dalle pagine</button><button class="btn" data-import-target="keywords">Importa</button><button class="btn" data-add="keywords">+ Keyword</button></div></section></aside></div><details class="kw8-archive"><summary>Archivio completo (${rows.length} keyword)</summary><div class="toolbar"><input data-search-table="keywords" placeholder="Cerca keyword o URL"><span class="muted">${rows.length} record</span></div><div class="table-wrap"><table><thead><tr>${configs.keywords.cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Azioni</th></tr></thead><tbody>${rows.map(r=>`<tr data-table-row="keywords">${configs.keywords.cols.map(c=>`<td>${formatCell(r[c.key],c,r)}</td>`).join('')}<td><button class="btn" data-edit="keywords" data-id="${r.id}">Apri</button></td></tr>`).join('')}</tbody></table></div></details></div>`;
 }
