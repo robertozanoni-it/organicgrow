@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS Web App V10: audit SEO centrale con connettore WordPress opzionale, sincronizzazione e correzioni verificabili.">
+<meta name="description" content="Organic Growth OS Web App V10.1: audit SEO centrale con routing automatico per WordPress, ChatGPT Sites e altri siti.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
-<title>Organic Growth OS Web App V10</title>
+<title>Organic Growth OS Web App V10.1</title>
 <script>
 /* Tema applicato prima del primo disegno: evita il lampo di bianco
    quando l'utente ha scelto il tema scuro. */
@@ -965,6 +965,9 @@ button,input,select,textarea{font-size:22px!important}
 /* V9.1 — SECOND AUDIT CYCLE + RELIABILITY HARDENING */
 .kw-candidate-note{font-size:14px!important;color:var(--muted);margin-top:5px}.kw-candidate-select{width:100%;min-width:0}.kw-auto-state{display:inline-flex;align-items:center;gap:6px;font-size:14px!important;font-weight:850;padding:6px 9px;border-radius:999px;background:var(--surface-alt)}.kw-auto-state.no-match{background:var(--joy-sun);color:var(--warning)}.kw-auto-state.out{background:var(--joy-rose);color:var(--danger)}.kw-auto-state.ok{background:var(--joy-mint);color:var(--success)}
 
+/* V10.1 — PLATFORM ROUTING */
+.platform-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}.platform-card{border:1px solid var(--border);border-radius:18px;padding:16px;background:var(--surface);text-align:left}.platform-card.active{border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--surface))}.platform-card strong{display:block;margin-bottom:4px}.platform-card span{display:block;color:var(--muted);font-size:14px}.platform-status{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.platform-note{padding:14px 16px;border-radius:16px;background:var(--surface-alt);border:1px solid var(--border)}@media(max-width:850px){.platform-grid{grid-template-columns:1fr}}
+
 /* V10 — WordPress Connector */
 .connector-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-top:18px}.connector-card{border:1px solid var(--border);border-radius:20px;background:var(--surface);padding:20px}.connector-card h3{margin:0 0 8px}.connector-status{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0}.connector-dot{width:11px;height:11px;border-radius:50%;background:var(--muted)}.connector-dot.ok{background:var(--success)}.connector-dot.warn{background:var(--warning)}.connector-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.connector-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;background:var(--surface-alt);border-radius:12px;padding:10px;overflow-wrap:anywhere}.connector-fix-row{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:start;padding:12px;border:1px solid var(--border);border-radius:13px;margin-top:9px}.connector-fix-row input{width:20px;min-height:20px}.connector-history-row{padding:10px 0;border-bottom:1px solid var(--border)}.connector-history-row:last-child{border-bottom:0}@media(max-width:900px){.connector-grid{grid-template-columns:1fr}.connector-fix-row{grid-template-columns:24px 1fr}.connector-fix-row .badge{grid-column:2}}
 </style>
@@ -974,7 +977,7 @@ button,input,select,textarea{font-size:22px!important}
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · Web App V10</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · Web App V10.1</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -1048,7 +1051,7 @@ button,input,select,textarea{font-size:22px!important}
 
 const APP_KEY='organicGrowthOS.v4';
 const STORAGE_KEY=(typeof window!=='undefined'&&window.OGOS_WP?.userId)?`${APP_KEY}.user.${window.OGOS_WP.userId}`:APP_KEY;
-const SCHEMA_VERSION=7;
+const SCHEMA_VERSION=8;
 const stages=['Research','Strategy','Architecture','Build','Validate','Index','Measure','Learn','Expand'];
 /* ============================================================
    FLUSSO OPERATIVO — la sidebar segue l'ordine reale di lavoro.
@@ -1139,7 +1142,7 @@ class StorageService{
   migrate(data){
     if(!data || typeof data!=='object'||Array.isArray(data)) throw new Error('Backup non valido');
     const sourceSchema=Number(data.schemaVersion||1)||1;
-    if(sourceSchema>SCHEMA_VERSION)throw new Error(`Backup creato con uno schema più recente (${sourceSchema}) rispetto a quello supportato (${SCHEMA_VERSION}). Aggiorna prima il plugin.`);
+    if(sourceSchema>SCHEMA_VERSION)throw new Error(`Backup creato con uno schema più recente (${sourceSchema}) rispetto a quello supportato (${SCHEMA_VERSION}). Aggiorna prima la Web App.`);
     if(!Array.isArray(data.projects)||!data.projects.length)throw new Error('Backup non valido: elenco progetti mancante o vuoto.');
     const arrayKeys=['projects','pages','keywords','entities','clusters','contents','links','redirects','migrations','issues','opportunities','observations','risks','tasks','milestones','decisions','experiments','qualityGates','gscRecords','auditFindings','seoDebt','competitors','evidence','datasets','changeEvents','snapshots','falsePositives','activity'];
     for(const k of arrayKeys){
@@ -1179,6 +1182,11 @@ class StorageService{
       });
       data.projects.forEach(project=>{delete project.keywordMappingInputSignature;});
     }
+    if(sourceSchema<8){
+      data.projects.forEach(project=>{
+        if(!project.sitePlatform)project.sitePlatform='auto';
+      });
+    }
     if(!Array.isArray(data.sourceReliability) || !data.sourceReliability.length){
       data.sourceReliability=[
         {id:uid('src'),name:'First Party',type:'FIRST PARTY',reliability:95},
@@ -1213,7 +1221,7 @@ function emptyProject(name='Nuovo progetto'){
   return {
     id:pid, projectId:pid, name, domain:'', brand:'', industry:'', country:'Italia', language:'it',
     audience:'', businessModel:'', revenueModel:'', primaryConversion:'', secondaryConversion:'',
-    competitorsText:'', positioning:'', usp:'', primarySeoGoal:'', notes:'',
+    competitorsText:'', positioning:'', usp:'', primarySeoGoal:'', notes:'', sitePlatform:'auto',
     stage:'Research', createdAt:now(), updatedAt:now(), archived:false
   };
 }
@@ -3155,10 +3163,40 @@ function fillReportPanel(){
   </div>`;
 }
 
+function detectSitePlatform(project=currentProject()){
+  const p=project||{};
+  const explicit=String(p.sitePlatform||'auto');
+  if(explicit&&explicit!=='auto')return explicit;
+  if(p.connector?.connected)return 'wordpress';
+  const domain=normalizeSiteDomain(p.domain||'');
+  try{const host=new URL(domain||'https://invalid.local').hostname.toLowerCase();if(host.endsWith('.chatgpt.site'))return 'sites';}catch(e){}
+  return 'other';
+}
+function sitePlatformLabel(value){return ({wordpress:'WordPress',sites:'ChatGPT Sites',other:'Altro sito',auto:'Rilevamento automatico'})[value]||'Altro sito';}
+function sitePlatformHelp(value){
+  if(value==='wordpress')return 'Usa il Connector WordPress per leggere dati interni e applicare fix reversibili con verifica e rollback.';
+  if(value==='sites')return 'Nessun plugin: la Web App usa sito pubblico, sitemap e Search Console. Le modifiche vengono preparate come piano operativo da applicare nel progetto Sites.';
+  if(value==='other')return 'La Web App usa crawl pubblico, sitemap, import e Search Console. Nessuna scrittura diretta sul CMS viene eseguita.';
+  return 'La Web App sceglie automaticamente quando possibile. Per domini personalizzati di ChatGPT Sites imposta manualmente “ChatGPT Sites”.';
+}
+function platformStatusBox(){
+  const p=currentProject(),platform=detectSitePlatform(p);
+  const canWrite=platform==='wordpress'&&Boolean(p.connector?.connected);
+  return `<div class="platform-note"><div class="platform-status"><span class="badge info">${esc(sitePlatformLabel(platform))}</span><span class="badge ${canWrite?'success':'warning'}">${canWrite?'Scrittura verificata disponibile':'Analisi / piano operativo'}</span></div><strong>${esc(sitePlatformHelp(platform))}</strong></div>`;
+}
+function platformSettingsHtml(){
+  const p=currentProject(),platform=detectSitePlatform(p);
+  if(platform==='wordpress')return connectorSettingsHtml();
+  if(platform==='sites')return `<div class="connector-grid"><section class="connector-card"><h3>ChatGPT Sites</h3><p class="muted">Questo progetto non usa WordPress e non richiede plugin. Organic Growth OS analizza dominio pubblico, sitemap, pagine e Search Console.</p><div class="connector-status"><span class="connector-dot ok"></span><strong>Modalità Sites attiva</strong></div><div class="connector-actions"><button class="btn primary" type="button" id="platformAnalyzeNow">Aggiorna analisi del sito</button><button class="btn" type="button" data-nav="Operational Plan">Apri piano operativo</button></div></section><section class="connector-card"><h3>Applicazione delle modifiche</h3><p class="muted">La Web App non dispone di un'API pubblica per modificare direttamente un progetto ChatGPT Sites. Genera quindi le modifiche e le verifiche da applicare nel workflow Sites, senza fingere una scrittura automatica.</p><div class="stat-row"><span>Lettura pubblica</span><strong>Disponibile</strong></div><div class="stat-row"><span>Search Console</span><strong>Importabile</strong></div><div class="stat-row"><span>Scrittura diretta</span><strong>Non disponibile</strong></div></section></div>`;
+  return `<div class="connector-grid"><section class="connector-card"><h3>Sito esterno</h3><p class="muted">Il sito viene analizzato tramite URL pubbliche, sitemap e dati importati. Nessun plugin è necessario.</p><div class="connector-actions"><button class="btn primary" type="button" id="platformAnalyzeNow">Aggiorna analisi del sito</button></div></section><section class="connector-card"><h3>Correzioni</h3><p class="muted">Organic Growth OS prepara il piano e verifica ciò che può leggere pubblicamente. La scrittura automatica richiede un connettore specifico del CMS.</p></section></div>`;
+}
+
 function projectViewV2(){
   const p=currentProject();
   const scan=p.websiteScan||{};
-  return `${pageIntro('Configurazione progetto','Definisci il contesto del sito una sola volta. I dati alimentano strategia e priorità.',[p.stage||'Research',p.domain||'Dominio non impostato'])}
+  return `${pageIntro('Configurazione progetto','Definisci il contesto del sito una sola volta. I dati alimentano strategia e priorità.',[p.stage||'Research',p.domain||'Dominio non impostato',sitePlatformLabel(detectSitePlatform(p))])}
+  ${platformStatusBox()}
+  <div style="height:16px"></div>
   <div class="hero-action">
     <h3>Compilazione automatica dal sito</h3>
     <p>Scrivi il dominio nel campo qui sotto e premi il pulsante. Leggo homepage, sitemap, pagine, title, meta description, H1, canonical, lingua e dati strutturati, poi compilo i campi vuoti.</p>
@@ -3185,6 +3223,7 @@ function projectViewV2(){
   <div class="card"><form id="projectForm" class="form-grid">
    <div class="field"><label for="name">Nome progetto</label><input id="name" name="name" value="${esc(p.name)}" required aria-describedby="nameHelp"><div class="form-help" id="nameHelp">Un nome riconoscibile per identificare il progetto.</div></div>
    <div class="field"><label for="domain">Dominio del sito</label><input id="domain" name="domain" type="url" inputmode="url" value="${esc(p.domain)}" placeholder="https://esempio.it" required aria-describedby="domainHelp domainError"><div class="form-help" id="domainHelp">Inserisci l’indirizzo completo, ad esempio https://esempio.it.</div><div class="field-error" id="domainError" hidden></div></div>
+   <div class="field"><label for="sitePlatform">Tipo di sito</label><select id="sitePlatform" name="sitePlatform"><option value="auto" ${String(p.sitePlatform||'auto')==='auto'?'selected':''}>Rileva automaticamente</option><option value="sites" ${p.sitePlatform==='sites'?'selected':''}>ChatGPT Sites</option><option value="wordpress" ${p.sitePlatform==='wordpress'?'selected':''}>WordPress</option><option value="other" ${p.sitePlatform==='other'?'selected':''}>Altro sito / CMS</option></select><div class="form-help">Per un dominio personalizzato gestito con ChatGPT Sites seleziona manualmente “ChatGPT Sites”.</div></div>
    ${field('brand','Marchio',p.brand)}
    ${field('industry','Settore',p.industry)}
    ${field('country','Paese',p.country)}
@@ -5849,6 +5888,7 @@ async function connectorRequest(path,options={}){
   finally{clearTimeout(timer);if(external)external.removeEventListener('abort',abort);}
 }
 async function connectWordPressConnector(){
+  if(detectSitePlatform(currentProject())!=='wordpress'){toast('Il Connector WordPress è disponibile solo per progetti WordPress.');return;}
   const urlInput=document.getElementById('connectorBaseUrl'),tokenInput=document.getElementById('connectorToken');
   const base=normalizeConnectorBase(urlInput?.value||connectorConfig().baseUrl||currentProject()?.domain),token=String(tokenInput?.value||connectorToken()).trim();
   if(!base||!token){toast('Inserisci endpoint WordPress e token del connettore.');return;}
@@ -5862,6 +5902,7 @@ async function connectWordPressConnector(){
 }
 function connectorPageType(item){if(item.postType==='post')return 'Article';if(item.postType==='page')return item.url===item.siteUrl?'Homepage':'Landing';return 'Other';}
 async function syncWordPressConnector(options={}){
+  if(detectSitePlatform(currentProject())!=='wordpress'){toast('Questo progetto non usa il Connector WordPress.');return;}
   if(!connectorConfig().connected){await connectWordPressConnector();if(!connectorConfig().connected)return;}
   const btn=document.getElementById('connectorSync');if(btn){btn.disabled=true;btn.textContent='Sincronizzazione…';}
   let page=1,totalPages=1,read=0,updated=0,added=0;
@@ -5930,7 +5971,7 @@ function settingsView(){
  <div class="field"><label for="settingsMode">Livello di dettaglio</label><select id="settingsMode"><option value="Executive" ${state.ui.mode==='Executive'?'selected':''}>Sintetica</option><option value="Consultant" ${state.ui.mode==='Consultant'?'selected':''}>Tecnica</option></select></div>
  <div class="field"><label for="settingsWorkflow">Workflow</label><select id="settingsWorkflow"><option value="assisted" ${currentProject().workflowMode!=='automatic'?'selected':''}>Assistito (consigliato)</option><option value="automatic" ${currentProject().workflowMode==='automatic'?'selected':''}>Automatico</option></select></div>
  <div class="field"><label for="settingsTheme">Tema</label><select id="settingsTheme"><option ${state.ui.theme==='system'?'selected':''} value="system">Sistema</option><option ${state.ui.theme==='light'?'selected':''} value="light">Chiaro</option><option ${state.ui.theme==='dark'?'selected':''} value="dark">Scuro</option></select></div>
- </div></div>${connectorSettingsHtml()}`;
+ </div></div>${platformSettingsHtml()}`;
 }
 
 /** Salva quanto scritto nel form senza perdere nulla, poi avvia l'analisi. */
@@ -6074,6 +6115,7 @@ function bindView(){
 
  const st=document.getElementById('settingsTheme'); if(st) st.onchange=()=>{state.ui.theme=st.value;commit('Tema aggiornato');applyTheme();};
  const sw=document.getElementById('settingsWorkflow'); if(sw) sw.onchange=()=>{currentProject().workflowMode=sw.value;syncWorkflowFromGates(true);commit('Workflow aggiornato');render();};
+ const pan=document.getElementById('platformAnalyzeNow');if(pan)pan.onclick=detectFromSiteFlow;
  const cc=document.getElementById('connectorConnect');if(cc)cc.onclick=connectWordPressConnector;
  const csy=document.getElementById('connectorSync');if(csy)csy.onclick=syncWordPressConnector;
  const caf=document.getElementById('connectorAutoFix');if(caf)caf.onclick=openConnectorFixPreview;
@@ -6528,12 +6570,12 @@ function closeMobile(){
  if(!document.getElementById('drawer').classList.contains('open')){backdrop.classList.remove('show');backdrop.setAttribute('aria-hidden','true');document.body.classList.remove('overlay-open');}
 }
 function newProject(){
- openDrawer('Nuovo progetto',`<form id="newProjectForm"><div class="field"><label for="newProjectName">Nome progetto <span class="muted">(facoltativo)</span></label><input id="newProjectName" name="name" placeholder="Lo rileverò dal sito" autocomplete="off"></div><div class="field" style="margin-top:12px"><label for="newProjectDomain">Dominio del sito</label><input id="newProjectDomain" name="domain" type="url" required placeholder="https://esempio.it" aria-describedby="newProjectHelp"><div class="form-help" id="newProjectHelp">Il dominio verrà collegato solo al nuovo progetto.</div></div><div style="display:flex;gap:10px;align-items:flex-start;margin-top:16px"><input id="newProjectAutoStart" type="checkbox" name="autoStart" value="yes" checked style="width:22px;min-height:22px"><label for="newProjectAutoStart"><strong>Avvia subito il controllo guidato</strong><span class="muted" style="display:block">Rileva pagine, keyword e informazioni principali, compila i campi e aggiorna le attività.</span></label></div><div style="margin-top:18px"><button class="btn primary" type="submit">Crea, collega e analizza</button></div></form>`);
+ openDrawer('Nuovo progetto',`<form id="newProjectForm"><div class="field"><label for="newProjectName">Nome progetto <span class="muted">(facoltativo)</span></label><input id="newProjectName" name="name" placeholder="Lo rileverò dal sito" autocomplete="off"></div><div class="field" style="margin-top:12px"><label for="newProjectDomain">Dominio del sito</label><input id="newProjectDomain" name="domain" type="url" required placeholder="https://esempio.it" aria-describedby="newProjectHelp"><div class="form-help" id="newProjectHelp">Il dominio verrà collegato solo al nuovo progetto.</div></div><div class="field" style="margin-top:12px"><label for="newProjectPlatform">Tipo di sito</label><select id="newProjectPlatform" name="sitePlatform"><option value="auto">Rileva automaticamente</option><option value="sites">ChatGPT Sites</option><option value="wordpress">WordPress</option><option value="other">Altro sito / CMS</option></select><div class="form-help">Determina come Organic Growth OS raccoglie dati e se mostra il Connector WordPress.</div></div><div style="display:flex;gap:10px;align-items:flex-start;margin-top:16px"><input id="newProjectAutoStart" type="checkbox" name="autoStart" value="yes" checked style="width:22px;min-height:22px"><label for="newProjectAutoStart"><strong>Avvia subito il controllo guidato</strong><span class="muted" style="display:block">Rileva pagine, keyword e informazioni principali, compila i campi e aggiorna le attività.</span></label></div><div style="margin-top:18px"><button class="btn primary" type="submit">Crea, collega e analizza</button></div></form>`);
  document.getElementById('newProjectForm').onsubmit=async e=>{
    e.preventDefault();const data=Object.fromEntries(new FormData(e.target).entries());
    const domain=normalizeSiteDomain(data.domain);
    if(!domain){toast('Inserisci un dominio valido.');return;}
-   const p=emptyProject(String(data.name||'').trim()||'Nuovo progetto');p.domain=domain;
+   const p=emptyProject(String(data.name||'').trim()||'Nuovo progetto');p.domain=domain;p.sitePlatform=String(data.sitePlatform||'auto');
    state.projects.push(p);state.currentProjectId=p.id;state.ui.activeView=data.autoStart==='yes'?'Guided Review':'Project';commit('Nuovo progetto creato e dominio collegato');closeDrawer();render();toast('Progetto creato e dominio collegato');
    if(data.autoStart==='yes')await runWizardAnalysis();
  };
