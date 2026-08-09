@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Organic Growth OS Web App V10.2.2: audit SEO centrale con routing automatico per WordPress, ChatGPT Sites e altri siti.">
+<meta name="description" content="Organic Growth OS Web App V10.2.3: audit SEO centrale con routing automatico per WordPress, ChatGPT Sites e altri siti.">
 <meta name="application-name" content="Organic Growth OS">
 <meta name="theme-color" content="#f7f8fb">
-<title>Organic Growth OS Web App V10.2.2</title>
+<title>Organic Growth OS Web App V10.2.3</title>
 <script>
 /* Tema applicato prima del primo disegno: evita il lampo di bianco
    quando l'utente ha scelto il tema scuro. */
@@ -2079,8 +2079,15 @@ function findPageByAnyUrl(url){
 function keywordObservedPageEvidence(keyword){
   const page=findPageByAnyUrl(keyword?.observedPage||'');if(!page||!validProjectPage(page)||page.indexable===false)return null;
   const compat=semanticIntentCompatibility(keyword,page),typeFit=pageTypeIntentFit(page,compat.qIntent),score=keywordPageMatch(keyword,page);
-  if(compat.hardConflict||compat.intent<.80||typeFit<.68||score<.34)return null;
-  return {page,score,compat,typeFit};
+  /* V10.2.3 - La pagina osservata e' quella che Google gia' mostra per quella
+     query: e' una misurazione, non una stima. Prima veniva scartata se le
+     nostre euristiche di intento non erano d'accordo (intent>=.80,
+     typeFit>=.68), cioe' l'ipotesi batteva il dato. Restano solo i due
+     controlli che indicano un errore vero: conflitto tematico netto e
+     localita' fuori area. */
+  if(compat.hardConflict)return null;
+  if(classifyKeywordGeo(keyword).status==='OUT_OF_AREA')return null;
+  return {page,score,compat,typeFit,observed:true};
 }
 function trustedIntentConsensus(keyword){
   const qIntent=keywordResolvedIntent(keyword),qFamilies=semanticFamilies(keyword.keyword),qConcepts=textConcepts(keyword.keyword),qTokens=keywordCoreTokens(keyword.keyword);
@@ -2129,8 +2136,13 @@ function intentFallbackDecision(keyword,best,second,compat,typeFit,lexicalRatio,
     if(same||keywordPageMatch(keyword,brandPage)>=.28)return {decision:'AUTO_INTENT',page:brandPage,reason:'Query navigazionale di brand: homepage assegnata automaticamente'};
   }
   const observed=keywordObservedPageEvidence(keyword);
-  if(observed&&observed.page===best.page&&best.score>=.40&&margin>=.018){
-    return {decision:'AUTO_INTENT',page:best.page,reason:'Intento coerente e pagina gia osservata da Search Console: target confermato automaticamente'};
+  if(observed){
+    /* Prima serviva observed.page===best.page: il dato reale contava solo
+       quando confermava gia' la nostra ipotesi, quindi non aggiungeva nulla.
+       Ora la pagina osservata vince sull'ipotesi. */
+    return observed.page===best.page
+      ? {decision:'AUTO_INTENT',page:best.page,reason:'Pagina gia posizionata in Search Console per questa query: target confermato'}
+      : {decision:'AUTO_INTENT',page:observed.page,reason:'Search Console mostra questa query su un\'altra pagina del sito: assegnata quella osservata'};
   }
   const consensus=trustedIntentConsensus(keyword);
   if(consensus&&consensus.page===best.page&&best.score>=.34){
@@ -2155,6 +2167,58 @@ function intentFallbackDecision(keyword,best,second,compat,typeFit,lexicalRatio,
   }
   if(pageProfile.contentRich&&compat.intent>=.88&&typeFit>=.86&&lexicalRatio>=.38&&margin>=.075&&best.score>=.43){
     return {decision:'AUTO_INTENT',page:best.page,reason:'Contenuto reale + intento forte rendono la pagina nettamente dominante'};
+  }
+
+  /* ============================================================
+     V10.2.3 - ABBINAMENTO PER COPERTURA DEI TERMINI PORTANTI
+     Tre casi che restavano manuali pur essendo decidibili.
+     ============================================================ */
+
+  /* 1) Riequilibrio per tipo di pagina.
+     "costo impianto dentale" finiva sul blog /impianto-dentale-dolore perche'
+     il titolo dell'articolo contiene le stesse parole della pagina di servizio.
+     A parita' di copertura tematica, l'intento decide il FORMATO del contenuto:
+     una query commerciale appartiene alla pagina di servizio, non alla guida. */
+  let candidate=best,candidateCompat=compat,candidateTypeFit=typeFit,swappedByType=false;
+  const pool=keywordTopCandidates(keyword,3).filter(entry=>entry.score>=best.score-.15);
+  if(pool.length>1){
+    const ranked=pool.map(entry=>{
+      const entryCompat=semanticIntentCompatibility(keyword,entry.page);
+      const entryTypeFit=pageTypeIntentFit(entry.page,entryCompat.qIntent);
+      return {entry,entryCompat,entryTypeFit,fit:entryCompat.intent*entryTypeFit};
+    }).sort((a,b)=>b.fit-a.fit);
+    const winner=ranked[0],currentFit=ranked.find(item=>item.entry.page===best.page)?.fit||0;
+    if(winner.entry.page!==best.page&&!winner.entryCompat.hardConflict&&winner.fit>=currentFit+.25){
+      candidate=winner.entry;candidateCompat=winner.entryCompat;candidateTypeFit=winner.entryTypeFit;swappedByType=true;
+    }
+  }
+  const candidateCore=keywordCoreTokens(keyword.keyword);
+  const candidateProfile=candidate===best?pageProfile:pageSemanticProfile(candidate.page);
+  const candidateCoreRatio=candidateCore.length
+    ?candidateCore.filter(token=>candidateProfile.words.some(word=>tokenCompatible(word,token))).length/candidateCore.length
+    :0;
+  /* Quando lo scambio avviene per coerenza di tipo, la dominanza e' gia'
+     dimostrata dal divario di coerenza (>=.25): il margine di score misurato
+     sulla pagina scartata sarebbe negativo e non direbbe nulla di utile. */
+  const candidateMargin=candidate===best?margin:0;
+
+  /* 2) Dominanza lessicale schiacciante.
+     "contattaci" sulla pagina /contatti aveva score .882 e distacco .591, ma
+     veniva bloccata perche' la regex di intento riconosce "contatti" e non
+     "contattaci": l'euristica sbagliava e metteva il veto su un abbinamento
+     ovvio. Con una corrispondenza cosi' netta il dato batte l'euristica. */
+  if(candidateCoreRatio>=.99&&candidate.score>=.72&&candidateMargin>=.28&&!candidateCompat.hardConflict){
+    return {decision:'AUTO_INTENT',page:candidate.page,reason:'Una sola pagina copre integralmente la query, con distacco netto sulle altre'};
+  }
+
+  /* 3) Prova combinata al posto della soglia secca sullo score.
+     "igiene orale professionale prezzo" -> /igiene-orale aveva copertura
+     completa dei termini portanti, intento .84, tipo pagina .92 e distacco .195,
+     ma si fermava a score .459 contro un minimo fisso di .50. Lo score assoluto
+     e' diluito da segnali non pertinenti (URL, peer, geo): quando le prove
+     specifiche concordano tutte, il minimo assoluto non aggiunge sicurezza. */
+  if(candidateCore.length&&candidateCoreRatio>=.99&&candidateCompat.intent>=.84&&candidateTypeFit>=.78&&(candidateMargin>=.09||swappedByType)&&candidate.score>=.40){
+    return {decision:'AUTO_INTENT',page:candidate.page,reason:'Tutti i termini portanti trovati sulla pagina, intento e tipo di contenuto coerenti, distacco netto'};
   }
   return null;
 }
@@ -7069,8 +7133,12 @@ renderNav=function(){
  }
  const main=[['Dashboard','⌂','Home'],['Project','1','Inizia'],['Guided Review','2','Controlla'],['Operational Plan','3','Sistema'],['Backup','4','Verifica']];
  main.forEach(([view,num,label])=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===view?' active':'');b.innerHTML=`<span class="nav-num">${num}</span><span class="nav-text">${label}</span>`;b.onclick=()=>{state.ui.activeView=view;render();closeMobile()};nav.appendChild(b)});
- const d=document.createElement('details');d.className='nav-phase nav-phase-system';const sm=document.createElement('summary');sm.innerHTML='<span class="nav-phase-num">＋</span><span class="nav-phase-text"><span class="nav-phase-title">Strumenti avanzati</span><span class="nav-phase-hint">Aprili solo quando ti servono</span></span>';d.appendChild(sm);
- ['Pages','Keywords','Search Console','Tasks','Issues','Technical SEO','Canonical','Indexation','Internal Links','On-Page','Structured Data','Architecture','Topical Map','Content Strategy','Settings'].forEach(item=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">·</span><span class="nav-text">${esc(navLabel(item))}</span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d);
+ const d=document.createElement('details');d.className='nav-phase nav-phase-system';const sm=document.createElement('summary');sm.innerHTML='<span class="nav-phase-num">＋</span><span class="nav-phase-text"><span class="nav-phase-title">Strumenti avanzati</span><span class="nav-phase-hint">Pagine, keyword, Search Console e altro</span></span>';d.appendChild(sm);
+ const advanced=['Pages','Keywords','Search Console','Tasks','Issues','Technical SEO','Canonical','Indexation','Internal Links','On-Page','Structured Data','Architecture','Topical Map','Content Strategy','Settings'];
+ /* V10.2.3 - Mancava d.open: l'accordion restava chiuso anche quando conteneva
+    la vista attiva, quindi Search Console e Keyword risultavano introvabili. */
+ d.open=advanced.includes(state.ui.activeView);
+ advanced.forEach(item=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">·</span><span class="nav-text">${esc(navLabel(item))}</span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d);
 };
 function v7StartChecklist(){const s=v7Snapshot();const k=s.keywords.length,gs=s.gsc.length;return `<div class="v7-list">
  <div class="v7-list-row ${s.domain?'done':''}"><span class="v7-list-icon">${s.domain?'✓':'1'}</span><div><strong>Sito collegato</strong><small>${s.domain?esc(s.p.domain):'Inserisci il dominio principale'}</small></div><button class="btn" data-nav="Project">${s.domain?'Controlla':'Inserisci'}</button></div>
@@ -7086,7 +7154,12 @@ smartWizardView=function(){const s=v7Snapshot();if(!s.domain||!s.pages.length)re
  if(!s.scan)return `<div class="v7-shell">${v7Steps(2)}<div class="v7-page-head"><span class="back">Passaggio 2 di 4</span><h1>Ora controllo il sito.</h1><p>Tu non devi interpretare canonical, H1, meta o codici HTTP: li trasformo in risultati semplici.</p></div><section class="v7-action-card"><h2>Avvia un controllo completo</h2><p>Leggo le pagine pubbliche, aggiorno i dati e preparo i problemi realmente verificabili.</p><div class="v7-action-grid"><div class="v7-mini"><strong>Controllo</strong><span>Title, H1, meta, canonical, indicizzazione, sitemap e dati strutturati.</span></div><div class="v7-mini"><strong>Non faccio</strong><span>Non modifico il sito e non pubblico nulla senza il tuo intervento.</span></div></div><div class="v7-actions"><button class="btn primary" id="v7RunScan">Avvia il controllo</button><button class="btn" data-nav="Pages">Rivedi prima le pagine</button></div></section></div>`;
  return `<div class="v7-shell">${v7Steps(2)}<div class="v7-page-head"><span class="back">Passaggio 2 di 4 · completato</span><h1>${s.scanPartial?'Il controllo è parziale.':'Il controllo è pronto.'}</h1><p>${s.scanPartial?'Alcune URL non sono state lette: il piano usa i dati disponibili e puoi ripetere la scansione per completarlo. ':''}${s.issues.length?`Ho trovato ${s.issues.length} problemi ancora aperti. Non devi analizzarli qui: li ho già trasformati in attività.`:'Non risultano problemi prioritari aperti nei dati disponibili.'}</p></div><section class="v7-action-card"><h2>${s.open.length?`Ci sono ${s.open.length} attività nel piano`:'Non ci sono attività prioritarie'}</h2><p>${s.open.length?'Passa a “Sistema”: troverai cosa fare in ordine, una voce alla volta.':'Puoi passare direttamente alla verifica finale.'}</p><div class="v7-actions"><button class="btn primary" data-nav="${s.open.length?'Operational Plan':'Backup'}">${s.open.length?'Vai a Sistema':'Vai a Verifica'}</button><button class="btn" id="v7RunScan">Ripeti controllo</button></div></section></div>`};
 const _v7OperationalPlanView=operationalPlanView;
-operationalPlanView=function(){const s=v7Snapshot();if(!s.scan)return `<div class="v7-shell">${v7Steps(3)}<div class="v7-page-head"><span class="back">Passaggio 3 di 4</span><h1>Prima serve il controllo.</h1><p>Il piano operativo viene creato dai risultati reali dell’analisi.</p></div><section class="v7-action-card"><div class="v7-actions"><button class="btn primary" data-nav="Guided Review">Vai a Controlla</button></div></section></div>`;const base=_v7OperationalPlanView();return `<div class="v7-shell">${v7Steps(3)}<div class="v7-page-head"><span class="back">Passaggio 3 di 4</span><h1>Sistema una cosa alla volta.</h1><p>Parti dalla prima attività. Quando è fatta, verificala: solo dopo comparirà come completata.</p></div>${base}</div>`};
+operationalPlanView=function(){const s=v7Snapshot();
+ /* V10.2.3 - Il passaggio "Sistema" era bloccato da scanCompletedEnough(),
+    cioe' dall'aver eseguito il crawler interno. Chi importa le pagine da CSV,
+    dal Connector o a mano non lo esegue mai: il piano restava irraggiungibile
+    anche con decine di attivita' gia' pronte. Ora conta se il piano esiste. */
+ if(!s.scan&&!s.open.length)return `<div class="v7-shell">${v7Steps(3)}<div class="v7-page-head"><span class="back">Passaggio 3 di 4</span><h1>Prima serve il controllo.</h1><p>Il piano operativo viene creato dai risultati reali dell’analisi.</p></div><section class="v7-action-card"><div class="v7-actions"><button class="btn primary" data-nav="Guided Review">Vai a Controlla</button></div></section></div>`;const base=_v7OperationalPlanView();return `<div class="v7-shell">${v7Steps(3)}<div class="v7-page-head"><span class="back">Passaggio 3 di 4</span><h1>Sistema una cosa alla volta.</h1><p>Parti dalla prima attività. Quando è fatta, verificala: solo dopo comparirà come completata.</p></div>${base}</div>`};
 const _v7BackupView=backupView;
 backupView=function(){const s=v7Snapshot();return `<div class="v7-shell">${v7Steps(4)}<div class="v7-page-head"><span class="back">Passaggio 4 di 4</span><h1>Verifica prima di chiudere.</h1><p>${s.open.length?`Restano ${s.open.length} attività aperte. Puoi comunque esportare un report intermedio.`:'Il piano non contiene attività prioritarie aperte. Puoi conservare il risultato.'}</p></div><div class="v7-summary"><div class="v7-summary-item"><span>Pagine controllate</span><strong>${s.pages.length}</strong></div><div class="v7-summary-item ${s.open.length?'warn':'ok'}"><span>Da fare</span><strong>${s.open.length}</strong></div><div class="v7-summary-item ok"><span>Verificate</span><strong>${s.verified}</strong></div><div class="v7-summary-item"><span>Search Console</span><strong>${s.gsc.length}</strong></div></div>${_v7BackupView()}</div>`};
 const _v7SetupTopbar=setupTopbar;
