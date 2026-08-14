@@ -977,7 +977,7 @@ button,input,select,textarea{font-size:22px!important}
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · Web App V10.2</p></div>
+      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · Web App V10.2.3</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -7049,62 +7049,12 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ============================================================
-   V6 — GUIDED-FIRST EXPERIENCE OVERRIDES
+   V6 — rimosso in fase di revisione (V10.2.3): definiva V6_PHASES,
+   v6State/v6Flow/v6NextAction/v6PhaseView e le prime versioni di
+   renderNav/guidedDashboardView/smartWizardView/bindView, tutte
+   sovrascritte incondizionatamente dal blocco V7 subito sotto,
+   quindi mai eseguite (~55 righe di codice morto, vedi report).
    ============================================================ */
-const V6_PHASES=[
-  {id:'site',n:1,title:'Collega il sito',desc:'Dominio e pagine da analizzare'},
-  {id:'data',n:2,title:'Prepara i dati',desc:'Pagine, Search Console e keyword'},
-  {id:'analysis',n:3,title:'Analizza',desc:'Problemi tecnici e contenuti'},
-  {id:'plan',n:4,title:'Crea il piano',desc:'Priorità e attività operative'},
-  {id:'execute',n:5,title:'Esegui',desc:'Una modifica alla volta'},
-  {id:'verify',n:6,title:'Verifica',desc:'Controlla risultati e report'}
-];
-function v6State(){
- const p=currentProject(),pages=byProject(state.pages),gsc=byProject(state.gscRecords),tasks=byProject(state.tasks),open=operationalPlanItems();
- const scan=p.websiteScan?.status==='completed';
- const completed=tasks.filter(t=>['VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase())).length;
- const current=!normalizeSiteDomain(p.domain)?1:!pages.length?1:!scan?3:open.length?4:6;
- return {p,pages,gsc,tasks,open,scan,completed,current};
-}
-function v6Flow(active){
- const st=v6State();
- return `<div class="v6-flow">${V6_PHASES.map(ph=>{const done=ph.n<st.current,act=(active||st.current)===ph.n;return `<div class="v6-flow-step ${done?'done':''} ${act?'active':''}"><div class="v6-flow-num">${done?'✓':ph.n}</div><strong>${esc(ph.title)}</strong><span>${esc(ph.desc)}</span></div>`}).join('')}</div>`;
-}
-function v6NextAction(){
- const st=v6State();
- if(!normalizeSiteDomain(st.p.domain))return {phase:1,title:'Inserisci il sito da analizzare',text:'È l’unica informazione necessaria per iniziare. Dopo il salvataggio proverò a rilevare automaticamente pagine e dati pubblici.',label:'Inserisci il sito',view:'Project'};
- if(!st.pages.length)return {phase:1,title:'Rileva le pagine del sito',text:'Creo l’elenco delle URL da controllare usando sitemap e link interni. Non devi inserirle una per una.',label:'Rileva le pagine',view:'Pages'};
- if(!st.scan)return {phase:3,title:'Avvia l’analisi completa',text:'Controllo title, H1, meta description, canonical, indicizzabilità e problemi verificabili. Il sito non viene modificato.',label:'Avvia analisi',action:'scan'};
- if(st.open.length){const x=st.open[0];return {phase:4,title:x.title,text:x.why||'Questa è la prima attività da affrontare secondo le priorità disponibili.',label:'Apri il piano',view:'Operational Plan'};}
- return {phase:6,title:'Il controllo disponibile è completato',text:'Non risultano altre attività prioritarie con i dati presenti. Puoi rivedere il report o ripetere l’analisi.',label:'Apri report e verifiche',view:'Backup'};
-}
-renderNav=function(){
- const nav=document.getElementById('nav');if(!nav)return;nav.innerHTML='';
- if(state.ui.experienceMode!=='guided'){const flow=navFlow,signals=navStepSignals();flow.forEach(group=>{const d=document.createElement('details');d.className='nav-phase'+(group.n?'':' nav-phase-system');d.open=group.items.includes(state.ui.activeView)||group.n===1;const sm=document.createElement('summary');sm.innerHTML=`<span class="nav-phase-num">${group.n||'⚙'}</span><span class="nav-phase-text"><span class="nav-phase-title">${esc(group.label)}</span><span class="nav-phase-hint">${esc(group.hint||'')}</span></span>`;d.appendChild(sm);group.items.forEach((item,i)=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">${group.n?group.n+'.'+(i+1):'·'}</span><span class="nav-text">${esc(navLabel(item))}</span><span class="nav-state"></span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d)});return;}
- const items=[['Dashboard','Home'],['Project','1. Collega il sito'],['Pages','2. Pagine e dati'],['Guided Review','3. Analisi guidata'],['Operational Plan','4. Piano operativo'],['Tasks','5. Esegui attività'],['Backup','6. Verifica e report']];
- items.forEach(([view,label],i)=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===view?' active':'');b.innerHTML=`<span class="nav-num">${i?i:'⌂'}</span><span class="nav-text">${esc(label)}</span><span class="nav-state"></span>`;b.onclick=()=>{state.ui.activeView=view;render();closeMobile()};nav.appendChild(b)});
- const d=document.createElement('details');d.className='nav-phase nav-phase-system';const sm=document.createElement('summary');sm.innerHTML='<span class="nav-phase-num">⚙</span><span class="nav-phase-text"><span class="nav-phase-title">Strumenti avanzati</span><span class="nav-phase-hint">Solo quando servono</span></span>';d.appendChild(sm);['Keywords','Search Console','Issues','Technical SEO','Canonical','Indexation','Internal Links','On-Page','Structured Data','Architecture','Topical Map','Content Strategy','Settings'].forEach(item=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">·</span><span class="nav-text">${esc(navLabel(item))}</span><span class="nav-state"></span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d);
-};
-guidedDashboardView=function(){
- const st=v6State(),next=v6NextAction(),issues=byProject(state.issues).filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase()));
- return `<div class="v6-shell"><div class="v6-kicker">Organic Growth OS · percorso guidato</div><h1 class="v6-title">Sai sempre cosa fare dopo.</h1><p class="v6-lead">Inserisci il sito, raccogli i dati, analizza, crea il piano, esegui una modifica alla volta e verifica il risultato. Le funzioni tecniche restano disponibili, ma non interrompono il percorso.</p>${v6Flow()}
- <section class="v6-command"><div><div class="v6-kicker">Prossima azione · fase ${next.phase} di 6</div><h3>${esc(next.title)}</h3><p>${esc(next.text)}</p></div>${next.action==='scan'?'<button class="btn primary" id="v6RunScan">Avvia analisi</button>':`<button class="btn primary" data-nav="${esc(next.view)}">${esc(next.label)}</button>`}</section>
- <div class="v6-grid"><section class="v6-panel"><h3>Stato del progetto</h3><div class="v6-stat"><span>Sito collegato</span><b>${normalizeSiteDomain(st.p.domain)?'✓':'—'}</b></div><div class="v6-stat"><span>Pagine rilevate</span><b>${st.pages.length}</b></div><div class="v6-stat"><span>Problemi aperti</span><b>${issues.length}</b></div><div class="v6-stat"><span>Attività da fare</span><b>${st.open.length}</b></div><div class="v6-stat"><span>Attività verificate</span><b>${st.completed}</b></div></section>
- <section class="v6-panel"><h3>Come funziona</h3><p class="muted">Non devi scegliere quale strumento SEO usare. Il sistema ti porta al passo corretto e mantiene il piano aggiornato.</p><div class="v6-advanced-note"><strong>Hai bisogno dei dettagli tecnici?</strong><div>Apri “Strumenti avanzati” nella barra laterale. Il percorso guidato rimane sempre disponibile.</div></div></section></div>
- ${st.open.length?`<div style="height:18px"></div>${numberedTaskBox({limit:3,title:'Le prime attività da affrontare'})}`:''}</div>`;
-};
-smartWizardView=function(){
- const st=v6State();
- if(!normalizeSiteDomain(st.p.domain))return v6PhaseView(1,'Collega il sito','Inserisci il dominio principale. Da qui parte tutto il controllo.','Serve per riconoscere correttamente le URL e associare tutti i dati al progetto giusto.','Dopo il salvataggio potremo rilevare automaticamente le pagine.','Project','Inserisci il dominio');
- if(!st.pages.length)return v6PhaseView(1,'Rileva le pagine','Non serve creare il Page Inventory a mano: prova prima il rilevamento automatico.','Senza l’elenco delle pagine non possiamo controllare struttura, contenuti e indicizzazione.','Otterrai l’inventario delle URL del sito.','Pages','Rileva le pagine');
- if(!st.scan)return `<div class="v6-step-page">${v6Flow(3)}<div class="v6-step-head"><div class="v6-kicker">Fase 3 di 6</div><h2>Analizza il sito</h2><p>Adesso abbiamo abbastanza dati per cercare problemi reali.</p></div><section class="v6-step-card"><h3>Avvia il controllo automatico</h3><p class="muted">Leggo le pagine pubbliche e aggiorno i dati disponibili. Non modifico il sito.</p><div class="v6-explain"><div><strong>Cosa controllo</strong><span class="muted">Title, H1, meta, canonical, indicizzabilità, sitemap e dati strutturati.</span></div><div><strong>Cosa ottieni</strong><span class="muted">Problemi ordinati e attività concrete da inserire nel piano.</span></div></div><div class="v6-actions"><button class="btn primary" id="v6RunScan">Avvia analisi completa</button><button class="btn" data-nav="Pages">Controlla prima le pagine</button></div></section></div>`;
- return `<div class="v6-step-page">${v6Flow(4)}<div class="v6-step-head"><div class="v6-kicker">Analisi completata</div><h2>Adesso trasformiamo i risultati in lavoro.</h2><p>Il controllo è stato eseguito. Non devi interpretare i dati: apri il piano operativo e parti dalla priorità 1.</p></div><section class="v6-step-card"><h3>${st.open.length?`${st.open.length} attività da affrontare`:'Nessuna attività prioritaria aperta'}</h3><p class="muted">Il piano unisce problemi tecnici, campi mancanti e controlli ancora da completare.</p><div class="v6-actions"><button class="btn primary" data-nav="Operational Plan">Apri il piano operativo</button><button class="btn" id="v6RunScan">Ripeti analisi</button></div></section></div>`;
-};
-function v6PhaseView(n,title,lead,why,result,view,label){return `<div class="v6-step-page">${v6Flow(n)}<div class="v6-step-head"><div class="v6-kicker">Fase ${n} di 6</div><h2>${esc(title)}</h2><p>${esc(lead)}</p></div><section class="v6-step-card"><div class="v6-explain"><div><strong>Perché serve</strong><span class="muted">${esc(why)}</span></div><div><strong>Risultato atteso</strong><span class="muted">${esc(result)}</span></div></div><div class="v6-actions"><button class="btn primary" data-nav="${esc(view)}">${esc(label)}</button><button class="btn" data-nav="Dashboard">Torna alla Home</button></div></section></div>`}
-const _v6BindView=bindView;
-bindView=function(){_v6BindView();document.querySelectorAll('#v6RunScan').forEach(b=>b.onclick=async()=>{await analyzeCurrentWebsite({force:true});state.ui.activeView='Guided Review';render();});};
-
-
 
 /* ============================================================
    V7 — FOUR STEP GUIDED EXPERIENCE
