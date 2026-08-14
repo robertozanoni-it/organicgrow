@@ -2495,7 +2495,7 @@ function activateNextAction(index){
   const target=taskResolutionTarget(action);
   state.ui.activeView=target.view;
   commit(`Aperta azione consigliata: ${action.title}`);
-  render();window.scrollTo({top:0,behavior:'smooth'});
+  render();window.scrollTo(0,0);
 }
 
 function backupView(){
@@ -6056,20 +6056,20 @@ function openGuidedJourney(id){
   const first=journey.steps.findIndex(step=>!step.done());
   if(first<0)record.current=0;
   else if(journey.steps[record.current]?.done()||record.current>first)record.current=first;
-  record.updatedAt=root.updatedAt=now();commit(`Percorso guidato avviato: ${journey.title}`);render();window.scrollTo({top:0,behavior:'smooth'});
+  record.updatedAt=root.updatedAt=now();commit(`Percorso guidato avviato: ${journey.title}`);render();window.scrollTo(0,0);
 }
-function showGuidedJourneyDashboard(){guidedPathsState().activeId='';guidedPathsState().updatedAt=now();state.ui.activeView='Guided Review';commit('Dashboard percorsi aperta');render();window.scrollTo({top:0,behavior:'smooth'});}
+function showGuidedJourneyDashboard(){guidedPathsState().activeId='';guidedPathsState().updatedAt=now();state.ui.activeView='Guided Review';commit('Dashboard percorsi aperta');render();window.scrollTo(0,0);}
 function setGuidedJourneyStep(index){
   const root=guidedPathsState(),journey=guidedJourneyDefinitions().find(item=>item.id===root.activeId);if(!journey)return;
   const target=Math.max(0,Math.min(Number(index),journey.steps.length-1)),current=guidedPathRecord(journey.id).current;
   if(target>current&&!journey.steps.slice(0,target).every(step=>step.done())){toast('Completa prima il passo corrente.');return;}
-  guidedPathRecord(journey.id).current=target;guidedPathRecord(journey.id).updatedAt=now();commit('Passo del percorso aggiornato');render();window.scrollTo({top:0,behavior:'smooth'});
+  guidedPathRecord(journey.id).current=target;guidedPathRecord(journey.id).updatedAt=now();commit('Passo del percorso aggiornato');render();window.scrollTo(0,0);
 }
 function advanceGuidedJourney(){
   const root=guidedPathsState(),journey=guidedJourneyDefinitions().find(item=>item.id===root.activeId);if(!journey)return;
   const record=guidedPathRecord(journey.id),step=journey.steps[record.current];
   if(!step.done()){toast('Il risultato non è ancora verificato. Completa l’azione indicata.');return;}
-  record.current=Math.min(record.current+1,journey.steps.length-1);record.updatedAt=root.updatedAt=now();commit('Passo verificato');render();window.scrollTo({top:0,behavior:'smooth'});
+  record.current=Math.min(record.current+1,journey.steps.length-1);record.updatedAt=root.updatedAt=now();commit('Passo verificato');render();window.scrollTo(0,0);
 }
 function createContentTasksFromPlan(){
   let added=0;pageImprovementPlan().slice(0,12).forEach(item=>{const autoKey=`content:${item.page.id}`;if(byProject(state.tasks).some(task=>task.autoKey===autoKey))return;state.tasks.push({id:uid('task'),projectId:state.currentProjectId,autoKey,systemGenerated:true,title:`Migliora: ${item.page.pageName||item.page.displayUrl}`,description:item.actions.join(' '),why:'Pagina individuata dall’analisi dei campi SEO disponibili.',steps:item.actions,targetView:'Pages',linkedUrl:item.page.displayUrl||item.page.normalizedUrl||'',priority:item.priority==='Alta'?'P2':'P3',status:'TODO',createdAt:now(),updatedAt:now()});added++;});return added;
@@ -6119,7 +6119,7 @@ function guidedPathNavigate(target,stepId){
   if(record&&journey?.id==='content'&&stepId==='improvement')record.flags.reviewed=true;
   if(record&&journey?.id==='keywords'&&stepId==='cannibalization')record.flags.cannibalization=true;
   if(record){record.updatedAt=root.updatedAt=now();}
-  state.ui.activeView=target;commit(`Modulo aperto dal percorso: ${navLabel(target)}`);render();window.scrollTo({top:0,behavior:'smooth'});
+  state.ui.activeView=target;commit(`Modulo aperto dal percorso: ${navLabel(target)}`);render();window.scrollTo(0,0);
 }
 
 function skipGuidedPathStep(stepId){
@@ -6480,7 +6480,7 @@ async function analyzeProjectForm(){
 }
 
 function bindView(){
- document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{state.ui.activeView=b.dataset.nav;render();window.scrollTo({top:0,behavior:'smooth'});});
+ document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{state.ui.activeView=b.dataset.nav;render();window.scrollTo(0,0);});
  document.querySelectorAll('[data-path-start]').forEach(button=>button.onclick=()=>openGuidedJourney(button.dataset.pathStart));
  document.querySelectorAll('[data-path-dashboard]').forEach(button=>button.onclick=showGuidedJourneyDashboard);
  document.querySelectorAll('[data-path-step]').forEach(button=>button.onclick=()=>setGuidedJourneyStep(button.dataset.pathStep));
@@ -6492,7 +6492,7 @@ function bindView(){
  document.querySelectorAll('[data-issue-resolve]').forEach(button=>button.onclick=()=>markGuidedIssueResolved(button.dataset.issueResolve));
  document.querySelectorAll('[data-issue-verify]').forEach(button=>button.onclick=()=>verifyGuidedIssue(button.dataset.issueVerify));
  document.querySelectorAll('[data-next-action]').forEach(card=>{const open=()=>activateNextAction(card.dataset.nextAction);card.onclick=open;card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}};});
- document.querySelectorAll('[data-task-nav]').forEach(button=>button.onclick=()=>{state.ui.activeView=button.dataset.taskNav;render();window.scrollTo({top:0,behavior:'smooth'});});
+ document.querySelectorAll('[data-task-nav]').forEach(button=>button.onclick=()=>{state.ui.activeView=button.dataset.taskNav;render();window.scrollTo(0,0);});
  document.querySelectorAll('[data-wizard-tab]').forEach(button=>button.onclick=()=>navigateWizardTab(button.dataset.wizardTab));
  document.querySelectorAll('[data-wizard-summary]').forEach(button=>button.onclick=()=>openWizardSummary(button.dataset.wizardSummary));
  document.querySelectorAll('[data-report-export]').forEach(button=>button.onclick=openReportExport);
@@ -6502,7 +6502,7 @@ function bindView(){
  document.querySelectorAll('[data-plan-verify]').forEach(button=>button.onclick=()=>verifyOperationalPlanItem(button.dataset.planId,button.dataset.planKind));
  document.querySelectorAll('[data-safe-fix-preview]').forEach(button=>button.onclick=openSafeFixPreview);
  document.querySelectorAll('[data-safe-fix-undo]').forEach(button=>button.onclick=undoLastSafeFixBatch);
- document.querySelectorAll('[data-import-target]').forEach(button=>button.onclick=()=>{state.ui.importTarget=button.dataset.importTarget;state.ui.activeView='Import';render();window.scrollTo({top:0,behavior:'smooth'});});
+ document.querySelectorAll('[data-import-target]').forEach(button=>button.onclick=()=>{state.ui.importTarget=button.dataset.importTarget;state.ui.activeView='Import';render();window.scrollTo(0,0);});
  document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.add));
  document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openRecordDrawer(b.dataset.edit,b.dataset.id));
  document.querySelectorAll('[data-create-task-from-action]').forEach(b=>b.onclick=()=>{ 
@@ -7181,18 +7181,34 @@ function v7Next(){const s=v7Snapshot();
   return {phase:4,title:'Verifica e conserva il risultato',text:'Non risultano altre attività prioritarie. Controlla il riepilogo e salva il report.',label:'Apri verifica e report',view:'Backup'};
 }
 renderNav=function(){
- const nav=document.getElementById('nav');if(!nav)return;nav.innerHTML='';
- if(state.ui.experienceMode!=='guided'){
-   const flow=navFlow;flow.forEach(group=>{const d=document.createElement('details');d.className='nav-phase'+(group.n?'':' nav-phase-system');d.open=group.items.includes(state.ui.activeView)||group.n===1;const sm=document.createElement('summary');sm.innerHTML=`<span class="nav-phase-num">${group.n||'⚙'}</span><span class="nav-phase-text"><span class="nav-phase-title">${esc(group.label)}</span><span class="nav-phase-hint">${esc(group.hint||'')}</span></span>`;d.appendChild(sm);group.items.forEach((item,i)=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">${group.n?group.n+'.'+(i+1):'·'}</span><span class="nav-text">${esc(navLabel(item))}</span><span class="nav-state"></span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d)});return;
+ const nav=document.getElementById('nav');if(!nav)return;
+ const guided=state.ui.experienceMode==='guided',structureKey=guided?'guided':'flow';
+ /* Ricreare da zero tutti i pulsanti della sidebar (nuovi nodi DOM +
+    nuovi listener) a ogni singolo clic in tutta l'app era un costo fisso
+    pagato anche quando si passava da un pulsante all'altro senza mai
+    cambiare modalita': il motivo per cui il passaggio tra i pulsanti
+    della sidebar non risultava istantaneo. L'insieme dei pulsanti cambia
+    solo quando cambia la modalita' (guidata/avanzata); se e' la stessa
+    di prima ci limitiamo ad aggiornare lo stato attivo sui nodi gia'
+    presenti, senza distruggerli e ricrearli. */
+ if(nav.dataset.navStructure===structureKey){
+   nav.querySelectorAll('.nav-btn[data-nav-view]').forEach(b=>b.classList.toggle('active',b.dataset.navView===state.ui.activeView));
+   nav.querySelectorAll('details.nav-phase[data-nav-items]').forEach(d=>{d.open=d.dataset.navAlwaysOpen==='1'||d.dataset.navItems.split('|').includes(state.ui.activeView);});
+   return;
+ }
+ nav.dataset.navStructure=structureKey;nav.innerHTML='';
+ if(!guided){
+   const flow=navFlow;flow.forEach(group=>{const d=document.createElement('details');d.className='nav-phase'+(group.n?'':' nav-phase-system');d.dataset.navItems=group.items.join('|');d.dataset.navAlwaysOpen=group.n===1?'1':'0';d.open=group.items.includes(state.ui.activeView)||group.n===1;const sm=document.createElement('summary');sm.innerHTML=`<span class="nav-phase-num">${group.n||'⚙'}</span><span class="nav-phase-text"><span class="nav-phase-title">${esc(group.label)}</span><span class="nav-phase-hint">${esc(group.hint||'')}</span></span>`;d.appendChild(sm);group.items.forEach((item,i)=>{const b=document.createElement('button');b.dataset.navView=item;b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">${group.n?group.n+'.'+(i+1):'·'}</span><span class="nav-text">${esc(navLabel(item))}</span><span class="nav-state"></span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d)});return;
  }
  const main=[['Dashboard','⌂','Home'],['Project','1','Inizia'],['Guided Review','2','Controlla'],['Operational Plan','3','Sistema'],['Backup','4','Verifica']];
- main.forEach(([view,num,label])=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===view?' active':'');b.innerHTML=`<span class="nav-num">${num}</span><span class="nav-text">${label}</span>`;b.onclick=()=>{state.ui.activeView=view;render();closeMobile()};nav.appendChild(b)});
+ main.forEach(([view,num,label])=>{const b=document.createElement('button');b.dataset.navView=view;b.className='nav-btn'+(state.ui.activeView===view?' active':'');b.innerHTML=`<span class="nav-num">${num}</span><span class="nav-text">${label}</span>`;b.onclick=()=>{state.ui.activeView=view;render();closeMobile()};nav.appendChild(b)});
  const d=document.createElement('details');d.className='nav-phase nav-phase-system';const sm=document.createElement('summary');sm.innerHTML='<span class="nav-phase-num">＋</span><span class="nav-phase-text"><span class="nav-phase-title">Strumenti avanzati</span><span class="nav-phase-hint">Pagine, keyword, Search Console e altro</span></span>';d.appendChild(sm);
  const advanced=['Pages','Keywords','Search Console','Tasks','Issues','Technical SEO','Canonical','Indexation','Internal Links','On-Page','Structured Data','Architecture','Topical Map','Content Strategy','Settings'];
+ d.dataset.navItems=advanced.join('|');d.dataset.navAlwaysOpen='0';
  /* Mancava d.open: l'accordion restava chiuso anche quando conteneva
     la vista attiva, quindi Search Console e Keyword risultavano introvabili. */
  d.open=advanced.includes(state.ui.activeView);
- advanced.forEach(item=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">·</span><span class="nav-text">${esc(navLabel(item))}</span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d);
+ advanced.forEach(item=>{const b=document.createElement('button');b.dataset.navView=item;b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">·</span><span class="nav-text">${esc(navLabel(item))}</span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d);
 };
 function v7StartChecklist(){const s=v7Snapshot();const k=s.keywords.length,gs=s.gsc.length;return `<div class="v7-list">
  <div class="v7-list-row ${s.domain?'done':''}"><span class="v7-list-icon">${s.domain?'✓':'1'}</span><div><strong>Sito collegato</strong><small>${s.domain?esc(s.p.domain):'Inserisci il dominio principale'}</small></div><button class="btn" data-nav="Project">${s.domain?'Controlla':'Inserisci'}</button></div>
