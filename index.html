@@ -1816,12 +1816,22 @@ function projectGeoProfile(){
 }
 function classifyKeywordGeo(keyword){
   const profile=projectGeoProfile();
+  /* V10.2.4 - Memo per keyword: il risultato dipende solo da keyword.keyword
+     e dal profilo geo del progetto, non dalla pagina con cui viene
+     confrontata (vedi nota sopra invalidateKeywordMatchCaches). */
+  const key=keyword?.id||keyword?.keyword||'';
+  const fingerprint=`${keyword?.keyword||''}|${profile.primary}|${profile.targets.join(',')}`;
+  const cached=key?keywordGeoRuntimeCache.get(key):null;
+  if(cached&&cached.fingerprint===fingerprint)return cached.value;
   const found=geoTermsInText(keyword?.keyword||'');
-  if(!profile.primary)return {status:'NO_FOCUS',found,reason:'Area SEO non ancora rilevata'};
-  if(!found.length)return {status:'GENERIC',found,reason:`Query senza località esplicita: compatibile con ${profile.primary}`};
-  if(found.some(g=>profile.targets.includes(g)))return {status:'TARGET',found,reason:`Località coerente con il focus ${profile.primary}`};
-  if(found.some(g=>profile.targets.some(target=>geoRelation(target,g)==='COMPATIBLE')))return {status:'COMPATIBLE',found,reason:`Località compatibile con l'area ${profile.primary}`};
-  return {status:'OUT_OF_AREA',found,reason:`Località diversa dal focus ${profile.primary}`};
+  let value;
+  if(!profile.primary)value={status:'NO_FOCUS',found,reason:'Area SEO non ancora rilevata'};
+  else if(!found.length)value={status:'GENERIC',found,reason:`Query senza località esplicita: compatibile con ${profile.primary}`};
+  else if(found.some(g=>profile.targets.includes(g)))value={status:'TARGET',found,reason:`Località coerente con il focus ${profile.primary}`};
+  else if(found.some(g=>profile.targets.some(target=>geoRelation(target,g)==='COMPATIBLE')))value={status:'COMPATIBLE',found,reason:`Località compatibile con l'area ${profile.primary}`};
+  else value={status:'OUT_OF_AREA',found,reason:`Località diversa dal focus ${profile.primary}`};
+  if(key)keywordGeoRuntimeCache.set(key,{fingerprint,value});
+  return value;
 }
 function applyGeoClassification(){
   const profile=projectGeoProfile();let changed=0;
@@ -1859,9 +1869,15 @@ function normalizedPhraseInText(text,phrase){
   const hay=` ${keywordMatchNormalize(text)} `,needle=` ${keywordMatchNormalize(phrase)} `;
   return needle.trim()&&hay.includes(needle);
 }
+/* V10.2.4 - Performance: stessa logica di semanticFamilies() sopra, stesso
+   motivo (funzione pura richiamata molte volte con lo stesso testo). */
+const textConceptsRuntimeCache=new Map();
 function textConcepts(value){
+  const cacheKey=String(value??'');
+  if(textConceptsRuntimeCache.has(cacheKey))return textConceptsRuntimeCache.get(cacheKey);
   const text=keywordMatchNormalize(value),out=[];
   Object.entries(KEYWORD_CONCEPTS_NORMALIZED).forEach(([concept,phrases])=>{if(phrases.some(p=>normalizedPhraseInText(text,p)))out.push(concept);});
+  textConceptsRuntimeCache.set(cacheKey,out);
   return out;
 }
 function pageMatchCorpus(page){
@@ -1895,6 +1911,15 @@ const SEMANTIC_FAMILIES_NORMALIZED=Object.fromEntries(Object.entries(SEMANTIC_FA
 let pageSemanticRuntimeCache=new Map();
 let keywordPeerRuntimeCache=null;
 let keywordPeerRuntimeSignature='';
+/* V10.2.4 - Performance: classifyKeywordGeo(keyword) dipende solo dalla
+   keyword e dal profilo geografico del progetto, MAI dalla pagina. Prima
+   veniva ricalcolata da zero dentro keywordPageMatch() per OGNI coppia
+   keyword×pagina, quindi la stessa identica risposta per una keyword
+   veniva ricalcolata una volta per ciascuna pagina del progetto. Con
+   centinaia di pagine e keyword questo, moltiplicato su tutto il ciclo
+   di mapping automatico, e' una delle cause misurate della lentezza
+   generale segnalata ("tutto troppo lento"). */
+let keywordGeoRuntimeCache=new Map();
 function invalidateKeywordMatchCaches(){
   pageSemanticRuntimeCache.clear();
   keywordPeerRuntimeCache=null;
@@ -1902,6 +1927,13 @@ function invalidateKeywordMatchCaches(){
   keywordCandidateRuntimeCache?.clear?.();
   keywordCandidateBaseSignature='';
   geoProfileRuntimeCache=null;
+  keywordGeoRuntimeCache.clear();
+  /* semanticFamiliesRuntimeCache/textConceptsRuntimeCache dipendono solo dal
+     testo (funzioni pure): non serve svuotarle per correttezza, ma le
+     limitiamo qui per evitare che crescano indefinitamente in sessioni
+     molto lunghe. */
+  if(semanticFamiliesRuntimeCache.size>4000)semanticFamiliesRuntimeCache.clear();
+  if(textConceptsRuntimeCache.size>4000)textConceptsRuntimeCache.clear();
 }
 function trustedPeerSignature(){
   return byProject(state.keywords).filter(item=>['manual-confirmed','group-confirmed'].includes(String(item.linkSource||''))&&item.targetUrl)
@@ -1928,12 +1960,22 @@ const INTENT_RULES={
   TRANSACTIONAL:[[/\bpreventiv[oi]\b/,3.0],[/\bservizi?\b/,1.5],[/\bconsulenza\b/,2.3],[/\bconsulente\b/,2.2],[/\brealizzazione\b/,2.4],[/\bcreazione\b/,2.2],[/\bcostruzione\b/,2.1],[/\bsviluppo\b/,2.1],[/\bagenzia\b/,1.8],[/\bprofessionista\b/,1.8],[/\besperto\b/,1.7],[/\bacquist/,2.8],[/\bprenot/,2.7],[/\brichied/,2.0]],
   COMMERCIAL:[[/\bmiglior[ei]\b/,3.0],[/\bconfronto\b/,2.8],[/\brecensioni?\b/,2.6],[/\bprezz[oi]\b/,2.4],[/\bcost[oi]\b/,2.4],[/\bquanto costa\b/,3.1],[/\bscelta\b/,2.0],[/\bscegliere\b/,2.4],[/\bconviene\b/,2.1],[/\bvs\b/,2.3]]
 };
+/* V10.2.4 - Performance: semanticFamilies() è una funzione pura (stesso
+   testo in ingresso -> stesso risultato) ma confronta il testo con tutte
+   le famiglie semantiche del dizionario a ogni chiamata. Chiamata più
+   volte per la STESSA keyword/pagina nel corso di un solo ciclo di
+   mapping: memorizzata qui, invariata nel risultato. */
+const semanticFamiliesRuntimeCache=new Map();
 function semanticFamilies(value){
+  const cacheKey=String(value??'');
+  if(semanticFamiliesRuntimeCache.has(cacheKey))return semanticFamiliesRuntimeCache.get(cacheKey);
   const text=keywordMatchNormalize(value),out=[];
   Object.entries(SEMANTIC_FAMILIES_NORMALIZED).forEach(([family,phrases])=>{
     if(phrases.some(p=>normalizedPhraseInText(text,p)))out.push(family);
   });
-  return [...new Set(out)];
+  const result=[...new Set(out)];
+  semanticFamiliesRuntimeCache.set(cacheKey,result);
+  return result;
 }
 function projectBrandTerms(){
   const p=currentProject()||{};
@@ -2072,9 +2114,13 @@ function pageTypeIntentFit(page,queryIntent){
    Non forza un target in presenza di conflitti semantici o geografici.
    ============================================================ */
 const INTENT_GENERIC_TOKENS=new Set('come cosa perche guida idee consigli tutorial migliore migliori confronto recensione recensioni prezzo prezzi costo costi quanto scegliere scelta conviene vs preventivo preventivi servizio servizi online web sito siti pagina pagine'.split(/\s+/));
+/* V10.2.4 - Performance: GEO_TERM_PAIRS è una lista fissa (~180 comuni):
+   prima questo Set veniva ricostruito da zero a ogni singola chiamata di
+   keywordCoreTokens, funzione richiamata moltissime volte per ogni ciclo
+   di mapping keyword↔pagina. Calcolato una sola volta all'avvio. */
+const KEYWORD_CORE_GEO_NORM=new Set(GEO_TERM_PAIRS.map(([,norm])=>norm).flatMap(x=>x.split(' ')));
 function keywordCoreTokens(value){
-  const geoNorm=new Set(GEO_TERM_PAIRS.map(([,norm])=>norm).flatMap(x=>x.split(' ')));
-  return keywordMatchTokens(value).filter(t=>!INTENT_GENERIC_TOKENS.has(t)&&!geoNorm.has(t));
+  return keywordMatchTokens(value).filter(t=>!INTENT_GENERIC_TOKENS.has(t)&&!KEYWORD_CORE_GEO_NORM.has(t));
 }
 function tokenSimilarity(a,b){
   const aa=[...new Set(a||[])],bb=[...new Set(b||[])];if(!aa.length||!bb.length)return 0;
@@ -3811,6 +3857,11 @@ function runAutomationCycle(notify=false){
   const keywordsAdded=backfillKeywordsFromPages();
   const keywordsDeduped=dedupeKeywordRecords();
   const p=currentProject();
+  /* V10.2.4 - keywordMappingInputSignature() ricalcola un hash su titolo,
+     H1, meta, headings e fino a 14.000 caratteri di testo di OGNI pagina
+     del progetto: non è gratis. Prima veniva calcolata due volte in questa
+     funzione (una per il confronto, una per salvarla) ad ogni ciclo di
+     automazione. Ora si calcola una sola volta e si riusa lo stesso valore. */
   const mappingSignature=keywordMappingInputSignature();
   let keywordGroups={autoConfirmed:Number(p?.keywordGroupsAutoConfirmed||0),suggested:Number(p?.keywordGroupsSuggested||0),manual:0,ungrouped:Number(p?.keywordGroupsUnassigned||0),changed:0};
   if(!p||p.keywordMappingInputSignature!==mappingSignature){
@@ -3818,7 +3869,7 @@ function runAutomationCycle(notify=false){
     keywordGroups=autoSetKeywordGroupsSilent();
     const intentLinked=applyIntentConsensusPass();
     if(intentLinked)keywordGroups=autoSetKeywordGroupsSilent();
-    if(p)p.keywordMappingInputSignature=keywordMappingInputSignature();
+    if(p)p.keywordMappingInputSignature=mappingSignature;
   }
   if(p&&byProject(state.pages).length&&p.autoFilled&&!p.contextRepairedV51){
     const sc=p.strategyCanvas||{};
