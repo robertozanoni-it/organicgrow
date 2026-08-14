@@ -869,9 +869,12 @@ html[data-theme="light"] .sidebar{background:rgba(255,255,255,.94)}
    ============================================================ */
 html,body{font-size:24px!important}
 body{line-height:1.62!important}
+/* V10.2.4 - Rimossa qui la ripetizione di .brand h1/.brand p: questo blocco
+   "BIG TYPE" la portava a 27px/19px, la più grande di quattro regole
+   sovrapposte nel foglio di stile (18px in V6.3, 18px in V7, 20px in V4.5).
+   Ora vince la regola V7 più sotto (18px/13px), scritta apposta più piccola. */
 button,input,select,textarea{font-size:22px!important}
 .btn{font-size:21px!important;min-height:56px!important;padding:14px 20px!important;border-radius:15px!important}
-.brand h1{font-size:27px!important}.brand p{font-size:19px!important}
 #nav .nav-btn{font-size:21px!important;padding:15px!important}
 #nav .nav-btn .nav-num{font-size:18px!important;width:36px;height:36px}
 .topbar h2{font-size:28px!important}.muted{font-size:20px!important}
@@ -977,7 +980,7 @@ button,input,select,textarea{font-size:22px!important}
   <aside class="sidebar" id="sidebar" aria-label="Navigazione principale">
     <div class="brand">
       <div class="brand-mark">OG</div>
-      <div><h1>Organic Growth OS</h1><p>Crescita organica guidata · Web App V10.2.3</p></div>
+      <div><h1>O.Growuth</h1><p>Crescita organica guidata · Web App V10.2.3</p></div>
     </div>
     <div class="project-switcher">
       <select id="projectSelect" aria-label="Progetto corrente"></select>
@@ -1259,8 +1262,11 @@ let saveTimer=null;
 function commit(action='Aggiornamento'){
   const p=currentProject();
   if(p) p.updatedAt=now();
-  state.activity.unshift({id:uid('act'),projectId:state.currentProjectId,title:action,date:now()});
-  state.activity=state.activity.slice(0,300);
+  /* V10.2.4 - Prima ogni commit() (centinaia di punti di chiamata) scriveva
+     una riga in state.activity, ma nessuna vista la mostra mai: cresceva
+     silenziosamente fino a 300 voci a ogni progetto, gonfiando localStorage
+     e i backup JSON senza alcun beneficio visibile. Il campo resta nello
+     schema (compatibilità con backup più vecchi), ma non si scrive più. */
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{
     state.ui.lastSaved=now();
@@ -1521,8 +1527,11 @@ function confirmAutoField(name){
   commit(`Campo confermato: ${name}`);toast('Campo confermato.');render();
 }
 function pendingAutoFields(){
+  /* V10.2.4 - Allineato a dataQualityFindings(): i valori letti alla lettera
+     dal sito (origine 'site') non richiedono piu' una conferma manuale,
+     solo le deduzioni ('inferred') la richiedono davvero. */
   const auto=currentProject()?.autoFilled||{};
-  return Object.keys(auto).filter(key=>auto[key]&&auto[key]!=='confirmed');
+  return Object.keys(auto).filter(key=>auto[key]==='inferred');
 }
 function confirmAllAutoFields(){
   const p=currentProject(),pending=pendingAutoFields();
@@ -2467,7 +2476,12 @@ function dataQualityFindings(){
   const pages=validProjectPages(),observedPages=validProjectPages().filter(pageContentObserved),keywords=byProject(state.keywords);
   const insights=keywordJourneyInsights();
   const auto=currentProject()?.autoFilled||{};
-  const pendingFields=Object.keys(auto).filter(key=>auto[key]&&auto[key]!=='confirmed');
+  /* V10.2.4 - Prima anche i campi letti alla lettera dal sito (origine
+     'site', badge "✓ dal sito") generavano un'attivita' "da confermare"
+     identica a quella di un valore indovinato (origine 'inferred'). Il
+     piano operativo si riempiva di lavoro manuale su dati gia' affidabili.
+     Ora chiediamo conferma solo per le deduzioni vere. */
+  const pendingFields=Object.keys(auto).filter(key=>auto[key]==='inferred');
   const findings=[];
   const push=(item)=>{if(item.count>0)findings.push(item);};
   /* Concordanza singolare/plurale: "1 pagina", "9 pagine". */
@@ -4774,13 +4788,13 @@ function autoFillProjectFields(signals=[],meta={}){
     if(detectedGeo){p.geoPrimary=detectedGeo;p.geoPrimarySource='automatic';filled.push({key:'geoPrimary',origin:'inferred',value:detectedGeo});}
   }
 
-  if(!String(p.notes||'').trim()){
-    p.notes=list.length
-      ? 'Campi precompilati automaticamente dai contenuti pubblici del sito. Le voci contrassegnate come "da validare" vanno confermate.'
-      : 'Non e\u2019 stato possibile leggere il sito dal browser: i campi sono stati dedotti dal dominio e vanno validati.';
-    p.autoFilled.notes='inferred';
-    filled.push({key:'notes',origin:'inferred',value:p.notes});
-  }
+  /* V10.2.4 - Prima questo blocco scriveva un testo generico di istruzioni
+     ("Campi precompilati automaticamente...") DENTRO al campo Note del
+     progetto, marcandolo "da validare": l'utente si trovava un badge
+     "Conferma" su una frase di aiuto, non su un dato reale da controllare.
+     La stessa spiegazione e' gia' mostrata nella barra "Conferma tutti i
+     campi" sopra il form: qui non serve piu' toccare Note, che resta
+     libero per le note reali del progetto. */
 
   /* --- strategy canvas --- */
   p.strategyCanvas=p.strategyCanvas||{};
@@ -6219,7 +6233,7 @@ function searchConsoleView(){
 const CONNECTOR_TOKEN_KEY='organicGrowthOS.connectorTokens.v1';
 function connectorTokenMap(){try{return JSON.parse(localStorage.getItem(CONNECTOR_TOKEN_KEY)||'{}')||{};}catch(e){return {};}}
 function connectorToken(){return String(connectorTokenMap()[state.currentProjectId]||'');}
-function setConnectorToken(value){const map=connectorTokenMap();if(value)map[state.currentProjectId]=String(value);else delete map[state.currentProjectId];try{localStorage.setItem(CONNECTOR_TOKEN_KEY,JSON.stringify(map));}catch(e){}}
+function setConnectorToken(value){const map=connectorTokenMap();if(value)map[state.currentProjectId]=String(value);else delete map[state.currentProjectId];try{localStorage.setItem(CONNECTOR_TOKEN_KEY,JSON.stringify(map));}catch(e){console.warn('Salvataggio token connettore non riuscito:',e);}}
 function connectorConfig(){const p=currentProject()||{};return p.connector||{};}
 function normalizeConnectorBase(value){
   const raw=String(value||'').trim();if(!raw)return '';
@@ -6902,7 +6916,7 @@ function applyTheme(){
   document.documentElement.style.colorScheme=theme;
   const meta=document.querySelector('meta[name="theme-color"]');
   if(meta)meta.setAttribute('content',theme==='dark'?'#0d1117':'#f7f8fb');
-  try{localStorage.setItem('organicGrowthOS.theme',state.ui.theme);}catch(e){}
+  try{localStorage.setItem('organicGrowthOS.theme',state.ui.theme);}catch(e){console.warn('Salvataggio tema non riuscito:',e);}
 }
 
 function initTheme(){
@@ -7027,7 +7041,7 @@ window.addEventListener('storage',event=>{
   }catch(e){console.warn('Aggiornamento multi-scheda ignorato',e);}
 });
 if(BOOT_NEEDS_REMOTE_SYNC)setTimeout(()=>scheduleRemoteStateSave(state,50),80);
-window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);state.ui.lastSaved=now();try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch(e){};scheduleRemoteStateSave(state,0);flushRemoteStateSave({unloading:true,keepalive:true,timeout:3000});});
+window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);state.ui.lastSaved=now();try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch(e){console.warn('Salvataggio locale in chiusura pagina non riuscito:',e);}scheduleRemoteStateSave(state,0);flushRemoteStateSave({unloading:true,keepalive:true,timeout:3000});});
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){
    const overlay=document.getElementById('scanOverlay');
