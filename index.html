@@ -747,8 +747,9 @@ tr:last-child td{border-bottom:0}
 .v7-progress-ring span{font-size:11.5px;color:var(--muted)}
 .v7-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:22px}
 .v7-step{border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-md);padding:14px 14px 13px;min-height:102px;width:100%;text-align:left;font:inherit;color:inherit}
-.v7-step.done:not(.active){cursor:pointer}
+.v7-step:not(.active){cursor:pointer}
 .v7-step.done:not(.active):hover{border-color:color-mix(in srgb,var(--success) 45%,var(--border))}
+.v7-step:not(.done):not(.active):hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--border))}
 .v7-step-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .v7-step-num{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--surface-alt);font-weight:900;font-size:12.5px}
 .v7-step.done .v7-step-num{background:var(--success);color:#fff}
@@ -7147,17 +7148,14 @@ const V7_PHASES=[
 function v7Snapshot(){
   const p=currentProject(),pages=validProjectPages(),gsc=byProject(state.gscRecords),keywords=mappingRelevantKeywords(),tasks=byProject(state.tasks),issues=byProject(state.issues).filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase())),open=operationalPlanItems(),domain=Boolean(normalizeSiteDomain(p.domain)),scan=scanCompletedEnough(p),scanPartial=String(p.websiteScan?.status||'')==='partial',verified=tasks.filter(t=>['VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase())).length,phase=!domain||!pages.length?1:!scan?2:open.length?3:4,startDone=domain&&pages.length>0,checkDone=scan,fixDone=scan&&open.length===0,doneCount=[startDone,checkDone,fixDone,phase===4].filter(Boolean).length,progress=Math.min(100,Math.round((doneCount/4)*100));return {p,pages,gsc,keywords,tasks,issues,open,domain,scan,scanPartial,verified,phase,progress,startDone,checkDone,fixDone};
 }
-/* Bug segnalato: dalla Fase 3 non si riusciva a tornare alla
-   Fase 1. Causa: questi 4 riquadri (Inizia/Controlla/Sistema/Verifica)
-   erano semplici <div>, senza alcun collegamento di navigazione, pur
-   avendo l'aspetto di uno stepper cliccabile (bordo attivo, segno di
-   spunta sulle fasi completate). L'unico modo per tornare indietro era
-   la barra laterale. Ora le fasi già completate diventano bottoni che
-   riportano alla vista corrispondente (stesso meccanismo [data-nav] già
-   usato altrove); la fase corrente e quelle non ancora raggiunte restano
-   non cliccabili per non far saltare passaggi non ancora pronti. */
+/* Le 4 fasi (Inizia/Controlla/Sistema/Verifica) sono sempre cliccabili,
+   anche quelle non ancora completate o non ancora raggiunte: ogni vista
+   di destinazione (Project/Guided Review/Operational Plan/Backup) mostra
+   già un messaggio adeguato quando manca un prerequisito, quindi saltare
+   avanti o tornare indietro non rompe nulla e permette di muoversi
+   liberamente tra le fasi senza dover prima finire quella in corso. */
 const V7_PHASE_VIEWS={1:'Project',2:'Guided Review',3:'Operational Plan',4:'Backup'};
-function v7Steps(active){const s=v7Snapshot();return `<div class="v7-steps">${V7_PHASES.map(ph=>{const done=ph.n<s.phase||(ph.n===1&&s.startDone)||(ph.n===2&&s.checkDone)||(ph.n===3&&s.fixDone),isActive=(active||s.phase)===ph.n,tag=done&&!isActive?'button':'div',attrs=done&&!isActive?` type="button" data-nav="${esc(V7_PHASE_VIEWS[ph.n])}" aria-label="Torna a: ${esc(ph.title)}"`:'';return `<${tag} class="v7-step ${done?'done':''} ${isActive?'active':''}"${attrs}><div class="v7-step-top"><span class="v7-step-num">${done?'✓':ph.n}</span>${isActive?'<span class="badge info">Adesso</span>':''}</div><strong>${esc(ph.title)}</strong><p>${esc(ph.desc)}</p></${tag}>`}).join('')}</div>`}
+function v7Steps(active){const s=v7Snapshot();return `<div class="v7-steps">${V7_PHASES.map(ph=>{const done=ph.n<s.phase||(ph.n===1&&s.startDone)||(ph.n===2&&s.checkDone)||(ph.n===3&&s.fixDone),isActive=(active||s.phase)===ph.n;return `<button type="button" class="v7-step ${done?'done':''} ${isActive?'active':''}" data-nav="${esc(V7_PHASE_VIEWS[ph.n])}" aria-label="Vai a: ${esc(ph.title)}" ${isActive?'aria-current="step"':''}><div class="v7-step-top"><span class="v7-step-num">${done?'✓':ph.n}</span>${isActive?'<span class="badge info">Adesso</span>':''}</div><strong>${esc(ph.title)}</strong><p>${esc(ph.desc)}</p></button>`}).join('')}</div>`}
 function v7Next(){const s=v7Snapshot();
   if(!s.domain)return {phase:1,title:'Inserisci il tuo sito',text:'Basta il dominio. Poi provo a rilevare automaticamente tutto ciò che posso.',label:'Inserisci il sito',view:'Project'};
   if(!s.pages.length)return {phase:1,title:'Rileva le pagine',text:'Creo l’elenco delle URL usando sitemap e link interni. Non devi inserirle una per una.',label:'Rileva automaticamente',view:'Pages'};
