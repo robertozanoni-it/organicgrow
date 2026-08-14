@@ -66,6 +66,8 @@ html[data-theme="dark"]{
 html{font-family:var(--font)}
 html,body{font-size:16px}
 body{margin:0;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.55;letter-spacing:-.006em;overflow-x:hidden}
+html.is-navigating{cursor:progress}
+html.is-navigating .nav-btn,html.is-navigating [data-nav]{pointer-events:none}
 body.overlay-open{overflow:hidden}
 button,input,select,textarea{font:inherit;min-height:44px}
 button{cursor:pointer}
@@ -3917,7 +3919,11 @@ function explainTerm(term){
 }
 
 function taskManagementViewV2(){
-  runAutomationCycle(false);
+  /* La vista deve soltanto leggere lo stato. Eseguire qui l'intero motore di
+     automazione rendeva ogni apertura di "Attivita" proporzionale a tutte le
+     pagine e keyword del progetto, oltre a poter pianificare un salvataggio
+     durante un semplice cambio schermata. Le automazioni restano eseguite
+     all'avvio, dopo import/modifiche e dal pulsante "Aggiorna e verifica". */
   const tasks=byProject(state.tasks),checks=wizardChecks(),weight={P1:1,P2:2,P3:3};
   const active=tasks.filter(t=>!['VERIFIED','CLOSED'].includes(String(t.status||'TODO').toUpperCase())).sort((a,b)=>(weight[a.priority]||4)-(weight[b.priority]||4)||(a.createdAt||'').localeCompare(b.createdAt||''));
   const completed=tasks.filter(t=>['VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase())).sort((a,b)=>(b.verifiedAt||b.completedAt||b.updatedAt||'').localeCompare(a.verifiedAt||a.completedAt||a.updatedAt||''));
@@ -6191,7 +6197,29 @@ function simpleInfo(title,text){
   return `<div class="card"><h3>${esc(title)}</h3><p class="muted">${esc(text)}</p><div class="callout">Le funzioni che richiedono dati esterni devono essere alimentate tramite import: Organic Growth OS non inventa crawl, SERP o risultati API.</div></div>`;
 }
 
+let renderCycle=0;
+let v7SnapshotCache=null;
+let navigationFrame=0;
+function navigateTo(view,options={}){
+  const target=String(view||'').trim();
+  if(!target)return;
+  state.ui.activeView=target;
+  /* Lascia al browser il tempo di disegnare subito lo stato del click prima
+     di costruire viste grandi. I click ripetuti nello stesso frame vengono
+     inoltre accorpati: viene renderizzata soltanto l'ultima destinazione. */
+  document.documentElement.classList.add('is-navigating');
+  cancelAnimationFrame(navigationFrame);
+  navigationFrame=requestAnimationFrame(()=>{
+    navigationFrame=0;
+    render();
+    document.documentElement.classList.remove('is-navigating');
+    if(options.scroll!==false)window.scrollTo(0,0);
+    if(options.closeMobile!==false)closeMobile();
+  });
+}
 function render(){
+  renderCycle++;
+  v7SnapshotCache=null;
   renderNav(); renderProjectSelect(); setupTopbar();
   const v=state.ui.activeView; setTitle(v);
   let html='';
@@ -6493,7 +6521,7 @@ async function analyzeProjectForm(){
 }
 
 function bindView(){
- document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{state.ui.activeView=b.dataset.nav;render();window.scrollTo(0,0);});
+ document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>navigateTo(b.dataset.nav));
  document.querySelectorAll('[data-path-start]').forEach(button=>button.onclick=()=>openGuidedJourney(button.dataset.pathStart));
  document.querySelectorAll('[data-path-dashboard]').forEach(button=>button.onclick=showGuidedJourneyDashboard);
  document.querySelectorAll('[data-path-step]').forEach(button=>button.onclick=()=>setGuidedJourneyStep(button.dataset.pathStep));
@@ -6505,7 +6533,7 @@ function bindView(){
  document.querySelectorAll('[data-issue-resolve]').forEach(button=>button.onclick=()=>markGuidedIssueResolved(button.dataset.issueResolve));
  document.querySelectorAll('[data-issue-verify]').forEach(button=>button.onclick=()=>verifyGuidedIssue(button.dataset.issueVerify));
  document.querySelectorAll('[data-next-action]').forEach(card=>{const open=()=>activateNextAction(card.dataset.nextAction);card.onclick=open;card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}};});
- document.querySelectorAll('[data-task-nav]').forEach(button=>button.onclick=()=>{state.ui.activeView=button.dataset.taskNav;render();window.scrollTo(0,0);});
+ document.querySelectorAll('[data-task-nav]').forEach(button=>button.onclick=()=>navigateTo(button.dataset.taskNav));
  document.querySelectorAll('[data-wizard-tab]').forEach(button=>button.onclick=()=>navigateWizardTab(button.dataset.wizardTab));
  document.querySelectorAll('[data-wizard-summary]').forEach(button=>button.onclick=()=>openWizardSummary(button.dataset.wizardSummary));
  document.querySelectorAll('[data-report-export]').forEach(button=>button.onclick=openReportExport);
@@ -7176,7 +7204,8 @@ const V7_PHASES=[
   {n:4,id:'verify',title:'Verifica',desc:'Risultati e report'}
 ];
 function v7Snapshot(){
-  const p=currentProject(),pages=validProjectPages(),gsc=byProject(state.gscRecords),keywords=mappingRelevantKeywords(),tasks=byProject(state.tasks),issues=byProject(state.issues).filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase())),open=operationalPlanItems(),domain=Boolean(normalizeSiteDomain(p.domain)),scan=scanCompletedEnough(p),scanPartial=String(p.websiteScan?.status||'')==='partial',verified=tasks.filter(t=>['VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase())).length,phase=!domain||!pages.length?1:!scan?2:open.length?3:4,startDone=domain&&pages.length>0,checkDone=scan,fixDone=scan&&open.length===0,doneCount=[startDone,checkDone,fixDone,phase===4].filter(Boolean).length,progress=Math.min(100,Math.round((doneCount/4)*100));return {p,pages,gsc,keywords,tasks,issues,open,domain,scan,scanPartial,verified,phase,progress,startDone,checkDone,fixDone};
+  if(v7SnapshotCache&&v7SnapshotCache.cycle===renderCycle)return v7SnapshotCache.value;
+  const p=currentProject(),pages=validProjectPages(),gsc=byProject(state.gscRecords),keywords=mappingRelevantKeywords(),tasks=byProject(state.tasks),issues=byProject(state.issues).filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase())),open=operationalPlanItems(),domain=Boolean(normalizeSiteDomain(p.domain)),scan=scanCompletedEnough(p),scanPartial=String(p.websiteScan?.status||'')==='partial',verified=tasks.filter(t=>['VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase())).length,phase=!domain||!pages.length?1:!scan?2:open.length?3:4,startDone=domain&&pages.length>0,checkDone=scan,fixDone=scan&&open.length===0,doneCount=[startDone,checkDone,fixDone,phase===4].filter(Boolean).length,progress=Math.min(100,Math.round((doneCount/4)*100)),value={p,pages,gsc,keywords,tasks,issues,open,domain,scan,scanPartial,verified,phase,progress,startDone,checkDone,fixDone};v7SnapshotCache={cycle:renderCycle,value};return value;
 }
 /* Le 4 fasi (Inizia/Controlla/Sistema/Verifica) sono sempre cliccabili,
    anche quelle non ancora completate o non ancora raggiunte: ogni vista
@@ -7211,17 +7240,17 @@ renderNav=function(){
  }
  nav.dataset.navStructure=structureKey;nav.innerHTML='';
  if(!guided){
-   const flow=navFlow;flow.forEach(group=>{const d=document.createElement('details');d.className='nav-phase'+(group.n?'':' nav-phase-system');d.dataset.navItems=group.items.join('|');d.dataset.navAlwaysOpen=group.n===1?'1':'0';d.open=group.items.includes(state.ui.activeView)||group.n===1;const sm=document.createElement('summary');sm.innerHTML=`<span class="nav-phase-num">${group.n||'⚙'}</span><span class="nav-phase-text"><span class="nav-phase-title">${esc(group.label)}</span><span class="nav-phase-hint">${esc(group.hint||'')}</span></span>`;d.appendChild(sm);group.items.forEach((item,i)=>{const b=document.createElement('button');b.dataset.navView=item;b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">${group.n?group.n+'.'+(i+1):'·'}</span><span class="nav-text">${esc(navLabel(item))}</span><span class="nav-state"></span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d)});return;
+   const flow=navFlow;flow.forEach(group=>{const d=document.createElement('details');d.className='nav-phase'+(group.n?'':' nav-phase-system');d.dataset.navItems=group.items.join('|');d.dataset.navAlwaysOpen=group.n===1?'1':'0';d.open=group.items.includes(state.ui.activeView)||group.n===1;const sm=document.createElement('summary');sm.innerHTML=`<span class="nav-phase-num">${group.n||'⚙'}</span><span class="nav-phase-text"><span class="nav-phase-title">${esc(group.label)}</span><span class="nav-phase-hint">${esc(group.hint||'')}</span></span>`;d.appendChild(sm);group.items.forEach((item,i)=>{const b=document.createElement('button');b.dataset.navView=item;b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">${group.n?group.n+'.'+(i+1):'·'}</span><span class="nav-text">${esc(navLabel(item))}</span><span class="nav-state"></span>`;b.onclick=()=>navigateTo(item);d.appendChild(b)});nav.appendChild(d)});return;
  }
  const main=[['Dashboard','⌂','Home'],['Project','1','Inizia'],['Guided Review','2','Controlla'],['Operational Plan','3','Sistema'],['Backup','4','Verifica']];
- main.forEach(([view,num,label])=>{const b=document.createElement('button');b.dataset.navView=view;b.className='nav-btn'+(state.ui.activeView===view?' active':'');b.innerHTML=`<span class="nav-num">${num}</span><span class="nav-text">${label}</span>`;b.onclick=()=>{state.ui.activeView=view;render();closeMobile()};nav.appendChild(b)});
+ main.forEach(([view,num,label])=>{const b=document.createElement('button');b.dataset.navView=view;b.className='nav-btn'+(state.ui.activeView===view?' active':'');b.innerHTML=`<span class="nav-num">${num}</span><span class="nav-text">${label}</span>`;b.onclick=()=>navigateTo(view);nav.appendChild(b)});
  const d=document.createElement('details');d.className='nav-phase nav-phase-system';const sm=document.createElement('summary');sm.innerHTML='<span class="nav-phase-num">＋</span><span class="nav-phase-text"><span class="nav-phase-title">Strumenti avanzati</span><span class="nav-phase-hint">Pagine, keyword, Search Console e altro</span></span>';d.appendChild(sm);
  const advanced=['Pages','Keywords','Search Console','Tasks','Issues','Technical SEO','Canonical','Indexation','Internal Links','On-Page','Structured Data','Architecture','Topical Map','Content Strategy','Settings'];
  d.dataset.navItems=advanced.join('|');d.dataset.navAlwaysOpen='0';
  /* Mancava d.open: l'accordion restava chiuso anche quando conteneva
     la vista attiva, quindi Search Console e Keyword risultavano introvabili. */
  d.open=advanced.includes(state.ui.activeView);
- advanced.forEach(item=>{const b=document.createElement('button');b.dataset.navView=item;b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">·</span><span class="nav-text">${esc(navLabel(item))}</span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d);
+ advanced.forEach(item=>{const b=document.createElement('button');b.dataset.navView=item;b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">·</span><span class="nav-text">${esc(navLabel(item))}</span>`;b.onclick=()=>navigateTo(item);d.appendChild(b)});nav.appendChild(d);
 };
 function v7StartChecklist(){const s=v7Snapshot();const k=s.keywords.length,gs=s.gsc.length;return `<div class="v7-list">
  <div class="v7-list-row ${s.domain?'done':''}"><span class="v7-list-icon">${s.domain?'✓':'1'}</span><div><strong>Sito collegato</strong><small>${s.domain?esc(s.p.domain):'Inserisci il dominio principale'}</small></div><button class="btn" data-nav="Project">${s.domain?'Controlla':'Inserisci'}</button></div>
