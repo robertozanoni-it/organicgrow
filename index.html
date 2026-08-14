@@ -5915,7 +5915,8 @@ function guidedJourneyStatus(journey){
   if(verify)return {label:'Da verificare',className:'verify',done,current:Math.max(0,journey.steps.findIndex(step=>step.id==='verify-task'))};
   const started=Boolean(record.startedAt||done),firstOpen=journey.steps.findIndex(step=>!step.done());
   const saved=Math.max(0,Math.min(record.current??0,journey.steps.length-1));
-  const current=journey.steps[saved]?.done()&&firstOpen>=0?firstOpen:saved;
+  let current=journey.steps[saved]?.done()&&firstOpen>=0?firstOpen:saved;
+  while(current<journey.steps.length-1&&QUICK_ACK_ACTIONS[journey.steps[current].autoAction])current++;
   return {label:started?'In corso':'Da iniziare',className:started?'progress':'todo',done,current};
 }
 function journeyFlowRail(activeId){
@@ -5970,12 +5971,30 @@ function guidedPathExtra(journey,step,index){
   if(journey.id==='report')return `<div class="journey-data-grid"><div class="journey-data-card"><div class="value">${pages.length}</div>Pagine analizzate</div><div class="journey-data-card"><div class="value">${byProject(state.tasks).filter(task=>String(task.status||'').toUpperCase()==='VERIFIED').length}</div>Task verificate</div><div class="journey-data-card"><div class="value">${activeOpenTasks().length}</div>Task aperte</div></div>`;
   return '';
 }
+/* Passi di solo riepilogo (nessuna azione reale, solo "ho letto, continua"):
+   vengono confermati e superati automaticamente cosi' l'utente non deve
+   fermarsi a fare clic su schermate senza decisioni da prendere. Il dato
+   che mostravano resta comunque visibile nella schermata successiva o
+   nelle rispettive viste (Problemi, Pagine, Report). */
+const QUICK_ACK_ACTIONS={'ack-technical-summary':'summary','ack-technical-priorities':'priorities','ack-content-pages':'pages','ack-task-priority':'priority','ack-report-completed':'completed','ack-report-open':'open','ack-report-verification':'verification','ack-report-next':'next'};
+function autoAdvanceQuickSteps(journey,record){
+  let i=Math.max(0,Math.min(record.current??0,journey.steps.length-1)),moved=false;
+  while(i<journey.steps.length-1){
+    const step=journey.steps[i],flagKey=QUICK_ACK_ACTIONS[step.autoAction];
+    if(!flagKey)break;
+    if(!step.done()){record.flags[flagKey]=true;moved=true;}
+    i++;
+  }
+  if(moved||record.current!==i){record.current=i;record.updatedAt=now();}
+}
 function guidedJourneyStepView(journeyInput){
   /* Recupero i metadati di fase: numero della fase e offset globale dei passi. */
   const flow=journeyPhaseById(journeyInput.id);
   const journey=flow||{...journeyInput,phase:1,phaseCount:1,globalStart:0,globalTotal:journeyInput.steps.length};
   const nextPhase=journeyFlow().find(item=>item.phase===journey.phase+1)||null;
-  const record=guidedPathRecord(journey.id),status=guidedJourneyStatus(journey);
+  const record=guidedPathRecord(journey.id);
+  autoAdvanceQuickSteps(journey,record);
+  const status=guidedJourneyStatus(journey);
   const index=Math.max(0,Math.min(record.current??status.current,journey.steps.length-1));
   const step=journey.steps[index],done=step.done();
   const globalIndex=journey.globalStart+index+1;
