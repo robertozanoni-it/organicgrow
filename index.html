@@ -96,7 +96,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .mobile-menu{display:none}
 
 .main{min-width:0}
-.topbar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:13px 24px;min-height:68px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.topbar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 97%,var(--surface));border-bottom:1px solid var(--border);padding:13px 24px;min-height:68px;display:flex;gap:12px;align-items:center;justify-content:space-between}
 .topbar-left{display:flex;gap:10px;align-items:center;min-width:0}
 .topbar h2{font-size:19.5px;margin:0;font-weight:800}
 .topbar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -106,13 +106,30 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .content{padding:28px 32px 56px;max-width:1440px;margin:auto}
 
 /* ---------- Buttons / forms ---------- */
-.btn{border:1px solid var(--border-control);background:var(--surface);color:var(--text);padding:10px 15px;border-radius:var(--radius-sm);font-weight:700;min-height:44px;transition:background-color .15s,border-color .15s,color .15s,transform .15s,box-shadow .15s;box-shadow:none}
-.btn:hover:not(:disabled){border-color:var(--border-strong);background:var(--surface-alt);transform:translateY(-1px)}
-.btn:active:not(:disabled){transform:translateY(0)}
+.btn{border:1px solid var(--border-control);background:var(--surface);color:var(--text);padding:10px 15px;border-radius:var(--radius-sm);font-weight:700;min-height:44px;transition:background-color .1s,border-color .1s,color .1s;box-shadow:none}
+.btn:hover:not(:disabled){border-color:var(--border-strong);background:var(--surface-alt)}
 .btn:disabled{cursor:not-allowed;opacity:.5;background:var(--surface-alt);color:var(--muted)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 28%,transparent)}
 .btn.primary:hover:not(:disabled){background:var(--accent-hover);border-color:var(--accent-hover)}
 .btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 35%,var(--border))}
+/* Ogni pulsante secondario prende un colore diverso in base alla posizione
+   tra i pulsanti dello stesso contenitore, cosi' le azioni si riconoscono
+   a colpo d'occhio; primary (azione principale) e danger (distruttiva)
+   mantengono il loro colore fisso e non entrano nella rotazione. */
+.btn:not(.primary):not(.danger):nth-child(7n+1 of .btn){background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:color-mix(in srgb,var(--accent) 34%,var(--border));color:color-mix(in srgb,var(--accent) 80%,var(--text))}
+.btn:not(.primary):not(.danger):nth-child(7n+2 of .btn){background:color-mix(in srgb,var(--success) 16%,var(--surface));border-color:color-mix(in srgb,var(--success) 34%,var(--border));color:color-mix(in srgb,var(--success) 80%,var(--text))}
+.btn:not(.primary):not(.danger):nth-child(7n+3 of .btn){background:color-mix(in srgb,var(--info) 16%,var(--surface));border-color:color-mix(in srgb,var(--info) 34%,var(--border));color:color-mix(in srgb,var(--info) 80%,var(--text))}
+.btn:not(.primary):not(.danger):nth-child(7n+4 of .btn){background:color-mix(in srgb,var(--warning) 16%,var(--surface));border-color:color-mix(in srgb,var(--warning) 34%,var(--border));color:color-mix(in srgb,var(--warning) 80%,var(--text))}
+.btn:not(.primary):not(.danger):nth-child(7n+5 of .btn){background:color-mix(in srgb,#8b5cf6 16%,var(--surface));border-color:color-mix(in srgb,#8b5cf6 34%,var(--border));color:color-mix(in srgb,#8b5cf6 80%,var(--text))}
+.btn:not(.primary):not(.danger):nth-child(7n+6 of .btn){background:color-mix(in srgb,#0d9488 16%,var(--surface));border-color:color-mix(in srgb,#0d9488 34%,var(--border));color:color-mix(in srgb,#0d9488 80%,var(--text))}
+.btn:not(.primary):not(.danger):nth-child(7n+7 of .btn){background:color-mix(in srgb,#db2777 16%,var(--surface));border-color:color-mix(in srgb,#db2777 34%,var(--border));color:color-mix(in srgb,#db2777 80%,var(--text))}
+.btn:not(.primary):not(.danger):nth-child(7n+1 of .btn):hover:not(:disabled),
+.btn:not(.primary):not(.danger):nth-child(7n+2 of .btn):hover:not(:disabled),
+.btn:not(.primary):not(.danger):nth-child(7n+3 of .btn):hover:not(:disabled),
+.btn:not(.primary):not(.danger):nth-child(7n+4 of .btn):hover:not(:disabled),
+.btn:not(.primary):not(.danger):nth-child(7n+5 of .btn):hover:not(:disabled),
+.btn:not(.primary):not(.danger):nth-child(7n+6 of .btn):hover:not(:disabled),
+.btn:not(.primary):not(.danger):nth-child(7n+7 of .btn):hover:not(:disabled){filter:brightness(1.08)}
 
 input,select,textarea{border:1px solid var(--border-control);background:var(--surface);color:var(--text);border-radius:var(--radius-sm);padding:10px 12px;min-height:44px}
 textarea{min-height:110px;resize:vertical}
