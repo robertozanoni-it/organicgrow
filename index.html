@@ -4594,6 +4594,7 @@ const SITE_READERS=[
 
 const siteFetchCache=new Map();
 let scanAbort=null;
+let scanOverlayAutoCloseToken=null;
 let diagnosticAbort=null;
 
 function readerOrder(){
@@ -5150,6 +5151,13 @@ function setScanButtonsBusy(busy){
   });
 }
 
+/* Bug: a scansione conclusa la finestra di analisi restava aperta sopra
+   a tutta l'app (position:fixed;inset:0) finche' qualcuno non cliccava
+   "Chiudi" o premeva Esc. Chi non se ne accorgeva restava con OGNI
+   pulsante dell'app "morto": la finestra invisibile-ma-presente
+   intercettava tutti i clic sottostanti (sidebar, fasi, salvataggio
+   progetto...). Ora si chiude da sola dopo qualche secondo, restando
+   comunque chiudibile subito a mano per chi vuole continuare prima. */
 function finishScanOverlay(summaryText){
   const el=scanOverlayEl();
   if(!el)return;
@@ -5161,6 +5169,11 @@ function finishScanOverlay(summaryText){
   close.focus();
   state.ui.scanning=false;
   setScanButtonsBusy(false);
+  const token=Symbol();scanOverlayAutoCloseToken=token;
+  setTimeout(()=>{
+    if(scanOverlayAutoCloseToken!==token)return;
+    if(el.classList.contains('show')&&!state.ui.scanning)closeScanOverlay();
+  },4000);
 }
 
 function closeScanOverlay(){
@@ -7235,7 +7248,15 @@ backupView=function(){const s=v7Snapshot();return `<div class="v7-shell">${v7Ste
 const _v7SetupTopbar=setupTopbar;
 setupTopbar=function(){_v7SetupTopbar();const guided=state.ui.experienceMode==='guided';const search=document.getElementById('globalSearch'),report=document.getElementById('topReportBtn');if(search)search.hidden=guided;if(report)report.hidden=guided;};
 const _v7BindView=bindView;
-bindView=function(){_v7BindView();document.querySelectorAll('#v7RunScan').forEach(b=>b.onclick=async()=>{b.disabled=true;b.textContent='Controllo in corso…';await analyzeCurrentWebsite({force:true});state.ui.activeView='Guided Review';render();});};
+bindView=function(){_v7BindView();document.querySelectorAll('#v7RunScan').forEach(b=>b.onclick=async()=>{
+  /* Se analyzeCurrentWebsite lanciasse un errore imprevisto (fuori dal
+     suo stesso try/catch interno) il pulsante restava disabilitato con
+     scritto "Controllo in corso..." per sempre, perche' senza render()
+     nessun nuovo HTML lo sostituiva: sembrava un pulsante rotto. */
+  b.disabled=true;const idle=b.textContent;b.textContent='Controllo in corso…';
+  try{await analyzeCurrentWebsite({force:true});state.ui.activeView='Guided Review';render();}
+  catch(e){console.error('Avvio controllo non riuscito',e);toast('Controllo non avviato. Riprova.');b.disabled=false;b.textContent=idle;}
+});};
 
 /* --- avvio --- */
 document.getElementById('scanCancelBtn').onclick=()=>{
