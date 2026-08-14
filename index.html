@@ -269,7 +269,7 @@ tr:last-child td{border-bottom:0}
 .guided-nav-note{padding:12px;margin:8px 0 14px;border-radius:var(--radius-md);background:var(--surface-alt);color:var(--muted);font-size:13.5px}
 @media(max-width:800px){.wz-progress{grid-template-columns:1fr}.wz-status-grid{grid-template-columns:1fr}.wz-title{font-size:25px}}
 
-/* ---------- Guide (V5.5) ---------- */
+/* ---------- Guida passo-passo ---------- */
 .guide-shell{max-width:980px;margin:0 auto}
 .guide-progress{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
 .guide-step{display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:var(--surface-alt);font-size:12.6px;color:var(--muted)}
@@ -662,7 +662,7 @@ tr:last-child td{border-bottom:0}
 .diag-tag{font-weight:800;font-size:12.6px;padding:2px 9px;border-radius:999px;background:var(--surface-alt)}
 .diag-tag.ok{color:var(--success)}.diag-tag.ko{color:var(--danger)}
 
-/* ---------- V6 shell (dashboard guidata) ---------- */
+/* ---------- Dashboard guidata ---------- */
 .v6-shell{max-width:1120px;margin:0 auto}
 .v6-kicker{font-size:12.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
 .v6-title{font-size:38px;line-height:1.1;margin:8px 0 10px;letter-spacing:-.03em}
@@ -702,7 +702,7 @@ tr:last-child td{border-bottom:0}
 @media(max-width:1000px){.v6-flow{grid-template-columns:repeat(3,1fr)}.v6-grid{grid-template-columns:1fr}.v6-command{grid-template-columns:1fr}.v6-command .btn{width:100%}}
 @media(max-width:720px){.v6-title{font-size:28px}.v6-flow{grid-template-columns:1fr 1fr}.v6-explain{grid-template-columns:1fr}.v6-step-card{padding:20px}}
 
-/* ---------- Page decision (V6.1) ---------- */
+/* ---------- Scheda pagina decisionale ---------- */
 .page-decision{display:grid;gap:16px;margin-bottom:18px}
 .page-decision-hero{border:1px solid var(--border);border-radius:var(--radius-xl);background:var(--surface);padding:24px}
 .page-decision-hero.ok{border-color:color-mix(in srgb,var(--success) 42%,var(--border));background:color-mix(in srgb,var(--success) 6%,var(--surface))}
@@ -734,7 +734,7 @@ tr:last-child td{border-bottom:0}
 @media(max-width:900px){.page-decision-checks{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.page-decision-checks{grid-template-columns:1fr}.page-decision-title{font-size:22px}.page-decision-actions .btn{width:100%}}
 
-/* ---------- V7 percorso semplice (4 step) ---------- */
+/* ---------- Percorso semplice a 4 step ---------- */
 .v7-shell{max-width:1120px;margin:auto}
 .v7-hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.5fr);gap:28px;align-items:end;margin:8px 0 26px}
 .v7-hero h1{font-size:clamp(30px,4.4vw,48px);line-height:1.06;letter-spacing:-.035em;margin:0 0 14px;max-width:780px}
@@ -976,6 +976,7 @@ tr:last-child td{border-bottom:0}
   .drawer{padding:18px}
 }
 </style>
+
 </head>
 <body>
 <div class="app" id="app">
@@ -1264,7 +1265,7 @@ let saveTimer=null;
 function commit(action='Aggiornamento'){
   const p=currentProject();
   if(p) p.updatedAt=now();
-  /* V10.2.4 - Prima ogni commit() (centinaia di punti di chiamata) scriveva
+  /* Prima ogni commit() (centinaia di punti di chiamata) scriveva
      una riga in state.activity, ma nessuna vista la mostra mai: cresceva
      silenziosamente fino a 300 voci a ogni progetto, gonfiando localStorage
      e i backup JSON senza alcun beneficio visibile. Il campo resta nello
@@ -1529,7 +1530,7 @@ function confirmAutoField(name){
   commit(`Campo confermato: ${name}`);toast('Campo confermato.');render();
 }
 function pendingAutoFields(){
-  /* V10.2.4 - Allineato a dataQualityFindings(): i valori letti alla lettera
+  /* Allineato a dataQualityFindings(): i valori letti alla lettera
      dal sito (origine 'site') non richiedono piu' una conferma manuale,
      solo le deduzioni ('inferred') la richiedono davvero. */
   const auto=currentProject()?.autoFilled||{};
@@ -1632,7 +1633,7 @@ function verifyOperationalPlanItem(id,kind){
 }
 
 /* ============================================================
-   V5.8 — AVANZAMENTO AUTOMATICO
+   AVANZAMENTO AUTOMATICO
    Chiusa un'attivita', il sistema calcola subito la successiva, la porta
    in cima e la evidenzia. Cosi' non serve tornare indietro a cercarla.
    ============================================================ */
@@ -1661,7 +1662,7 @@ function scrollToFocusedPlanItem(){
 }
 
 /* ============================================================
-   V5.8 — RISOLUZIONE AUTOMATICA
+   RISOLUZIONE AUTOMATICA
    Distinzione netta e dichiarata:
      - l'app puo' sistemare da sola i propri dati (archivio locale)
      - l'app NON puo' modificare il sito online: title, meta e H1 vanno
@@ -1672,7 +1673,7 @@ function autoResolvableSummary(){
   const plan=pageCompletionPlan();
   const inferredFields=plan.inferred.reduce((sum,entry)=>sum+entry.fields.length,0);
   const readableFields=plan.readable.reduce((sum,entry)=>sum+entry.fields.length,0);
-  /* V10.2.2 — Il contatore sommava TUTTE le keyword non collegate, ma
+  /* Il contatore sommava TUTTE le keyword non collegate, ma
      autoLinkKeywordsSilent() collega solo quelle con corrispondenza certa.
      Le altre restavano nel totale per sempre: il bottone prometteva 103,
      l'azione ne risolveva una parte e il numero non arrivava mai a zero. */
@@ -1730,7 +1731,7 @@ async function runAutoResolve(options={}){
 function keywordMatchNormalize(value){
   return String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
 }
-/* V8.1 — matching semantico: conserva i termini che distinguono davvero
+/* matching semantico: conserva i termini che distinguono davvero
    una landing (web, seo, agenzia, consulenza...) e raggruppa sinonimi utili. */
 const KEYWORD_MATCH_STOP=new Set('a ad al alla alle allo ai agli anche che chi con da dal dalla dalle dei del della delle di e ed gli il in la le lo nel nella nelle o per su tra un una uno www com it'.split(/\s+/));
 const KEYWORD_CONCEPTS={
@@ -1756,7 +1757,7 @@ const GEO_TERMS=[
   'potenza','prato','ragusa','ravenna','reggio calabria','reggio emilia','rieti','rimini','rovigo','salerno','sassari',
   'savona','siena','siracusa','sondrio','sud sardegna','taranto','terni','trapani','trento','treviso','trieste','udine',
   'varese','venezia','verbania','vercelli','verona','vibo valentia','vicenza','viterbo','lombardia',
-  /* V8.8: comuni e localita' della provincia di Bergamo. Il filtro resta configurabile
+  /* comuni e localita' della provincia di Bergamo. Il filtro resta configurabile
      tramite Area SEO principale/secondarie, ma ora riconosce anche le query locali vicine. */
   'albano sant alessandro','albino','almè','almenno san bartolomeo','almenno san salvatore','alzano lombardo','arcene','ardesio','azzano san paolo',
   'bariano','bolgare','bonate sopra','bonate sotto','brembate','brembate di sopra','brusaporto','calcio','calusco d adda','capriate san gervasio',
@@ -1813,7 +1814,7 @@ function projectGeoProfile(){
 }
 function classifyKeywordGeo(keyword){
   const profile=projectGeoProfile();
-  /* V10.2.4 - Memo per keyword: il risultato dipende solo da keyword.keyword
+  /* Memo per keyword: il risultato dipende solo da keyword.keyword
      e dal profilo geo del progetto, non dalla pagina con cui viene
      confrontata (vedi nota sopra invalidateKeywordMatchCaches). */
   const key=keyword?.id||keyword?.keyword||'';
@@ -1842,7 +1843,7 @@ function applyGeoClassification(){
     }
     if(prev!==keyword.geoStatus)changed++;
   });
-  /* V10.2.1: currentProject() puo' essere undefined su uno stato ripristinato
+  /* currentProject() puo' essere undefined su uno stato ripristinato
      senza progetti; l'assegnazione diretta lanciava un TypeError. */
   if(profile.primary){const p=currentProject();if(p)p.geoLastClassifiedAt=now();}
   return changed;
@@ -1866,7 +1867,7 @@ function normalizedPhraseInText(text,phrase){
   const hay=` ${keywordMatchNormalize(text)} `,needle=` ${keywordMatchNormalize(phrase)} `;
   return needle.trim()&&hay.includes(needle);
 }
-/* V10.2.4 - Performance: stessa logica di semanticFamilies() sopra, stesso
+/* Performance: stessa logica di semanticFamilies() sopra, stesso
    motivo (funzione pura richiamata molte volte con lo stesso testo). */
 const textConceptsRuntimeCache=new Map();
 function textConcepts(value){
@@ -1878,13 +1879,13 @@ function textConcepts(value){
   return out;
 }
 function pageMatchCorpus(page){
-  /* V8.8: il matching usa anche meta, headings e testo reale della pagina quando
+  /* il matching usa anche meta, headings e testo reale della pagina quando
      disponibili dal crawl. Il testo viene limitato per mantenere l'interfaccia fluida. */
   return keywordMatchNormalize(`${page.primaryKeyword||''} ${page.title||''} ${page.h1||''} ${page.meta||''} ${page.headings||''} ${String(page.contentText||'').slice(0,14000)} ${page.pageName||''} ${page.displayUrl||page.normalizedUrl||page.canonicalUrl||''} ${page.cluster||''}`);
 }
 
 /* ============================================================
-   V8.9 — MOTORE SEMANTICO + INTENT + CONTENUTO REALE + SHORTLIST
+   MOTORE SEMANTICO + INTENT + CONTENUTO REALE + SHORTLIST
    - profilo pagina: title, H1, meta, H2/H3, testo principale, URL, cluster
    - intent: scoring multi-segnale, non "prima regex che vince"
    - navigazionale: brand del progetto dinamico, mai nomi hardcoded
@@ -1908,7 +1909,7 @@ const SEMANTIC_FAMILIES_NORMALIZED=Object.fromEntries(Object.entries(SEMANTIC_FA
 let pageSemanticRuntimeCache=new Map();
 let keywordPeerRuntimeCache=null;
 let keywordPeerRuntimeSignature='';
-/* V10.2.4 - Performance: classifyKeywordGeo(keyword) dipende solo dalla
+/* Performance: classifyKeywordGeo(keyword) dipende solo dalla
    keyword e dal profilo geografico del progetto, MAI dalla pagina. Prima
    veniva ricalcolata da zero dentro keywordPageMatch() per OGNI coppia
    keyword×pagina, quindi la stessa identica risposta per una keyword
@@ -1941,7 +1942,7 @@ function keywordPeerIndex(){
   if(keywordPeerRuntimeCache&&keywordPeerRuntimeSignature===signature)return keywordPeerRuntimeCache;
   const map=new Map();
   byProject(state.keywords).forEach(item=>{
-    /* V8.8: un'automazione non diventa prova per un'altra automazione. */
+    /* un'automazione non diventa prova per un'altra automazione. */
     if(!['manual-confirmed','group-confirmed'].includes(String(item.linkSource||'')))return;
     const target=String(item.targetUrl||'').trim();
     if(!target||!String(item.keyword||'').trim())return;
@@ -1957,7 +1958,7 @@ const INTENT_RULES={
   TRANSACTIONAL:[[/\bpreventiv[oi]\b/,3.0],[/\bservizi?\b/,1.5],[/\bconsulenza\b/,2.3],[/\bconsulente\b/,2.2],[/\brealizzazione\b/,2.4],[/\bcreazione\b/,2.2],[/\bcostruzione\b/,2.1],[/\bsviluppo\b/,2.1],[/\bagenzia\b/,1.8],[/\bprofessionista\b/,1.8],[/\besperto\b/,1.7],[/\bacquist/,2.8],[/\bprenot/,2.7],[/\brichied/,2.0]],
   COMMERCIAL:[[/\bmiglior[ei]\b/,3.0],[/\bconfronto\b/,2.8],[/\brecensioni?\b/,2.6],[/\bprezz[oi]\b/,2.4],[/\bcost[oi]\b/,2.4],[/\bquanto costa\b/,3.1],[/\bscelta\b/,2.0],[/\bscegliere\b/,2.4],[/\bconviene\b/,2.1],[/\bvs\b/,2.3]]
 };
-/* V10.2.4 - Performance: semanticFamilies() è una funzione pura (stesso
+/* Performance: semanticFamilies() è una funzione pura (stesso
    testo in ingresso -> stesso risultato) ma confronta il testo con tutte
    le famiglie semantiche del dizionario a ogni chiamata. Chiamata più
    volte per la STESSA keyword/pagina nel corso di un solo ciclo di
@@ -1985,7 +1986,7 @@ function projectBrandTerms(){
 function intentScoreCard(value,url='',pageType=''){
   const text=keywordMatchNormalize(`${value||''} ${url||''}`),type=String(pageType||'').toLowerCase();
   const scores={NAVIGATIONAL:0,INFORMATIONAL:0,TRANSACTIONAL:0,COMMERCIAL:0};
-  /* V10.2.1 — Il bonus navigazionale veniva sommato una volta per OGNI variante
+  /* Il bonus navigazionale veniva sommato una volta per OGNI variante
      di brand riconosciuta ("studio zirafa", "studio", "zirafa", "studiozirafa"),
      arrivando a +9.6 e schiacciando ogni altro segnale di intento. Ora vale una
      volta sola e si attenua quando la query porta contenuto oltre al brand:
@@ -2102,7 +2103,7 @@ function pageTypeIntentFit(page,queryIntent){
 }
 
 /* ============================================================
-   V10.2 — INTENT-FIRST AUTO MAPPING
+   INTENT-FIRST AUTO MAPPING
    Seconda rete di sicurezza per le keyword rimaste senza target:
    1) intento dominante + tipo pagina;
    2) pagina osservata in Search Console, solo se coerente;
@@ -2111,7 +2112,7 @@ function pageTypeIntentFit(page,queryIntent){
    Non forza un target in presenza di conflitti semantici o geografici.
    ============================================================ */
 const INTENT_GENERIC_TOKENS=new Set('come cosa perche guida idee consigli tutorial migliore migliori confronto recensione recensioni prezzo prezzi costo costi quanto scegliere scelta conviene vs preventivo preventivi servizio servizi online web sito siti pagina pagine'.split(/\s+/));
-/* V10.2.4 - Performance: GEO_TERM_PAIRS è una lista fissa (~180 comuni):
+/* Performance: GEO_TERM_PAIRS è una lista fissa (~180 comuni):
    prima questo Set veniva ricostruito da zero a ogni singola chiamata di
    keywordCoreTokens, funzione richiamata moltissime volte per ogni ciclo
    di mapping keyword↔pagina. Calcolato una sola volta all'avvio. */
@@ -2136,7 +2137,7 @@ function findPageByAnyUrl(url){
 function keywordObservedPageEvidence(keyword){
   const page=findPageByAnyUrl(keyword?.observedPage||'');if(!page||!validProjectPage(page)||page.indexable===false)return null;
   const compat=semanticIntentCompatibility(keyword,page),typeFit=pageTypeIntentFit(page,compat.qIntent),score=keywordPageMatch(keyword,page);
-  /* V10.2.3 - La pagina osservata e' quella che Google gia' mostra per quella
+  /* La pagina osservata e' quella che Google gia' mostra per quella
      query: e' una misurazione, non una stima. Prima veniva scartata se le
      nostre euristiche di intento non erano d'accordo (intent>=.80,
      typeFit>=.68), cioe' l'ipotesi batteva il dato. Restano solo i due
@@ -2175,7 +2176,7 @@ function brandNavigationalTarget(keyword){
   if(keywordResolvedIntent(keyword)!=='NAVIGATIONAL')return null;
   const text=keywordMatchNormalize(keyword.keyword),brandTerms=projectBrandTerms();
   const hasBrand=brandTerms.some(term=>normalizedPhraseInText(text,term));if(!hasBrand)return null;
-  /* V10.2.1: la homepage vale solo per query di SOLO brand (eventualmente
+  /* la homepage vale solo per query di SOLO brand (eventualmente
      con localita' o termini generici). "studio zirafa impianti dentali"
      contiene il brand ma chiede un servizio: deve restare sulla pagina
      di servizio, non finire in homepage. */
@@ -2187,7 +2188,7 @@ function intentFallbackDecision(keyword,best,second,compat,typeFit,lexicalRatio,
   const qIntent=compat.qIntent;
   const brandPage=brandNavigationalTarget(keyword);
   if(brandPage){
-    /* V10.2.1: il confronto precedente metteva a confronto una URL con un id
+    /* il confronto precedente metteva a confronto una URL con un id
        (best.page.displayUrl === brandPage.id), sempre falso. */
     const same=best.page===brandPage||best.page.id===brandPage.id;
     if(same||keywordPageMatch(keyword,brandPage)>=.28)return {decision:'AUTO_INTENT',page:brandPage,reason:'Query navigazionale di brand: homepage assegnata automaticamente'};
@@ -2206,7 +2207,7 @@ function intentFallbackDecision(keyword,best,second,compat,typeFit,lexicalRatio,
     return {decision:'AUTO_INTENT',page:best.page,reason:`Intento coerente con ${consensus.count} keyword simili gia mappate sulla stessa pagina`};
   }
   const commonConcepts=textConcepts(keyword.keyword).filter(c=>pageProfile.concepts.includes(c)).length;
-  /* V10.2.2 — lexicalRatio si calcola su TUTTI i token, quindi i modificatori
+  /* lexicalRatio si calcola su TUTTI i token, quindi i modificatori
      di intento ("quanto", "costa", "prezzo", "migliore") diluivano la prova
      tematica: "quanto costa endodonzia" sulla pagina /endodonzia otteneva
      1/3 = 0.33 e restava manuale, pur avendo intento coerente, tipo pagina
@@ -2227,7 +2228,7 @@ function intentFallbackDecision(keyword,best,second,compat,typeFit,lexicalRatio,
   }
 
   /* ============================================================
-     V10.2.3 - ABBINAMENTO PER COPERTURA DEI TERMINI PORTANTI
+     ABBINAMENTO PER COPERTURA DEI TERMINI PORTANTI
      Tre casi che restavano manuali pur essendo decidibili.
      ============================================================ */
 
@@ -2288,7 +2289,7 @@ function applyIntentConsensusPass(){
     if(compat.hardConflict||classifyKeywordGeo(keyword).status==='OUT_OF_AREA')return;
     const fallback=intentFallbackDecision(keyword,best,second,compat,typeFit,lex,margin,profile);if(!fallback)return;
     const page=fallback.page||best.page,url=page.displayUrl||page.normalizedUrl||page.canonicalUrl||'';if(!url)return;
-    /* V10.2.1: la confidenza usava sempre best.score anche quando la decisione
+    /* la confidenza usava sempre best.score anche quando la decisione
        sceglieva una pagina diversa (es. la homepage per una query di brand),
        riportando un valore riferito a un'altra pagina. */
     const chosenScore=page===best.page?best.score:keywordPageMatch(keyword,page);
@@ -2304,7 +2305,7 @@ function keywordAutoDecision(keyword,best,second){
   const compat=semanticIntentCompatibility(keyword,best.page),geoClass=classifyKeywordGeo(keyword),margin=best.score-(second?.score||0),typeFit=pageTypeIntentFit(best.page,compat.qIntent),tokens=keywordMatchTokens(keyword.keyword),pageProfile=pageSemanticProfile(best.page),lexicalHits=tokens.filter(t=>pageProfile.words.some(w=>tokenCompatible(w,t))).length,lexicalRatio=tokens.length?lexicalHits/tokens.length:0,familyFit=compat.qFamilies.length?compat.common.length/compat.qFamilies.length:.5,intentFit=compat.intent;
   if(geoClass.status==='OUT_OF_AREA')return {decision:'EXCLUDE',reason:`Fuori area geografica: ${geoClass.found?.join(', ')||'località non target'}`,compat,typeFit,margin};
   if(compat.hardConflict)return {decision:'NO_MATCH',reason:'Tema o intento in conflitto con la pagina proposta',compat,typeFit,margin};
-  /* V10.2.1 — La regola brand→homepage viveva solo dentro intentFallbackDecision,
+  /* La regola brand→homepage viveva solo dentro intentFallbackDecision,
      cioe' l'ultima risorsa: bastava che un'altra pagina superasse le soglie
      generiche per vincere prima (es. "studio zirafa" finiva su /contatti, che
      ha intent navigazionale e typeFit 1). Una query di solo brand appartiene
@@ -2331,7 +2332,7 @@ function keywordBestSuggestion(keyword){
   if(!keywordActiveForMapping(keyword))return null;
   const ranked=keywordMatchSuggestions(keyword),best=ranked[0],second=ranked[1];if(!best)return null;
   const decision=keywordAutoDecision(keyword,best,second),chosen=decision.overridePage&&decision.overridePage!==best.page?{page:decision.overridePage,score:keywordPageMatch(keyword,decision.overridePage)}:best;
-  /* V10.2.1: con un overridePage il margine veniva calcolato come
+  /* con un overridePage il margine veniva calcolato come
      chosen.score - best.score, quindi sempre negativo (best e' il massimo).
      Il margine e' un distacco: si misura sul secondo classificato diverso
      dalla pagina scelta e non puo' essere negativo. */
@@ -2353,7 +2354,7 @@ function autoLinkKeywordsSilent(){
   return linked;
 }
 
-/* V8.5 — assegna automaticamente ogni keyword valida a un gruppo pagina usando semantica + intent.
+/* assegna automaticamente ogni keyword valida a un gruppo pagina usando semantica + intent.
    - AUTO_CONFIRMED: target applicato senza intervento umano, solo con match forte.
    - SUGGESTED: gruppo proposto ma target NON applicato, quindi resta da controllare.
    - MANUAL_CONFIRMED: mapping già scelto dall'utente, rispettato e mai sovrascritto. */
@@ -2364,7 +2365,7 @@ function autoSetKeywordGroupsSilent(){
   const pageByTarget=url=>pages.find(page=>[page.displayUrl,page.normalizedUrl,page.canonicalUrl].includes(url));
   byProject(state.keywords).forEach(keyword=>{
     if(!keyword.keyword)return;
-    /* V10.2.1 — Le keyword fuori area uscivano da qui senza stato: restavano con
+    /* Le keyword fuori area uscivano da qui senza stato: restavano con
        keywordGroupStatus vuoto, non entravano nei conteggi mostrati all'utente e
        rendevano irraggiungibile il ramo AUTO_EXCLUDED piu' sotto (codice morto,
        perche' anche keywordBestSuggestion filtra le keyword non attive).
@@ -2394,7 +2395,7 @@ function autoSetKeywordGroupsSilent(){
     const name=match.page.pageName||match.page.title||url;
     if(match.automatic&&url){
       if(currentTarget!==url||keyword.keywordGroupStatus!=='AUTO_CONFIRMED'||keyword.keywordGroupUrl!==url){changed++;}
-      /* V10.2.1: la seconda passata sovrascriveva 'auto-intent-v102' con
+      /* la seconda passata sovrascriveva 'auto-intent-v102' con
          'auto-semantic-v90', cancellando proprio la traccia che permette di
          capire quali keyword ha risolto la nuova logica di intento V10.2. */
       const keepIntentSource=String(keyword.linkSource||'')==='auto-intent-v102'&&currentTarget===url;
@@ -2514,7 +2515,7 @@ function actionPlanRows(){
   }));
 }
 /* ============================================================
-   V5.7 — COSA FARE
+   COSA FARE
    I "wizard checks" coprono solo gli 8 passi di configurazione: quando sono
    tutti superati il piano risultava vuoto anche con decine di pagine senza
    title o keyword scollegate. Queste verifiche leggono i dati reali e
@@ -2524,7 +2525,7 @@ function dataQualityFindings(){
   const pages=validProjectPages(),observedPages=validProjectPages().filter(pageContentObserved),keywords=byProject(state.keywords);
   const insights=keywordJourneyInsights();
   const auto=currentProject()?.autoFilled||{};
-  /* V10.2.4 - Prima anche i campi letti alla lettera dal sito (origine
+  /* Prima anche i campi letti alla lettera dal sito (origine
      'site', badge "✓ dal sito") generavano un'attivita' "da confermare"
      identica a quella di un valore indovinato (origine 'inferred'). Il
      piano operativo si riempiva di lavoro manuale su dati gia' affidabili.
@@ -2957,7 +2958,7 @@ async function handleImportV2(){
 }
 
 /* ============================================================
-   V10.2.1 — PARSING NUMERICO CONSAPEVOLE DEL LOCALE
+   PARSING NUMERICO CONSAPEVOLE DEL LOCALE
    Gli export italiani di Search Console usano il punto come separatore
    delle migliaia ("1.234" = 1234) e la virgola come separatore decimale
    ("3,2"). La versione precedente leggeva "1.234" come 1,234: un errore
@@ -3801,7 +3802,7 @@ function syncWorkflowFromGates(notify=false){
 }
 
 
-/* V6.3 — deduplicazione keyword sicura.
+/* deduplicazione keyword sicura.
    Unisce solo copie della stessa query quando non esistono target in conflitto.
    Conserva metriche Search Console e la target URL più completa. */
 function keywordRecordRichness(item){
@@ -3854,7 +3855,7 @@ function runAutomationCycle(notify=false){
   const keywordsAdded=backfillKeywordsFromPages();
   const keywordsDeduped=dedupeKeywordRecords();
   const p=currentProject();
-  /* V10.2.4 - keywordMappingInputSignature() ricalcola un hash su titolo,
+  /* keywordMappingInputSignature() ricalcola un hash su titolo,
      H1, meta, headings e fino a 14.000 caratteri di testo di OGNI pagina
      del progetto: non è gratis. Prima veniva calcolata due volte in questa
      funzione (una per il confronto, una per salvarla) ad ogni ciclo di
@@ -3915,7 +3916,7 @@ function taskManagementViewV2(){
 
 
 /* ============================================================
-   V5.8 — COMPILAZIONE AUTOMATICA DELLE PAGINE
+   COMPILAZIONE AUTOMATICA DELLE PAGINE
    Tre livelli, tenuti separati perche' hanno affidabilita' diversa:
      'site'     = letto davvero dall'HTML della pagina (verificabile)
      'inferred' = dedotto da URL e struttura del progetto (deterministico)
@@ -4000,7 +4001,7 @@ function pageCompletionPlan(){
   pages.forEach(page=>{
     const path=pagePathOf(page);
     const missingFromSite=['title','meta','h1','canonicalUrl','schema'].filter(name=>!String(page[name]||'').trim());
-    /* V10.2.2 — Una pagina che il browser non riesce a leggere (CORS, offline,
+    /* Una pagina che il browser non riesce a leggere (CORS, offline,
        404) restava conteggiata come "rileggibile" a ogni giro: il contatore del
        bottone non arrivava mai a zero anche dopo aver risolto tutto il resto.
        Dopo un tentativo fallito recente viene esclusa finche' non ha senso
@@ -4155,7 +4156,7 @@ function pagesInventoryView(){
 }
 
 /* ============================================================
-   V5.7 — COLLEGAMENTO KEYWORD → PAGINA
+   COLLEGAMENTO KEYWORD → PAGINA
    "Collegare una keyword" significa indicare quale pagina del sito deve
    posizionarsi per quella ricerca. Senza questo collegamento la keyword
    resta un'idea e non può generare attività verificabili.
@@ -4559,7 +4560,7 @@ function pageContentObserved(page){return Boolean(page&&(page.lastScannedAt||pag
 
 
 /* ============================================================
-   MOTORE DI LETTURA DEL SITO (V5.5)
+   MOTORE DI LETTURA DEL SITO
    Il browser blocca le richieste cross-origin (CORS): senza una
    catena di ripieghi la lettura automatica fallisce quasi sempre.
    Qui proviamo: accesso diretto -> piu' servizi pubblici di sola
@@ -4694,7 +4695,7 @@ function pageSignalsFromHtml(html,url,responseMeta={}){
 }
 
 /* ============================================================
-   COMPILAZIONE AUTOMATICA DEI CAMPI PROGETTO (V5.5)
+   COMPILAZIONE AUTOMATICA DEI CAMPI PROGETTO
    Regola: si compilano SOLO i campi vuoti, mai si sovrascrive
    quello che ha scritto la persona. Ogni campo compilato viene
    marcato con la sua origine:
@@ -4841,7 +4842,7 @@ function autoFillProjectFields(signals=[],meta={}){
     if(detectedGeo){p.geoPrimary=detectedGeo;p.geoPrimarySource='automatic';filled.push({key:'geoPrimary',origin:'inferred',value:detectedGeo});}
   }
 
-  /* V10.2.4 - Prima questo blocco scriveva un testo generico di istruzioni
+  /* Prima questo blocco scriveva un testo generico di istruzioni
      ("Campi precompilati automaticamente...") DENTRO al campo Note del
      progetto, marcandolo "da validare": l'utente si trovava un badge
      "Conferma" su una frase di aiuto, non su un dato reale da controllare.
@@ -4899,7 +4900,7 @@ function keywordFromSignal(signal){
   const p=currentProject();
   const source=String(signal.h1||signal.title||guessPageNameFromUrl(signal.url)||'')
     .split(/[|–—]/)[0].replace(/[_/]+/g,' ').replace(/[^\p{L}\p{N}\s'-]/gu,' ').replace(/\s+/g,' ').trim();
-  /* V10.2.1 — Il brand veniva rimosso ovunque nella frase, non solo agli
+  /* Il brand veniva rimosso ovunque nella frase, non solo agli
      estremi: con brand "Studio Zirafa" l'H1 "Studio dentistico a Bergamo"
      produceva la keyword rotta "dentistico Bergamo". Ora il brand viene
      tolto solo da inizio e fine, dove compare davvero come firma del sito. */
@@ -5185,7 +5186,7 @@ function updateScanProgress(key,status,text){
 }
 
 /* ============================================================
-   ANALISI DEL SITO (V5.5)
+   ANALISI DEL SITO
    - progresso sempre visibile (overlay), da qualunque schermata
    - annullabile
    - non parte due volte in parallelo
@@ -5774,7 +5775,7 @@ function legacySmartWizardView(){
 }
 
 /* ============================================================
-   WIZARD A PERCORSI — V5.5
+   WIZARD A PERCORSI
    Ogni percorso mostra un solo obiettivo per schermata e salva
    automaticamente avanzamento, salti facoltativi e verifiche.
    ============================================================ */
@@ -5865,7 +5866,7 @@ function guidedJourneyDefinitions(){
   ];
 }
 /* ============================================================
-   V5.6 — Il wizard e' un unico flusso: le fasi sono numerate 1..N e
+   Il wizard e' un unico flusso: le fasi sono numerate 1..N e
    i passi hanno una numerazione continua che non riparte da 1.
    ============================================================ */
 function journeyFlow(){
@@ -6227,7 +6228,7 @@ function sourceReliabilityView(){
  return `<div class="card"><div class="section-head"><div><h3>Source Reliability</h3><div class="muted">Affidabilità configurabile per origine dati.</div></div></div><div class="table-wrap" tabindex="0" role="region" aria-label="Affidabilità delle fonti"><table><thead><tr><th scope="col">Fonte</th><th scope="col">Tipo</th><th scope="col">Affidabilità</th></tr></thead><tbody>${state.sourceReliability.map(source=>{const id=esc(source.id),value=clamp(Number(source.reliability)||0);return `<tr><td>${esc(source.name)}</td><td>${esc(source.type)}</td><td><label class="sr-only" for="sourceReliability_${id}">Affidabilità di ${esc(source.name)}</label><input id="sourceReliability_${id}" type="number" min="0" max="100" value="${value}" data-src-rel="${id}"></td></tr>`;}).join('')}</tbody></table></div></div>`;
 }
 /* ============================================================
-   V10.2.2 — INSERIMENTO MANUALE DEI DATI SEARCH CONSOLE
+   INSERIMENTO MANUALE DEI DATI SEARCH CONSOLE
    Finora l'unico ingresso era l'import di un file CSV. Chi ha pochi dati,
    o li legge direttamente dall'interfaccia di Search Console, non aveva
    modo di inserirli. Qui si registra una riga per volta, con gli stessi
@@ -6279,7 +6280,7 @@ function searchConsoleView(){
 }
 
 /* ============================================================
-   V10 — WORDPRESS CONNECTOR
+   WORDPRESS CONNECTOR
    Web App = motore centrale. Plugin WordPress = lettore/esecutore.
    Il token resta nel browser e NON viene incluso nei backup JSON dell'app.
    ============================================================ */
@@ -6602,7 +6603,7 @@ function bindView(){
 }
 
 /* ============================================================
-   V5.7 — SCHEDA RECORD GUIDATA
+   SCHEDA RECORD GUIDATA
    Ogni campo ha un'etichetta comprensibile, una spiegazione di cosa
    scriverci e, dove possibile, una regola verificabile. La scheda si apre
    con un riquadro che dice subito cosa manca e cosa correggere.
@@ -7116,15 +7117,7 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ============================================================
-   V6 — rimosso in fase di revisione (V10.2.3): definiva V6_PHASES,
-   v6State/v6Flow/v6NextAction/v6PhaseView e le prime versioni di
-   renderNav/guidedDashboardView/smartWizardView/bindView, tutte
-   sovrascritte incondizionatamente dal blocco V7 subito sotto,
-   quindi mai eseguite (~55 righe di codice morto, vedi report).
-   ============================================================ */
-
-/* ============================================================
-   V7 — FOUR STEP GUIDED EXPERIENCE
+   FOUR STEP GUIDED EXPERIENCE
    ============================================================ */
 const V7_PHASES=[
   {n:1,id:'start',title:'Inizia',desc:'Sito e dati essenziali'},
@@ -7135,7 +7128,7 @@ const V7_PHASES=[
 function v7Snapshot(){
   const p=currentProject(),pages=validProjectPages(),gsc=byProject(state.gscRecords),keywords=mappingRelevantKeywords(),tasks=byProject(state.tasks),issues=byProject(state.issues).filter(i=>!['VERIFIED','CLOSED'].includes(String(i.status||'').toUpperCase())),open=operationalPlanItems(),domain=Boolean(normalizeSiteDomain(p.domain)),scan=scanCompletedEnough(p),scanPartial=String(p.websiteScan?.status||'')==='partial',verified=tasks.filter(t=>['VERIFIED','CLOSED'].includes(String(t.status||'').toUpperCase())).length,phase=!domain||!pages.length?1:!scan?2:open.length?3:4,startDone=domain&&pages.length>0,checkDone=scan,fixDone=scan&&open.length===0,doneCount=[startDone,checkDone,fixDone,phase===4].filter(Boolean).length,progress=Math.min(100,Math.round((doneCount/4)*100));return {p,pages,gsc,keywords,tasks,issues,open,domain,scan,scanPartial,verified,phase,progress,startDone,checkDone,fixDone};
 }
-/* V10.2.4 - Bug segnalato: dalla Fase 3 non si riusciva a tornare alla
+/* Bug segnalato: dalla Fase 3 non si riusciva a tornare alla
    Fase 1. Causa: questi 4 riquadri (Inizia/Controlla/Sistema/Verifica)
    erano semplici <div>, senza alcun collegamento di navigazione, pur
    avendo l'aspetto di uno stepper cliccabile (bordo attivo, segno di
@@ -7162,7 +7155,7 @@ renderNav=function(){
  main.forEach(([view,num,label])=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===view?' active':'');b.innerHTML=`<span class="nav-num">${num}</span><span class="nav-text">${label}</span>`;b.onclick=()=>{state.ui.activeView=view;render();closeMobile()};nav.appendChild(b)});
  const d=document.createElement('details');d.className='nav-phase nav-phase-system';const sm=document.createElement('summary');sm.innerHTML='<span class="nav-phase-num">＋</span><span class="nav-phase-text"><span class="nav-phase-title">Strumenti avanzati</span><span class="nav-phase-hint">Pagine, keyword, Search Console e altro</span></span>';d.appendChild(sm);
  const advanced=['Pages','Keywords','Search Console','Tasks','Issues','Technical SEO','Canonical','Indexation','Internal Links','On-Page','Structured Data','Architecture','Topical Map','Content Strategy','Settings'];
- /* V10.2.3 - Mancava d.open: l'accordion restava chiuso anche quando conteneva
+ /* Mancava d.open: l'accordion restava chiuso anche quando conteneva
     la vista attiva, quindi Search Console e Keyword risultavano introvabili. */
  d.open=advanced.includes(state.ui.activeView);
  advanced.forEach(item=>{const b=document.createElement('button');b.className='nav-btn'+(state.ui.activeView===item?' active':'');b.innerHTML=`<span class="nav-num">·</span><span class="nav-text">${esc(navLabel(item))}</span>`;b.onclick=()=>{state.ui.activeView=item;render();closeMobile()};d.appendChild(b)});nav.appendChild(d);
@@ -7182,7 +7175,7 @@ smartWizardView=function(){const s=v7Snapshot();if(!s.domain||!s.pages.length)re
  return `<div class="v7-shell">${v7Steps(2)}<div class="v7-page-head"><span class="back">Passaggio 2 di 4 · completato</span><h1>${s.scanPartial?'Il controllo è parziale.':'Il controllo è pronto.'}</h1><p>${s.scanPartial?'Alcune URL non sono state lette: il piano usa i dati disponibili e puoi ripetere la scansione per completarlo. ':''}${s.issues.length?`Ho trovato ${s.issues.length} problemi ancora aperti. Non devi analizzarli qui: li ho già trasformati in attività.`:'Non risultano problemi prioritari aperti nei dati disponibili.'}</p></div><section class="v7-action-card"><h2>${s.open.length?`Ci sono ${s.open.length} attività nel piano`:'Non ci sono attività prioritarie'}</h2><p>${s.open.length?'Passa a “Sistema”: troverai cosa fare in ordine, una voce alla volta.':'Puoi passare direttamente alla verifica finale.'}</p><div class="v7-actions"><button class="btn primary" data-nav="${s.open.length?'Operational Plan':'Backup'}">${s.open.length?'Vai a Sistema':'Vai a Verifica'}</button><button class="btn" id="v7RunScan">Ripeti controllo</button></div></section></div>`};
 const _v7OperationalPlanView=operationalPlanView;
 operationalPlanView=function(){const s=v7Snapshot();
- /* V10.2.3 - Il passaggio "Sistema" era bloccato da scanCompletedEnough(),
+ /* Il passaggio "Sistema" era bloccato da scanCompletedEnough(),
     cioe' dall'aver eseguito il crawler interno. Chi importa le pagine da CSV,
     dal Connector o a mano non lo esegue mai: il piano restava irraggiungibile
     anche con decine di attivita' gia' pronte. Ora conta se il piano esiste. */
@@ -7205,7 +7198,7 @@ document.getElementById('helpBtn').onclick=openHelpDrawer;
 initTheme();
 state.ui.scanning=false;
 setupTopbar(); render();
-/* V8.6: prima disegna l'interfaccia, poi esegue le automazioni pesanti in idle.
+/* prima disegna l'interfaccia, poi esegue le automazioni pesanti in idle.
    Evita il blocco iniziale quando il progetto contiene molte keyword/pagine. */
 const scheduleInitialAutomation=window.requestIdleCallback
   ? callback=>window.requestIdleCallback(callback,{timeout:1200})
