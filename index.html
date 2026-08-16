@@ -26,7 +26,7 @@
     @media(max-width:820px){:root{--top:64px}.sidebar{transform:translateX(-100%);transition:transform .2s ease;width:min(290px,86vw)}.sidebar.open{transform:none}.topbar{left:0;padding:0 15px}.mobile-head{display:block}.project-title{margin-left:8px}.project-title strong{font-size:16px}.top-actions .btn span{display:none}main{margin-left:0;padding:calc(var(--top) + 20px) 15px 40px}.project-switcher{align-items:stretch;flex-direction:column}.project-switcher select{min-width:0;max-width:none;width:100%}.project-switcher small{margin-left:0}.next-panel{grid-template-columns:1fr}.next-copy{border-right:0;border-bottom:1px solid var(--line)}.steps{padding:20px 18px;overflow:auto}.step{min-width:125px}.health-row{grid-template-columns:1fr 1fr}.score{grid-row:auto;grid-column:1/-1;border:0;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:10px}.trend{grid-column:1/-1}.lower-grid{grid-template-columns:1fr}.summary{grid-column:auto}.tool-grid,.kanban{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.field.wide{grid-column:auto}.page-head{align-items:start;flex-direction:column}.issue-grid{grid-template-columns:1fr 1fr}}
     @media(max-width:520px){.top-actions .btn{display:none}.health{padding:17px}.health-row{grid-template-columns:1fr}.metric{border-right:0}.trend{grid-column:1}.steps{grid-template-columns:repeat(4,125px)}.issue-grid{grid-template-columns:1fr}.verify-item{grid-template-columns:38px 1fr}.verify-item>.btn{grid-column:1/-1}.modal{padding:18px}.page-head h1{font-size:26px}.affected-row{grid-template-columns:1fr}.affected-row.head{display:none}.affected-row code:before,.affected-row span:before{display:block;color:var(--muted);font:700 10px/1.4 Inter,sans-serif;text-transform:uppercase}.affected-row code:before{content:'Pagina'}.affected-row span:nth-child(2):before{content:'Problema'}.affected-row span:nth-child(3):before{content:'Correzione'}}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
-    .seo-live-link{color:var(--green-2);font-weight:750;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;overflow-wrap:anywhere}.seo-proposal{min-width:250px;display:grid;gap:4px}.seo-proposal b{font-size:12px}.seo-proposal small{color:var(--muted)}.audit-category-report table{min-width:960px}.audit-category-report td{vertical-align:top}.audit-bulk-bar{position:sticky;bottom:-1px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow)}
+    .seo-live-link{color:var(--green-2);font-weight:750;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;overflow-wrap:anywhere}.seo-proposal{min-width:250px;display:grid;gap:4px}.seo-proposal b{font-size:12px}.seo-proposal small{color:var(--muted)}.audit-category-report table{min-width:960px}.audit-category-report td{vertical-align:top}.audit-bulk-bar{position:sticky;bottom:-1px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow)}.modal.task-detail-modal{width:min(1180px,96vw);max-height:94vh}.task-detail-summary{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:10px;margin:14px 0}.task-detail-summary div{padding:12px;border-radius:10px;background:var(--surface-2)}.task-detail-summary small{display:block;color:var(--muted)}.task-detail-table table{min-width:1050px}.task-change-list{display:grid;gap:5px}.task-change-list code{white-space:normal;overflow-wrap:anywhere;color:var(--green-2)}
   </style>
 </head>
 <body>
@@ -126,7 +126,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.12.0';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.12.1';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value.repairs=Array.isArray(value.repairs)?value.repairs:[];value.settings=value.settings||clone(seed.settings);value.project=value.project||clone(seed.project);value.project.dataOrigin=value.project.dataOrigin||((value.imports||[]).some(i=>i.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration||{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress||{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites||{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages:[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit||{})};value.tasks=(value.tasks||[]).map(t=>{const d=TASK_DETAILS[t.id]||{},repair=[...value.repairs].reverse().find(r=>r.taskId===t.id&&!r.undone),verified=!!t.gptSitesResult?.verified||!!repair?.verification?.all_verified,evidence=t.evidence||{status:'unverified',source:'legacy-or-demo',observedAt:null};return {...t,status:t.status==='Verificata'&&!verified?'Completata':t.status,evidence,affected:Array.isArray(t.affected)&&t.affected.length?t.affected:clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function projectRegistry(){try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');return {active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{return {active:'',projects:{}}}}
@@ -560,6 +560,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '1.12.1', date: '2026-08-16', notes: 'Corretto il blocco dei pulsanti di correzione automatica dei nuovi task bulk: il motore locale riconosce ora le modifiche strutturate invece di affidarsi esclusivamente ai vecchi ID demo 1, 3 e 4. Le proposte title/meta, link interni e sostituzioni di link rotti vengono salvate come correzioni locali reversibili; in modalità WordPress continuano a passare dall’anteprima obbligatoria del plugin e in GPTSites dall’esportazione dedicata. Dal menu Cose da fare, l’apertura di un task usa ora un popup ampio con tutte le pagine, problemi, azioni e modifiche complete.', compatibility: 'Nessuna modifica incompatibile ai dati salvati.' },
   { version: '1.12.0', date: '2026-08-16', notes: 'I sei controlli SEO sono ora operativi pagina per pagina: URL live cliccabili, proposte title e meta description complete, verifica sitemap/indicizzazione in bulk, sorgente-anchor-destinazione per le pagine orfane, abbinamenti keyword/intento spiegati, gruppi di cannibalizzazione con pagina primaria e azione consigliata, link rotti con sorgente e destinazione proposta. Aggiunti pulsanti bulk che creano task strutturati e compatibili con anteprima WordPress; le cannibalizzazioni restano volutamente editoriali e non applicano redirect alla cieca.', compatibility: 'Nessuna modifica incompatibile ai dati salvati. Le correzioni remote richiedono il connettore WordPress e le relative capability; senza dati reali lo stato resta correttamente Da verificare.' },
   { version: '1.11.0', date: '2026-08-16', notes: 'Aggiunto nella barra laterale il menu operativo con problemi e attività aperte, pannello di dettaglio a destra, archivio dei task superati e download del report globale. Nella tabella Pagine e keyword ogni URL senza keyword mostra ora la proposta, la fonte e il pulsante di applicazione. Canonical e indicizzazione spiegano l’azione concreta; la verifica completa non viene più dichiarata avviata se manca il crawl reale WordPress.', compatibility: 'Nessuna modifica incompatibile ai dati salvati. Richiede il connettore WordPress con capacità crawl per verifiche tecniche complete.' },
   { version: '1.10.0', date: '2026-08-16', notes: 'Trovato e corretto un bug reale nella verifica automatica di indicizzazione: il pulsante aggiunto nella versione precedente rileggeva solo la sitemap e riclassificava, ma non eseguiva mai il vero crawl HTTP/canonical — per questo lo stato restava "Da verificare" anche dopo averlo premuto. Ora esegue prima il crawl reale (se WordPress è collegato con questa funzione supportata) e solo dopo riclassifica; l\'etichetta del pulsante e il testo del report spiegano chiaramente cosa serve perché lo stato cambi. Aggiunta una legenda nel pannello "Classificazione canonical" che spiega, per ciascuna etichetta (assente, autoreferenziale, duplicata, verso un\'altra pagina, verso dominio esterno, non verificata), cosa significa e cosa fare. Il report "Keyword e intento" ora indica, per ogni pagina senza keyword, la pagina specifica e la keyword proposta con la fonte della stima dichiarata (da Search Console o dallo slug dell\'URL), con un pulsante per applicarla singolarmente dopo averla controllata — non più solo un conteggio generico. Aggiunta nella Dashboard una selezione rapida con tutte le cose da fare (problemi rilevati nei 6 controlli e attività aperte) che apre direttamente il report o l\'attività corrispondente, più un pulsante per rivedere le attività già completate. Il report stampabile/PDF ora è un vero riepilogo globale: oltre a punteggio e inventario pagine include il conteggio problemi per ciascun controllo, i link interni rotti, la classificazione canonical, il riepilogo di indicizzazione e la copertura keyword.', compatibility: 'Nessuna modifica incompatibile ai dati salvati.' },
@@ -2320,6 +2321,65 @@ function upsertOperationalTask(title, detail, priority, affected, operation, con
   if (task) Object.assign(task, data); else { task = { id: Date.now() + Math.random(), title, status: 'Da approvare', approved: false, ...data }; state.tasks.push(task); }
   save(true); renderShell(); renderKanban(); closeModal(); go('fix'); openTaskDrawer(task); toast(`Task pronto: ${affected.length} ${affected.length === 1 ? 'pagina' : 'pagine'} coinvolte`);
 }
+function taskHasStructuredChanges(task) {
+  return !!task && Array.isArray(task.affected) && task.affected.some(item => item && item.changes && Object.keys(item.changes).length);
+}
+const localRepairSupportedV111 = localRepairSupported;
+localRepairSupported = function (task) {
+  return localRepairSupportedV111(task) || (taskHasStructuredChanges(task) && ['seo', 'internal_link', 'replace_link', 'canonical'].includes(task.operation?.type));
+};
+const applyRepairV111 = applyRepair;
+applyRepair = function (id) {
+  const task = state.tasks.find(t => t.id === id);
+  if (!task || !taskHasStructuredChanges(task) || [1, 3, 4].includes(Number(id))) return applyRepairV111(id);
+  const selected = $$('#modalForm .affected-select');
+  const allowed = selected.length ? new Set(selected.filter(cb => cb.checked).map(cb => comparableUrl(cb.dataset.url))) : null;
+  if (allowed && !allowed.size) { toast('Seleziona almeno una pagina da correggere', 'error'); return; }
+  if (isSimulationMode()) { toast(`Simulazione: verrebbero preparate ${allowed ? allowed.size : task.affected.length} modifiche, senza salvare nulla`); closeModal(); return; }
+  const snapshot = { taskStatus: task.status, pages: clone(state.pages) };
+  const changed = new Set();
+  (task.affected || []).forEach(item => {
+    if (allowed && !allowed.has(comparableUrl(item.url))) return;
+    const page = state.pages.find(p => comparableUrl(p.url) === comparableUrl(item.url));
+    if (!page || !item.changes) return;
+    page.localPendingChanges = { ...(page.localPendingChanges || {}), ...clone(item.changes), preparedAt: new Date().toISOString(), taskId: task.id };
+    if (item.changes.title || item.changes.meta_description) page.localSeoProposal = { title: item.changes.title || page.live?.seoTitle || '', metaDescription: item.changes.meta_description || page.live?.metaDescription || '' };
+    if (item.changes.internal_link) page.localLinkProposals = [...(page.localLinkProposals || []), clone(item.changes.internal_link)];
+    if (item.changes.replace_link) page.localLinkReplacements = [...(page.localLinkReplacements || []), clone(item.changes.replace_link)];
+    changed.add(page.url);
+  });
+  const changedUrls = [...changed];
+  if (!changedUrls.length) { toast('Nessuna pagina del task è presente nell’inventario corrente', 'error'); return; }
+  state.repairs = state.repairs.filter(r => r.taskId !== id);
+  state.repairs.push({ taskId: id, date: new Date().toISOString(), snapshot, expected: changedUrls.map(url => ({ url, localPendingChanges: true })), changedUrls, localDraft: true, undone: false });
+  task.status = changedUrls.length === new Set(task.affected.map(a => comparableUrl(a.url))).size ? 'Completata' : 'In corso'; task.approved = true;
+  save(true); closeModal(); renderKanban(); renderPages(); renderShell();
+  toast(`Correzione preparata per ${changedUrls.length} pagine nei dati locali. Per modificare il sito usa WordPress o esporta per GPTSites.`);
+};
+function taskChangesHtml(item) {
+  const changes = item?.changes || {}, rows = [];
+  if (changes.title) rows.push(`<span><b>Title:</b> ${esc(changes.title)}</span>`);
+  if (changes.meta_description) rows.push(`<span><b>Meta:</b> ${esc(changes.meta_description)}</span>`);
+  if (changes.canonical) rows.push(`<span><b>Canonical:</b> ${operationalPageLink(changes.canonical)}</span>`);
+  if (changes.internal_link) rows.push(`<span><b>Link:</b> “${esc(changes.internal_link.anchor)}” → ${operationalPageLink(changes.internal_link.target)}</span>`);
+  if (changes.replace_link) rows.push(`<span><b>Sostituzione:</b> ${operationalPageLink(changes.replace_link.from)} → ${operationalPageLink(changes.replace_link.to)}</span>`);
+  if (changes.redirect) rows.push(`<span><b>Redirect ${esc(changes.redirect.code || 301)}:</b> ${operationalPageLink(changes.redirect.from)} → ${operationalPageLink(changes.redirect.to)}</span>`);
+  return rows.length ? `<div class="task-change-list">${rows.join('')}</div>` : '<span class="help">Nessuna modifica automatica strutturata: seguire l’azione proposta.</span>';
+}
+const closeModalV111 = closeModal;
+closeModal = function () { $('.modal')?.classList.remove('task-detail-modal'); return closeModalV111(); };
+openTaskDrawer = function (task) {
+  if (!task) return;
+  go('fix'); closeActionDrawer();
+  const modal = $('.modal'); modal?.classList.add('task-detail-modal');
+  $('#modalTitle').textContent = task.title;
+  $('#modalHelp').textContent = `${task.priority} · ${task.status} · ${task.evidence?.status === 'confirmed' ? 'problema confermato' : 'da verificare'}`;
+  const affected = task.affected || [];
+  $('#modalForm').innerHTML = `<p>${esc(task.detail || '')}</p><div class="task-detail-summary"><div><b>${affected.length}</b><small>Pagine coinvolte</small></div><div><b>${esc(task.priority)}</b><small>Priorità</small></div><div><b>${esc(task.status)}</b><small>Stato</small></div><div><b>${taskHasStructuredChanges(task) ? 'Disponibile' : 'Manuale'}</b><small>Correzione</small></div></div>${affected.length ? `<div class="table-wrap task-detail-table"><table><thead><tr><th>Pagina interessata</th><th>Problema</th><th>Azione proposta</th><th>Modifica completa</th></tr></thead><tbody>${affected.map(item => `<tr><td>${operationalPageLink(item.url)}</td><td>${esc(item.issue || '—')}</td><td>${esc(item.fix || '—')}</td><td>${taskChangesHtml(item)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">Nessuna pagina associata a questo task.</p>'}<div class="repair-actions" style="margin-top:18px"><button type="button" class="btn" data-close>Chiudi</button><button type="button" class="btn" id="taskPopupEdit">Modifica task</button><button type="button" class="btn primary" id="taskPopupRepair">${state.integration.mode === 'wordpress-plugin' ? 'Anteprima e correzione WordPress' : state.integration.mode === 'gptsites' ? 'Prepara per GPTSites' : taskHasStructuredChanges(task) ? 'Prepara correzione automatica locale' : 'Apri piano operativo'} →</button></div>`;
+  $('#modalForm').dataset.type = 'task-detail'; $('#modalForm').dataset.id = task.id; $('#modalBackdrop').classList.add('open');
+  $('#taskPopupEdit').onclick = () => { closeModal(); openModal('task', task); };
+  $('#taskPopupRepair').onclick = () => { closeModal(); openRepair(task); };
+};
 const auditCategoryContentV111 = auditCategoryContent;
 auditCategoryContent = function (i) {
   const pages = state.pages || [];
