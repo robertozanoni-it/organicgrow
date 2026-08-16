@@ -27,6 +27,7 @@
     @media(max-width:520px){.top-actions .btn{display:none}.health{padding:17px}.health-row{grid-template-columns:1fr}.metric{border-right:0}.trend{grid-column:1}.steps{grid-template-columns:repeat(4,125px)}.issue-grid{grid-template-columns:1fr}.verify-item{grid-template-columns:38px 1fr}.verify-item>.btn{grid-column:1/-1}.modal{padding:18px}.page-head h1{font-size:26px}.affected-row{grid-template-columns:1fr}.affected-row.head{display:none}.affected-row code:before,.affected-row span:before{display:block;color:var(--muted);font:700 10px/1.4 Inter,sans-serif;text-transform:uppercase}.affected-row code:before{content:'Pagina'}.affected-row span:nth-child(2):before{content:'Problema'}.affected-row span:nth-child(3):before{content:'Correzione'}}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
     .seo-live-link{color:var(--green-2);font-weight:750;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;overflow-wrap:anywhere}.seo-proposal{min-width:250px;display:grid;gap:4px}.seo-proposal b{font-size:12px}.seo-proposal small{color:var(--muted)}.audit-category-report table{min-width:960px}.audit-category-report td{vertical-align:top}.audit-bulk-bar{position:sticky;bottom:-1px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow)}.modal.task-detail-modal{width:min(1180px,96vw);max-height:94vh}.task-detail-summary{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:10px;margin:14px 0}.task-detail-summary div{padding:12px;border-radius:10px;background:var(--surface-2)}.task-detail-summary small{display:block;color:var(--muted)}.task-detail-table table{min-width:1050px}.task-change-list{display:grid;gap:5px}.task-change-list code{white-space:normal;overflow-wrap:anywhere;color:var(--green-2)}
+    .action-drawer.audit-wide{width:min(1180px,calc(100vw - var(--sidebar)))}.action-drawer.audit-wide .action-drawer-body{overflow:auto}.link-context{max-width:430px;padding:10px 12px;border-left:3px solid var(--green-2);background:var(--surface-2);border-radius:0 8px 8px 0;font-size:12px;line-height:1.55}.link-context mark{background:var(--amber-bg);color:var(--text);font-weight:800;padding:1px 3px}.link-snippet{display:block;max-width:460px;white-space:normal;overflow-wrap:anywhere;padding:8px;border-radius:7px;background:var(--surface-2);color:var(--green-2)}@media(max-width:820px){.action-drawer.audit-wide{width:100vw}}
   </style>
 </head>
 <body>
@@ -126,7 +127,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.12.1';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.13.0';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value.repairs=Array.isArray(value.repairs)?value.repairs:[];value.settings=value.settings||clone(seed.settings);value.project=value.project||clone(seed.project);value.project.dataOrigin=value.project.dataOrigin||((value.imports||[]).some(i=>i.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration||{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress||{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites||{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages:[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit||{})};value.tasks=(value.tasks||[]).map(t=>{const d=TASK_DETAILS[t.id]||{},repair=[...value.repairs].reverse().find(r=>r.taskId===t.id&&!r.undone),verified=!!t.gptSitesResult?.verified||!!repair?.verification?.all_verified,evidence=t.evidence||{status:'unverified',source:'legacy-or-demo',observedAt:null};return {...t,status:t.status==='Verificata'&&!verified?'Completata':t.status,evidence,affected:Array.isArray(t.affected)&&t.affected.length?t.affected:clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function projectRegistry(){try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');return {active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{return {active:'',projects:{}}}}
@@ -218,11 +219,7 @@ function openAuditCategory(i){
   form.innerHTML=`<div class="audit-category-report">${auditCategoryContent(i)}</div><div class="repair-actions">${autoBtn}<button type="button" class="btn" data-close>Chiudi</button></div>`;
   form.dataset.type='audit-category';form.dataset.id='';$('#modalBackdrop').classList.add('open');
   const runBtn=$('#ogosRunIndexingAuto');
-  if(runBtn)runBtn.onclick=async()=>{
-    if(!canCrawl){closeModal();go('settings');toast('Verifica non avviata: collega WordPress e controlla che il connettore supporti il crawl reale','error');return}
-    closeModal();go('indexing');
-    try{await runWordPressCrawl();await runIndexingAnalysis('all')}catch(e){toast(`Verifica non completata: ${e.message}`,'error')}
-  };
+  if(runBtn)runBtn.onclick=()=>runBulkIndexingVerification(runBtn);
   const canonicalBtn=$('#ogosRunCanonicalAuto');
   if(canonicalBtn)canonicalBtn.onclick=async()=>{
     if(!canCrawl){closeModal();go('settings');toast('Verifica canonical non avviata: serve WordPress collegato con crawl reale','error');return}
@@ -390,7 +387,7 @@ function exportData(){const exportState=safePersistedState();const blob=new Blob
 function parseDelimited(text,delimiter){const rows=[],row=[];let cell='',quoted=false;for(let i=0;i<text.length;i++){const c=text[i],next=text[i+1];if(c==='"'){if(quoted&&next==='"'){cell+='"';i++}else quoted=!quoted}else if(c===delimiter&&!quoted){row.push(cell);cell=''}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&next==='\n')i++;row.push(cell);cell='';if(row.some(v=>v.trim()!==''))rows.push(row.splice(0))}else cell+=c}row.push(cell);if(row.some(v=>v.trim()!==''))rows.push(row);return rows}
 function parseCSV(text){text=text.replace(/^\uFEFF/,'');const first=(text.split(/\r?\n/,1)[0]||''),delim=(first.match(/;/g)||[]).length>(first.match(/,/g)||[]).length?';':',';const matrix=parseDelimited(text,delim);if(matrix.length<2)throw new Error('Il CSV non contiene righe dati');const headers=matrix.shift().map(x=>x.trim().toLowerCase());return matrix.map(values=>{const o={};headers.forEach((h,i)=>o[h]=(values[i]||'').trim());return o})}
 async function importFile(file){try{const text=await file.text();if(file.name.toLowerCase().endsWith('.json')){const data=JSON.parse(text);if(!data.project||!Array.isArray(data.pages))throw new Error('Backup non riconosciuto');const domain=normalizeProjectDomain(data.project.domain);if(!domain)throw new Error('Il backup non contiene un dominio valido');data.project.domain=domain;data.project.dataOrigin='import';persistCurrentProject();state=normalizeState(Object.assign(clone(seed),data));wpSecret='';applyTheme(state.settings.theme)}else{const rows=parseCSV(text);const find=(r,names)=>{const k=Object.keys(r).find(k=>names.some(n=>k.includes(n)));return k?r[k]:''};rows.forEach(r=>{const rawUrl=find(r,['pagina','page','url']),query=find(r,['query','keyword']);if(!rawUrl)return;let path=rawUrl;try{path=new URL(rawUrl,state.wordpress.url||`https://${state.project.domain}`).pathname}catch{}if(!state.pages.some(p=>p.url===path))state.pages.push({id:Date.now()+Math.random(),url:path,keyword:query,intent:'Da definire',status:'Da verificare',canonical:'Da verificare'})});state.imports.unshift({name:file.name,date:new Intl.DateTimeFormat('it-IT').format(new Date()),rows:rows.length})}save(true);renderShell();renderView(state.ui.view);toast(`${file.name} importato correttamente`)}catch(e){toast(e.message||'Importazione non riuscita','error')}finally{$('#fileInput').value=''}}
-function localRepairMatches(repair){if(!Array.isArray(repair?.expected)||!repair.expected.length)return false;return repair.expected.every(expected=>{const page=state.pages.find(p=>p.url===expected.url);return page&&page.canonical===expected.canonical&&page.keyword===expected.keyword&&!!page.localMetaProposal===expected.localMetaProposal&&!!page.localLinksChecked===expected.localLinksChecked})}
+function localRepairMatches(repair){if(!Array.isArray(repair?.expected)||!repair.expected.length)return false;if(repair.localDraft)return repair.expected.every(expected=>{const page=state.pages.find(p=>p.url===expected.url);return page&&page.localPendingChanges&&String(page.localPendingChanges.taskId)===String(repair.taskId)});return repair.expected.every(expected=>{const page=state.pages.find(p=>p.url===expected.url);return page&&page.canonical===expected.canonical&&page.keyword===expected.keyword&&!!page.localMetaProposal===expected.localMetaProposal&&!!page.localLinksChecked===expected.localLinksChecked})}
 async function verifyTask(id,{silent=false}={}){const task=state.tasks.find(t=>t.id===id);if(!task||task.status==='Verificata')return true;const repair=[...state.repairs].reverse().find(r=>r.taskId===id&&!r.undone);try{if(repair?.remote){if(!state.wordpress.connected||!state.wordpress.pluginDetected)throw new Error('Ricollega WordPress e il plugin per eseguire il controllo');if(!state.wordpress.capabilities.includes('verify'))throw new Error('Il plugin collegato non supporta la verifica');const result=await wpRequest('/wp-json/organic-growth-os/v1/tasks/verify',{method:'POST',body:JSON.stringify({operation_id:repair.operationId})});repair.verification={date:new Date().toISOString(),...result};if(!result.all_verified){task.status='In corso';save();renderVerify();renderKanban();renderShell();throw new Error((result.results||[]).flatMap(x=>x.problems||[]).join(', ')||'Il sito non corrisponde più al piano applicato')}task.status='Verificata'}else if(task.gptSitesResult){if(!task.gptSitesResult.verified)throw new Error('L’esito GPTSites importato non conferma la verifica');task.status='Verificata'}else if(repair){if(!localRepairMatches(repair))throw new Error('I dati locali non corrispondono più alla correzione registrata');repair.verification={date:new Date().toISOString(),all_verified:true};task.status='Verificata'}else throw new Error('Nessuna correzione registrata da confrontare');save();renderVerify();renderKanban();renderShell();if(!silent)toast('Intervento verificato sui dati registrati');return true}catch(e){if(!silent)toast(`Verifica non riuscita: ${e.message}`,'error');return false}}
 async function verifyAllTasks(){const button=$('#verifyAllBtn'),tasks=state.tasks.filter(t=>t.status==='Completata');if(!tasks.length){toast('Nessuna attività completata da verificare','error');return}button.disabled=true;button.textContent='Verifica in corso…';let ok=0;for(const task of tasks)if(await verifyTask(task.id,{silent:true}))ok++;button.disabled=false;button.innerHTML=`${icon('check')}Verifica completate`;toast(ok===tasks.length?`${ok} attività verificate`:`Verificate ${ok} di ${tasks.length} attività`,ok===tasks.length?'ok':'error')}
 
@@ -560,6 +557,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '1.13.0', date: '2026-08-16', notes: 'I report aperti dalla sidebar usano ora un pannello ampio fino a 1180px, evitando il taglio delle tabelle. Corretto il pulsante Verifica sitemap e indicizzazione in bulk anche nel pannello laterale e anche senza WordPress: esegue sempre la classificazione sui dati disponibili, aggiungendo crawl e sitemap reali quando il connettore è collegato. Il report internal linking distingue i link da creare per le pagine orfane dai link rotti già presenti; con il plugin 2.2.0 mostra anchor text, contesto evidenziato e occorrenza. Le attività Completata, Verificata, Superata o Risolta sono escluse da Cose da fare e raccolte soltanto in Task superati.', compatibility: 'Per anchor e contesto dei link già presenti serve una nuova scansione con il plugin Organic Growth OS 2.2.0. I dati precedenti restano compatibili ma non contengono quel dettaglio.' },
   { version: '1.12.1', date: '2026-08-16', notes: 'Corretto il blocco dei pulsanti di correzione automatica dei nuovi task bulk: il motore locale riconosce ora le modifiche strutturate invece di affidarsi esclusivamente ai vecchi ID demo 1, 3 e 4. Le proposte title/meta, link interni e sostituzioni di link rotti vengono salvate come correzioni locali reversibili; in modalità WordPress continuano a passare dall’anteprima obbligatoria del plugin e in GPTSites dall’esportazione dedicata. Dal menu Cose da fare, l’apertura di un task usa ora un popup ampio con tutte le pagine, problemi, azioni e modifiche complete.', compatibility: 'Nessuna modifica incompatibile ai dati salvati.' },
   { version: '1.12.0', date: '2026-08-16', notes: 'I sei controlli SEO sono ora operativi pagina per pagina: URL live cliccabili, proposte title e meta description complete, verifica sitemap/indicizzazione in bulk, sorgente-anchor-destinazione per le pagine orfane, abbinamenti keyword/intento spiegati, gruppi di cannibalizzazione con pagina primaria e azione consigliata, link rotti con sorgente e destinazione proposta. Aggiunti pulsanti bulk che creano task strutturati e compatibili con anteprima WordPress; le cannibalizzazioni restano volutamente editoriali e non applicano redirect alla cieca.', compatibility: 'Nessuna modifica incompatibile ai dati salvati. Le correzioni remote richiedono il connettore WordPress e le relative capability; senza dati reali lo stato resta correttamente Da verificare.' },
   { version: '1.11.0', date: '2026-08-16', notes: 'Aggiunto nella barra laterale il menu operativo con problemi e attività aperte, pannello di dettaglio a destra, archivio dei task superati e download del report globale. Nella tabella Pagine e keyword ogni URL senza keyword mostra ora la proposta, la fonte e il pulsante di applicazione. Canonical e indicizzazione spiegano l’azione concreta; la verifica completa non viene più dichiarata avviata se manca il crawl reale WordPress.', compatibility: 'Nessuna modifica incompatibile ai dati salvati. Richiede il connettore WordPress con capacità crawl per verifiche tecniche complete.' },
@@ -2435,6 +2433,71 @@ document.addEventListener('click', async e => {
     upsertOperationalTask('Risolvi cannibalizzazioni da verificare', `${rows.length} gruppi di intento potenzialmente sovrapposti`, 'Alta', affected, { type: 'editorial_review' }, false);
   }
 });
+
+/* ---- Pannelli completi, verifica bulk e contesto dei link (v1.13.0) ---- */
+const applyCurrentAuditV121 = applyCurrentAudit;
+applyCurrentAudit = function (items, source, observedAt) {
+  const result = applyCurrentAuditV121(items, source, observedAt);
+  (items || []).forEach(item => {
+    const path = comparableUrl(item.path || item.url), page = state.pages.find(p => comparableUrl(p.url) === path || (item.id != null && String(p.wpId) === String(item.id)));
+    if (page?.live) page.live.internalLinkDetails = Array.isArray(item.internal_link_details) ? clone(item.internal_link_details) : [];
+  });
+  save(true); return result;
+};
+function highlightedLinkContext(detail) {
+  if (!detail?.context) return '<span class="help">Contesto non disponibile: aggiorna il plugin alla versione 2.2.0 ed esegui una nuova scansione live.</span>';
+  const text = String(detail.context), anchor = String(detail.anchor || ''), index = anchor ? text.toLowerCase().indexOf(anchor.toLowerCase()) : -1;
+  if (index < 0) return `<div class="link-context">${esc(text)}</div>`;
+  return `<div class="link-context">${esc(text.slice(0, index))}<mark>${esc(text.slice(index, index + anchor.length))}</mark>${esc(text.slice(index + anchor.length))}</div>`;
+}
+const detectBrokenLinksReportV121 = detectBrokenLinksReport;
+detectBrokenLinksReport = function () {
+  return detectBrokenLinksReportV121().map(row => {
+    const page = state.pages.find(p => comparableUrl(p.url) === comparableUrl(row.source));
+    const details = page?.live?.internalLinkDetails || [];
+    const detail = details.find(d => comparableUrl(d.href) === comparableUrl(row.href || row.brokenUrl));
+    return { ...row, anchor: detail?.anchor || '', context: detail?.context || '', occurrence: detail?.occurrence || null };
+  });
+};
+function internalLinkAuditContent() {
+  const orphan = internalLinkProposals(), broken = detectBrokenLinksReport();
+  const domain = normalizeProjectDomain(state.project.domain);
+  return `<h4>Pagine orfane: link da creare</h4>${orphan.length ? `<p class="help">Questi link non possono essere mostrati nella pagina perché non esistono ancora. La tabella fornisce il collegamento già pronto da inserire.</p><div class="table-wrap"><table><thead><tr><th>Pagina sorgente</th><th>Link pronto</th><th>Pagina destinazione</th><th>Posizione consigliata</th></tr></thead><tbody>${orphan.map(r => { const href = `https://${domain}${r.target}`; return `<tr><td>${operationalPageLink(r.source)}</td><td><code class="link-snippet">&lt;a href=&quot;${esc(href)}&quot;&gt;${esc(r.anchor)}&lt;/a&gt;</code></td><td>${operationalPageLink(r.target)}</td><td>Dopo il primo paragrafo realmente pertinente a “${esc(r.anchor)}”. ${esc(r.confidence)}.</td></tr>`; }).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>Sorgente, anchor e destinazione saranno incluse nell’anteprima.</small><button type="button" class="btn primary" id="ogosCreateInternalBulk">Crea task link interni (${orphan.length}) →</button></div>` : '<p class="safe-note">Nessuna pagina orfana rilevata nei dati disponibili.</p>'}<h4 style="margin-top:24px">Link interni rotti già presenti</h4>${broken.length ? `<div class="table-wrap"><table><thead><tr><th>Pagina sorgente</th><th>Anchor rilevata</th><th>Dove si trova il link</th><th>Destinazione rotta</th><th>Correzione proposta</th></tr></thead><tbody>${broken.map(r => `<tr><td>${operationalPageLink(r.source)}</td><td><b>${esc(r.anchor || 'Non disponibile')}</b>${r.occurrence ? `<small style="display:block">occorrenza ${r.occurrence}</small>` : ''}</td><td>${highlightedLinkContext(r)}</td><td>${operationalPageLink(r.brokenUrl)}</td><td>${r.suggested ? operationalPageLink(r.suggested) : 'Nessuna destinazione affidabile'}</td></tr>`).join('')}</tbody></table></div>${broken.some(r => r.suggested) ? `<div class="audit-bulk-bar"><small>Solo le sostituzioni con destinazione affidabile vengono incluse.</small><button type="button" class="btn primary" id="ogosCreateBrokenBulk">Crea task link rotti (${broken.filter(r => r.suggested).length}) →</button></div>` : ''}` : '<p class="safe-note">Nessun link interno rotto rilevato.</p>'}`;
+}
+const auditCategoryContentV121 = auditCategoryContent;
+auditCategoryContent = function (index) { return index === 3 ? internalLinkAuditContent() : auditCategoryContentV121(index); };
+async function runBulkIndexingVerification(button) {
+  if (state.audit.running || state.indexing?.currentScan?.running) { toast('Una verifica è già in corso', 'error'); return; }
+  if (button) { button.disabled = true; button.textContent = 'Verifica bulk in corso…'; }
+  closeActionDrawer(); closeModal(); go('indexing');
+  try {
+    const canCrawl = state.wordpress.connected && wpSecret && state.wordpress.capabilities.includes('crawl');
+    if (canCrawl) await runWordPressCrawl();
+    await runIndexingAnalysis('all');
+    toast(canCrawl ? 'Verifica bulk completata con crawl, sitemap e dati disponibili' : 'Verifica bulk completata sui dati disponibili. Collega WordPress per aggiungere crawl e sitemap reali.');
+  } catch (error) { toast(`Verifica bulk non completata: ${error.message}`, 'error'); }
+}
+const openActionDrawerV121 = openActionDrawer;
+openActionDrawer = function (title, help, html) { $('#actionDrawer')?.classList.remove('audit-wide'); return openActionDrawerV121(title, help, html); };
+const closeActionDrawerV121 = closeActionDrawer;
+closeActionDrawer = function () { $('#actionDrawer')?.classList.remove('audit-wide'); return closeActionDrawerV121(); };
+const openAuditDrawerV121 = openAuditDrawer;
+openAuditDrawer = function (index) {
+  openAuditDrawerV121(index); $('#actionDrawer')?.classList.add('audit-wide');
+  const bulk = $('#actionDrawer #ogosRunIndexingAuto'); if (bulk) bulk.onclick = () => runBulkIndexingVerification(bulk);
+};
+function taskIsCompleted(task) { return ['Completata', 'Verificata', 'Superata', 'Risolta'].includes(task?.status); }
+ogosDashboardIssues = function () {
+  const items = [];
+  if (state.pages.length) for (let i = 0; i < audits.length; i++) { const n = auditCategoryCount(i); if (n > 0) items.push({ type: 'audit', index: i, label: `Controllo: ${audits[i][0]} — ${n} ${n === 1 ? 'segnalazione' : 'segnalazioni'}` }); }
+  (state.tasks || []).filter(t => !taskIsCompleted(t)).forEach(t => items.push({ type: 'task', id: t.id, label: `Task: ${t.title} (${(t.affected || []).length} pagine)` }));
+  return items;
+};
+openCompletedTasksModal = function () {
+  const done = (state.tasks || []).filter(taskIsCompleted);
+  openActionDrawer('Task e azioni superate', `${done.length} ${done.length === 1 ? 'attività superata' : 'attività superate'}`, done.length ? done.map(t => `<button type="button" class="drawer-task" data-completed-id="${t.id}"><b>✓ ${esc(t.title)}</b><small>${esc(t.status)} · ${(t.affected || []).length} pagine · priorità ${esc(t.priority)}</small></button>`).join('') : '<p class="empty">Nessuna attività superata finora.</p>');
+  $$('#actionDrawer [data-completed-id]').forEach(btn => btn.onclick = () => openTaskDrawer(state.tasks.find(t => String(t.id) === btn.dataset.completedId)));
+};
 
 /* ---- Notifica scansioni scadute (#26), una volta all'avvio ---- */
 const initWithExtensions = init;
