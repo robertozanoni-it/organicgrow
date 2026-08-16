@@ -114,7 +114,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.6.8';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.6.9';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value.repairs=Array.isArray(value.repairs)?value.repairs:[];value.settings=value.settings||clone(seed.settings);value.project=value.project||clone(seed.project);value.project.dataOrigin=value.project.dataOrigin||((value.imports||[]).some(i=>i.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration||{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress||{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites||{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages:[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit||{})};value.tasks=(value.tasks||[]).map(t=>{const d=TASK_DETAILS[t.id]||{},repair=[...value.repairs].reverse().find(r=>r.taskId===t.id&&!r.undone),verified=!!t.gptSitesResult?.verified||!!repair?.verification?.all_verified,evidence=t.evidence||{status:'unverified',source:'legacy-or-demo',observedAt:null};return {...t,status:t.status==='Verificata'&&!verified?'Completata':t.status,evidence,affected:Array.isArray(t.affected)&&t.affected.length?t.affected:clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function projectRegistry(){try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');return {active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{return {active:'',projects:{}}}}
@@ -137,8 +137,43 @@ function renderDashboardMetrics(){const open=state.tasks.filter(t=>!['Completata
 function renderProject(){Object.entries(state.project).forEach(([k,v])=>{const el=$(`[name="${k}"]`);if(el)el.value=v})}
 const audits=[['Elementi on-page','Title, H1 e meta description','file'],['Indicizzazione e sitemap','Stato, sitemap e segnali di scansione','search'],['Canonical e redirect','Conflitti, catene e destinazioni','arrow'],['Internal linking','Pagine orfane, profondità e anchor','link'],['Keyword e intento','Corrispondenza tra query e URL','network'],['Cannibalizzazioni','Pagine in competizione sullo stesso intento','alert']];
 function isCriticalTask(t){return t.priority==='Alta'&&/404|redirect|canonical|indicizz|robots|sitemap|errore fatale/i.test(`${t.title} ${t.detail}`)}
-function renderAudit(){const open=state.tasks.filter(t=>!['Completata','Verificata'].includes(t.status)),critical=open.filter(isCriticalTask).length,high=open.filter(t=>t.priority==='Alta'&&!isCriticalTask(t)).length,medium=open.filter(t=>t.priority==='Media').length,emptyMessage=state.project.dataOrigin==='demo'?'Dati demo pronti · nessuna scansione live':'Nessun controllo eseguito · acquisisci dati reali';$('#auditTools').innerHTML=audits.map((a,i)=>`<button class="tool-card audit-tool" data-audit="${i}">${icon(a[2])}<span><h3>${a[0]}</h3><p>${a[1]}</p><span class="status">${state.audit.last?'Dati locali controllati · Verifica live richiesta':state.pages.length?'Pronto per il controllo locale':'Dati reali richiesti'} →</span></span></button>`).join('');$('#lastAudit').textContent=state.audit.last?`${state.audit.liveVerified?'Scansione live':'Ultimo controllo locale'}: ${state.audit.last}${state.audit.liveVerified?'':' · non è un crawl live'}`:emptyMessage;$('#criticalCount').textContent=critical;$('#highCount').textContent=high;$('#mediumCount').textContent=medium;$('#opportunityCount').textContent=state.opportunities.length}
+function renderAudit(){const open=state.tasks.filter(t=>!['Completata','Verificata'].includes(t.status)),critical=open.filter(isCriticalTask).length,high=open.filter(t=>t.priority==='Alta'&&!isCriticalTask(t)).length,medium=open.filter(t=>t.priority==='Media').length,emptyMessage=state.project.dataOrigin==='demo'?'Dati demo pronti · nessuna scansione live':'Nessun controllo eseguito · acquisisci dati reali';$('#auditTools').innerHTML=audits.map((a,i)=>`<button class="tool-card audit-tool" data-audit="${i}">${icon(a[2])}<span><h3>${a[0]}</h3><p>${a[1]}</p><span class="status">${state.pages.length?'Apri report':'Dati reali richiesti'} →</span></span></button>`).join('');$('#lastAudit').textContent=state.audit.last?`${state.audit.liveVerified?'Scansione live':'Ultimo controllo locale'}: ${state.audit.last}${state.audit.liveVerified?'':' · non è un crawl live'}`:emptyMessage;$('#criticalCount').textContent=critical;$('#highCount').textContent=high;$('#mediumCount').textContent=medium;$('#opportunityCount').textContent=state.opportunities.length}
 function runAudit(single){if(state.audit.running)return;if(!state.pages.length&&!state.tasks.length){toast('Nessun dato da controllare: acquisisci prima una scansione WordPress o GPTSites','error');go('settings');return}state.audit.running=true;const btn=single!=null?$$('.audit-tool')[single]:$('#runAllBtn'),old=btn.innerHTML;btn.disabled=true;btn.textContent='Controllo locale…';setTimeout(()=>{state.audit.running=false;state.audit.last=new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(new Date());state.audit.source='local-data';state.audit.liveVerified=false;btn.disabled=false;btn.innerHTML=old;renderAudit();renderShell();save();toast('Controllo locale completato: verifica il sito live prima di applicare correzioni')},650)}
+// Report reali per ciascuna delle 6 categorie di controllo, costruiti dai dati effettivamente disponibili
+// (scansione WordPress live, inventario pagine, stime da Search Console) — non simulazioni generiche.
+function auditCategoryContent(i){
+  const pages=state.pages||[];
+  const hasLive=pages.some(p=>p.live);
+  if(i===0){
+    if(!hasLive)return '<p class="empty">Servono dati da una scansione live WordPress (Impostazioni → “Scansiona dati SEO attuali”) per controllare title e meta description reali.</p>';
+    const scanned=pages.filter(p=>p.live),noTitle=scanned.filter(p=>!p.live.seoTitle||!p.live.seoTitle.trim()),noMeta=scanned.filter(p=>!p.live.metaDescription||!p.live.metaDescription.trim());
+    return `<p><b>${noTitle.length}</b> pagine senza title SEO esplicito, <b>${noMeta.length}</b> senza meta description, su ${scanned.length} controllate dall’ultima scansione live.</p>`+(noMeta.length?`<h4>Meta description mancante</h4><ul class="data-list">${noMeta.slice(0,20).map(p=>`<li><div><strong>${esc(p.url)}</strong></div></li>`).join('')}</ul>${noMeta.length>20?`<p><small>+ altre ${noMeta.length-20}</small></p>`:''}`:'<p class="empty">Nessuna pagina scansionata risulta senza meta description.</p>');
+  }
+  if(i===1){
+    const counts={};pages.forEach(p=>counts[p.status]=(counts[p.status]||0)+1);const notIndexed=pages.filter(p=>p.status!=='Indicizzata');
+    return `<p>${Object.entries(counts).map(([k,v])=>`<b>${v}</b> ${esc(k)}`).join(' · ')||'Nessuna pagina in inventario'}</p>`+(notIndexed.length?`<ul class="data-list">${notIndexed.slice(0,20).map(p=>`<li><div><strong>${esc(p.url)}</strong><small>${esc(p.status)}</small></div></li>`).join('')}</ul>${notIndexed.length>20?`<p><small>+ altre ${notIndexed.length-20}</small></p>`:''}`:'<p class="empty">Tutte le pagine risultano indicizzate secondo i dati locali.</p>')+'<p class="help">Stato basato sui metadati salvati, non su un crawl live di Google: usa “Esegui crawl reale” in Impostazioni se il connettore installato lo supporta.</p>';
+  }
+  if(i===2){
+    const toVerify=pages.filter(p=>p.canonical==='Da verificare'||!p.canonical);
+    return `<p><b>${pages.length-toVerify.length}</b> canonical corrette, <b>${toVerify.length}</b> da verificare, su ${pages.length} pagine.</p>`+(toVerify.length?`<ul class="data-list">${toVerify.slice(0,20).map(p=>`<li><div><strong>${esc(p.url)}</strong></div></li>`).join('')}</ul>${toVerify.length>20?`<p><small>+ altre ${toVerify.length-20}</small></p>`:''}`:'<p class="empty">Nessuna canonical da verificare nei dati locali.</p>')+'<p class="help">I redirect configurati sul sito non sono leggibili da questo report: usa “Controlla redirect” in Impostazioni se il connettore installato lo supporta.</p>';
+  }
+  if(i===3){
+    if(!hasLive)return '<p class="empty">Servono dati da una scansione live WordPress per contare i link interni reali.</p>';
+    const inbound={};pages.forEach(p=>{(p.live?.internalLinks||[]).forEach(link=>{const path=comparableUrl(link);if(path)inbound[path]=(inbound[path]||0)+1})});
+    const orphans=pages.filter(p=>p.url!=='/'&&!inbound[comparableUrl(p.url)]),noOutgoing=pages.filter(p=>p.live&&(!p.live.internalLinks||!p.live.internalLinks.length));
+    return `<p><b>${orphans.length}</b> pagine “orfane” (nessun link interno in entrata trovato), <b>${noOutgoing.length}</b> pagine senza link interni in uscita.</p>`+(orphans.length?`<h4>Pagine orfane</h4><ul class="data-list">${orphans.slice(0,20).map(p=>`<li><div><strong>${esc(p.url)}</strong></div></li>`).join('')}</ul>${orphans.length>20?`<p><small>+ altre ${orphans.length-20}</small></p>`:''}`:'<p class="empty">Nessuna pagina orfana rilevata tra quelle scansionate.</p>')+'<p class="help">Conteggio basato sui link trovati nel contenuto delle pagine scansionate: link da menu, widget o template non vengono letti.</p>';
+  }
+  if(i===4){
+    const matches=(typeof gscKeywordMatches==='function'?gscKeywordMatches():[]),unmatched=pages.filter(p=>!p.keyword);
+    return `<p><b>${unmatched.length}</b> pagine senza keyword principale assegnata, su ${pages.length}.</p>`+(matches.length?`<h4>Stima da Search Console</h4><div class="table-wrap"><table><thead><tr><th>URL</th><th>Keyword stimata</th><th>Confidenza</th></tr></thead><tbody>${matches.slice(0,15).map(s=>`<tr><td>${esc(s.url)}</td><td>${esc(s.suggestedKeyword)}</td><td>${s.method==='top-query'?'stima home':s.confidence+'%'}</td></tr>`).join('')}</tbody></table></div><p class="help">Stima testuale (parole condivise tra query e URL), non un incrocio diretto pagina↔query di Search Console.</p>`:'<p class="empty">Importa l’esportazione di Search Console (anche lo ZIP intero) per ottenere stime di corrispondenza keyword→URL.</p>');
+  }
+  if(i===5){
+    const rows=cannibalizationFromGsc();
+    return rows.length?`<p class="help">Stima basata sulla corrispondenza testuale tra query e URL, non su un incrocio diretto pagina↔query di Search Console.</p><ul class="data-list">${rows.map(r=>`<li>${icon('alert')}<div><strong>${esc(r.query)}</strong><small>${r.urls.map(esc).join(', ')}</small></div></li>`).join('')}</ul>`:'<p class="empty">Nessuna sovrapposizione stimata (richiede l’import di Search Console).</p>';
+  }
+  return '<p class="empty">Report non disponibile.</p>';
+}
+function openAuditCategory(i){const a=audits[i];if(!a)return;const form=$('#modalForm');$('#modalTitle').textContent=a[0];$('#modalHelp').textContent=a[1];form.innerHTML=`<div class="audit-category-report">${auditCategoryContent(i)}</div><div class="repair-actions"><button type="button" class="btn" data-close>Chiudi</button></div>`;form.dataset.type='audit-category';form.dataset.id='';$('#modalBackdrop').classList.add('open')}
 function localPlanTask(title,detail,priority,affected){return {id:Date.now()+Math.random(),title,detail,priority,status:'Da approvare',approved:false,affected,operation:{type:'auto'},autoPossible:false,evidence:{status:'unverified',source:'local-inventory',observedAt:new Date().toISOString()}}}
 function createOperationalPlan(){if(!state.pages.length&&!state.tasks.length){toast('Prima acquisisci dati attuali: collega WordPress oppure prepara una scansione GPTSites','error');go('settings');return}if(!state.tasks.length){const notIndexed=state.pages.filter(p=>p.status!=='Indicizzata').map(p=>({url:p.url,issue:'Pagina indicata come non indicizzata nell’inventario locale',fix:'Verifica lo stato live e la causa prima di richiedere indicizzazione'})),canonical=state.pages.filter(p=>p.canonical!=='Corretta').map(p=>({url:p.url,issue:'Canonical indicata come da verificare',fix:'Controlla la canonical renderizzata e correggila solo se incoerente'})),keywords=state.pages.filter(p=>!p.keyword).map(p=>({url:p.url,issue:'Keyword principale non assegnata',fix:'Abbina keyword e intento alla pagina'}));if(notIndexed.length)state.tasks.push(localPlanTask('Verifica pagine non indicizzate',`${notIndexed.length} pagine da controllare`, 'Alta',notIndexed));if(canonical.length)state.tasks.push(localPlanTask('Verifica canonical',`${canonical.length} canonical da controllare`, 'Alta',canonical));if(keywords.length)state.tasks.push(localPlanTask('Abbina pagine e keyword',`${keywords.length} pagine senza keyword principale`, 'Media',keywords));save()}state.ui.issueScope='all';toast(state.tasks.length?`Piano operativo pronto: ${state.tasks.length} attività`:'Controllo completato: nessun problema da trasformare in attività');go('fix')}
 function openAuditResult(target){if(target==='opportunities'){go('dashboard');setTimeout(()=>$('#opportunityList')?.closest('.panel')?.scrollIntoView({behavior:'smooth',block:'center'}),80);return}const select=$('#taskFilter');state.ui.issueScope=target;select.value=target==='medium'?'Media':'Alta';go('fix');renderKanban()}
@@ -217,7 +252,7 @@ const openRepairBase=openRepair;openRepair=function(t){if(state.integration.mode
 document.addEventListener('click',e=>{const exportBtn=e.target.closest('.export-gpt-task'),copyBtn=e.target.closest('.copy-gpt-task'),previewBtn=e.target.closest('.preview-plugin-task'),pluginBtn=e.target.closest('.apply-plugin-task');if(exportBtn){const t=state.tasks.find(x=>x.id===Number(exportBtn.dataset.id));exportGPTSites(t)}if(copyBtn){const t=state.tasks.find(x=>x.id===Number(copyBtn.dataset.id));gptSitesPrompt(t).then(copyText).catch(err=>toast(`Prompt non generato: ${err.message}`,'error'))}if(previewBtn)previewPluginTask(Number(previewBtn.dataset.id));if(pluginBtn)applyPluginTask(Number(pluginBtn.dataset.id))})
 const openModalBase=openModal;openModal=function(type,data){openModalBase(type,data);if(type!=='task')return;const form=$('#modalForm'),instructions=form.querySelector('textarea[name="detail"]')?.closest('.field');if(!instructions||form.querySelector('[name="urls"]'))return;const field=document.createElement('div');field.className='field wide';field.innerHTML=`<label for="taskUrls">URL coinvolte</label><textarea id="taskUrls" name="urls" required placeholder="Una URL per riga">${esc((data?.affected||[]).map(x=>x.url).join('\n'))}</textarea><small class="help">Campo obbligatorio: inserisci una pagina per riga.</small>`;instructions.after(field);const op=data?.operation||{},advanced=document.createElement('div');advanced.className='field wide';advanced.innerHTML=`<details ${op.type&&op.type!=='auto'?'open':''}><summary><b>Correzione strutturata</b></summary><div class="form-grid" style="margin-top:14px"><div class="field wide"><label for="operationType">Tipo di intervento</label><select id="operationType" name="operationType"><option value="auto">Rileva automaticamente dal task</option><option value="seo" ${op.type==='seo'?'selected':''}>Title e meta description</option><option value="canonical" ${op.type==='canonical'?'selected':''}>Canonical</option><option value="redirect" ${op.type==='redirect'?'selected':''}>Redirect</option><option value="internal_link" ${op.type==='internal_link'?'selected':''}>Link interno</option></select></div><div class="field"><label>Title SEO finale</label><input name="seoTitle" maxlength="60" value="${esc(op.seoTitle||'')}"></div><div class="field"><label>Meta description finale</label><input name="metaDescription" maxlength="160" value="${esc(op.metaDescription||'')}"></div><div class="field wide"><label>Canonical finale</label><input name="canonicalUrl" placeholder="https://esempio.it/pagina" value="${esc(op.canonical||'')}"></div><div class="field"><label>Redirect sorgente</label><input name="redirectFrom" placeholder="/vecchia-url" value="${esc(op.redirect?.from||'')}"></div><div class="field"><label>Redirect destinazione</label><input name="redirectTo" placeholder="https://esempio.it/nuova-url" value="${esc(op.redirect?.to||'')}"></div><div class="field"><label>Tipo redirect</label><select name="redirectCode"><option value="301">301 permanente</option><option value="302" ${op.redirect?.code===302?'selected':''}>302 temporaneo</option></select></div><div class="field"><label>URL destinazione link</label><input name="linkTarget" placeholder="https://esempio.it/pagina" value="${esc(op.internalLink?.target||'')}"></div><div class="field"><label>Anchor text</label><input name="linkAnchor" value="${esc(op.internalLink?.anchor||'')}"></div><div class="field"><label>Posizione link</label><select name="linkPosition"><option value="end">Fine contenuto</option><option value="after_first_paragraph" ${op.internalLink?.position==='after_first_paragraph'?'selected':''}>Dopo il primo paragrafo</option></select></div></div></details>`;field.after(advanced)}
 const openModalPageStatusBase=openModal;openModal=function(type,data){openModalPageStatusBase(type,data);if(type!=='page')return;const status=$('#modalForm').querySelector('select[name="status"]');if(status&&!status.querySelector('option[value="Da verificare"]'))status.add(new Option('Da verificare','Da verificare',data?.status==='Da verificare',data?.status==='Da verificare'))}
-function autoMatch(){let n=0;state.pages.forEach(p=>{if(!p.keyword){p.keyword=p.url.replace(/^\//,'').replace(/-/g,' ');p.intent=/prezzo|servizio|corso/.test(p.keyword)?'Commerciale':'Informazionale';n++}});save();renderPages();toast(n?`${n} abbinamenti creati in base all’intento`:'Tutte le pagine sono già abbinate')}
+function autoMatch(){const byUrl={};(typeof gscKeywordMatches==='function'?gscKeywordMatches():[]).forEach(m=>{if(m.suggestedKeyword)byUrl[m.url]=m});let n=0,fromGsc=0;state.pages.forEach(p=>{if(!p.keyword){const m=byUrl[p.url];if(m){p.keyword=m.suggestedKeyword;p.intent=/prezzo|servizio|corso|acquist|prenota|iscrizion/.test(m.suggestedKeyword)?'Commerciale':'Informazionale';fromGsc++}else{p.keyword=p.url.replace(/^\//,'').replace(/-/g,' ');p.intent=/prezzo|servizio|corso/.test(p.keyword)?'Commerciale':'Informazionale'}n++}});save();renderPages();toast(n?`${n} abbinamenti creati${fromGsc?`, ${fromGsc} da query reali di Search Console`:' in base all’intento'}`:'Tutte le pagine sono già abbinate')}
 function applyTheme(mode=state.settings.theme){const dark=mode==='dark'||(mode==='system'&&matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';state.settings.theme=mode;const names={system:'Automatico',light:'Chiaro',dark:'Scuro'};$('#themeText').textContent=names[mode];save()}
 function cycleTheme(){const a=['system','light','dark'],next=a[(a.indexOf(state.settings.theme)+1)%3];applyTheme(next);if(state.ui.view==='settings')renderSettings();toast('Tema: '+({system:'automatico',light:'chiaro',dark:'scuro'}[next]))}
 function exportData(){const exportState=safePersistedState();const blob=new Blob([JSON.stringify({...exportState,appVersion:APP_VERSION,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`organic-growth-os-${state.project.domain||'backup'}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast(`Backup esportato · app ${APP_VERSION}`)}
@@ -394,6 +429,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '1.6.9', date: '2026-08-16', notes: 'Import Search Console adeguato al formato realmente prodotto dall\'esportazione standard di Google (pulsante "Esporta" nel rapporto Prestazioni): non un unico file con pagina e query sulla stessa riga, ma uno ZIP con Query.csv e Pagine.csv separati (oltre ad altri CSV non usati qui). Ora si può caricare direttamente lo ZIP scaricato, letto ed estratto interamente nel browser senza bisogno di decomprimerlo a mano; restano supportati anche i singoli CSV. Poiché quell\'esportazione non fornisce un incrocio diretto pagina↔query, l\'abbinamento keyword→URL è stimato per corrispondenza testuale (indice di Jaccard) tra le parole della query e quelle dello slug dell\'URL, dichiarato sempre come stima sia nel pannello "Corrispondenza keyword" sia nelle "Cannibalizzazioni" stimate; la stessa stima alimenta ora anche "Abbina automaticamente" nell\'inventario Pagine, con priorità sulle proposte testuali reali rispetto al vecchio fallback basato solo sullo slug. I 6 riquadri "Controlla il sito" sono ora cliccabili e aprono ciascuno il proprio report dedicato (elementi on-page, indicizzazione, canonical/redirect, internal linking, keyword e intento, cannibalizzazioni) invece di avviare una scansione simulata generica. Corretto inoltre un disallineamento introdotto insieme a queste modifiche: alcune funzioni interne (priorità dei task, registro URL per l\'Indicizzazione, storico Search Console per singola pagina) leggevano ancora un vecchio formato dati con incrocio pagina↔query che il nuovo importatore non produce più per l\'esportazione standard; ora usano correttamente gli aggregati reali per pagina disponibili in Pagine.csv (impressioni e clic realmente rilevati da Google per quella URL, mai stimati) quando l\'incrocio diretto non è disponibile. Verificato importando lo ZIP reale attraverso l\'input file effettivo dell\'app in un browser simulato (jsdom), non con una copia della logica.', compatibility: 'Nessuna modifica incompatibile ai dati salvati. Chi aveva già importato un vecchio CSV combinato pagina+query continua a vedere l\'incrocio reale per quelle righe; il nuovo formato ZIP/CSV separato mostra invece stime testuali, sempre etichettate come tali.' },
   { version: '1.6.8', date: '2026-08-16', notes: 'Corretto un bug critico confermato con un sito reale (diagnosticato passo passo dal Network/Console del browser): subito dopo aver ottenuto il token da WordPress, qualunque chiamata autenticata successiva (a partire da quella che rileva il connettore installato) richiamava internamente la stessa funzione usata per recuperare un token salvato al riavvio della pagina — funzione che azzera sempre lo stato "connesso", assumendo per sicurezza che un token ripristinato vada riverificato. Chiamata subito dopo un collegamento appena riuscito, però, azzerava un "connesso" vero da un istante prima, facendo fallire la richiesta successiva ancora prima di contattare WordPress (per questo nel pannello Network non compariva alcuna richiesta). Risultato visibile: "WordPress autenticato, ma connettore Organic Growth OS non rilevato" anche con autenticazione e plugin perfettamente funzionanti. Ora quella funzione di recupero viene richiamata solo quando manca davvero un token in memoria (cioè al primo caricamento della pagina), non più dopo ogni singola chiamata autenticata.', compatibility: 'Nessuna modifica ai dati salvati. Dopo l\'aggiornamento, riprova "Collega WordPress": dovrebbe arrivare fino in fondo, plugin rilevato incluso.' },
   { version: '1.6.7', date: '2026-08-16', notes: 'Corretto un bug critico e sistematico nel collegamento WordPress, confermato riproducendo l\'errore con un sito reale: la funzione che ripulisce l\'URL WordPress inserito dall\'utente provava a togliere la barra finale impostando il percorso a stringa vuota, ma le API degli URL nel browser reinseriscono automaticamente "/" ogni volta che il percorso viene svuotato — quindi la barra finale non veniva mai davvero rimossa, per nessun URL, in nessun caso. Il risultato era una doppia barra ("sito.it//wp-admin/...") in ogni indirizzo generato per il collegamento e per tutte le chiamate successive al connettore, che su alcuni siti/hosting può causare pagine bianche, redirect falliti o richieste rifiutate dopo il login. Ora la barra finale viene rimossa lavorando sulla stringa del percorso invece che sulla proprietà dell\'oggetto URL, ed è stato aggiunto anche un controllo difensivo sulle chiamate successive al collegamento nel caso restasse salvato un indirizzo con la barra finale da un tentativo precedente al bug.', compatibility: 'Nessuna modifica ai dati salvati. Consigliata una nuova prova di "Collega WordPress" dopo l\'aggiornamento: se l\'indirizzo del sito era già salvato con una barra finale, ora verrà ripulito automaticamente a ogni chiamata.' },
   { version: '1.6.6', date: '2026-08-16', notes: 'Disponibile un plugin WordPress unico ("Organic Growth OS", v2.0.0) che sostituisce i due plugin separati precedenti (Auth Bridge + Connector): stesse funzioni, un\'unica lista di "Origini autorizzate" invece di due liste indipendenti da tenere allineate a mano, migrazione automatica delle impostazioni esistenti al primo caricamento. Nessuna modifica alle chiamate REST usate da questa web app: chi resta sui due plugin separati (Auth Bridge 1.0.3 + Connector 1.1.1) continua a funzionare senza differenze.', compatibility: 'Nessuna modifica ai dati salvati. Consigliato: plugin unico Organic Growth OS 2.0.0. In alternativa restano supportati Auth Bridge 1.0.3 + Connector 1.1.1 separati.' },
@@ -774,10 +810,13 @@ function findBlockingTask(t) {
 
 // ---- Priorità più attendibile (#21) ----
 function gscImpressionsForUrls(urls) {
-  const rows = state.gsc && state.gsc.rows || [];
-  if (!rows.length) return 0;
   const set = new Set(urls);
-  return rows.filter(r => set.has(r.url)).reduce((a, r) => a + (r.impressions || 0), 0);
+  const rows = state.gsc && state.gsc.rows || [];
+  if (rows.length) return rows.filter(r => set.has(r.url)).reduce((a, r) => a + (r.impressions || 0), 0);
+  // Nessun vero incrocio pagina↔query disponibile (esportazione ZIP standard): usiamo comunque gli
+  // aggregati REALI per pagina di Pagine.csv (non è una stima, sono le impressioni reali di quella URL).
+  const pages = (state.gsc && state.gsc.pages) || [];
+  return pages.filter(p => set.has(p.path) || set.has(p.url)).reduce((a, p) => a + (p.impressions || 0), 0);
 }
 function computeTaskPriorityScore(t) {
   const severity = isCriticalTask(t) ? 40 : t.priority === 'Alta' ? 30 : t.priority === 'Media' ? 15 : 5;
@@ -788,61 +827,175 @@ function computeTaskPriorityScore(t) {
 }
 
 // ---- Import Search Console CSV (#6), matching con confidenza (#13), cannibalizzazioni (#12) ----
-function parseGscCsv(text) {
-  const rows = parseCSV(text);
-  return rows.map(r => {
-    const find = names => { const k = Object.keys(r).find(k => names.some(n => k.includes(n))); return k ? r[k] : ''; };
-    const rawUrl = find(['pagina', 'page', 'url']); const query = find(['query', 'keyword']);
-    const num = v => parseFloat(String(v || '0').replace('%', '').replace(',', '.')) || 0;
-    let url = rawUrl;
-    try { url = new URL(rawUrl, `https://${state.project.domain}`).pathname.replace(/\/$/, '') || '/'; } catch {}
-    return { url, query, clicks: num(find(['clic', 'click'])), impressions: num(find(['impressioni', 'impression'])), ctr: num(find(['ctr'])), position: num(find(['posizione', 'position'])) };
-  }).filter(r => r.url && r.query);
+// L'esportazione standard di Search Console (pulsante "Esporta" sul rapporto Prestazioni) produce uno ZIP
+// con file CSV separati (Query.csv, Pagine.csv, ...): NON esiste, in quell'esportazione, una riga che unisca
+// pagina+query insieme. Leggiamo quindi i due file separatamente e stimiamo l'abbinamento pagina<->query
+// tramite corrispondenza testuale (parole condivise tra query e slug dell'URL), dichiarandolo chiaramente
+// come stima e non come incrocio diretto fornito da Search Console.
+function gscNum(v) { return parseFloat(String(v || '0').replace('%', '').replace(',', '.')) || 0; }
+function gscFindColumn(row, names) { const k = Object.keys(row).find(k => names.some(n => k.includes(n))); return k ? row[k] : ''; }
+function parseGscQueriesCsv(text) {
+  return parseCSV(text).map(r => ({
+    query: gscFindColumn(r, ['query']),
+    clicks: gscNum(gscFindColumn(r, ['clic', 'click'])),
+    impressions: gscNum(gscFindColumn(r, ['impression'])),
+    ctr: gscNum(gscFindColumn(r, ['ctr'])),
+    position: gscNum(gscFindColumn(r, ['posizione', 'position'])),
+  })).filter(r => r.query);
 }
-async function importSearchConsoleCSV(file) {
+function parseGscPagesCsv(text) {
+  return parseCSV(text).map(r => {
+    const raw = gscFindColumn(r, ['pagina', 'pagine', 'page', 'url']);
+    let path = raw; try { path = new URL(raw, state.wordpress.url || `https://${state.project.domain || 'invalid.local'}`).pathname.replace(/\/$/, '') || '/'; } catch {}
+    return {
+      url: raw, path,
+      clicks: gscNum(gscFindColumn(r, ['clic', 'click'])),
+      impressions: gscNum(gscFindColumn(r, ['impression'])),
+      ctr: gscNum(gscFindColumn(r, ['ctr'])),
+      position: gscNum(gscFindColumn(r, ['posizione', 'position'])),
+    };
+  }).filter(r => r.url);
+}
+// Lettore ZIP minimale (nessuna dipendenza esterna): legge la Central Directory, quindi funziona anche
+// con gli ZIP di Google che usano il "data descriptor" (le dimensioni non sono affidabili negli header locali).
+async function gscInflateRaw(bytes) {
+  const ds = new DecompressionStream('deflate-raw');
+  const stream = new Blob([bytes]).stream().pipeThrough(ds);
+  const buf = await new Response(stream).arrayBuffer();
+  return new Uint8Array(buf);
+}
+async function readZipEntries(arrayBuffer) {
+  const view = new DataView(arrayBuffer), bytes = new Uint8Array(arrayBuffer);
+  const EOCD_SIG = 0x06054b50, CD_SIG = 0x02014b50, LFH_SIG = 0x04034b50;
+  let eocd = -1; const minOffset = Math.max(0, bytes.length - 22 - 65536);
+  for (let i = bytes.length - 22; i >= minOffset; i--) { if (view.getUint32(i, true) === EOCD_SIG) { eocd = i; break; } }
+  if (eocd === -1) throw new Error('File ZIP non valido o non riconosciuto');
+  const count = view.getUint16(eocd + 10, true); let cd = view.getUint32(eocd + 16, true);
+  const entries = {};
+  for (let i = 0; i < count; i++) {
+    if (view.getUint32(cd, true) !== CD_SIG) throw new Error('Voce ZIP non valida');
+    const method = view.getUint16(cd + 10, true), cSize = view.getUint32(cd + 20, true),
+      nameLen = view.getUint16(cd + 28, true), extraLen = view.getUint16(cd + 30, true), commentLen = view.getUint16(cd + 32, true),
+      lho = view.getUint32(cd + 42, true);
+    const filename = new TextDecoder('utf-8').decode(bytes.subarray(cd + 46, cd + 46 + nameLen));
+    if (view.getUint32(lho, true) !== LFH_SIG) throw new Error(`Header ZIP non valido per ${filename}`);
+    const lfNameLen = view.getUint16(lho + 26, true), lfExtraLen = view.getUint16(lho + 28, true);
+    const dataStart = lho + 30 + lfNameLen + lfExtraLen;
+    const compressed = bytes.subarray(dataStart, dataStart + cSize);
+    let data;
+    if (method === 0) data = compressed;
+    else if (method === 8) data = await gscInflateRaw(compressed);
+    else throw new Error(`Compressione ZIP non supportata (metodo ${method}) per ${filename}`);
+    entries[filename] = new TextDecoder('utf-8').decode(data);
+    cd += 46 + nameLen + extraLen + commentLen;
+  }
+  return entries;
+}
+async function importSearchConsoleCSV(fileList) {
   try {
-    const text = await file.text();
-    const rows = parseGscCsv(text);
-    if (!rows.length) throw new Error('Nessuna riga valida (servono almeno le colonne pagina/URL e query)');
-    state.gsc = { rows, importedAt: new Date().toISOString(), fileName: file.name };
-    logActivity('gsc-import', `Importate ${rows.length} righe da ${file.name}`);
+    const files = Array.from(fileList);
+    let queries = [], pages = [], names = [], crossRows = [];
+    for (const file of files) {
+      const lowerName = file.name.toLowerCase();
+      if (lowerName.endsWith('.zip')) {
+        if (typeof DecompressionStream === 'undefined') throw new Error('Questo browser non supporta la decompressione ZIP integrata: estrai il file ed importa Query.csv e Pagine.csv separatamente.');
+        const entries = await readZipEntries(await file.arrayBuffer());
+        for (const [entryName, text] of Object.entries(entries)) {
+          const lower = entryName.toLowerCase();
+          if (!lower.endsWith('.csv')) continue;
+          if (lower.includes('quer')) { queries = queries.concat(parseGscQueriesCsv(text)); names.push(entryName); }
+          else if (lower.includes('pagin') || lower.includes('page')) { pages = pages.concat(parseGscPagesCsv(text)); names.push(entryName); }
+        }
+      } else {
+        const text = await file.text();
+        if (lowerName.includes('quer')) { queries = queries.concat(parseGscQueriesCsv(text)); names.push(file.name); }
+        else if (lowerName.includes('pagin') || lowerName.includes('page')) { pages = pages.concat(parseGscPagesCsv(text)); names.push(file.name); }
+        else {
+          // Nome file non riconosciuto: prova a capire dal contenuto se contiene sia pagina che query (vecchio formato combinato) o solo uno dei due
+          const probe = parseCSV(text)[0] || {};
+          const hasUrl = !!gscFindColumn(probe, ['pagina', 'pagine', 'page', 'url']);
+          const hasQuery = !!gscFindColumn(probe, ['query']);
+          if (hasUrl && hasQuery) {
+            // formato combinato pagina+query sulla stessa riga: alimenta sia le pagine sia le query con dati reali abbinati
+            const rows = parseCSV(text).map(r => {
+              const raw = gscFindColumn(r, ['pagina', 'pagine', 'page', 'url']); let path = raw;
+              try { path = new URL(raw, state.wordpress.url || `https://${state.project.domain || 'invalid.local'}`).pathname.replace(/\/$/, '') || '/'; } catch {}
+              return { url: raw, path, query: gscFindColumn(r, ['query']), clicks: gscNum(gscFindColumn(r, ['clic', 'click'])), impressions: gscNum(gscFindColumn(r, ['impression'])), ctr: gscNum(gscFindColumn(r, ['ctr'])), position: gscNum(gscFindColumn(r, ['posizione', 'position'])) };
+            }).filter(r => r.url && r.query);
+            queries = queries.concat(rows.map(r => ({ query: r.query, clicks: r.clicks, impressions: r.impressions, ctr: r.ctr, position: r.position })));
+            pages = pages.concat(rows.map(r => ({ url: r.url, path: r.path, clicks: r.clicks, impressions: r.impressions, ctr: r.ctr, position: r.position })));
+            crossRows = crossRows.concat(rows); // vero incrocio pagina↔query: solo questo formato combinato lo fornisce
+            names.push(file.name);
+          } else if (hasQuery) { queries = queries.concat(parseGscQueriesCsv(text)); names.push(file.name); }
+          else if (hasUrl) { pages = pages.concat(parseGscPagesCsv(text)); names.push(file.name); }
+        }
+      }
+    }
+    if (!queries.length && !pages.length) throw new Error('Nessun file riconosciuto: carica lo ZIP di Search Console così com’è, oppure Query.csv e Pagine.csv estratti');
+    state.gsc = { queries, pages, rows: crossRows, importedAt: new Date().toISOString(), fileName: names.join(', ') };
+    logActivity('gsc-import', `Importate ${queries.length} query e ${pages.length} pagine da ${names.join(', ')}`);
     save(true); renderSettings(); renderKeywordMatching(); renderCannibalization(); renderShell();
-    toast(`Search Console importato: ${rows.length} righe (pagine, query, impressioni, clic, CTR, posizione)`);
+    toast(`Search Console importato: ${queries.length} query, ${pages.length} pagine (${names.join(', ')})`);
   } catch (e) { toast(`Import Search Console non riuscito: ${e.message}`, 'error'); }
 }
-function keywordMatchSuggestions() {
-  const rows = state.gsc && state.gsc.rows || [];
-  if (!rows.length) return [];
-  const byUrl = {};
-  rows.forEach(r => { (byUrl[r.url] = byUrl[r.url] || []).push(r); });
-  return Object.entries(byUrl).map(([url, qs]) => {
-    const sorted = qs.slice().sort((a, b) => b.impressions - a.impressions);
-    const best = sorted[0]; const totalImpr = qs.reduce((a, r) => a + r.impressions, 0);
-    const confidence = totalImpr ? Math.round((best.impressions / totalImpr) * 100) : 0;
-    const page = state.pages.find(p => p.url === url);
-    return { url, suggestedKeyword: best.query, confidence, currentKeyword: page ? page.keyword : '', impressions: Math.round(best.impressions), hasPage: !!page };
-  }).sort((a, b) => b.impressions - a.impressions);
+// Parole da ignorare nel confronto testuale query<->slug URL (articoli, preposizioni, riempitivi comuni)
+const GSC_STOPWORDS = new Set(['di', 'del', 'della', 'dei', 'delle', 'da', 'a', 'e', 'il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'uno', 'una', 'per', 'con', 'su', 'in', 'tra', 'fra', 'al', 'allo', 'alla', 'ai', 'agli', 'alle', 'come', 'che', 'vicino', 'me']);
+function gscWords(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(/[^a-z0-9]+/).filter(w => w.length > 1 && !GSC_STOPWORDS.has(w)); }
+function gscSlugWords(pathOrUrl) { let path = pathOrUrl; try { path = new URL(pathOrUrl, `https://${state.project.domain || 'invalid.local'}`).pathname; } catch {} return gscWords(path.replace(/[-_/]+/g, ' ')); }
+function gscJaccard(aWords, bWords) { if (!aWords.length || !bWords.length) return 0; const a = new Set(aWords), b = new Set(bWords); let inter = 0; a.forEach(w => { if (b.has(w)) inter++; }); const union = new Set([...a, ...b]).size; return union ? inter / union : 0; }
+// Stima l'abbinamento pagina<->query più probabile in base alle parole condivise tra la query e lo slug dell'URL.
+// Non è un incrocio diretto di Search Console (quell'esportazione non lo fornisce): è dichiarato come stima testuale.
+function gscKeywordMatches() {
+  const queries = (state.gsc && state.gsc.queries) || [];
+  if (!queries.length) return [];
+  const topQuery = queries.slice().sort((a, b) => b.impressions - a.impressions)[0];
+  const candidatePages = state.pages.length ? state.pages.map(p => ({ url: p.url })) : ((state.gsc.pages || []).map(p => ({ url: p.path })));
+  const seen = new Set();
+  return candidatePages.filter(p => { if (seen.has(p.url)) return false; seen.add(p.url); return true; }).map(p => {
+    const slugW = gscSlugWords(p.url);
+    let best = null, method = 'text';
+    if (!slugW.length) {
+      if (topQuery) { best = { score: null, q: topQuery }; method = 'top-query'; }
+    } else {
+      for (const q of queries) {
+        const score = gscJaccard(gscWords(q.query), slugW);
+        if (score <= 0) continue;
+        if (!best || score > best.score || (score === best.score && q.impressions > best.q.impressions)) best = { score, q };
+      }
+      if (best && best.score < 0.15) best = null;
+    }
+    const page = state.pages.find(x => x.url === p.url);
+    return {
+      url: p.url,
+      suggestedKeyword: best ? best.q.query : '',
+      confidence: best && method === 'text' ? Math.round(best.score * 100) : null,
+      method: best ? method : 'none',
+      impressions: best ? Math.round(best.q.impressions) : 0,
+      currentKeyword: page ? page.keyword : '',
+    };
+  }).filter(s => s.suggestedKeyword).sort((a, b) => b.impressions - a.impressions);
 }
 function renderKeywordMatching() {
   const el = $('#ogosKeywordMatch');
   if (!el) return;
-  const suggestions = keywordMatchSuggestions();
-  if (!suggestions.length) { el.innerHTML = '<p class="empty">Importa un export di Search Console per ottenere abbinamenti keyword→URL con un livello di confidenza spiegato.</p>'; return; }
-  el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>URL</th><th>Keyword suggerita</th><th>Confidenza</th><th>Keyword attuale</th></tr></thead><tbody>${suggestions.slice(0, 30).map(s => `<tr><td>${esc(s.url)}</td><td>${esc(s.suggestedKeyword)}</td><td title="Percentuale delle impressioni della pagina attribuibili a questa query">${s.confidence}%</td><td>${esc(s.currentKeyword || '—')}</td></tr>`).join('')}</tbody></table></div><p><small>Confidenza = quota delle impressioni della pagina generate da questa query specifica: più è alta, più la query rappresenta bene l'intento della pagina.</small></p>`;
+  const suggestions = gscKeywordMatches();
+  if (!suggestions.length) { el.innerHTML = '<p class="empty">Importa l’esportazione di Search Console (lo ZIP intero va bene) per ottenere una stima di abbinamento keyword→URL.</p>'; return; }
+  el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>URL</th><th>Keyword stimata</th><th>Confidenza</th><th>Keyword attuale</th></tr></thead><tbody>${suggestions.slice(0, 30).map(s => `<tr><td>${esc(s.url)}</td><td>${esc(s.suggestedKeyword)}</td><td title="${s.method === 'top-query' ? 'Pagina senza parole distintive nell’URL (es. home): mostrata la query con più impressioni in assoluto' : 'Quota di parole condivise tra la query e lo slug dell’URL (indice di Jaccard)'}">${s.method === 'top-query' ? 'stima home' : s.confidence + '%'}</td><td>${esc(s.currentKeyword || '—')}</td></tr>`).join('')}</tbody></table></div><p><small>Stima basata sulla corrispondenza testuale tra parole della query e slug dell’URL, non da un incrocio diretto pagina↔query: quell’esportazione di Search Console fornisce le due tabelle separate. Verifica sempre prima di applicare.</small></p>`;
 }
+// Stima le pagine potenzialmente in competizione sulla stessa query (stessa keyword stimata su più URL).
+// Anche questa è una stima testuale, non un incrocio diretto pagina↔query fornito da Search Console.
 function cannibalizationFromGsc() {
-  const rows = state.gsc && state.gsc.rows || [];
-  if (!rows.length) return [];
-  const byQuery = {};
-  rows.forEach(r => { (byQuery[r.query] = byQuery[r.query] || new Set()).add(r.url); });
-  return Object.entries(byQuery).filter(([, urls]) => urls.size > 1).map(([query, urls]) => ({ query, urls: [...urls] }));
+  const matches = gscKeywordMatches();
+  const byKeyword = {};
+  matches.forEach(m => { if (!m.suggestedKeyword || m.method !== 'text') return; (byKeyword[m.suggestedKeyword] = byKeyword[m.suggestedKeyword] || []).push(m.url); });
+  return Object.entries(byKeyword).filter(([, urls]) => urls.length > 1).map(([query, urls]) => ({ query, urls }));
 }
 function renderCannibalization() {
   const el = $('#ogosCannibalization');
   if (!el) return;
   const rows = cannibalizationFromGsc();
-  if (!rows.length) { el.innerHTML = '<p class="empty">Nessuna cannibalizzazione rilevata (richiede l\'import di Search Console).</p>'; return; }
-  el.innerHTML = `<ul class="data-list">${rows.slice(0, 20).map(r => `<li>${icon('alert')}<div><strong>${esc(r.query)}</strong><small>Compare per: ${r.urls.map(esc).join(', ')}</small></div></li>`).join('')}</ul>`;
+  if (!rows.length) { el.innerHTML = '<p class="empty">Nessuna sovrapposizione stimata (richiede l’import di Search Console).</p>'; return; }
+  el.innerHTML = `<p class="help" style="margin-bottom:8px">Stima basata sulla corrispondenza testuale tra query e URL: Search Console (in questo tipo di esportazione) non fornisce l’incrocio diretto pagina↔query, quindi verifica manualmente prima di agire.</p><ul class="data-list">${rows.slice(0, 20).map(r => `<li>${icon('alert')}<div><strong>${esc(r.query)}</strong><small>Pagine con contenuto potenzialmente sovrapposto: ${r.urls.map(esc).join(', ')}</small></div></li>`).join('')}</ul>`;
 }
 
 // ---- Dashboard multi-sito comparativa (#24) + Ricerca globale (#25) ----
@@ -1040,8 +1193,8 @@ function injectExtensions() {
 
     const gscWrap = document.createElement('div'); gscWrap.className = 'field wide';
     gscWrap.innerHTML = `<label for="ogosGscFile">Importa Search Console (CSV)</label><div class="panel" style="padding:18px;box-shadow:none">
-      <input type="file" id="ogosGscFile" accept=".csv">
-      <small class="help">Esporta da Search Console: Prestazioni → Esporta → CSV (pagine, query, impressioni, clic, CTR, posizione). Alimenta corrispondenza keyword, cannibalizzazioni, priorità stimata e opportunità economiche.</small>
+      <input type="file" id="ogosGscFile" accept=".csv,.zip" multiple>
+      <small class="help">Esporta da Search Console: Prestazioni → Esporta → CSV. Carica direttamente lo ZIP scaricato (contiene Query.csv e Pagine.csv separati, così come li fornisce Search Console): viene letto senza doverlo estrarre. Alimenta corrispondenza keyword (stimata), cannibalizzazioni (stimate), priorità e opportunità economiche.</small>
       <p id="ogosGscStatus" style="margin-top:8px"></p>
       <label for="ogosGptResultFile" style="margin-top:14px;display:block">Importa esito GPTSites (JSON)</label>
       <input type="file" id="ogosGptResultFile" accept=".json">
@@ -1088,7 +1241,7 @@ function injectExtensions() {
   $('#ogosCrawlBtn') && ($('#ogosCrawlBtn').onclick = runWordPressCrawl);
   $('#ogosRedirectsBtn') && ($('#ogosRedirectsBtn').onclick = runRedirectsAudit);
   $('#ogosDiagBtn') && ($('#ogosDiagBtn').onclick = runWordPressDiagnostics);
-  $('#ogosGscFile') && ($('#ogosGscFile').onchange = e => e.target.files[0] && importSearchConsoleCSV(e.target.files[0]));
+  $('#ogosGscFile') && ($('#ogosGscFile').onchange = e => e.target.files.length && importSearchConsoleCSV(e.target.files));
   $('#ogosGptResultFile') && ($('#ogosGptResultFile').onchange = e => e.target.files[0] && importGptSitesResult(e.target.files[0]));
   $('#ogosSimToggle') && ($('#ogosSimToggle').onchange = e => { state.ui.simulationMode = e.target.checked; save(true); toast(e.target.checked ? 'Modalità simulazione attiva: nessuna modifica reale verrà salvata' : 'Modalità simulazione disattivata'); });
   $('#ogosGlobalSearch') && ($('#ogosGlobalSearch').oninput = renderGlobalSearch);
@@ -1120,7 +1273,7 @@ function renderAllExtensions() {
   renderActivityLog();
   renderRepairLogPanel();
   const gscStatus = $('#ogosGscStatus');
-  if (gscStatus) gscStatus.textContent = state.gsc && state.gsc.rows && state.gsc.rows.length ? `Importate ${state.gsc.rows.length} righe da ${state.gsc.fileName} il ${new Intl.DateTimeFormat('it-IT', { dateStyle: 'short' }).format(new Date(state.gsc.importedAt))}` : 'Nessun import ancora effettuato.';
+  if (gscStatus) gscStatus.textContent = state.gsc && ((state.gsc.queries || []).length || (state.gsc.pages || []).length) ? `Importate ${(state.gsc.queries || []).length} query e ${(state.gsc.pages || []).length} pagine da ${state.gsc.fileName} il ${new Intl.DateTimeFormat('it-IT', { dateStyle: 'short' }).format(new Date(state.gsc.importedAt))}` : 'Nessun import ancora effettuato.';
   const simToggle = $('#ogosSimToggle'); if (simToggle) simToggle.checked = isSimulationMode();
   const crawlBtn=$('#ogosCrawlBtn'), redirBtn=$('#ogosRedirectsBtn'), diagBtn=$('#ogosDiagBtn'); if(crawlBtn){crawlBtn.disabled=!state.wordpress.connected||!state.wordpress.capabilities.includes('crawl');crawlBtn.title=crawlBtn.disabled?'Non supportato o WordPress non connesso':''} if(redirBtn){redirBtn.disabled=!state.wordpress.connected||!state.wordpress.capabilities.includes('redirect_audit');redirBtn.title=redirBtn.disabled?'Non supportato o WordPress non connesso':''} if(diagBtn){diagBtn.disabled=!state.wordpress.connected||!state.wordpress.capabilities.includes('diagnostics');diagBtn.title=diagBtn.disabled?'Non supportato o WordPress non connesso':''}
   const note = $('#ogosIndexingNote');
@@ -1205,7 +1358,10 @@ function mergeUrlRegistry() {
     if (!n.ok) { exclude(u.loc || u.path, 'sitemap', n.reason); return; }
     idxAddSource(n.path, 'sitemap', { inSitemap: true, sitemapLastmod: u.lastmod || null });
   });
-  (state.gsc && state.gsc.rows || []).forEach(r => {
+  // Preferiamo il vero incrocio pagina↔query se disponibile; altrimenti le URL reali di Pagine.csv
+  // (l'esportazione ZIP standard di Search Console non fornisce l'incrocio, solo le due tabelle separate).
+  const gscUrlSource = (state.gsc && state.gsc.rows && state.gsc.rows.length) ? state.gsc.rows : ((state.gsc && state.gsc.pages) || []);
+  gscUrlSource.forEach(r => {
     const n = idxNormalize(r.url);
     if (!n.ok) { exclude(r.url, 'search-console', n.reason); return; }
     idxAddSource(n.path, 'search-console');
@@ -1253,10 +1409,14 @@ async function fetchSitemapDiscovery() {
 // ---- Segnale storico Search Console: solo dal CSV già importato altrove nell'app (#7, #17) ----
 function idxGscAggregate(path) {
   const rows = (state.gsc && state.gsc.rows || []).filter(r => r.url === path);
-  if (!rows.length) return null;
-  return { rows: rows.length, impressions: Math.round(rows.reduce((a, r) => a + (r.impressions || 0), 0)), clicks: Math.round(rows.reduce((a, r) => a + (r.clicks || 0), 0)), queries: rows.map(r => r.query) };
+  if (rows.length) return { rows: rows.length, impressions: Math.round(rows.reduce((a, r) => a + (r.impressions || 0), 0)), clicks: Math.round(rows.reduce((a, r) => a + (r.clicks || 0), 0)), queries: rows.map(r => r.query) };
+  // Formato ZIP standard: nessun incrocio pagina↔query, ma Pagine.csv dà comunque impressioni/clic
+  // REALI per questa URL (non stimati). Nessuna query specifica può essere attribuita con certezza.
+  const match = ((state.gsc && state.gsc.pages) || []).find(p => p.path === path || p.url === path);
+  if (!match) return null;
+  return { rows: 0, impressions: Math.round(match.impressions || 0), clicks: Math.round(match.clicks || 0), queries: [] };
 }
-function idxGscImported() { return !!(state.gsc && state.gsc.rows && state.gsc.rows.length); }
+function idxGscImported() { return !!(state.gsc && (((state.gsc.rows || []).length) || ((state.gsc.pages || []).length))); }
 
 // ---- Link interni in entrata, calcolati dai dati già raccolti dall'audit/crawl (#8, #16) ----
 function idxInboundLinksIndex() {
@@ -1693,7 +1853,7 @@ init = function () { initWithIndexing(); bindIndexingNav(); };
 state.indexing = idxEnsureState(state).indexing;
 state.scans = Array.isArray(state.scans) ? state.scans : [];
 state.activityLog = Array.isArray(state.activityLog) ? state.activityLog : [];
-state.gsc = state.gsc || { rows: [], importedAt: null, fileName: '' };
+state.gsc = state.gsc || { queries: [], pages: [], rows: [], importedAt: null, fileName: '' };
 state.ui = state.ui || {};
 if (typeof state.ui.simulationMode !== 'boolean') state.ui.simulationMode = false;
 if (typeof state.ui.onboardingAsked !== 'boolean') state.ui.onboardingAsked = false;
@@ -1868,7 +2028,7 @@ init = function () {
   setTimeout(warnIfScanExpired, 1200);
 };
 
-function init(){const hadConnectorToken=restoreConnectorToken();hydrateIcons();applyTheme(state.settings.theme);document.addEventListener('click',e=>{const v=e.target.closest('[data-view]');if(v)go(v.dataset.view);if(e.target.closest('[data-close]'))closeModal();const apply=e.target.closest('.apply-repair'),prepare=e.target.closest('.prepare-repair');if(apply)applyRepair(Number(apply.dataset.id));if(prepare)prepareRepair(Number(prepare.dataset.id))});$('#nextBtn').onclick=()=>go($('#nextBtn').dataset.target);$('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');$('#themeBtn').onclick=cycleTheme;$('#exportBtn').onclick=exportData;$('#runAllBtn').onclick=()=>runAudit();$('#auditTools').onclick=e=>{const b=e.target.closest('.audit-tool');if(b)runAudit(Number(b.dataset.audit))};$('#addTaskBtn').onclick=()=>openModal('task');$('#approveAllBtn').onclick=()=>{state.tasks.forEach(t=>{if(!t.approved){t.approved=true;t.status='Da fare'}});save();renderKanban();renderShell();toast('Attività suggerite approvate')};$('#kanban').onchange=e=>{if(e.target.matches('.task-status')){const t=state.tasks.find(x=>x.id===Number(e.target.dataset.id));t.status=e.target.value;t.approved=t.status!=='Da approvare';save();renderKanban();renderShell();toast('Stato aggiornato')}};$('#kanban').onclick=e=>{const edit=e.target.closest('.edit-task'),show=e.target.closest('.show-pages'),repair=e.target.closest('.repair-task'),undo=e.target.closest('.undo-repair'),id=Number((edit||show||repair||undo)?.dataset.id),task=state.tasks.find(x=>x.id===id);if(edit||show)openModal('task',task);if(repair)openRepair(task);if(undo)undoRepair(id)};$('#pageSearch').oninput=renderPages;$('#pageFilter').onchange=renderPages;$('#autoMatchBtn').onclick=autoMatch;$('#addPageBtn').onclick=()=>openModal('page');$('#pagesBody').onclick=e=>{const edit=e.target.closest('.edit-page'),del=e.target.closest('.delete-page');if(edit)openModal('page',state.pages.find(x=>x.id===Number(edit.dataset.id)));if(del&&confirm('Eliminare questa pagina dall’inventario locale?')){state.pages=state.pages.filter(x=>x.id!==Number(del.dataset.id));save();renderPages();toast('Pagina rimossa')}};$('#addClusterBtn').onclick=()=>openModal('cluster');$('#mapGrid').onclick=e=>{if(e.target.closest('.edit-cluster'))toast('Vista cluster pronta per il prossimo livello di dettaglio')};$('#chooseFileBtn').onclick=()=>$('#fileInput').click();$('#fileInput').onchange=e=>e.target.files[0]&&importFile(e.target.files[0]);const dz=$('#dropZone');['dragenter','dragover'].forEach(x=>dz.addEventListener(x,e=>{e.preventDefault();dz.classList.add('drag')}));['dragleave','drop'].forEach(x=>dz.addEventListener(x,e=>{e.preventDefault();dz.classList.remove('drag')}));dz.addEventListener('drop',e=>e.dataTransfer.files[0]&&importFile(e.dataTransfer.files[0]));$('#themeSelect').onchange=e=>applyTheme(e.target.value);$('#importBackupBtn').onclick=()=>$('#fileInput').click();$('#closeModal').onclick=closeModal;$('#modalBackdrop').onclick=e=>{if(e.target===$('#modalBackdrop'))closeModal()};$('#modalForm').onsubmit=submitModal;document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',()=>{if(state.settings.theme==='system')applyTheme('system')});$('#projectSelect').onchange=e=>switchProject(e.target.value);$('#newAnalysisBtn').onclick=startNewAnalysis;$('#resetBtn').onclick=()=>{if(confirm(`Azzerare l’analisi di ${state.project.domain}? Gli altri siti non verranno modificati.`)){clearCurrentAnalysis();renderView('settings');toast('Analisi del sito azzerata')}};$('#autosave').onchange=e=>{state.settings.autosave=e.target.value;if(e.target.value==='on')save(true);toast('Preferenza aggiornata')};$('#createPlanBtn').onclick=createOperationalPlan;$('.issue-grid').onclick=e=>{const card=e.target.closest('[data-issue-target]');if(card)openAuditResult(card.dataset.issueTarget)};$('#taskFilter').onchange=()=>{state.ui.issueScope='all';renderKanban()};$('#gptBulkBtn').onclick=()=>exportGPTSites();$('#kanban').addEventListener('change',e=>{if(!e.target.matches('.task-status')||e.target.value!=='Verificata')return;const task=state.tasks.find(t=>t.id===Number(e.target.dataset.id));if(task?.status==='Verificata')return;e.stopImmediatePropagation();e.preventDefault();e.target.value=task?.status||'Completata';toast('Usa “Verifica ora”: lo stato Verificata richiede un controllo reale','error')},true);$('#verifyList').onclick=e=>{const button=e.target.closest('.verify-one');if(button)verifyTask(Number(button.dataset.id))};$('#verifyAllBtn').onclick=verifyAllTasks;$('#projectForm').onsubmit=saveProjectForm;$('#semanticProjectBtn').onclick=autoFillProjectFromDomain;$('#domain').addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();autoFillProjectFromDomain()}});$('#wpBtn').onclick=testWordPress;$('#wpDisconnectBtn').onclick=disconnectWordPress;renderView(state.ui.view||'dashboard');if(hadConnectorToken)verifyRestoredConnector()}init();
+function init(){const hadConnectorToken=restoreConnectorToken();hydrateIcons();applyTheme(state.settings.theme);document.addEventListener('click',e=>{const v=e.target.closest('[data-view]');if(v)go(v.dataset.view);if(e.target.closest('[data-close]'))closeModal();const apply=e.target.closest('.apply-repair'),prepare=e.target.closest('.prepare-repair');if(apply)applyRepair(Number(apply.dataset.id));if(prepare)prepareRepair(Number(prepare.dataset.id))});$('#nextBtn').onclick=()=>go($('#nextBtn').dataset.target);$('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');$('#themeBtn').onclick=cycleTheme;$('#exportBtn').onclick=exportData;$('#runAllBtn').onclick=()=>runAudit();$('#auditTools').onclick=e=>{const b=e.target.closest('.audit-tool');if(b)openAuditCategory(Number(b.dataset.audit))};$('#addTaskBtn').onclick=()=>openModal('task');$('#approveAllBtn').onclick=()=>{state.tasks.forEach(t=>{if(!t.approved){t.approved=true;t.status='Da fare'}});save();renderKanban();renderShell();toast('Attività suggerite approvate')};$('#kanban').onchange=e=>{if(e.target.matches('.task-status')){const t=state.tasks.find(x=>x.id===Number(e.target.dataset.id));t.status=e.target.value;t.approved=t.status!=='Da approvare';save();renderKanban();renderShell();toast('Stato aggiornato')}};$('#kanban').onclick=e=>{const edit=e.target.closest('.edit-task'),show=e.target.closest('.show-pages'),repair=e.target.closest('.repair-task'),undo=e.target.closest('.undo-repair'),id=Number((edit||show||repair||undo)?.dataset.id),task=state.tasks.find(x=>x.id===id);if(edit||show)openModal('task',task);if(repair)openRepair(task);if(undo)undoRepair(id)};$('#pageSearch').oninput=renderPages;$('#pageFilter').onchange=renderPages;$('#autoMatchBtn').onclick=autoMatch;$('#addPageBtn').onclick=()=>openModal('page');$('#pagesBody').onclick=e=>{const edit=e.target.closest('.edit-page'),del=e.target.closest('.delete-page');if(edit)openModal('page',state.pages.find(x=>x.id===Number(edit.dataset.id)));if(del&&confirm('Eliminare questa pagina dall’inventario locale?')){state.pages=state.pages.filter(x=>x.id!==Number(del.dataset.id));save();renderPages();toast('Pagina rimossa')}};$('#addClusterBtn').onclick=()=>openModal('cluster');$('#mapGrid').onclick=e=>{if(e.target.closest('.edit-cluster'))toast('Vista cluster pronta per il prossimo livello di dettaglio')};$('#chooseFileBtn').onclick=()=>$('#fileInput').click();$('#fileInput').onchange=e=>e.target.files[0]&&importFile(e.target.files[0]);const dz=$('#dropZone');['dragenter','dragover'].forEach(x=>dz.addEventListener(x,e=>{e.preventDefault();dz.classList.add('drag')}));['dragleave','drop'].forEach(x=>dz.addEventListener(x,e=>{e.preventDefault();dz.classList.remove('drag')}));dz.addEventListener('drop',e=>e.dataTransfer.files[0]&&importFile(e.dataTransfer.files[0]));$('#themeSelect').onchange=e=>applyTheme(e.target.value);$('#importBackupBtn').onclick=()=>$('#fileInput').click();$('#closeModal').onclick=closeModal;$('#modalBackdrop').onclick=e=>{if(e.target===$('#modalBackdrop'))closeModal()};$('#modalForm').onsubmit=submitModal;document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',()=>{if(state.settings.theme==='system')applyTheme('system')});$('#projectSelect').onchange=e=>switchProject(e.target.value);$('#newAnalysisBtn').onclick=startNewAnalysis;$('#resetBtn').onclick=()=>{if(confirm(`Azzerare l’analisi di ${state.project.domain}? Gli altri siti non verranno modificati.`)){clearCurrentAnalysis();renderView('settings');toast('Analisi del sito azzerata')}};$('#autosave').onchange=e=>{state.settings.autosave=e.target.value;if(e.target.value==='on')save(true);toast('Preferenza aggiornata')};$('#createPlanBtn').onclick=createOperationalPlan;$('.issue-grid').onclick=e=>{const card=e.target.closest('[data-issue-target]');if(card)openAuditResult(card.dataset.issueTarget)};$('#taskFilter').onchange=()=>{state.ui.issueScope='all';renderKanban()};$('#gptBulkBtn').onclick=()=>exportGPTSites();$('#kanban').addEventListener('change',e=>{if(!e.target.matches('.task-status')||e.target.value!=='Verificata')return;const task=state.tasks.find(t=>t.id===Number(e.target.dataset.id));if(task?.status==='Verificata')return;e.stopImmediatePropagation();e.preventDefault();e.target.value=task?.status||'Completata';toast('Usa “Verifica ora”: lo stato Verificata richiede un controllo reale','error')},true);$('#verifyList').onclick=e=>{const button=e.target.closest('.verify-one');if(button)verifyTask(Number(button.dataset.id))};$('#verifyAllBtn').onclick=verifyAllTasks;$('#projectForm').onsubmit=saveProjectForm;$('#semanticProjectBtn').onclick=autoFillProjectFromDomain;$('#domain').addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();autoFillProjectFromDomain()}});$('#wpBtn').onclick=testWordPress;$('#wpDisconnectBtn').onclick=disconnectWordPress;renderView(state.ui.view||'dashboard');if(hadConnectorToken)verifyRestoredConnector()}init();
 })();
 </script>
 </body>
