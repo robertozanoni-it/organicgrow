@@ -127,7 +127,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.13.0';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.14.0';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value.repairs=Array.isArray(value.repairs)?value.repairs:[];value.settings=value.settings||clone(seed.settings);value.project=value.project||clone(seed.project);value.project.dataOrigin=value.project.dataOrigin||((value.imports||[]).some(i=>i.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration||{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress||{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites||{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages:[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit||{})};value.tasks=(value.tasks||[]).map(t=>{const d=TASK_DETAILS[t.id]||{},repair=[...value.repairs].reverse().find(r=>r.taskId===t.id&&!r.undone),verified=!!t.gptSitesResult?.verified||!!repair?.verification?.all_verified,evidence=t.evidence||{status:'unverified',source:'legacy-or-demo',observedAt:null};return {...t,status:t.status==='Verificata'&&!verified?'Completata':t.status,evidence,affected:Array.isArray(t.affected)&&t.affected.length?t.affected:clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function projectRegistry(){try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');return {active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{return {active:'',projects:{}}}}
@@ -2314,9 +2314,10 @@ function cannibalizationProposals() {
   });
 }
 function upsertOperationalTask(title, detail, priority, affected, operation, confirmed) {
-  let task = (state.tasks || []).find(t => t.title === title && !['Completata', 'Verificata'].includes(t.status));
+  let task = (state.tasks || []).find(t => t.title === title);
   const data = { detail, priority, affected, operation: operation || { type: 'auto' }, autoPossible: !!operation, evidence: { status: confirmed ? 'confirmed' : 'unverified', source: confirmed ? 'live-audit' : 'operational-proposal', observedAt: new Date().toISOString() } };
-  if (task) Object.assign(task, data); else { task = { id: Date.now() + Math.random(), title, status: 'Da approvare', approved: false, ...data }; state.tasks.push(task); }
+  if (task) { const reopen = taskIsCompleted(task); Object.assign(task, data); if (reopen) { task.status = 'Da approvare'; task.approved = false; task.reopenedAt = new Date().toISOString(); } }
+  else { task = { id: Date.now() + Math.random(), title, status: 'Da approvare', approved: false, ...data }; state.tasks.push(task); }
   save(true); renderShell(); renderKanban(); closeModal(); go('fix'); openTaskDrawer(task); toast(`Task pronto: ${affected.length} ${affected.length === 1 ? 'pagina' : 'pagine'} coinvolte`);
 }
 function taskHasStructuredChanges(task) {
@@ -2419,7 +2420,7 @@ document.addEventListener('click', async e => {
     upsertOperationalTask('Aggiungi link interni alle pagine orfane', `${affected.length} collegamenti contestuali proposti`, 'Alta', affected, { type: 'internal_link' }, true);
   }
   if (e.target.closest('#ogosCreateBrokenBulk')) {
-    const rows = detectBrokenLinksReport().filter(r => r.suggested), affected = rows.map(r => ({ url: r.source, issue: `Link interno verso ${r.brokenUrl}`, fix: `Sostituisci con ${r.suggested}`, changes: { replace_link: { from: r.href || r.brokenUrl, to: r.suggested } } }));
+    const rows = detectBrokenLinksReport().filter(r => r.suggested && r.editable !== false), affected = rows.map(r => ({ url: r.source, issue: `Link interno verso ${r.brokenUrl}`, fix: `Sostituisci con ${r.suggested}`, changes: { replace_link: { from: r.href || r.brokenUrl, to: r.suggested } } }));
     upsertOperationalTask('Correggi link interni rotti', `${affected.length} sostituzioni con destinazione suggerita`, 'Alta', affected, { type: 'replace_link' }, true);
   }
   if (e.target.closest('#ogosApplyKeywordBulk')) {
@@ -2456,7 +2457,7 @@ detectBrokenLinksReport = function () {
     const page = state.pages.find(p => comparableUrl(p.url) === comparableUrl(row.source));
     const details = page?.live?.internalLinkDetails || [];
     const detail = details.find(d => comparableUrl(d.href) === comparableUrl(row.href || row.brokenUrl));
-    return { ...row, anchor: detail?.anchor || '', context: detail?.context || '', occurrence: detail?.occurrence || null };
+    return { ...row, anchor: detail?.anchor || '', context: detail?.context || '', occurrence: detail?.occurrence || null, editable: detail?.editable !== false };
   });
 };
 function internalLinkAuditContent() {
@@ -2498,6 +2499,136 @@ openCompletedTasksModal = function () {
   openActionDrawer('Task e azioni superate', `${done.length} ${done.length === 1 ? 'attività superata' : 'attività superate'}`, done.length ? done.map(t => `<button type="button" class="drawer-task" data-completed-id="${t.id}"><b>✓ ${esc(t.title)}</b><small>${esc(t.status)} · ${(t.affected || []).length} pagine · priorità ${esc(t.priority)}</small></button>`).join('') : '<p class="empty">Nessuna attività superata finora.</p>');
   $$('#actionDrawer [data-completed-id]').forEach(btn => btn.onclick = () => openTaskDrawer(state.tasks.find(t => String(t.id) === btn.dataset.completedId)));
 };
+
+/* ---- Azioni granulari, proposte editoriali e riconciliazione task (v1.14.0) ---- */
+function ensureStructuredTask(task) {
+  if (!task || !Array.isArray(task.affected)) return task;
+  const type = String(task.operation?.type || '').toLowerCase();
+  task.affected.forEach(item => {
+    if (!item || (item.changes && Object.keys(item.changes).length)) return;
+    const page = state.pages.find(p => comparableUrl(p.url) === comparableUrl(item.url));
+    if (!page) return;
+    const proposal = seoProposalForPage(page);
+    if (type === 'meta_description' || /meta description/i.test(task.title || '')) {
+      item.changes = { meta_description: proposal.meta };
+      item.fix = `Meta proposta: ${proposal.meta}`;
+      task.operation = { ...(task.operation || {}), type: 'seo' };
+    } else if (type === 'title' || /title seo/i.test(task.title || '')) {
+      item.changes = { title: proposal.title };
+      item.fix = `Title proposto: ${proposal.title}`;
+      task.operation = { ...(task.operation || {}), type: 'seo' };
+    }
+  });
+  return task;
+}
+const taskHasStructuredChangesV140 = taskHasStructuredChanges;
+taskHasStructuredChanges = function (task) { ensureStructuredTask(task); return taskHasStructuredChangesV140(task); };
+const openRepairV140 = openRepair;
+openRepair = function (task) { ensureStructuredTask(task); return openRepairV140(task); };
+const openTaskDrawerV140 = openTaskDrawer;
+openTaskDrawer = function (task) { ensureStructuredTask(task); return openTaskDrawerV140(task); };
+const prepareRepairV140 = prepareRepair;
+prepareRepair = function (id) {
+  prepareRepairV140(id);
+  toast('Il piano è approvato ma resta “Da fare” finché la modifica non viene applicata e verificata.');
+};
+function taskFamily(task) {
+  const type = String(task?.operation?.type || '').toLowerCase();
+  if (type === 'meta_description' || type === 'title' || type === 'seo') return 'seo';
+  return type || String(task?.title || '').toLowerCase().replace(/\d+/g, '').replace(/\s+/g, ' ').trim();
+}
+function taskIdentity(task) {
+  const urls = [...new Set((task?.affected || []).map(a => comparableUrl(a.url)).filter(Boolean))].sort();
+  return `${taskFamily(task)}|${urls.join('|')}`;
+}
+function taskTitleKey(task) { return String(task?.title || '').toLowerCase().replace(/\s+/g, ' ').trim(); }
+const applyCurrentAuditV140 = applyCurrentAudit;
+applyCurrentAudit = function (items, source, observedAt) {
+  const previous = clone(state.tasks || []), result = applyCurrentAuditV140(items, source, observedAt), fresh = state.tasks || [];
+  const matched = new Set(), reconciled = fresh.map(task => {
+    ensureStructuredTask(task);
+    const key = taskIdentity(task), old = previous.find((candidate, index) => !matched.has(index) && (taskIdentity(candidate) === key || taskTitleKey(candidate) === taskTitleKey(task)));
+    if (!old) return task;
+    const index = previous.indexOf(old); matched.add(index);
+    task.id = old.id;
+    if (taskIsCompleted(old)) {
+      task.status = 'In corso'; task.approved = true;
+      task.reopenedAt = new Date().toISOString();
+      task.detail = `${task.detail || ''} · Il problema è stato rilevato nuovamente nell’ultima scansione live.`;
+    } else {
+      task.status = old.status; task.approved = old.approved; task.planPrepared = old.planPrepared;
+    }
+    return task;
+  });
+  previous.forEach((task, index) => { if (!matched.has(index) && taskIsCompleted(task)) reconciled.push(task); });
+  const unique = new Map();
+  reconciled.forEach(task => { const key = taskTitleKey(task) || taskIdentity(task); const current = unique.get(key); if (!current || (taskIsCompleted(current) && !taskIsCompleted(task))) unique.set(key, task); });
+  state.tasks = [...unique.values()]; save(true); return result;
+};
+function keywordActivationProposal(prop) {
+  const page = state.pages.find(p => p.url === prop.url) || {};
+  const seo = seoProposalForPage({ ...page, keyword: prop.keyword });
+  const subject = String(prop.keyword || '').trim();
+  return {
+    title: seo.title,
+    h1: page.wpTitle && page.wpTitle.toLowerCase().includes(subject.toLowerCase()) ? page.wpTitle : titleCase(subject),
+    intro: `In questa pagina trovi informazioni chiare e aggiornate su ${subject}, con indicazioni utili per scegliere la soluzione più adatta alle tue esigenze.`,
+    placement: 'Title SEO, H1 e una sola frase introduttiva pertinente; evitare ripetizioni forzate.'
+  };
+}
+function showKeywordProposal(url) {
+  const prop = keywordProposals((state.pages || []).filter(p => !p.keyword)).find(p => p.url === url);
+  if (!prop) { toast('La proposta non è più aperta: aggiorna il report', 'error'); return; }
+  const copy = keywordActivationProposal(prop), modal = $('.modal'); modal?.classList.add('task-detail-modal');
+  $('#modalTitle').textContent = 'Proposta keyword e testo'; $('#modalHelp').textContent = `${prop.keyword} · ${prop.intent}`;
+  $('#modalForm').innerHTML = `<p><b>Pagina:</b> ${operationalPageLink(prop.url)}</p><div class="table-wrap"><table><tbody><tr><th>Keyword</th><td>${esc(prop.keyword)}</td></tr><tr><th>Intento</th><td>${esc(prop.intent)}</td></tr><tr><th>Title SEO proposto</th><td>${esc(copy.title)}</td></tr><tr><th>H1 proposto</th><td>${esc(copy.h1)}</td></tr><tr><th>Frase naturale proposta</th><td>${esc(copy.intro)}</td></tr><tr><th>Come inserirla</th><td>${esc(copy.placement)}</td></tr><tr><th>Affidabilità</th><td>${esc(prop.source)}</td></tr></tbody></table></div><div class="repair-actions"><button type="button" class="btn" data-close>Chiudi</button><button type="button" class="btn primary ogos-use-keyword" data-url="${esc(prop.url)}">Attiva abbinamento →</button></div>`;
+  $('#modalBackdrop').classList.add('open');
+}
+function cannibalizationDecision(row) {
+  const secondary = row.secondary || [];
+  return {
+    decision: secondary.length === 1 ? 'Confronta i due intenti. Mantieni entrambe solo se rispondono a bisogni diversi.' : `Mantieni ${operationalPageLink(row.primary)} come pagina principale e assegna un sotto-intento distinto a ciascuna secondaria.`,
+    steps: `1. Confronta contenuto e intento. 2. Sposta nella primaria le parti uniche che rispondono allo stesso intento. 3. Riscrivi title, H1 e anchor delle pagine con intento diverso. 4. Usa un redirect 301 solo se una secondaria non deve più esistere.`
+  };
+}
+const cannibalizationProposalsV140 = cannibalizationProposals;
+cannibalizationProposals = function () { return cannibalizationProposalsV140().map(row => ({ ...row, ...cannibalizationDecision(row) })); };
+function sourceTextFragment(row) {
+  const live = ogosLiveUrl(row.source); if (!live || !row.anchor) return '';
+  return `${live}#:~:text=${encodeURIComponent(row.anchor)}`;
+}
+function showBrokenLinkDetail(index) {
+  const row = detectBrokenLinksReport()[index]; if (!row) return;
+  const modal = $('.modal'); modal?.classList.add('task-detail-modal'); $('#modalTitle').textContent = 'Posizione esatta del link'; $('#modalHelp').textContent = row.anchor || row.brokenUrl;
+  $('#modalForm').innerHTML = `<div class="table-wrap"><table><tbody><tr><th>Pagina sorgente</th><td>${operationalPageLink(row.source)}</td></tr><tr><th>Anchor rilevata</th><td><b>${esc(row.anchor || 'Non disponibile')}</b>${row.occurrence ? ` · occorrenza ${row.occurrence}` : ''}</td></tr><tr><th>Testo attorno al link</th><td>${highlightedLinkContext(row)}</td></tr><tr><th>Origine</th><td>${row.editable === false ? 'Link generato da builder, blocco o template: apri il componente indicato dal contesto.' : 'Contenuto modificabile direttamente nella pagina.'}</td></tr><tr><th>Destinazione rotta</th><td>${operationalPageLink(row.brokenUrl)}</td></tr><tr><th>Destinazione proposta</th><td>${row.suggested ? operationalPageLink(row.suggested) : 'Nessuna proposta affidabile'}</td></tr></tbody></table></div><div class="repair-actions"><button type="button" class="btn" data-close>Chiudi</button>${sourceTextFragment(row) ? `<a class="btn" href="${esc(sourceTextFragment(row))}" target="_blank" rel="noopener">Apri nel punto del testo ↗</a>` : ''}${row.suggested && row.editable !== false ? `<button type="button" class="btn primary ogos-create-broken-one" data-index="${index}">Crea correzione per questo link →</button>` : ''}</div>`;
+  $('#modalBackdrop').classList.add('open');
+}
+function internalLinkAuditContentV140() {
+  const orphan = internalLinkProposals(), broken = detectBrokenLinksReport(), domain = normalizeProjectDomain(state.project.domain);
+  return `<h4>Pagine orfane: link da creare</h4>${orphan.length ? `<div class="table-wrap"><table><thead><tr><th>Sorgente</th><th>Link pronto</th><th>Destinazione</th><th>Posizione</th><th>Azione</th></tr></thead><tbody>${orphan.map((r,i) => `<tr><td>${operationalPageLink(r.source)}</td><td><code class="link-snippet">&lt;a href=&quot;https://${esc(domain)}${esc(r.target)}&quot;&gt;${esc(r.anchor)}&lt;/a&gt;</code></td><td>${operationalPageLink(r.target)}</td><td>Dopo il primo paragrafo pertinente a “${esc(r.anchor)}”.</td><td><button type="button" class="btn ogos-create-internal-one" data-index="${i}">Prepara questo link →</button></td></tr>`).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>Puoi preparare un singolo collegamento oppure tutti insieme.</small><button type="button" class="btn primary" id="ogosCreateInternalBulk">Crea task link interni (${orphan.length}) →</button></div>` : '<p class="safe-note">Nessuna pagina orfana rilevata.</p>'}<h4 style="margin-top:24px">Link interni rotti già presenti</h4>${broken.length ? `<div class="table-wrap"><table><thead><tr><th>Sorgente</th><th>Anchor</th><th>Posizione esatta</th><th>Link rotto</th><th>Proposta</th><th>Azione</th></tr></thead><tbody>${broken.map((r,i) => `<tr><td>${operationalPageLink(r.source)}</td><td><b>${esc(r.anchor || 'Da rilevare')}</b></td><td>${r.context ? highlightedLinkContext(r) : '<span class="help">Nuova scansione richiesta</span>'}<br><button type="button" class="btn ogos-link-detail" data-index="${i}">Apri dettaglio →</button></td><td>${operationalPageLink(r.brokenUrl)}</td><td>${r.suggested ? operationalPageLink(r.suggested) : 'Nessuna proposta affidabile'}</td><td>${r.suggested && r.editable !== false ? `<button type="button" class="btn ogos-create-broken-one" data-index="${i}">Correggi questo link →</button>` : r.editable === false ? 'Apri builder/template' : 'Manuale'}</td></tr>`).join('')}</tbody></table></div>${broken.some(r => r.suggested && r.editable !== false) ? `<div class="audit-bulk-bar"><small>La correzione conserva sorgente, anchor, contesto e destinazione.</small><button type="button" class="btn primary" id="ogosCreateBrokenBulk">Correggi tutti (${broken.filter(r => r.suggested && r.editable !== false).length}) →</button></div>` : ''}` : '<p class="safe-note">Nessun link interno rotto rilevato.</p>'}`;
+}
+const auditCategoryContentV140 = auditCategoryContent;
+auditCategoryContent = function (index) {
+  if (index === 3) return internalLinkAuditContentV140();
+  if (index === 4) {
+    const rows = keywordProposals((state.pages || []).filter(p => !p.keyword));
+    return rows.length ? `<p><b>${rows.length}</b> abbinamenti da valutare. Apri la proposta per vedere esattamente title, H1 e frase naturale.</p><div class="table-wrap"><table><thead><tr><th>Pagina</th><th>Keyword</th><th>Intento</th><th>Testo proposto</th><th>Azione</th></tr></thead><tbody>${rows.map(r => `<tr><td>${operationalPageLink(r.url)}</td><td><b>${esc(r.keyword)}</b></td><td>${esc(r.intent)}</td><td>${esc(keywordActivationProposal(r).intro)}</td><td><button type="button" class="btn ogos-keyword-detail" data-url="${esc(r.url)}">Vedi proposta completa →</button></td></tr>`).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>Il bulk salva gli abbinamenti; il testo resta una proposta editoriale da approvare.</small><button type="button" class="btn primary" id="ogosApplyKeywordBulk">Abbina tutte (${rows.length}) →</button></div>` : '<p class="safe-note">Tutte le pagine hanno keyword e intento assegnati.</p>';
+  }
+  if (index === 5) {
+    const rows = cannibalizationProposals();
+    return rows.length ? `<p class="help">Nessun redirect viene eseguito alla cieca: per ogni gruppo è indicata una decisione e la sequenza operativa.</p><div class="table-wrap"><table><thead><tr><th>Query</th><th>Pagina primaria</th><th>Concorrenti</th><th>Decisione consigliata</th><th>Passaggi</th></tr></thead><tbody>${rows.map(r => `<tr><td><b>${esc(r.query)}</b></td><td>${operationalPageLink(r.primary)}</td><td>${r.secondary.map(url => operationalPageLink(url)).join('<br>')}</td><td>${r.decision}</td><td>${esc(r.steps)}</td></tr>`).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>Crea un task editoriale verificabile, senza redirect automatici.</small><button type="button" class="btn primary" id="ogosCreateCannibalBulk">Crea piano (${rows.length}) →</button></div>` : '<p class="safe-note">Nessuna cannibalizzazione stimata.</p>';
+  }
+  return auditCategoryContentV140(index);
+};
+document.addEventListener('click', e => {
+  const internal = e.target.closest('.ogos-create-internal-one');
+  if (internal) { const r = internalLinkProposals()[Number(internal.dataset.index)]; if (r) upsertOperationalTask(`Aggiungi link interno verso ${r.target}`, `Collegamento singolo proposto da ${r.source}`, 'Alta', [{ url:r.source, issue:`${r.target} è orfana`, fix:`Inserisci “${r.anchor}” verso ${r.target}`, changes:{ internal_link:{ target:r.target, anchor:r.anchor, position:'after-relevant-paragraph' } } }], {type:'internal_link'}, true); }
+  const broken = e.target.closest('.ogos-create-broken-one');
+  if (broken) { const r = detectBrokenLinksReport()[Number(broken.dataset.index)]; if (r?.suggested && r.editable !== false) upsertOperationalTask(`Correggi link rotto in ${r.source}`, `Anchor “${r.anchor || r.brokenUrl}”${r.occurrence ? `, occorrenza ${r.occurrence}` : ''}`, 'Alta', [{url:r.source, issue:`Link verso ${r.brokenUrl}`, fix:`Sostituisci con ${r.suggested}`, changes:{replace_link:{from:r.href||r.brokenUrl,to:r.suggested,anchor:r.anchor||'',context:r.context||''}}}], {type:'replace_link'}, true); else if (r?.editable === false) toast('Questo link è generato da un builder o template: usa il contesto per aprire e modificare il componente.', 'error'); }
+  const detail = e.target.closest('.ogos-link-detail'); if (detail) showBrokenLinkDetail(Number(detail.dataset.index));
+  const keyword = e.target.closest('.ogos-keyword-detail'); if (keyword) showKeywordProposal(keyword.dataset.url);
+  const use = e.target.closest('.ogos-use-keyword'); if (use) { const prop=keywordProposals((state.pages||[]).filter(p=>!p.keyword)).find(p=>p.url===use.dataset.url), page=state.pages.find(p=>p.url===use.dataset.url); if(prop&&page){page.keyword=prop.keyword;page.intent=prop.intent;save(true);closeModal();renderPages();renderShell();toast('Keyword e intento assegnati');} }
+});
 
 /* ---- Notifica scansioni scadute (#26), una volta all'avvio ---- */
 const initWithExtensions = init;
