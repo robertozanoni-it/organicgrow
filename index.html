@@ -127,7 +127,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.15.9';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.15.11';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value.repairs=Array.isArray(value.repairs)?value.repairs:[];value.settings=value.settings||clone(seed.settings);value.project=value.project||clone(seed.project);value.project.dataOrigin=value.project.dataOrigin||((value.imports||[]).some(i=>i.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration||{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress||{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites||{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages:[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit||{})};value.tasks=(value.tasks||[]).map(t=>{const d=TASK_DETAILS[t.id]||{},repair=[...value.repairs].reverse().find(r=>r.taskId===t.id&&!r.undone),gptPkg=(value.gptsites.packages||[]).find(p=>p.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg&&!!gptPkg.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.includes(String(t.id)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence||{status:'unverified',source:'legacy-or-demo',observedAt:null};return {...t,status:t.status==='Verificata'&&!verified?'Completata':t.status,gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,affected:Array.isArray(t.affected)&&t.affected.length?t.affected:clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function projectRegistry(){try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');return {active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{return {active:'',projects:{}}}}
@@ -717,6 +717,8 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '1.15.11', date: '2026-08-18', notes: 'Corretto il blocco generale dei pulsanti introdotto dalla migrazione 1.15.10: la pulizia dei duplicati storici veniva eseguita prima dell\'inizializzazione dell\'interfaccia e un record legacy con struttura incompleta poteva interrompere tutto lo script, lasciando l\'app visibile ma senza eventi click. La migrazione e\' ora tollerante ai record precedenti, protetta per singolo task ed eseguita senza impedire l\'avvio. Rafforzati anche i controlli su affected, changes, partialApply e pagine legacy.', compatibility: 'Valida per tutti i siti e compatibile con i backup precedenti. Connettore WordPress invariato alla versione 2.5.8.' },
+  { version: '1.15.10', date: '2026-08-18', notes: 'Estesa a tutti i task automatici la rimozione delle indicazioni false gia\' completate. La correzione precedente copriva solo internal link e link rotti: title, meta description e altri interventi potevano ancora apparire nel controllo e nel menu Cose da fare, per poi essere bloccati soltanto dopo il clic con “Questo task e\' gia\' nello storico dei completati”. Ora la deduplicazione opera per sito, pagina e singolo campo/modifica prima di costruire report, conteggi e pulsanti. All\'apertura e al cambio progetto vengono inoltre rimossi dagli aperti i duplicati storici gia\' salvati, mantenendo invece righe nuove, parziali o non applicate.', compatibility: 'Valida per tutti i siti e compatibile con task e backup precedenti. Correzione lato app; connettore WordPress invariato alla versione 2.5.8.' },
   { version: '1.15.9', date: '2026-08-18', notes: 'Corretto il falso invito ad agire nel controllo Internal linking: tabella, conteggio e pulsante bulk potevano riproporre modifiche gia\' registrate nello storico dei task completati; solo dopo il clic il controllo anti-duplicazione bloccava la creazione. Ora le modifiche di link gia\' completate vengono escluse prima di costruire il report e la voce Cose da fare. La deduplicazione avviene per singola modifica, quindi un gruppo misto propone soltanto i collegamenti realmente nuovi; le righe non applicate in un task parziale restano invece aperte.', compatibility: 'Compatibile con task e backup precedenti. Correzione esclusivamente lato app; il connettore WordPress resta alla versione 2.5.8.' },
   { version: '1.15.8', date: '2026-08-18', notes: 'Su richiesta esplicita di controllare a fondo le correzioni appena fatte (v1.15.7) e di cercare altri errori, ho fatto ricontrollare in modo avversariale le due correzioni precedenti da un controllo indipendente e ho aperto un nuovo giro di audit su aree non ancora esaminate (cambio progetto, importazione backup, salvataggio automatico, bacheca Kanban, autenticazione del connettore). Confermato che le due correzioni della versione 1.15.7 (identita\' del task basata sulla pagina orfana invece che sulla sorgente; aggiornamento locale dei link dopo un\'applicazione riuscita) sono realmente in vigore e funzionanti - non erano solo apparenti. Trovati e corretti anche cinque problemi reali, scoperti proprio ripensando a fondo quelle stesse correzioni. La sincronizzazione locale dei link dopo un\'applicazione riuscita (introdotta in 1.15.7) confrontava l\'indirizzo della pagina in modo troppo rigido: un task creato a mano con un indirizzo scritto con lo slash finale, con o senza "www", veniva comunque applicato correttamente sul sito ma la sincronizzazione locale falliva silenziosamente a trovare la pagina corrispondente, riproponendo lo stesso problema che la 1.15.7 doveva risolvere. Annullare ("Ripristina") una correzione di link interni applicata dal plugin WordPress riportava il sito reale allo stato precedente ma non aggiornava i dati locali nello stesso modo: il report "Pagine orfane e link interni" continuava a mostrare il link come presente anche dopo un ripristino riuscito, disallineandosi dal sito vero nella direzione opposta rispetto al problema originale. Un task gia\' esistente ma non ancora completato, ritrovato tramite lo stesso "codice identificativo" introdotto in 1.15.7 ma proposto con un titolo diverso (es. prima creato singolarmente, poi riproposto in blocco), manteneva il titolo vecchio mentre il resto della scheda si aggiornava, mostrando un titolo disallineato dal contenuto. Con "Salvataggio automatico" disattivato, cambiare sito dal selettore in alto o importare un backup JSON scartava silenziosamente e in modo permanente le modifiche fatte al sito corrente dall\'ultimo salvataggio manuale, perche\' il salvataggio di sicurezza prima del cambio rispettava la preferenza "automatico: off" invece di essere sempre forzato in quel punto preciso; anche il semplice cambio della preferenza stessa da "off" a "on" o viceversa non veniva sempre salvato su disco. Un task privo del campo "priorita\'" (possibile con un backup JSON modificato a mano o esportato da una versione diversa dell\'app) mandava in crash l\'intera bacheca Kanban al primo tentativo di render, con un errore che impediva di vedere qualunque attivita\' finche\' il backup incriminato non veniva rimosso; ora un task senza priorita\' viene semplicemente mostrato con priorita\' "Media" invece di rompere la bacheca. Controllati a fondo, senza trovare problemi reali: il file di autenticazione del connettore WordPress (class-ogos-auth.php, mai auditato nei giri precedenti) - generazione e conservazione dei token, confronto a prova di timing attack, revoca immediata, flusso di abbinamento del codice, controlli sui permessi; tutte le altre rotte REST del connettore per lo stesso schema di errore silenzioso gia\' corretto in precedenza; l\'incrocio di parole chiave e pertinenza testuale tra pagine; l\'importazione di CSV/ZIP da Search Console; il salvataggio/caricamento di base dei dati.', compatibility: 'Compatibile con i dati precedenti. Nessuna azione richiesta: tutte le correzioni sono lato app e valgono dalla prossima apertura, anche sui task e progetti gia\' presenti. Non richiede un aggiornamento del connettore WordPress (resta alla versione 2.5.8, che risulta solida dopo il nuovo controllo sull\'autenticazione).' },
   { version: '1.15.7', date: '2026-08-18', notes: 'Risposta diretta a una segnalazione su "Link interni": alcuni task gia\' completati (aggiunta di un link verso una pagina orfana) ricomparivano in "Cose da fare", e dopo aver applicato una correzione la pagina restava segnalata come orfana finche\' non si eseguiva una nuova scansione completa. Trovate e corrette due cause distinte. Primo: il codice con cui l\'app riconosce che un task riproposto e\' in realta\' lo stesso problema gia\' risolto si basava, per i link verso pagine orfane, sulla pagina di partenza scelta automaticamente per ospitare il link (l\'algoritmo che sceglie quella pagina in base alla somiglianza dei contenuti puo\' scegliere una pagina diversa a ogni scansione, pur trattandosi dello stesso identico problema) invece che sulla pagina di destinazione realmente orfana, che e\' sempre la stessa: bastava che una scansione successiva proponesse una pagina di partenza diversa per la stessa pagina orfana perche\' il task, gia\' completato e verificato, venisse considerato "nuovo" e rimesso in Cose da fare. Ora l\'identita\' del task si basa sulla pagina orfana di destinazione, che non cambia. Secondo: dopo che il plugin WordPress applicava con successo l\'inserimento (o la sostituzione) di un link interno, l\'app non aggiornava subito il proprio elenco locale dei link in uscita di quella pagina: il report "Pagine orfane e link interni" continuava percio\' a considerare orfana la pagina di destinazione finche\' non si eseguiva una scansione completa, anche quando il link era gia\' stato scritto correttamente sul sito - da qui l\'impressione che "l\'inserimento non funziona" e che alcune "pagine orfane non sono orfane" (in realta\' non lo erano piu\', ma il report non lo sapeva ancora). Ora, dopo un\'applicazione riuscita, l\'app aggiorna subito i propri dati locali e il report riflette la correzione senza bisogno di una nuova scansione. Per chiarezza sul dubbio sollevato: nel report "Pagine orfane e link interni" la "pagina di destinazione" indica sempre la pagina orfana che deve ricevere il nuovo link in entrata; la pagina "di partenza" proposta e\' quella scelta come punto migliore da cui far partire quel link.', compatibility: 'Compatibile con i dati precedenti. Nessuna azione richiesta: la correzione vale dalla prossima apertura dell\'app, anche sui task gia\' presenti in elenco. Non richiede un aggiornamento del connettore WordPress (resta alla versione 2.5.8).' },
@@ -2987,10 +2989,11 @@ function linkChangeKey(item, forcedType = '') {
 }
 function completedLinkChangeKeys() {
   const keys = new Set();
-  (state.tasks || []).filter(taskIsCompleted).forEach(task => {
+  (Array.isArray(state.tasks) ? state.tasks : []).filter(taskIsCompleted).forEach(task => {
     const type = task.operation?.type || '';
-    (task.affected || []).forEach(item => {
-      const skipped = (task.partialApply?.reasons || []).find(reason => comparableUrl(reason.url) === comparableUrl(item.url) && !reason.partial);
+    (Array.isArray(task?.affected) ? task.affected : []).forEach(item => {
+      const reasons = Array.isArray(task?.partialApply?.reasons) ? task.partialApply.reasons : [];
+      const skipped = reasons.find(reason => comparableUrl(reason?.url) === comparableUrl(item?.url) && !reason?.partial);
       if (skipped) return;
       const key = linkChangeKey(item, type);
       if (key) keys.add(key);
@@ -3046,6 +3049,131 @@ upsertOperationalTask = function(title, detail, priority, affected, operation, c
   }
   const nextDetail = rows.length !== (affected || []).length ? `${rows.length} interventi nuovi; ${(affected || []).length - rows.length} gia completati esclusi` : detail;
   return upsertOperationalTaskV159(title, nextDetail, priority, rows, operation, confirmed);
+};
+
+/* ---- Deduplicazione generale di report e task gia' completati (v1.15.10) ---- */
+function operationalFamily(taskLike) {
+  const type = String(taskLike?.operation?.type || '').toLowerCase();
+  if (type && type !== 'auto') return taskFamily(taskLike);
+  return String(taskLike?.title || '').toLowerCase().replace(/\d+/g, '').replace(/\s+/g, ' ').trim() || 'attivita';
+}
+function operationalChangeKeys(item, taskLike) {
+  if (!item) return [];
+  const family = operationalFamily(taskLike), url = comparableUrl(item.url || ''), changes = item.changes && typeof item.changes === 'object' ? item.changes : {}, keys = [];
+  if (changes.internal_link?.target) return [linkChangeKey(item, 'internal_link')].filter(Boolean);
+  if (changes.replace_link?.to) return [linkChangeKey(item, 'replace_link')].filter(Boolean);
+  ['title', 'meta_description', 'canonical', 'keyword', 'intent', 'redirect'].forEach(field => {
+    if (Object.prototype.hasOwnProperty.call(changes, field) && url) keys.push(`${family}|${url}|${field}`);
+  });
+  if (keys.length) return keys;
+  if (family === 'seo' && url) {
+    const text = `${taskLike?.title || ''} ${item.issue || ''}`.toLowerCase();
+    if (/title/.test(text)) keys.push(`seo|${url}|title`);
+    if (/meta/.test(text)) keys.push(`seo|${url}|meta_description`);
+    if (!keys.length) keys.push(`seo|${url}|title`, `seo|${url}|meta_description`);
+    return keys;
+  }
+  const issue = String(item.issue || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  return url ? [`${family}|${url}|${issue}`] : [];
+}
+function completedOperationalChangeKeys(tasks = state.tasks || []) {
+  const keys = new Set();
+  (Array.isArray(tasks) ? tasks : []).filter(taskIsCompleted).forEach(task => {
+    (Array.isArray(task?.affected) ? task.affected : []).forEach(item => {
+      try {
+        const reasons = Array.isArray(task?.partialApply?.reasons) ? task.partialApply.reasons : [];
+        const skipped = reasons.find(reason => comparableUrl(reason?.url) === comparableUrl(item?.url) && !reason?.partial);
+        if (!skipped) operationalChangeKeys(item, task).forEach(key => keys.add(key));
+      } catch (error) { console.warn('Task storico ignorato durante la deduplicazione', error); }
+    });
+  });
+  return keys;
+}
+function pendingOperationalItem(item, taskLike, completed = completedOperationalChangeKeys()) {
+  const original = clone(item || {}), changes = original.changes && typeof original.changes === 'object' ? original.changes : {}, changeNames = Object.keys(changes);
+  if (!changeNames.length) return operationalChangeKeys(original, taskLike).some(key => completed.has(key)) ? null : original;
+  const remaining = {};
+  changeNames.forEach(name => {
+    const single = { ...original, changes: { [name]: original.changes[name] } };
+    if (!operationalChangeKeys(single, taskLike).some(key => completed.has(key))) remaining[name] = original.changes[name];
+  });
+  if (!Object.keys(remaining).length) return null;
+  original.changes = remaining;
+  return original;
+}
+function reconcileOpenTasksWithHistory(tasks) {
+  const list = Array.isArray(tasks) ? tasks : [], completed = completedOperationalChangeKeys(list);
+  return list.flatMap(task => {
+    try {
+      if (!task || typeof task !== 'object') return [];
+      if (taskIsCompleted(task)) return [task];
+      const original = Array.isArray(task.affected) ? task.affected : [], affected = original.map(item => pendingOperationalItem(item, task, completed)).filter(Boolean);
+      if (original.length && !affected.length) return [];
+      return [{ ...task, affected }];
+    } catch (error) {
+      console.warn('Task legacy conservato senza migrazione', error);
+      return task && typeof task === 'object' ? [task] : [];
+    }
+  });
+}
+function onPageCandidateRowsV1510() {
+  const taskLike = { title: 'Completa title SEO e meta description', operation: { type: 'seo' } }, completed = completedOperationalChangeKeys();
+  return (Array.isArray(state.pages) ? state.pages : []).filter(page => page?.live && (!String(page.live.seoTitle || '').trim() || !String(page.live.metaDescription || '').trim())).map(page => {
+    const proposal = seoProposalForPage(page), changes = { ...(!String(page.live.seoTitle || '').trim() ? { title: proposal.title } : {}), ...(!String(page.live.metaDescription || '').trim() ? { meta_description: proposal.meta } : {}) };
+    const item = pendingOperationalItem({ url: page.url, issue: `${changes.title ? 'Title SEO mancante. ' : ''}${changes.meta_description ? 'Meta description mancante.' : ''}`.trim(), fix: 'Applicare la proposta dopo anteprima', changes }, taskLike, completed);
+    return item ? { page, proposal, item } : null;
+  }).filter(Boolean);
+}
+function onPageAuditContentV1510() {
+  const pages = Array.isArray(state.pages) ? state.pages : [], all = pages.filter(page => page?.live && (!String(page.live.seoTitle || '').trim() || !String(page.live.metaDescription || '').trim())), rows = onPageCandidateRowsV1510(), suppressed = all.length - rows.length;
+  if (!pages.some(page => page?.live)) return '<p class="empty">Esegui prima una scansione live: title e meta description non possono essere dedotti in modo affidabile da dati storici.</p>';
+  const note = suppressed ? `<div class="safe-note"><b>${suppressed} ${suppressed === 1 ? 'pagina gia completata esclusa' : 'pagine gia completate escluse'}.</b><br>Non vengono riproposte tra le cose da fare.</div>` : '';
+  if (!rows.length) return `${note}<p class="safe-note">Nessun intervento on-page nuovo da eseguire.</p>`;
+  return `${note}<p><b>${rows.length}</b> ${rows.length === 1 ? 'pagina richiede' : 'pagine richiedono'} un elemento on-page. Controlla la proposta prima di creare l'attivita da approvare.</p><div class="table-wrap"><table><thead><tr><th>Pagina</th><th>Problema attuale</th><th>Title SEO proposto</th><th>Meta description proposta</th></tr></thead><tbody>${rows.map(({page,proposal,item}) => `<tr><td>${operationalPageLink(page.url)}</td><td>${item.changes.title ? 'Title SEO mancante. ' : ''}${item.changes.meta_description ? 'Meta description mancante.' : ''}</td><td><div class="seo-proposal"><b>${esc(proposal.title)}</b><small>${proposal.title.length}/60 caratteri · keyword: ${esc(proposal.keyword)}</small></div></td><td><div class="seo-proposal"><span>${esc(proposal.meta)}</span><small>${proposal.meta.length}/155 caratteri</small></div></td></tr>`).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>Il pulsante crea un'unica attivita con sole modifiche nuove.</small><button type="button" class="btn primary" id="ogosCreateOnPageBulk">Crea attivita da approvare (${rows.length}) →</button></div>`;
+}
+function pendingCannibalizationRowsV1510() {
+  const completed = completedOperationalChangeKeys(), taskLike = { title: 'Risolvi cannibalizzazioni da verificare', operation: { type: 'editorial_review' } };
+  return cannibalizationProposals().filter(row => [row.primary, ...(row.secondary || [])].some(url => pendingOperationalItem({ url, issue: `Possibile competizione su “${row.query}”`, fix: url === row.primary ? 'Pagina primaria proposta' : 'Differenzia intento/contenuto o valuta consolidamento' }, taskLike, completed)));
+}
+const auditCategoryContentV1510 = auditCategoryContent;
+auditCategoryContent = function(index) {
+  if (index === 0) return onPageAuditContentV1510();
+  if (index === 5) {
+    const rows = pendingCannibalizationRowsV1510();
+    return rows.length ? `<p class="help">Sono mostrati soltanto gruppi non ancora completati. Verifica contenuto e intento prima di intervenire.</p><div class="table-wrap"><table><thead><tr><th>Query</th><th>Pagina primaria</th><th>Concorrenti</th><th>Decisione consigliata</th><th>Passaggi</th></tr></thead><tbody>${rows.map(row => `<tr><td><b>${esc(row.query)}</b></td><td>${operationalPageLink(row.primary)}</td><td>${row.secondary.map(url => operationalPageLink(url)).join('<br>')}</td><td>${row.decision}</td><td>${esc(row.steps)}</td></tr>`).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>Crea un task editoriale soltanto per i gruppi ancora aperti.</small><button type="button" class="btn primary" id="ogosCreateCannibalBulk">Crea piano (${rows.length}) →</button></div>` : '<p class="safe-note">Nessuna cannibalizzazione nuova da gestire.</p>';
+  }
+  return auditCategoryContentV1510(index);
+};
+const auditCategoryCountV1510 = auditCategoryCount;
+auditCategoryCount = function(index) {
+  if (index === 0) return onPageCandidateRowsV1510().length;
+  if (index === 5) return pendingCannibalizationRowsV1510().length;
+  return auditCategoryCountV1510(index);
+};
+const upsertOperationalTaskV1510 = upsertOperationalTask;
+upsertOperationalTask = function(title, detail, priority, affected, operation, confirmed) {
+  const taskLike = { title, operation: operation || { type: 'auto' } }, completed = completedOperationalChangeKeys();
+  const rows = (affected || []).map(item => pendingOperationalItem(item, taskLike, completed)).filter(Boolean);
+  if ((affected || []).length && !rows.length) {
+    toast('Attivita gia completata: non viene indicata ne duplicata tra le cose da fare.');
+    renderShell(); renderAudit();
+    return null;
+  }
+  const excluded = (affected || []).length - rows.length, nextDetail = excluded ? `${rows.length} interventi nuovi; ${excluded} gia completati esclusi` : detail;
+  return upsertOperationalTaskV1510(title, nextDetail, priority, rows, operation, confirmed);
+};
+const normalizeStateV1510 = normalizeState;
+normalizeState = function(value) {
+  const normalized = normalizeStateV1510(value);
+  try { normalized.tasks = reconcileOpenTasksWithHistory(normalized.tasks || []); }
+  catch (error) { console.warn('Migrazione task saltata: interfaccia avviata con i dati originali', error); }
+  return normalized;
+};
+const initWithSafeTaskMigrationV1511 = init;
+init = function() {
+  try { state.tasks = reconcileOpenTasksWithHistory(state.tasks || []); }
+  catch (error) { console.warn('Pulizia duplicati non eseguita: i pulsanti restano disponibili', error); }
+  return initWithSafeTaskMigrationV1511();
 };
 const applyRepairV150 = applyRepair;
 applyRepair = function(id) { const result = applyRepairV150(id), task = state.tasks.find(t=>String(t.id)===String(id)); if(task?.status==='Completata'&&!task.completedAt){recordTaskStatus(task,'Completata');save(true);renderKanban();renderShell();} return result; };
