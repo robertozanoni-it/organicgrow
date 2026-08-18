@@ -127,7 +127,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.15.8';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.15.9';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value.repairs=Array.isArray(value.repairs)?value.repairs:[];value.settings=value.settings||clone(seed.settings);value.project=value.project||clone(seed.project);value.project.dataOrigin=value.project.dataOrigin||((value.imports||[]).some(i=>i.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration||{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress||{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites||{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages:[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit||{})};value.tasks=(value.tasks||[]).map(t=>{const d=TASK_DETAILS[t.id]||{},repair=[...value.repairs].reverse().find(r=>r.taskId===t.id&&!r.undone),gptPkg=(value.gptsites.packages||[]).find(p=>p.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg&&!!gptPkg.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.includes(String(t.id)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence||{status:'unverified',source:'legacy-or-demo',observedAt:null};return {...t,status:t.status==='Verificata'&&!verified?'Completata':t.status,gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,affected:Array.isArray(t.affected)&&t.affected.length?t.affected:clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function projectRegistry(){try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');return {active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{return {active:'',projects:{}}}}
@@ -717,6 +717,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '1.15.9', date: '2026-08-18', notes: 'Corretto il falso invito ad agire nel controllo Internal linking: tabella, conteggio e pulsante bulk potevano riproporre modifiche gia\' registrate nello storico dei task completati; solo dopo il clic il controllo anti-duplicazione bloccava la creazione. Ora le modifiche di link gia\' completate vengono escluse prima di costruire il report e la voce Cose da fare. La deduplicazione avviene per singola modifica, quindi un gruppo misto propone soltanto i collegamenti realmente nuovi; le righe non applicate in un task parziale restano invece aperte.', compatibility: 'Compatibile con task e backup precedenti. Correzione esclusivamente lato app; il connettore WordPress resta alla versione 2.5.8.' },
   { version: '1.15.8', date: '2026-08-18', notes: 'Su richiesta esplicita di controllare a fondo le correzioni appena fatte (v1.15.7) e di cercare altri errori, ho fatto ricontrollare in modo avversariale le due correzioni precedenti da un controllo indipendente e ho aperto un nuovo giro di audit su aree non ancora esaminate (cambio progetto, importazione backup, salvataggio automatico, bacheca Kanban, autenticazione del connettore). Confermato che le due correzioni della versione 1.15.7 (identita\' del task basata sulla pagina orfana invece che sulla sorgente; aggiornamento locale dei link dopo un\'applicazione riuscita) sono realmente in vigore e funzionanti - non erano solo apparenti. Trovati e corretti anche cinque problemi reali, scoperti proprio ripensando a fondo quelle stesse correzioni. La sincronizzazione locale dei link dopo un\'applicazione riuscita (introdotta in 1.15.7) confrontava l\'indirizzo della pagina in modo troppo rigido: un task creato a mano con un indirizzo scritto con lo slash finale, con o senza "www", veniva comunque applicato correttamente sul sito ma la sincronizzazione locale falliva silenziosamente a trovare la pagina corrispondente, riproponendo lo stesso problema che la 1.15.7 doveva risolvere. Annullare ("Ripristina") una correzione di link interni applicata dal plugin WordPress riportava il sito reale allo stato precedente ma non aggiornava i dati locali nello stesso modo: il report "Pagine orfane e link interni" continuava a mostrare il link come presente anche dopo un ripristino riuscito, disallineandosi dal sito vero nella direzione opposta rispetto al problema originale. Un task gia\' esistente ma non ancora completato, ritrovato tramite lo stesso "codice identificativo" introdotto in 1.15.7 ma proposto con un titolo diverso (es. prima creato singolarmente, poi riproposto in blocco), manteneva il titolo vecchio mentre il resto della scheda si aggiornava, mostrando un titolo disallineato dal contenuto. Con "Salvataggio automatico" disattivato, cambiare sito dal selettore in alto o importare un backup JSON scartava silenziosamente e in modo permanente le modifiche fatte al sito corrente dall\'ultimo salvataggio manuale, perche\' il salvataggio di sicurezza prima del cambio rispettava la preferenza "automatico: off" invece di essere sempre forzato in quel punto preciso; anche il semplice cambio della preferenza stessa da "off" a "on" o viceversa non veniva sempre salvato su disco. Un task privo del campo "priorita\'" (possibile con un backup JSON modificato a mano o esportato da una versione diversa dell\'app) mandava in crash l\'intera bacheca Kanban al primo tentativo di render, con un errore che impediva di vedere qualunque attivita\' finche\' il backup incriminato non veniva rimosso; ora un task senza priorita\' viene semplicemente mostrato con priorita\' "Media" invece di rompere la bacheca. Controllati a fondo, senza trovare problemi reali: il file di autenticazione del connettore WordPress (class-ogos-auth.php, mai auditato nei giri precedenti) - generazione e conservazione dei token, confronto a prova di timing attack, revoca immediata, flusso di abbinamento del codice, controlli sui permessi; tutte le altre rotte REST del connettore per lo stesso schema di errore silenzioso gia\' corretto in precedenza; l\'incrocio di parole chiave e pertinenza testuale tra pagine; l\'importazione di CSV/ZIP da Search Console; il salvataggio/caricamento di base dei dati.', compatibility: 'Compatibile con i dati precedenti. Nessuna azione richiesta: tutte le correzioni sono lato app e valgono dalla prossima apertura, anche sui task e progetti gia\' presenti. Non richiede un aggiornamento del connettore WordPress (resta alla versione 2.5.8, che risulta solida dopo il nuovo controllo sull\'autenticazione).' },
   { version: '1.15.7', date: '2026-08-18', notes: 'Risposta diretta a una segnalazione su "Link interni": alcuni task gia\' completati (aggiunta di un link verso una pagina orfana) ricomparivano in "Cose da fare", e dopo aver applicato una correzione la pagina restava segnalata come orfana finche\' non si eseguiva una nuova scansione completa. Trovate e corrette due cause distinte. Primo: il codice con cui l\'app riconosce che un task riproposto e\' in realta\' lo stesso problema gia\' risolto si basava, per i link verso pagine orfane, sulla pagina di partenza scelta automaticamente per ospitare il link (l\'algoritmo che sceglie quella pagina in base alla somiglianza dei contenuti puo\' scegliere una pagina diversa a ogni scansione, pur trattandosi dello stesso identico problema) invece che sulla pagina di destinazione realmente orfana, che e\' sempre la stessa: bastava che una scansione successiva proponesse una pagina di partenza diversa per la stessa pagina orfana perche\' il task, gia\' completato e verificato, venisse considerato "nuovo" e rimesso in Cose da fare. Ora l\'identita\' del task si basa sulla pagina orfana di destinazione, che non cambia. Secondo: dopo che il plugin WordPress applicava con successo l\'inserimento (o la sostituzione) di un link interno, l\'app non aggiornava subito il proprio elenco locale dei link in uscita di quella pagina: il report "Pagine orfane e link interni" continuava percio\' a considerare orfana la pagina di destinazione finche\' non si eseguiva una scansione completa, anche quando il link era gia\' stato scritto correttamente sul sito - da qui l\'impressione che "l\'inserimento non funziona" e che alcune "pagine orfane non sono orfane" (in realta\' non lo erano piu\', ma il report non lo sapeva ancora). Ora, dopo un\'applicazione riuscita, l\'app aggiorna subito i propri dati locali e il report riflette la correzione senza bisogno di una nuova scansione. Per chiarezza sul dubbio sollevato: nel report "Pagine orfane e link interni" la "pagina di destinazione" indica sempre la pagina orfana che deve ricevere il nuovo link in entrata; la pagina "di partenza" proposta e\' quella scelta come punto migliore da cui far partire quel link.', compatibility: 'Compatibile con i dati precedenti. Nessuna azione richiesta: la correzione vale dalla prossima apertura dell\'app, anche sui task gia\' presenti in elenco. Non richiede un aggiornamento del connettore WordPress (resta alla versione 2.5.8).' },
   { version: '1.15.6', date: '2026-08-18', notes: 'Ulteriore giro di audit, con quattro controlli paralleli su aree non ancora esaminate (redirect e crawl lato plugin, flusso di applicazione delle correzioni e modifica dei task lato app) piu\' un riesame avversariale delle correzioni della versione precedente. Corretto: importare un esito GPTSites scriveva lo stato del task (“Completata”/“Verificata”/“In corso”) direttamente sulla scheda invece di passare dal meccanismo che tiene aggiornate le date di completamento e verifica: un task confermato da GPTSites restava quindi senza data di completamento/verifica nell\'export CSV, e un task gia\' completato in precedenza ma poi segnalato “bloccato” da GPTSites tornava “In corso” mantenendo pero\' le vecchie date, mostrando un\'attivita\' apparentemente irrisolta con una data di completamento passata accanto. Nessun altro problema reale confermato in questo giro sul lato app (verificati a fondo, senza trovare difetti: l\'intera catena di applicazione delle correzioni verso il plugin WordPress, il salvataggio/modifica dei task dal modulo e dalla bacheca Kanban, l\'esportazione e importazione GPTSites, l\'abbinamento delle keyword). Le altre correzioni di questo giro riguardano solo il connettore WordPress (richiedono la versione 2.5.8): un rollback poteva riattivare un vecchio redirect che, nel frattempo, formava un ciclo reale con un redirect diverso creato da un\'altra operazione, intrappolando i visitatori in un rimbalzo continuo tra due pagine; un percorso reale come “/wp-admin-guida-per-principianti” veniva bloccato per errore come se fosse l\'area di amministrazione; un redirect proveniente da un link con solo parametri di query o solo un\'ancora (es. “?ref=email”) veniva risolto verso la pagina sbagliata durante la scansione, alterando i dati raccolti; testo con un backslash inserito o ripristinato in una pagina veniva salvato con quel carattere rimosso; il nuovo controllo di ripristino del contenuto introdotto nella versione precedente poteva segnalare erroneamente un rollback come incompleto su siti con permessi HTML ristretti (multisito o “solo HTML sicuro”); il conteggio dei link su pagine Elementor poteva sottostimare due link realmente distinti con lo stesso indirizzo e lo stesso testo; la sitemap poteva segnalarsi “incompleta” per la presenza di voci duplicate innocue in un singolo file; la revoca di un token ora mostra davvero un messaggio di conferma o di errore in bacheca invece di restare silenziosa in entrambi i casi.', compatibility: 'Compatibile con i dati precedenti. Richiede il connettore WordPress 2.5.8 per tutte le correzioni lato plugin elencate sopra. Nessuna azione richiesta per la correzione lato app (stato dei task da GPTSites): vale dalla prossima apertura.' },
@@ -2966,6 +2967,85 @@ upsertOperationalTask = function(title, detail, priority, affected, operation, c
   if(old)Object.assign(old,data);
   else{old={id:Date.now()+Math.random(),title,status:'Da approvare',approved:false,...data};state.tasks.push(old)}
   save(true);renderShell();renderKanban();closeModal();go('fix');openTaskDrawer(old);toast(`Task pronto: ${old.affected.length} ${old.affected.length===1?'pagina':'pagine'} coinvolte`);return old;
+};
+
+/* ---- Esclude dai controlli operativi le singole modifiche link gia' completate (v1.15.9) ---- */
+function linkChangeKey(item, forcedType = '') {
+  if (!item) return '';
+  const changes = item.changes || {}, type = String(forcedType || '').toLowerCase();
+  const internal = changes.internal_link;
+  if (internal?.target || type === 'internal_link') {
+    const target = comparableUrl(internal?.target || '');
+    return target ? `internal_link|${target}` : '';
+  }
+  const replacement = changes.replace_link;
+  if (replacement?.to || type === 'replace_link') {
+    const source = comparableUrl(item.url || ''), from = comparableUrl(replacement?.from || ''), to = comparableUrl(replacement?.to || '');
+    return source && to ? `replace_link|${source}|${from}|${to}` : '';
+  }
+  return '';
+}
+function completedLinkChangeKeys() {
+  const keys = new Set();
+  (state.tasks || []).filter(taskIsCompleted).forEach(task => {
+    const type = task.operation?.type || '';
+    (task.affected || []).forEach(item => {
+      const skipped = (task.partialApply?.reasons || []).find(reason => comparableUrl(reason.url) === comparableUrl(item.url) && !reason.partial);
+      if (skipped) return;
+      const key = linkChangeKey(item, type);
+      if (key) keys.add(key);
+    });
+  });
+  return keys;
+}
+function orphanProposalKey(row) {
+  const target = comparableUrl(row?.target || '');
+  return target ? `internal_link|${target}` : '';
+}
+function brokenProposalKey(row) {
+  const source = comparableUrl(row?.source || ''), from = comparableUrl(row?.href || row?.brokenUrl || ''), to = comparableUrl(row?.suggested || '');
+  return source && to ? `replace_link|${source}|${from}|${to}` : '';
+}
+const internalLinkProposalsAllV159 = internalLinkProposals;
+const detectBrokenLinksReportAllV159 = detectBrokenLinksReport;
+internalLinkProposals = function() {
+  const completed = completedLinkChangeKeys();
+  return internalLinkProposalsAllV159().filter(row => !completed.has(orphanProposalKey(row)));
+};
+detectBrokenLinksReport = function() {
+  const completed = completedLinkChangeKeys();
+  return detectBrokenLinksReportAllV159().filter(row => {
+    const key = brokenProposalKey(row);
+    return !key || !completed.has(key);
+  });
+};
+const auditCategoryCountV159 = auditCategoryCount;
+auditCategoryCount = function(index) {
+  if (index !== 3) return auditCategoryCountV159(index);
+  return internalLinkProposals().length + detectBrokenLinksReport().length;
+};
+const internalLinkAuditContentV159 = internalLinkAuditContentV140;
+internalLinkAuditContentV140 = function() {
+  const rawOrphans = internalLinkProposalsAllV159(), rawBroken = detectBrokenLinksReportAllV159();
+  const visibleOrphans = internalLinkProposals(), visibleBroken = detectBrokenLinksReport();
+  const suppressed = (rawOrphans.length - visibleOrphans.length) + (rawBroken.length - visibleBroken.length);
+  const note = suppressed > 0 ? `<div class="safe-note"><b>${suppressed} ${suppressed === 1 ? 'intervento gia completato escluso' : 'interventi gia completati esclusi'}.</b><br>Non vengono riproposti tra le cose da fare. Esegui una nuova scansione live se vuoi confermare che i collegamenti siano ancora presenti sul sito.</div>` : '';
+  return note + internalLinkAuditContentV159();
+};
+const upsertOperationalTaskV159 = upsertOperationalTask;
+upsertOperationalTask = function(title, detail, priority, affected, operation, confirmed) {
+  const type = operation?.type || '', completed = completedLinkChangeKeys();
+  const rows = (affected || []).filter(item => {
+    const key = linkChangeKey(item, type);
+    return !key || !completed.has(key);
+  });
+  if ((affected || []).length && !rows.length && ['internal_link', 'replace_link'].includes(type)) {
+    toast('Tutti questi interventi sono gia nello storico dei completati: nessun task da creare.');
+    renderShell(); renderAudit();
+    return null;
+  }
+  const nextDetail = rows.length !== (affected || []).length ? `${rows.length} interventi nuovi; ${(affected || []).length - rows.length} gia completati esclusi` : detail;
+  return upsertOperationalTaskV159(title, nextDetail, priority, rows, operation, confirmed);
 };
 const applyRepairV150 = applyRepair;
 applyRepair = function(id) { const result = applyRepairV150(id), task = state.tasks.find(t=>String(t.id)===String(id)); if(task?.status==='Completata'&&!task.completedAt){recordTaskStatus(task,'Completata');save(true);renderKanban();renderShell();} return result; };
