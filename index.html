@@ -127,7 +127,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.15.4';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.15.5';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value.repairs=Array.isArray(value.repairs)?value.repairs:[];value.settings=value.settings||clone(seed.settings);value.project=value.project||clone(seed.project);value.project.dataOrigin=value.project.dataOrigin||((value.imports||[]).some(i=>i.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration||{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress||{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites||{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages:[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit||{})};value.tasks=(value.tasks||[]).map(t=>{const d=TASK_DETAILS[t.id]||{},repair=[...value.repairs].reverse().find(r=>r.taskId===t.id&&!r.undone),gptPkg=(value.gptsites.packages||[]).find(p=>p.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg&&!!gptPkg.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.includes(String(t.id)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence||{status:'unverified',source:'legacy-or-demo',observedAt:null};return {...t,status:t.status==='Verificata'&&!verified?'Completata':t.status,gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,affected:Array.isArray(t.affected)&&t.affected.length?t.affected:clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function projectRegistry(){try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');return {active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{return {active:'',projects:{}}}}
@@ -345,7 +345,16 @@ function applyRepair(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;con
 function prepareRepair(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;t.approved=true;t.status='Da fare';t.planPrepared=true;save();closeModal();renderKanban();renderShell();toast(`Piano operativo approvato per ${t.affected.length} pagine`)}
 async function undoRepair(id){const repair=[...state.repairs].reverse().find(r=>r.taskId===id&&!r.undone),t=state.tasks.find(x=>x.id===id);if(!repair||!t)return;if(repair.remote){if(!repair.rollbackToken){toast('Il plugin non ha restituito un token di ripristino','error');return}if(!confirm(`Ripristinare sul sito le pagine modificate dal plugin?`))return;try{await wpRequest('/wp-json/organic-growth-os/v1/tasks/rollback',{method:'POST',body:JSON.stringify({operation_id:repair.operationId,rollback_token:repair.rollbackToken})});repair.undone=true;recordTaskStatus(t,'Da fare');delete t.partialApply;delete t.completedAtEstimated;delete t.reopenedAt;save();renderKanban();renderShell();toast('Ripristino WordPress completato')}catch(e){toast(`Ripristino non riuscito: ${e.message}`,'error')}return}if(!confirm(`Annullare la correzione locale applicata a ${t.affected.length} pagine?`))return;state.pages=repair.snapshot.pages;repair.undone=true;recordTaskStatus(t,repair.snapshot.taskStatus);delete t.partialApply;delete t.completedAtEstimated;t.approved=t.status!=='Da approvare';save();renderKanban();renderShell();toast('Correzione annullata e dati locali ripristinati')}
 function openGPTSitesRepair(t){const form=$('#modalForm');$('#modalTitle').textContent='Prepara correzione per GPTSites';$('#modalHelp').textContent=t.title;form.innerHTML=`<p>Il task verrà trasformato in un pacchetto operativo per il progetto GPTSites associato.</p>${affectedTable(t.affected)}<div class="safe-note">Il pacchetto richiede baseline, diff, test e salvataggio di una versione non pubblicata prima dell’approvazione.</div><div class="repair-actions"><button type="button" class="btn" data-close>Annulla</button><button type="button" class="btn export-gpt-task" data-id="${t.id}">Esporta JSON</button><button type="button" class="btn primary copy-gpt-task" data-id="${t.id}">Copia prompt GPTSites</button></div>`;form.dataset.type='gptsites';$('#modalBackdrop').classList.add('open')}
-function requiredCapabilities(t){const name=t.title.toLowerCase(),type=t.operation?.type,caps=[];if(type==='internal_link'||name.includes('404')||name.includes('link interni'))caps.push('internal_links');if(type==='seo'||name.includes('title'))caps.push('seo_title');if(type==='seo'||name.includes('meta description'))caps.push('meta_description');if(type==='canonical'||name.includes('canonical'))caps.push('canonical');if(type==='redirect'||name.includes('redirect'))caps.push('redirects');return [...new Set(caps)]}
+// BUG corretto: 'replace_link' (usato sia dal task cumulativo "Correggi link
+// interni rotti" sia da ogni task singolo "Correggi link rotto in ...") non
+// era tra i type riconosciuti qui, e il titolo del task singolo contiene
+// "link rotto" (non "link interni" o "404"): requiredCapabilities()
+// restituiva quindi un array vuoto per ogni correzione di un singolo link
+// rotto, e openRepair() trattava un array vuoto come "richiede intervento
+// manuale" anche quando il connettore WordPress supportava perfettamente
+// la scrittura automatica dei link interni. Solo la versione cumulativa del
+// task funzionava (il suo titolo contiene "link interni" per coincidenza).
+function requiredCapabilities(t){const name=t.title.toLowerCase(),type=t.operation?.type,caps=[];if(type==='internal_link'||type==='replace_link'||name.includes('404')||name.includes('link interni')||name.includes('link rotto'))caps.push('internal_links');if(type==='seo'||name.includes('title'))caps.push('seo_title');if(type==='seo'||name.includes('meta description'))caps.push('meta_description');if(type==='canonical'||name.includes('canonical'))caps.push('canonical');if(type==='redirect'||name.includes('redirect'))caps.push('redirects');return [...new Set(caps)]}
 function titleCase(text){return String(text).replace(/(^|\s)\S/g,c=>c.toUpperCase())}
 function pluginTaskPayload(t){const name=t.title.toLowerCase(),op=t.operation||{},affected=(t.affected||[]).map(item=>{const copy=clone(item),page=state.pages.find(p=>p.url===item.url),keyword=page?.keyword||item.url.replace(/^\//,'').replace(/-/g,' ');copy.changes={...(copy.changes||{})};if(op.seoTitle)copy.changes.title=op.seoTitle;if(op.metaDescription)copy.changes.meta_description=op.metaDescription;if(op.canonical)copy.changes.canonical=op.canonical;if(op.type==='redirect'&&op.redirect)copy.changes.redirect={from:op.redirect.from,to:op.redirect.to,code:op.redirect.code};if(op.type==='internal_link'&&op.internalLink)copy.changes.internal_link={target:op.internalLink.target,anchor:op.internalLink.anchor,position:op.internalLink.position};if(!copy.changes.title&&name.includes('title')){const base=titleCase(keyword),brand=state.project.name;copy.changes.title=(base.length+brand.length+3<=60?`${base} | ${brand}`:base).slice(0,60)}if(!copy.changes.meta_description&&name.includes('meta description'))copy.changes.meta_description=`Scopri ${keyword}: informazioni chiare, consigli utili e contenuti aggiornati da ${state.project.name}.`.slice(0,155);return copy});return {id:t.id,title:t.title,detail:t.detail,affected}}
 function openPluginRepair(t){const form=$('#modalForm');$('#modalTitle').textContent='Applica su WordPress';$('#modalHelp').textContent=t.title;form.innerHTML=`<p>Il plugin verifica le pagine e scrive subito le modifiche applicabili: anteprima e applicazione avvengono in un unico click, senza un passaggio di conferma intermedio.</p>${affectedTable(t.affected)}<div class="safe-note warn-note">Controlla bene i dati sopra prima di premere Applica: non c’è più un’anteprima separata da approvare. La modifica resta comunque annullabile dopo, dalla scheda dell’attività.</div><div id="pluginPreviewResult"></div><div class="repair-actions"><button type="button" class="btn" data-close>Annulla</button><button type="button" class="btn primary apply-plugin-task-single" data-id="${t.id}">Applica</button></div>`;form.dataset.type='wordpress-plugin';$('#modalBackdrop').classList.add('open')}
@@ -628,6 +637,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '1.15.5', date: '2026-08-18', notes: 'Nuovo giro di audit su richiesta esplicita ("trova errori"), questa volta esteso a redirect, diagnostica, multi-progetto, backup, autosalvataggio, ricerca e a un riesame avversariale delle correzioni della versione precedente. Trovati e corretti: la classificazione "Canonical assente" non poteva mai comparire (un controllo precedente intercettava sempre quel caso per primo), quindi una pagina davvero scansionata ma priva di canonical risultava etichettata "non verificata" come se il crawl non fosse mai avvenuto. L\'incrocio tra pagine e dati Search Console (priorità dei task basata sul traffico, cannibalizzazioni, storico indicizzazione) confrontava percorsi normalizzati con l\'indirizzo grezzo del CSV importato: con il formato di importazione combinato pagina+query (quello preferito dall\'app perché fornisce un vero incrocio) il confronto spesso non trovava mai corrispondenza e azzerava silenziosamente traffico e attribuzione delle query. L\'importazione di un backup JSON confrontava la data dell\'ultima scansione con quella del progetto aperto in quel momento nel browser, non con quella del progetto a cui il backup appartiene davvero: importando un vecchio backup di un sito mentre era aperto un sito diverso (o uno mai ancora scansionato), i dati più recenti già salvati per il sito del backup potevano essere sovrascritti senza alcun avviso. Le attività "Correggi link rotto in ..." create singolarmente (a differenza della versione cumulativa "Correggi link interni rotti") non venivano mai riconosciute come applicabili in automatico dal plugin WordPress, anche con il connettore pienamente collegato e la capacità dei link interni disponibile: risultavano sempre segnate "Richiede intervento manuale". Il pannello "Diagnostica WordPress" mostrava sempre il segno di spunta verde per struttura permalink, plugin SEO rilevato, permessi dell\'utente collegato e origini CORS autorizzate, indipendentemente dal valore reale (richiede il connettore 2.5.7 per i due indicatori aggiunti su permalink e plugin SEO). Lato connettore WordPress, corretti anche: un errore di salvataggio dell\'anteprima restituiva una risposta con stato HTTP 200 e un formato non previsto invece di un errore chiaro; il ripristino di rollback verificava i dati Elementor ma non il contenuto normale della pagina, potendo dichiararsi pulito anche quando il testo non era davvero tornato identico; un anchor text con "&" o altri simboli poteva causare l\'inserimento di un link duplicato al secondo tentativo; su pagine Elementor con post_content non vuoto un link poteva essere conteggiato due volte nell\'inventario; la sostituzione di un link rotto (a differenza dell\'inserimento, già corretto nella versione precedente) poteva dichiararsi riuscita solo perché la destinazione esisteva già altrove sulla pagina per un motivo scollegato, lasciando il link davvero rotto invariato; un errore nella creazione delle tabelle del database all\'attivazione del plugin non veniva rilevato e il plugin considerava comunque lo schema "aggiornato"; un errore nella revoca di un token restava invisibile e l\'app/bacheca dichiaravano comunque la disconnessione riuscita; title, meta description e canonical contenenti un backslash letterale venivano salvati con quel carattere rimosso, facendo fallire sempre la verifica per quella categoria di testo; la sitemap segnalava "non troncata" anche quando il limite di 30 file (non solo quello di 5000 URL) veniva raggiunto con sitemap ancora da leggere; un valore malformato tipo "https://" veniva considerato per errore "dello stesso sito" nel controllo di sicurezza sui link interni.', compatibility: 'Compatibile con i dati precedenti. Richiede il connettore WordPress 2.5.7 per tutte le correzioni lato plugin elencate sopra (verifica rollback, sostituzione link, doppio conteggio link Elementor, tabelle database, revoca token, backslash nei meta, sitemap troncata, controllo canonical/link malformati) e per i due nuovi indicatori nel pannello diagnostica. Nessuna azione richiesta per le correzioni lato app (canonical assente, incrocio Search Console, backup, link rotti singoli): valgono dalla prossima apertura.' },
   { version: '1.15.4', date: '2026-08-18', notes: 'Ulteriore giro di verifica mirato su una lista di sospetti puntuali. Confermati e corretti: il collegamento da un\'app aperta come file HTML locale (indirizzo "null") in pratica non arrivava mai a funzionare, perché il codice sanitizzava quell\'indirizzo prima di riconoscerlo come caso speciale, cambiandolo in un valore che poi non corrispondeva più a quanto il browser inviava davvero (serve il connettore 2.5.4). Un rollback poteva dichiararsi riuscito senza che i dati Elementor o i metadati SEO fossero davvero tornati al valore precedente: ora ogni campo ripristinato viene riletto e confrontato, e se qualcosa non torna il ripristino segnala chiaramente quali pagine verificare a mano. Una canonical esterna proposta da un client diverso dall\'app (o da un token compromesso) poteva essere scritta comunque sul sito: bloccata anche lato connettore, non solo lato app. Un link interno verso "www.tuosito.it" quando il sito gira senza www (o viceversa) veniva scambiato per un link esterno e ignorato; lo stesso succedeva con gli schemi MAILTO: o TEL: scritti in maiuscolo, trattati per errore come percorsi interni. Un fallimento nel salvare l\'anteprima di un task o il codice di collegamento restava invisibile fino a un messaggio fuorviante più tardi: ora viene segnalato subito. Verificare un\'attività senza che il sito confermi più le modifiche, o cambiare manualmente lo stato di un\'attività completata dal menu a tendina o dal modulo di modifica, lasciava talvolta la vecchia data di completamento/verifica sulla scheda: ora viene sempre ripulita. Il report HTML, il report stampabile/PDF e l\'export CSV delle attività non riportavano affatto le date di completamento/verifica: aggiunta una colonna dedicata a tutti e tre. Verificato che una nuova scansione (WordPress live o GPTSites) non cancella lo storico (token di ripristino e verifiche già registrate) delle attività già completate: già corretto in una versione precedente, ora riconfermato con un test end-to-end.', compatibility: 'Compatibile con i dati precedenti. Richiede il connettore WordPress 2.5.4 per le correzioni sull\'origine "null", sul rollback Elementor/metadati e sulla canonical esterna.' },
   { version: '1.15.3', date: '2026-08-18', notes: 'Trovato e corretto il bug per cui un task applicato con successo tramite il plugin WordPress restava comunque in "Cose da fare": il connettore segnava l\'operazione "completa" solo se TUTTE le righe originariamente individuate in fase di analisi venivano scritte, incluse quelle che l\'anteprima aveva già escluso perché non risolvibili automaticamente (es. richiedono una modifica manuale) — bastava una sola riga così per bloccare il task per sempre su "In corso", anche con tutte le altre pagine aggiornate correttamente. Ora il task passa a "Completata" non appena almeno una modifica è stata scritta davvero sul sito, e la scheda del task, l\'elenco "Task e azioni superate" e il dettaglio dell\'attività mostrano un avviso esplicito con l\'elenco delle pagine non risolte e il motivo, distinguendo le pagine per cui il plugin non ha scritto nulla da quelle in cui è riuscita solo una parte delle modifiche richieste (es. link interno riuscito ma canonical no sulla stessa pagina). Annullare una correzione applicata dal plugin ("Ripristina") ora riporta correttamente il task a "Da fare" ripulendo anche l\'avviso di applicazione parziale, invece di lasciare residui incoerenti. Rafforzati inoltre alcuni controlli di sicurezza lato plugin e app individuati in un audit completo: il connettore ora rifiuta un redirect che creerebbe un ciclo con regole già attive, ed elimina una finestra di corsa per cui due richieste concorrenti sullo stesso percorso potevano lasciarlo temporaneamente senza alcun redirect attivo; la pagina di abbinamento del codice del plugin non trasmette più il codice di accoppiamento in modo aperto quando l\'origine della richiesta non è verificabile; un token di anteprima appena usato viene invalidato subito, riducendo la finestra in cui un doppio invio potrebbe rieseguire lo stesso piano due volte. Nell\'app, l\'importazione di un esito GPTSites ora verifica anche che il pacchetto esportato non sia scaduto, l\'importazione di un backup non si fida più ciecamente di uno stato "Verificata" dichiarato nel file se non è confermato da un pacchetto GPTSites coerente effettivamente registrato ed usato nello stesso backup, e viene mostrato un avviso in console se il browser non supporta il calcolo dell\'impronta crittografica sicura e l\'app ricade su un controllo più debole.', compatibility: 'Compatibile con i dati precedenti. Richiede il connettore WordPress 2.5.3 per le correzioni di sicurezza sui redirect e sulla pagina di abbinamento del codice. Consigliata una nuova scansione dopo l\'aggiornamento per i task già bloccati su "In corso".' },
   { version: '1.15.2', date: '2026-08-18', notes: 'Corretto il riconoscimento dei task: attività con lo stesso titolo ma URL diversi non vengono più fuse, riaperte o nascoste per errore. La riconciliazione delle scansioni usa ora tipo di intervento e insieme esatto delle URL; in caso di collisione con un vecchio task completato conserva lo storico e assegna un nuovo ID al problema realmente nuovo. I task storici privi di timestamp ricevono ora una data di registrazione esplicitamente indicata come tale, mentre le nuove attività salvano data di completamento e verifica reali.', compatibility: 'Compatibile con i dati precedenti. Consigliato il connettore 2.5.2 per rollback e verifica di task con più link sulla stessa pagina.' },
@@ -911,10 +921,10 @@ async function runWordPressDiagnostics() {
     el.innerHTML = `<ul class="data-list">
       <li>${icon('check')}<div><strong>Connettore</strong><small>versione ${esc(d.plugin_version)} · WordPress ${esc(d.wp_version)} · PHP ${esc(d.php_version)}</small></div></li>
       <li>${icon(d.https ? 'check' : 'alert')}<div><strong>HTTPS</strong><small>${d.https ? 'Attivo' : 'Non attivo: necessario per un collegamento remoto sicuro'}</small></div></li>
-      <li>${icon('check')}<div><strong>Struttura permalink</strong><small>${esc(d.permalink_structure)}</small></div></li>
-      <li>${icon('check')}<div><strong>Plugin SEO rilevato</strong><small>${esc(d.seo_provider)}</small></div></li>
-      <li>${icon('check')}<div><strong>Utente collegato</strong><small>ID ${d.user.id} · ruoli: ${esc((d.user.roles || []).join(', ') || '—')} · edit_pages: ${d.user.can_edit_pages ? 'sì' : 'no'}</small></div></li>
-      <li>${icon('check')}<div><strong>Origini CORS autorizzate</strong><small>${esc((d.allowed_origins || []).join(', ') || 'nessuna')}</small></div></li>
+      <li>${icon(d.permalink_pretty !== false ? 'check' : 'alert')}<div><strong>Struttura permalink</strong><small>${esc(d.permalink_structure)}</small></div></li>
+      <li>${icon(d.seo_provider_detected !== false ? 'check' : 'alert')}<div><strong>Plugin SEO rilevato</strong><small>${esc(d.seo_provider)}</small></div></li>
+      <li>${icon(d.user.can_edit_pages ? 'check' : 'alert')}<div><strong>Utente collegato</strong><small>ID ${d.user.id} · ruoli: ${esc((d.user.roles || []).join(', ') || '—')} · edit_pages: ${d.user.can_edit_pages ? 'sì' : 'no'}</small></div></li>
+      <li>${icon((d.allowed_origins || []).length ? 'check' : 'alert')}<div><strong>Origini CORS autorizzate</strong><small>${esc((d.allowed_origins || []).join(', ') || 'nessuna')}</small></div></li>
       <li>${icon(d.log_table_ready ? 'check' : 'alert')}<div><strong>Tabella registro operazioni</strong><small>${d.log_table_ready ? 'pronta' : 'non ancora creata: riattiva il plugin'}</small></div></li>
     </ul>`;
   } catch (e) {
@@ -1024,10 +1034,20 @@ function canonicalClassification() {
   const byCanonical = {};
   state.pages.forEach(p => { const c = p.crawl && p.crawl.canonicalHtml ? comparableUrl(p.crawl.canonicalHtml) : ''; if (c) (byCanonical[c] = byCanonical[c] || []).push(p.url); });
   return state.pages.map(p => {
+    // BUG corretto: il ramo 'assente' era codice morto. "!html" (riga
+    // sotto) intercettava GIA' ogni caso in cui p.crawl.canonicalHtml
+    // fosse assente, quindi il controllo "!p.crawl.canonicalHtml" non
+    // poteva mai scattare per primo: una pagina davvero crawlata ma senza
+    // tag canonical veniva etichettata "non verificata" invece di
+    // "assente". Distinguiamo ora esplicitamente usando p.crawl.checkedAt
+    // (impostato solo quando un crawl reale e' avvenuto): se il crawl e'
+    // stato eseguito ma non ha trovato un canonical, e' "assente"; se il
+    // crawl non e' mai stato eseguito, resta "non verificata".
+    const crawled = !!(p.crawl && p.crawl.checkedAt);
     const html = p.crawl && p.crawl.canonicalHtml ? comparableUrl(p.crawl.canonicalHtml) : '';
     let kind;
-    if (!html) kind = 'non verificata (esegui il crawl reale)';
-    else if (!p.crawl.canonicalHtml || html === '') kind = 'assente';
+    if (!crawled) kind = 'non verificata (esegui il crawl reale)';
+    else if (!html) kind = 'assente';
     else if (html === p.url) kind = 'autoreferenziale';
     else if (byCanonical[html] && byCanonical[html].length > 1) kind = 'duplicata su più pagine';
     else {
@@ -1104,7 +1124,21 @@ function findBlockingTask(t) {
 function gscImpressionsForUrls(urls) {
   const set = new Set(urls);
   const rows = state.gsc && state.gsc.rows || [];
-  if (rows.length) return rows.filter(r => set.has(r.url)).reduce((a, r) => a + (r.impressions || 0), 0);
+  // BUG corretto: qui si confrontava `set` (percorsi normalizzati tipo
+  // "/pagina", come sono sempre gli url di task.affected) con r.url, che
+  // nel formato di importazione preferito dall'app (CSV combinato
+  // pagina+query, l'unico che fornisce un vero incrocio pagina↔query) è
+  // il valore RAW letto dal CSV — spesso un URL assoluto completo, non un
+  // percorso normalizzato. Se le righe esistevano ma nessuna combaciava
+  // mai per questo mismatch di formato, la funzione restituiva 0
+  // direttamente invece di ricadere sul fallback corretto
+  // (state.gsc.pages, che usa già r.path normalizzato): azzerava
+  // silenziosamente la priorità basata sul traffico e la classifica di
+  // cannibalizzazione per chi importa con questo formato.
+  if (rows.length) {
+    const matched = rows.filter(r => set.has(r.path) || set.has(r.url) || set.has(comparableUrl(r.url)));
+    if (matched.length) return matched.reduce((a, r) => a + (r.impressions || 0), 0);
+  }
   // Nessun vero incrocio pagina↔query disponibile (esportazione ZIP standard): usiamo comunque gli
   // aggregati REALI per pagina di Pagine.csv (non è una stima, sono le impressioni reali di quella URL).
   const pages = (state.gsc && state.gsc.pages) || [];
@@ -1440,8 +1474,32 @@ function openPrintableReport() {
 // ---- Protezione dai backup obsoleti (#34) ----
 function isBackupOlder(data) {
   const incomingObserved = data && data.audit && data.audit.observedAt;
-  const currentObserved = state.audit && state.audit.observedAt;
-  if (!incomingObserved || !currentObserved) return false;
+  if (!incomingObserved) return false;
+  // BUG corretto: la data dell'ultima scansione del backup importato veniva
+  // confrontata con state.audit.observedAt, cioè la data del progetto
+  // ATTUALMENTE aperto nel browser — non necessariamente lo stesso sito del
+  // backup. Se l'utente aveva aperto il Progetto A (magari mai ancora
+  // sottoposto ad audit, con observedAt assente) e importava un vecchio
+  // backup del Progetto B, il confronto usciva subito con "non più vecchio"
+  // (nessun controllo scattava) e l'importazione sovrascriveva in
+  // silenzio i dati più recenti già salvati per il Progetto B nel registro
+  // locale. Il confronto va fatto contro i dati già salvati per lo STESSO
+  // dominio del backup, non contro il progetto aperto al momento.
+  const targetKey = data && data.project ? normalizeProjectDomain(data.project.domain) : '';
+  if (!targetKey) return false;
+  const registry = projectRegistry();
+  const stored = registry.projects[targetKey];
+  let currentObserved = stored && stored.audit && stored.audit.observedAt;
+  // Se il progetto di destinazione del backup è anche quello aperto ora, lo
+  // stato in memoria potrebbe contenere una scansione più recente di quanto
+  // già salvato nel registro locale (es. autosave disattivato): usiamo la
+  // più recente tra le due fonti.
+  if (projectStorageKey(state.project) === targetKey && state.audit && state.audit.observedAt) {
+    if (!currentObserved || Date.parse(state.audit.observedAt) > Date.parse(currentObserved)) {
+      currentObserved = state.audit.observedAt;
+    }
+  }
+  if (!currentObserved) return false;
   return Date.parse(incomingObserved) < Date.parse(currentObserved);
 }
 
@@ -1734,7 +1792,14 @@ async function fetchSitemapDiscovery() {
 
 // ---- Segnale storico Search Console: solo dal CSV già importato altrove nell'app (#7, #17) ----
 function idxGscAggregate(path) {
-  const rows = (state.gsc && state.gsc.rows || []).filter(r => r.url === path);
+  // BUG corretto: stesso mismatch raw/normalizzato di gscImpressionsForUrls()
+  // — r.url nel formato CSV combinato è il valore raw (spesso URL assoluto),
+  // mentre `path` qui è sempre un percorso normalizzato. Confrontando solo
+  // r.url, per questo formato di importazione le righe non combaciavano mai
+  // e si perdeva l'attribuzione delle query specifiche per pagina, pur
+  // ricadendo (correttamente) sul fallback aggregato di Pagine.csv per i
+  // totali di impressioni/clic.
+  const rows = (state.gsc && state.gsc.rows || []).filter(r => r.path === path || r.url === path);
   if (rows.length) return { rows: rows.length, impressions: Math.round(rows.reduce((a, r) => a + (r.impressions || 0), 0)), clicks: Math.round(rows.reduce((a, r) => a + (r.clicks || 0), 0)), queries: rows.map(r => r.query) };
   // Formato ZIP standard: nessun incrocio pagina↔query, ma Pagine.csv dà comunque impressioni/clic
   // REALI per questa URL (non stimati). Nessuna query specifica può essere attribuita con certezza.
