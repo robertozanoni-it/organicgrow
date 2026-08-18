@@ -127,7 +127,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.14.2';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.15.0';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value.repairs=Array.isArray(value.repairs)?value.repairs:[];value.settings=value.settings||clone(seed.settings);value.project=value.project||clone(seed.project);value.project.dataOrigin=value.project.dataOrigin||((value.imports||[]).some(i=>i.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration||{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress||{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites||{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages:[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit||{})};value.tasks=(value.tasks||[]).map(t=>{const d=TASK_DETAILS[t.id]||{},repair=[...value.repairs].reverse().find(r=>r.taskId===t.id&&!r.undone),verified=!!t.gptSitesResult?.verified||!!repair?.verification?.all_verified,evidence=t.evidence||{status:'unverified',source:'legacy-or-demo',observedAt:null};return {...t,status:t.status==='Verificata'&&!verified?'Completata':t.status,evidence,affected:Array.isArray(t.affected)&&t.affected.length?t.affected:clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function projectRegistry(){try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');return {active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{return {active:'',projects:{}}}}
@@ -616,6 +616,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '1.15.0', date: '2026-08-18', notes: 'I task completati non vengono più riaperti o duplicati automaticamente da una scansione successiva: lo storico resta separato dalle nuove evidenze. Aggiunte data di completamento e data di verifica nelle card, nella sezione Verifica e nell’elenco Task superati, con recupero della migliore data disponibile per le attività precedenti. L’app riconosce inoltre Elementor come contenuto modificabile quando è collegato il connettore 2.5.0, che inserisce e sostituisce realmente i link nei widget Testo Elementor con snapshot, verifica e rollback.', compatibility: 'Richiede il connettore WordPress 2.5.0+ per scrivere link nelle pagine Elementor. I task e i backup precedenti restano compatibili.' },
   { version: '1.14.2', date: '2026-08-18', notes: 'Trovato e corretto un bug reale che bloccava silenziosamente l\'applicazione dei task "Aggiungi link interni alle pagine orfane" (creati sia singolarmente sia in blocco dal report "Link interni rotti") quando si usa il plugin WordPress: la funzione che prepara i dati da inviare al plugin presumeva sempre presente un dettaglio interno dell\'operazione che, per questi task, non viene mai popolato (le modifiche vive già correttamente su ogni pagina coinvolta) — il risultato era un errore JavaScript non gestito nel momento di applicare, senza alcun messaggio visibile: il pulsante restava semplicemente inerte. Le attività "in Sistema" con title, meta description, canonical e link rotti non erano toccate da questo bug specifico. Le attività applicabili tramite il plugin WordPress mostravano inoltre due passaggi separati ("Genera anteprima sul sito" e poi, solo dopo, un secondo pulsante "Applica in automatico"): su segnalazione che l\'applicazione "non funzionava", risultato che il secondo pulsante restava semplicemente inosservato dopo l\'anteprima. Su richiesta esplicita, unificato in un solo pulsante "Applica" che verifica le pagine e scrive le modifiche in un unico click, mantenendo gli stessi controlli di sicurezza di prima (blocco locale di canonical/redirect/link verso domini esterni, rispetto della modalità simulazione, segnalazione chiara delle pagine non risolvibili es. gestite da Elementor). Attenzione: rispetto alla versione precedente non c\'è più un\'anteprima da approvare separatamente prima della scrittura sul sito; ogni modifica resta comunque annullabile dopo, dalla scheda dell\'attività. Aggiunto in "Cronologia scansioni e confronto" un pulsante "Cancella scansioni precedenti" per ripulire le vecchie scansioni salvate, mantenendo solo quella attuale.', compatibility: 'Nessuna modifica al formato dei dati salvati. Richiede il plugin connettore 2.4.1+ (corregge anche il rilevamento di Rank Math: senza quell\'aggiornamento le modifiche potrebbero continuare a non comparire sul sito se usi Rank Math).' },
   { version: '1.13.0', date: '2026-08-16', notes: 'I report aperti dalla sidebar usano ora un pannello ampio fino a 1180px, evitando il taglio delle tabelle. Corretto il pulsante Verifica sitemap e indicizzazione in bulk anche nel pannello laterale e anche senza WordPress: esegue sempre la classificazione sui dati disponibili, aggiungendo crawl e sitemap reali quando il connettore è collegato. Il report internal linking distingue i link da creare per le pagine orfane dai link rotti già presenti; con il plugin 2.2.0 mostra anchor text, contesto evidenziato e occorrenza. Le attività Completata, Verificata, Superata o Risolta sono escluse da Cose da fare e raccolte soltanto in Task superati.', compatibility: 'Per anchor e contesto dei link già presenti serve una nuova scansione con il plugin Organic Growth OS 2.2.0. I dati precedenti restano compatibili ma non contengono quel dettaglio.' },
   { version: '1.12.1', date: '2026-08-16', notes: 'Corretto il blocco dei pulsanti di correzione automatica dei nuovi task bulk: il motore locale riconosce ora le modifiche strutturate invece di affidarsi esclusivamente ai vecchi ID demo 1, 3 e 4. Le proposte title/meta, link interni e sostituzioni di link rotti vengono salvate come correzioni locali reversibili; in modalità WordPress continuano a passare dall’anteprima obbligatoria del plugin e in GPTSites dall’esportazione dedicata. Dal menu Cose da fare, l’apertura di un task usa ora un popup ampio con tutte le pagine, problemi, azioni e modifiche complete.', compatibility: 'Nessuna modifica incompatibile ai dati salvati.' },
@@ -2675,6 +2676,86 @@ init = function () {
   renderAllExtensions();
   setTimeout(warnIfScanExpired, 1200);
 };
+
+/* ---- Storico task datato, deduplicazione e supporto Elementor (v1.15.0) ---- */
+function bestTaskDate(task, verified = false) {
+  const repair = [...(state.repairs || [])].reverse().find(r => String(r.taskId) === String(task.id) && !r.undone);
+  const candidates = verified
+    ? [task.verifiedAt, repair?.verification?.date, task.gptSitesResult?.verifiedAt]
+    : [task.completedAt, repair?.date, task.gptSitesResult?.completedAt, task.evidence?.observedAt];
+  return candidates.find(value => Number.isFinite(Date.parse(value || ''))) || null;
+}
+function taskDateLabel(task) {
+  const verified = task.status === 'Verificata', value = bestTaskDate(task, verified) || bestTaskDate(task, false);
+  if (!value) return `${verified ? 'Verificata' : 'Completata'} · data storica non registrata`;
+  return `${verified ? 'Verificata' : 'Completata'} il ${new Intl.DateTimeFormat('it-IT', { dateStyle:'medium', timeStyle:'short' }).format(new Date(value))}`;
+}
+function recordTaskStatus(task, status, at = new Date().toISOString()) {
+  if (!task) return;
+  task.status = status;
+  if (status === 'Completata') { task.completedAt = task.completedAt || at; delete task.verifiedAt; }
+  else if (status === 'Verificata') { task.completedAt = task.completedAt || at; task.verifiedAt = at; }
+  else { delete task.completedAt; delete task.verifiedAt; }
+}
+function migrateTaskDates() {
+  (state.tasks || []).forEach(task => {
+    if (!taskIsCompleted(task)) return;
+    const completed = bestTaskDate(task, false), verified = bestTaskDate(task, true);
+    if (!task.completedAt && completed) task.completedAt = completed;
+    if (task.status === 'Verificata' && !task.verifiedAt && verified) task.verifiedAt = verified;
+  });
+}
+document.addEventListener('change', e => {
+  if (!e.target.matches('.task-status') || e.target.value === 'Verificata') return;
+  const task = state.tasks.find(t => String(t.id) === String(e.target.dataset.id));
+  if (task) recordTaskStatus(task, e.target.value);
+}, true);
+const taskCardV150 = taskCard;
+taskCard = function(task) {
+  const html = taskCardV150(task);
+  return taskIsCompleted(task) ? html.replace('<div class="task-foot">', `<small class="help" style="display:block;margin:8px 0">${esc(taskDateLabel(task))}</small><div class="task-foot">`) : html;
+};
+renderVerify = function() {
+  const completed = (state.tasks || []).filter(taskIsCompleted).sort((a,b) => Date.parse(bestTaskDate(b,true)||bestTaskDate(b,false)||0)-Date.parse(bestTaskDate(a,true)||bestTaskDate(a,false)||0));
+  $('#verifyList').innerHTML = completed.map(t => `<article class="panel verify-item"><div class="verify-icon">${icon(t.status==='Verificata'?'check':'search')}</div><div><h3>${esc(t.title)}</h3><p>${esc(taskDateLabel(t))}<br>${t.status==='Verificata'?'Intervento verificato e registrato.':'Completato, in attesa del controllo finale.'}</p></div><button class="btn verify-one" data-id="${t.id}" ${t.status==='Verificata'?'disabled':''}>${t.status==='Verificata'?'Verificato':'Verifica ora'}</button></article>`).join('') || `<div class="panel empty">${icon('check')}<h3>Nessuna attività da verificare</h3><p>Completa almeno un’attività nella sezione Sistema.</p></div>`;
+};
+openCompletedTasksModal = function() {
+  const done = (state.tasks || []).filter(taskIsCompleted).sort((a,b) => Date.parse(bestTaskDate(b,true)||bestTaskDate(b,false)||0)-Date.parse(bestTaskDate(a,true)||bestTaskDate(a,false)||0));
+  openActionDrawer('Task e azioni superate', `${done.length} ${done.length===1?'attività superata':'attività superate'}`, done.length ? done.map(t => `<button type="button" class="drawer-task" data-completed-id="${t.id}"><b>✓ ${esc(t.title)}</b><small>${esc(taskDateLabel(t))} · ${(t.affected||[]).length} pagine · priorità ${esc(t.priority)}</small></button>`).join('') : '<p class="empty">Nessuna attività superata finora.</p>');
+  $$('#actionDrawer [data-completed-id]').forEach(btn => btn.onclick = () => openTaskDrawer(state.tasks.find(t => String(t.id) === btn.dataset.completedId)));
+};
+const applyCurrentAuditV150 = applyCurrentAudit;
+applyCurrentAudit = function(items, source, observedAt) {
+  const completed = clone((state.tasks || []).filter(taskIsCompleted));
+  const result = applyCurrentAuditV150(items, source, observedAt);
+  completed.forEach(old => {
+    const current = (state.tasks || []).find(t => String(t.id) === String(old.id) || taskIdentity(t) === taskIdentity(old) || taskTitleKey(t) === taskTitleKey(old));
+    if (!current) { state.tasks.push(old); return; }
+    current.status = old.status; current.approved = true;
+    current.completedAt = old.completedAt || bestTaskDate(old, false);
+    current.verifiedAt = old.verifiedAt || bestTaskDate(old, true);
+    current.lastSeenAfterCompletionAt = observedAt;
+    delete current.reopenedAt;
+  });
+  save(true); return result;
+};
+const upsertOperationalTaskV150 = upsertOperationalTask;
+upsertOperationalTask = function(title, detail, priority, affected, operation, confirmed) {
+  const old = (state.tasks || []).find(t => taskTitleKey(t) === String(title).toLowerCase().replace(/\s+/g,' ').trim());
+  if (old && taskIsCompleted(old)) {
+    old.lastSeenAfterCompletionAt = new Date().toISOString(); save(true); renderShell(); renderKanban();
+    toast('Questo task è già nello storico dei completati: non è stato duplicato.'); return old;
+  }
+  return upsertOperationalTaskV150(title, detail, priority, affected, operation, confirmed);
+};
+const applyRepairV150 = applyRepair;
+applyRepair = function(id) { const result = applyRepairV150(id), task = state.tasks.find(t=>String(t.id)===String(id)); if(task?.status==='Completata'&&!task.completedAt){recordTaskStatus(task,'Completata');save(true);renderKanban();renderShell();} return result; };
+const applyPluginTaskSingleV150 = applyPluginTaskSingle;
+applyPluginTaskSingle = async function(id) { const result = await applyPluginTaskSingleV150(id), task=state.tasks.find(t=>String(t.id)===String(id)); if(task?.status==='Completata'&&!task.completedAt){recordTaskStatus(task,'Completata');save(true);renderKanban();renderShell();} return result; };
+const verifyTaskV150 = verifyTask;
+verifyTask = async function(id, options={}) { const ok=await verifyTaskV150(id,options), task=state.tasks.find(t=>String(t.id)===String(id)); if(ok&&task?.status==='Verificata'){recordTaskStatus(task,'Verificata');save(true);renderVerify();renderKanban();renderShell();} return ok; };
+const initV150 = init;
+init = function() { migrateTaskDates(); save(true); initV150(); };
 
 function init(){const hadConnectorToken=restoreConnectorToken();hydrateIcons();applyTheme(state.settings.theme);document.addEventListener('click',e=>{const v=e.target.closest('[data-view]');if(v)go(v.dataset.view);if(e.target.closest('[data-close]'))closeModal();const apply=e.target.closest('.apply-repair'),prepare=e.target.closest('.prepare-repair');if(apply)applyRepair(Number(apply.dataset.id));if(prepare)prepareRepair(Number(prepare.dataset.id))});$('#nextBtn').onclick=()=>go($('#nextBtn').dataset.target);$('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');$('#themeBtn').onclick=cycleTheme;$('#exportBtn').onclick=exportData;$('#runAllBtn').onclick=()=>runAudit();$('#auditTools').onclick=e=>{const b=e.target.closest('.audit-tool');if(b)openAuditCategory(Number(b.dataset.audit))};$('#addTaskBtn').onclick=()=>openModal('task');$('#approveAllBtn').onclick=()=>{state.tasks.forEach(t=>{if(!t.approved){t.approved=true;t.status='Da fare'}});save();renderKanban();renderShell();toast('Attività suggerite approvate')};$('#kanban').onchange=e=>{if(e.target.matches('.task-status')){const t=state.tasks.find(x=>x.id===Number(e.target.dataset.id));t.status=e.target.value;t.approved=t.status!=='Da approvare';save();renderKanban();renderShell();toast('Stato aggiornato')}};$('#kanban').onclick=e=>{const edit=e.target.closest('.edit-task'),show=e.target.closest('.show-pages'),repair=e.target.closest('.repair-task'),undo=e.target.closest('.undo-repair'),id=Number((edit||show||repair||undo)?.dataset.id),task=state.tasks.find(x=>x.id===id);if(edit||show)openModal('task',task);if(repair)openRepair(task);if(undo)undoRepair(id)};$('#pageSearch').oninput=renderPages;$('#pageFilter').onchange=renderPages;$('#autoMatchBtn').onclick=autoMatch;$('#addPageBtn').onclick=()=>openModal('page');$('#pagesBody').onclick=e=>{const edit=e.target.closest('.edit-page'),del=e.target.closest('.delete-page');if(edit)openModal('page',state.pages.find(x=>x.id===Number(edit.dataset.id)));if(del&&confirm('Eliminare questa pagina dall’inventario locale?')){state.pages=state.pages.filter(x=>x.id!==Number(del.dataset.id));save();renderPages();toast('Pagina rimossa')}};$('#addClusterBtn').onclick=()=>openModal('cluster');$('#mapGrid').onclick=e=>{if(e.target.closest('.edit-cluster'))toast('Vista cluster pronta per il prossimo livello di dettaglio')};$('#chooseFileBtn').onclick=()=>$('#fileInput').click();$('#fileInput').onchange=e=>e.target.files[0]&&importFile(e.target.files[0]);const dz=$('#dropZone');['dragenter','dragover'].forEach(x=>dz.addEventListener(x,e=>{e.preventDefault();dz.classList.add('drag')}));['dragleave','drop'].forEach(x=>dz.addEventListener(x,e=>{e.preventDefault();dz.classList.remove('drag')}));dz.addEventListener('drop',e=>e.dataTransfer.files[0]&&importFile(e.dataTransfer.files[0]));$('#themeSelect').onchange=e=>applyTheme(e.target.value);$('#importBackupBtn').onclick=()=>$('#fileInput').click();$('#closeModal').onclick=closeModal;$('#modalBackdrop').onclick=e=>{if(e.target===$('#modalBackdrop'))closeModal()};$('#modalForm').onsubmit=submitModal;document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',()=>{if(state.settings.theme==='system')applyTheme('system')});$('#projectSelect').onchange=e=>switchProject(e.target.value);$('#newAnalysisBtn').onclick=startNewAnalysis;$('#resetBtn').onclick=()=>{if(confirm(`Azzerare l’analisi di ${state.project.domain}? Gli altri siti non verranno modificati.`)){clearCurrentAnalysis();renderView('settings');toast('Analisi del sito azzerata')}};$('#autosave').onchange=e=>{state.settings.autosave=e.target.value;if(e.target.value==='on')save(true);toast('Preferenza aggiornata')};$('#createPlanBtn').onclick=createOperationalPlan;$('.issue-grid').onclick=e=>{const card=e.target.closest('[data-issue-target]');if(card)openAuditResult(card.dataset.issueTarget)};$('#taskFilter').onchange=()=>{state.ui.issueScope='all';renderKanban()};$('#gptBulkBtn').onclick=()=>exportGPTSites();$('#kanban').addEventListener('change',e=>{if(!e.target.matches('.task-status')||e.target.value!=='Verificata')return;const task=state.tasks.find(t=>t.id===Number(e.target.dataset.id));if(task?.status==='Verificata')return;e.stopImmediatePropagation();e.preventDefault();e.target.value=task?.status||'Completata';toast('Usa “Verifica ora”: lo stato Verificata richiede un controllo reale','error')},true);$('#verifyList').onclick=e=>{const button=e.target.closest('.verify-one');if(button)verifyTask(Number(button.dataset.id))};$('#verifyAllBtn').onclick=verifyAllTasks;$('#projectForm').onsubmit=saveProjectForm;$('#semanticProjectBtn').onclick=autoFillProjectFromDomain;$('#domain').addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();autoFillProjectFromDomain()}});$('#wpBtn').onclick=testWordPress;$('#wpDisconnectBtn').onclick=disconnectWordPress;renderView(state.ui.view||'dashboard');if(hadConnectorToken)verifyRestoredConnector()}init();
 })();
