@@ -131,7 +131,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.16.6';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.16.7';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function projectRegistry(){try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');return {active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{return {active:'',projects:{}}}}
@@ -723,6 +723,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '1.16.7', date: '2026-08-19', notes: 'Corretto il pulsante “Vedi proposta completa” nel report pagina-keyword: ogni riga apre ora in modo affidabile il popup della proposta esatta, con title SEO, H1 e frase naturale.', compatibility: 'Inclusa nel plugin unico 3.0.7.' },
   { version: '1.16.6', date: '2026-08-19', notes: 'Sistema mostra una sola attività alla volta. Un nuovo menu nella sidebar consente di scegliere la card per stato e il pulsante dedicato la apre senza affiancare o impilare le altre.', compatibility: 'Inclusa nel plugin unico 3.0.6.' },
   { version: '1.16.5', date: '2026-08-19', notes: 'L’anteprima dei link interni mostra ora l’intera frase editoriale prima dell’approvazione, con anchor evidenziata, destinazione e posizione. La frase segue la lingua del sito WordPress.', compatibility: 'Inclusa nel plugin unico 3.0.5.' },
   { version: '1.16.4', date: '2026-08-19', notes: 'Le card nello stato Da approvare hanno ora un comando di approvazione immediato. Un intervento già applicato viene archiviato direttamente come Completata, evitando stati contraddittori e false code operative.', compatibility: 'Inclusa nel plugin unico 3.0.4.' },
@@ -2816,8 +2817,11 @@ function keywordActivationProposal(prop) {
     placement: 'Title SEO, H1 e una sola frase introduttiva pertinente; evitare ripetizioni forzate.'
   };
 }
-function showKeywordProposal(url) {
-  const prop = keywordProposals((state.pages || []).filter(p => !p.keyword)).find(p => p.url === url);
+function showKeywordProposal(reference) {
+  const proposals = keywordProposals((state.pages || []).filter(p => !p.keyword));
+  const prop = reference && typeof reference === 'object'
+    ? reference
+    : proposals.find(p => p.url === reference);
   if (!prop) { toast('La proposta non è più aperta: aggiorna il report', 'error'); return; }
   const copy = keywordActivationProposal(prop), modal = $('.modal'); modal?.classList.add('task-detail-modal');
   $('#modalTitle').textContent = 'Proposta keyword e testo'; $('#modalHelp').textContent = `${prop.keyword} · ${prop.intent}`;
@@ -2852,7 +2856,7 @@ auditCategoryContent = function (index) {
   if (index === 3) return internalLinkAuditContentV140();
   if (index === 4) {
     const rows = keywordProposals((state.pages || []).filter(p => !p.keyword));
-    return rows.length ? `<p><b>${rows.length}</b> abbinamenti da valutare. Apri la proposta per vedere esattamente title, H1 e frase naturale.</p><div class="table-wrap"><table><thead><tr><th>Pagina</th><th>Keyword</th><th>Intento</th><th>Testo proposto</th><th>Azione</th></tr></thead><tbody>${rows.map(r => `<tr><td>${operationalPageLink(r.url)}</td><td><b>${esc(r.keyword)}</b></td><td>${esc(r.intent)}</td><td>${esc(keywordActivationProposal(r).intro)}</td><td><button type="button" class="btn ogos-keyword-detail" data-url="${esc(r.url)}">Vedi proposta completa →</button></td></tr>`).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>Il pulsante salva subito keyword e intento sull'inventario di tutte le pagine elencate; il testo proposto resta una bozza editoriale da rivedere a parte.</small><button type="button" class="btn primary" id="ogosApplyKeywordBulk">Applica in automatico: abbina tutte (${rows.length}) →</button></div>` : '<p class="safe-note">Tutte le pagine hanno keyword e intento assegnati.</p>';
+    return rows.length ? `<p><b>${rows.length}</b> abbinamenti da valutare. Apri la proposta per vedere esattamente title, H1 e frase naturale.</p><div class="table-wrap"><table><thead><tr><th>Pagina</th><th>Keyword</th><th>Intento</th><th>Testo proposto</th><th>Azione</th></tr></thead><tbody>${rows.map((r,index) => `<tr><td>${operationalPageLink(r.url)}</td><td><b>${esc(r.keyword)}</b></td><td>${esc(r.intent)}</td><td>${esc(keywordActivationProposal(r).intro)}</td><td><button type="button" class="btn ogos-keyword-detail" data-proposal-index="${index}" data-url="${esc(r.url)}" aria-label="Vedi la proposta completa per ${esc(r.url)}">Vedi proposta completa →</button></td></tr>`).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>Il pulsante salva subito keyword e intento sull'inventario di tutte le pagine elencate; il testo proposto resta una bozza editoriale da rivedere a parte.</small><button type="button" class="btn primary" id="ogosApplyKeywordBulk">Applica in automatico: abbina tutte (${rows.length}) →</button></div>` : '<p class="safe-note">Tutte le pagine hanno keyword e intento assegnati.</p>';
   }
   if (index === 5) {
     const rows = cannibalizationProposals();
@@ -2866,9 +2870,36 @@ document.addEventListener('click', e => {
   const broken = e.target.closest('.ogos-create-broken-one');
   if (broken) { const r = detectBrokenLinksReport()[Number(broken.dataset.index)]; if (r?.suggested && r.editable !== false) upsertOperationalTask(`Correggi link rotto in ${r.source}`, `Anchor “${r.anchor || r.brokenUrl}”${r.occurrence ? `, occorrenza ${r.occurrence}` : ''}`, 'Alta', [{url:r.source, issue:`Link verso ${r.brokenUrl}`, fix:`Sostituisci con ${r.suggested}`, changes:{replace_link:{from:r.href||r.brokenUrl,to:r.suggested,anchor:r.anchor||'',context:r.context||''}}}], {type:'replace_link'}, true); else if (r?.editable === false) toast('Questo link è generato da un builder o template: usa il contesto per aprire e modificare il componente.', 'error'); }
   const detail = e.target.closest('.ogos-link-detail'); if (detail) showBrokenLinkDetail(Number(detail.dataset.index));
-  const keyword = e.target.closest('.ogos-keyword-detail'); if (keyword) showKeywordProposal(keyword.dataset.url);
+  const keyword = e.target.closest('.ogos-keyword-detail');
+  if (keyword) {
+    e.preventDefault();
+    const proposals = keywordProposals((state.pages || []).filter(p => !p.keyword));
+    const indexed = proposals[Number(keyword.dataset.proposalIndex)];
+    showKeywordProposal(indexed && indexed.url === keyword.dataset.url ? indexed : keyword.dataset.url);
+  }
   const use = e.target.closest('.ogos-use-keyword'); if (use) { const prop=keywordProposals((state.pages||[]).filter(p=>!p.keyword)).find(p=>p.url===use.dataset.url), page=state.pages.find(p=>p.url===use.dataset.url); if(prop&&page){page.keyword=prop.keyword;page.intent=prop.intent;save(true);closeModal();renderPages();renderShell();toast('Keyword e intento assegnati');} }
 });
+
+/* Il report keyword viene inserito dinamicamente nel form modale. Colleghiamo
+ * quindi ogni bottone subito dopo il render, mantenendo anche la delega sopra
+ * come fallback. In questo modo il click non dipende dalla propagazione fuori
+ * dal form e la proposta selezionata resta quella esatta della riga. */
+const openAuditCategoryV167 = openAuditCategory;
+openAuditCategory = function (index) {
+  const result = openAuditCategoryV167(index);
+  if (index === 4) {
+    const proposals = keywordProposals((state.pages || []).filter(p => !p.keyword));
+    $$('#modalForm .ogos-keyword-detail').forEach(button => {
+      button.onclick = event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const proposal = proposals[Number(button.dataset.proposalIndex)];
+        showKeywordProposal(proposal && proposal.url === button.dataset.url ? proposal : button.dataset.url);
+      };
+    });
+  }
+  return result;
+};
 
 /* ---- Notifica scansioni scadute (#26), una volta all'avvio ---- */
 const initWithExtensions = init;
