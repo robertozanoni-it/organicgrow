@@ -133,7 +133,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.16.10';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.16.11';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function projectRegistry(){try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');return {active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{return {active:'',projects:{}}}}
@@ -419,8 +419,28 @@ function operationSummary(operations={}){return Object.entries(operations).map((
    stessi controlli di sicurezza che c'erano prima nell'anteprima e nell'applicazione separate: blocco locale
    dei domini esterni prima di inviare qualunque dato, rispetto della modalità simulazione (nessuna scrittura
    reale se attiva) e segnalazione chiara delle righe non risolvibili (es. pagine gestite da Elementor). */
+/* BUG corretto: "button" e "resultBox" venivano cercati con querySelector
+   sull'intero documento, cioe' sempre il PRIMO elemento in ordine di
+   documento. Ma sia il modale di anteprima del plugin sia la pagina della
+   proposta keyword emettono un pulsante ".apply-plugin-task-single" e un
+   contenitore con id "pluginPreviewResult" (id duplicato nella stessa
+   pagina). La sezione #view-keyword-proposal viene prima del modale nel
+   DOM e resta nel documento anche quando non e' la vista attiva: bastava
+   quindi aver aperto una volta la pagina della proposta perche', da quel
+   momento, ogni "Approva e applica" premuto nel modale agisse sugli
+   elementi NASCOSTI della proposta. Il pulsante del modale non si
+   disabilitava, non mostrava "Verifica sul sito…" e l'esito finiva in un
+   contenitore invisibile: per l'utente, di nuovo, "non succede niente".
+   Scegliamo ora l'elemento effettivamente visibile e leghiamo il
+   contenitore del risultato al contenitore di quel pulsante. */
+function ogosVisibleEl(selector, scope){
+  const all=$$(selector, scope || document);
+  return all.find(el=>el.getClientRects().length>0) || all[0] || null;
+}
 async function applyPluginTaskSingle(id){
-  const t=state.tasks.find(x=>x.id===id),button=$('.apply-plugin-task-single'),resultBox=$('#pluginPreviewResult');
+  const t=state.tasks.find(x=>x.id===id),button=ogosVisibleEl('.apply-plugin-task-single');
+  const host=button&&button.closest?button.closest('#modalForm, #view-keyword-proposal, #actionDrawer'):null;
+  const resultBox=(host&&host.querySelector('#pluginPreviewResult'))||ogosVisibleEl('#pluginPreviewResult');
   if(!t||!button)return;
   const originalButtonLabel=button.textContent;
 
@@ -726,6 +746,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '1.16.11', date: '2026-08-19', notes: 'Riparato “Vedi proposta completa”. Il report degli abbinamenti si apre in due contenitori diversi (il modale da “Controlla” e il pannello laterale dall\'accesso rapido): il comando chiudeva solo il modale, quindi aprendolo dal pannello la pagina della proposta veniva creata regolarmente ma restava coperta dal pannello ancora aperto, e sembrava che il pulsante non facesse nulla. Ora il comando funziona da entrambi i punti e la risoluzione della riga tollera slash finali e query string (es. ?ogos_id=4962), che prima potevano far comparire “La proposta non è più aperta”. Corretto anche un conflitto di identificatori fra la pagina della proposta e il modale del plugin: dopo aver visitato la proposta, il pulsante “Approva e applica” del modale non mostrava più avanzamento né esito.', compatibility: 'Inclusa nel plugin unico 3.0.11. Nessuna modifica ai dati salvati.' },
   { version: '1.16.10', date: '2026-08-18', notes: 'Correzioni di affidabilità. "Copia prompt operativo" mostra ora un messaggio d\'errore invece di fallire in silenzio quando non ci sono attività esportabili. Sistemati tre difetti CSS: la larghezza delle colonne attività (dichiarazione flex non valida), il contorno di focus del pulsante "Approva attività" (variabile colore inesistente: il comando era invisibile alla navigazione da tastiera) e una regola di griglia inerte. La copia dell\'app inclusa nel plugin è ora identica a questa: prima assumeva sempre il contesto WordPress integrato.', compatibility: 'Inclusa nel plugin unico 3.0.10. Nessuna modifica ai dati salvati: gli stati esistenti restano validi.' },
   { version: '1.16.9', date: '2026-08-19', notes: 'Corretto il routing di “Vedi proposta completa”: il comando apre sempre la pagina dedicata della singola URL, con tutti i valori proposti e il pulsante di inserimento automatico WordPress.', compatibility: 'Inclusa nel plugin unico 3.0.9; dati della proposta conservati anche dopo il rendering dinamico del report.' },
   { version: '1.16.8', date: '2026-08-19', notes: '“Vedi proposta completa” apre una pagina dedicata con confronto prima/dopo e modifica integrale. Il nuovo pulsante inserisce automaticamente su WordPress Title SEO, H1 e frase introduttiva, con verifica e ripristino.', compatibility: 'Inclusa nel plugin unico 3.0.8; supporta WordPress standard ed Elementor.' },
@@ -2706,6 +2727,16 @@ const openAuditDrawerV121 = openAuditDrawer;
 openAuditDrawer = function (index) {
   openAuditDrawerV121(index); $('#actionDrawer')?.classList.add('audit-wide');
   const bulk = $('#actionDrawer #ogosRunIndexingAuto'); if (bulk) bulk.onclick = () => runBulkIndexingVerification(bulk);
+  /* Rete di sicurezza: il pannello e' un contenitore statico, quindi il
+     listener in cattura viene installato una volta sola (la funzione e'
+     idempotente). Lo richiamiamo qui perche' il pannello puo' essere aperto
+     anche prima che init() abbia completato il primo giro di binding.
+     NOTA: bindDrawerKeywordButtons(), chiamata dalla openAuditDrawer
+     originale per l'indice 4, e' codice morto: cerca ".ogos-apply-keyword",
+     una classe che il report degli abbinamenti non genera piu' da quando il
+     markup e' passato a ".ogos-keyword-detail". Era proprio quello il
+     motivo per cui il pannello non aveva alcun gestore per il comando. */
+  bindKeywordProposalNavigation();
 };
 function taskIsCompleted(task) { return ['Completata', 'Verificata', 'Superata', 'Risolta'].includes(task?.status); }
 ogosDashboardIssues = function () {
@@ -2839,7 +2870,16 @@ function showKeywordProposal(reference) {
   if (!prop) { toast('La proposta non è più aperta: aggiorna il report', 'error'); return; }
   state.ui = state.ui && typeof state.ui === 'object' ? state.ui : {};
   state.ui.keywordProposal = { url:prop.url, keyword:prop.keyword, intent:prop.intent, source:prop.source };
+  /* BUG corretto: qui si chiudeva soltanto il modale. Lo stesso report
+     "Keyword e intento" si apre pero' anche nel pannello laterale
+     (openAuditDrawer, usato dall'accesso rapido della sidebar, dalla
+     dashboard e dopo ogni assegnazione di keyword), che e' un elemento
+     diverso: il pannello restava aperto a schermo intero sopra la pagina
+     appena aperta. La proposta veniva renderizzata correttamente dietro il
+     pannello, quindi per chi guarda il comando "Vedi proposta completa"
+     semplicemente non faceva nulla. Chiudiamo entrambi i contenitori. */
   closeModal();
+  closeActionDrawer();
   go('keyword-proposal');
 }
 function keywordProposalFromButton(button) {
@@ -2863,19 +2903,27 @@ function openKeywordProposalFromButton(button) {
   showKeywordProposal(proposal);
 }
 function bindKeywordProposalNavigation() {
-  const form = $('#modalForm');
-  if (!form || form.dataset.keywordProposalNavigation === 'true') return;
-  form.dataset.keywordProposalNavigation = 'true';
-  /* Il listener in fase di cattura intercetta il comando prima degli handler
-     generici del form/modale. Funziona anche quando si clicca sul testo del
-     bottone e non dipende dal re-render dinamico della tabella. */
-  form.addEventListener('click', event => {
-    const button = event.target.closest?.('.ogos-keyword-detail');
-    if (!button) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    openKeywordProposalFromButton(button);
-  }, true);
+  /* BUG corretto: si collegava soltanto #modalForm. Il report degli
+     abbinamenti pero' viene renderizzato in DUE contenitori diversi con lo
+     stesso identico markup: il modale (openAuditCategory, dalla scheda in
+     "Controlla") e il pannello laterale (openAuditDrawer, dall'accesso
+     rapido della sidebar e dalla dashboard). Nel pannello nessun handler
+     dedicato era attivo e restava solo la delega generica su document, con
+     una logica di risoluzione piu' debole. Colleghiamo entrambi. */
+  [ $('#modalForm'), $('#actionDrawer') ].forEach(container => {
+    if (!container || container.dataset.keywordProposalNavigation === 'true') return;
+    container.dataset.keywordProposalNavigation = 'true';
+    /* Il listener in fase di cattura intercetta il comando prima degli handler
+       generici del form/modale. Funziona anche quando si clicca sul testo del
+       bottone e non dipende dal re-render dinamico della tabella. */
+    container.addEventListener('click', event => {
+      const button = event.target.closest?.('.ogos-keyword-detail');
+      if (!button) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openKeywordProposalFromButton(button);
+    }, true);
+  });
 }
 function keywordProposalTask(prop) {
   const copy = keywordActivationProposal(prop);
@@ -2963,9 +3011,18 @@ document.addEventListener('click', e => {
   const keyword = e.target.closest('.ogos-keyword-detail');
   if (keyword) {
     e.preventDefault();
-    const proposals = keywordProposals((state.pages || []).filter(p => !p.keyword));
-    const indexed = proposals[Number(keyword.dataset.proposalIndex)];
-    showKeywordProposal(indexed && indexed.url === keyword.dataset.url ? indexed : keyword.dataset.url);
+    /* BUG corretto: questa delega rifaceva a mano la risoluzione della
+       proposta, ma con un confronto rigido (indexed.url === dataset.url,
+       senza comparableUrl) e, quando non trovava corrispondenza, passava a
+       showKeywordProposal() la URL come STRINGA. La ricerca per stringa
+       usa a sua volta un === rigido: bastava una differenza di
+       normalizzazione (slash finale, query string come "?ogos_id=4962") per
+       far fallire tutto con "La proposta non e' piu' aperta", anche con la
+       riga perfettamente visibile davanti. keywordProposalFromButton()
+       gestisce gia' i tre casi in ordine (indice, URL confrontabile, dati
+       della riga) e restituisce sempre un oggetto utilizzabile: usiamo
+       quella, cosi' esiste una sola logica di risoluzione. */
+    openKeywordProposalFromButton(keyword);
   }
   const use = e.target.closest('.ogos-use-keyword'); if (use) { const prop=keywordProposals((state.pages||[]).filter(p=>!p.keyword)).find(p=>p.url===use.dataset.url), page=state.pages.find(p=>p.url===use.dataset.url); if(prop&&page){page.keyword=prop.keyword;page.intent=prop.intent;save(true);closeModal();renderPages();renderShell();toast('Keyword e intento assegnati');} }
 });
