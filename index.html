@@ -133,7 +133,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.16.18';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.16.19';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function projectRegistry(){try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');return {active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{return {active:'',projects:{}}}}
@@ -746,6 +746,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '1.16.19', date: '2026-08-19', notes: 'Ripristinata la sessione WordPress nella scheda corrente: dopo pairing, ricaricamento o cambio progetto il token viene riletto, verificato e associato al sito corretto. Verifica e revoca usano ora anche gli URL REST compatibili con permalink Semplici. I token non vengono salvati nei backup o nel localStorage e scadono con la sessione del browser.', compatibility: 'Richiede il connettore 3.0.19 per il pacchetto allineato; resta compatibile con le API 3.0.18.' },
   { version: '1.16.18', date: '2026-08-19', notes: 'Corretti falsi completamenti e aggiornamenti locali nelle applicazioni parziali. Lo storico condiviso usa merge, revisioni e sincronizzazione iniziale protetta; aggiunti timeout e validazione JSON. Rafforzati H1 multipli, focus semantico, template SEO sconosciuti, import, clipboard e credenziali solo in memoria. Corretto anche il contesto dell’app incorporata in WordPress.', compatibility: 'Richiede il connettore 3.0.17 per storico revisionato e protezione completa dei flussi remoti.' },
   { version: '1.16.16', date: '2026-08-19', notes: 'Corrette collisioni e falsi completamenti fra Title, H1 e Meta. Le proposte residue restano visibili dopo l’applicazione di un solo campo, i retry non sono bloccati da vecchi esiti parziali e il doppio clic è protetto. Aggiunte approvazioni separate anche nell’audit on-page, gestione H1 multipli, selezioni versionate e focus che conserva i sottotitoli significativi.', compatibility: 'Richiede il connettore 3.0.16 per H1 indipendenti, parsing focus e contenuto principale.' },
   { version: '1.16.15', date: '2026-08-19', notes: 'Title SEO, H1 SEO e meta description possono essere abilitati e applicati separatamente oppure insieme. Ogni campo genera un task e un ripristino indipendenti. Migliorata la naturalezza editoriale e corretti limiti caratteri, entità HTML, località generiche, doppie punteggiature e riapertura dei task.', compatibility: 'Richiede il connettore 3.0.15.' },
@@ -4135,6 +4136,123 @@ document.addEventListener('click', event => {
   const field = (single || bulk).dataset.field, rows = onPageCandidateRowsV1616().filter(row => !single || comparableUrl(row.page.url) === comparableUrl(single.dataset.url));
   createOnPageFieldTaskV1616(rows, field);
 });
+
+/* Correzioni 1.16.19: sessione WordPress realmente ripristinabile e URL REST portabile
+   anche per verifica e revoca. Il segreto resta fuori da localStorage e dai backup. */
+const storeConnectorTokenV1619 = storeConnectorToken;
+storeConnectorToken = function(data) {
+  storeConnectorTokenV1619(data);
+  const domain = normalizeProjectDomain(data?.site || state.project?.domain || state.wordpress?.url);
+  if (!domain || !data?.token) return;
+  const session = {
+    token: data.token,
+    site: data.site || state.wordpress?.url || `https://${domain}`,
+    restUrl: data.rest_url || state.wordpress?.restUrl || '',
+    user: data.user || null,
+    version: data.version || '',
+    capabilities: Array.isArray(data.capabilities) ? data.capabilities : [],
+    expiresAt: data.expires_at || null
+  };
+  try { sessionStorage.setItem(`ogos_wp_token_${domain}`, JSON.stringify(session)); }
+  catch (error) { console.warn('Sessione WordPress non memorizzabile nella scheda corrente', error); }
+};
+
+const restoreConnectorTokenV1619 = restoreConnectorToken;
+restoreConnectorToken = function() {
+  if (window.OGOS_EMBEDDED) return restoreConnectorTokenV1619();
+  if (wpSecret && state.wordpress?.connected) return true;
+  const domain = normalizeProjectDomain(state.project?.domain || state.wordpress?.url);
+  if (!domain) return false;
+  const key = `ogos_wp_token_${domain}`;
+  try {
+    const session = JSON.parse(sessionStorage.getItem(key) || 'null');
+    const siteDomain = normalizeProjectDomain(session?.site);
+    const expires = session?.expiresAt ? Date.parse(session.expiresAt) : NaN;
+    if (!session?.token || siteDomain !== domain || (Number.isFinite(expires) && expires <= Date.now())) {
+      if (session) sessionStorage.removeItem(key);
+      return false;
+    }
+    wpSecret = session.token;
+    state.integration.mode = 'wordpress-plugin';
+    state.wordpress = {
+      ...state.wordpress,
+      url: normalizeWpBase(session.site || `https://${domain}`),
+      restUrl: session.restUrl || state.wordpress?.restUrl || '',
+      connected: true,
+      userName: session.user?.name || session.user?.login || state.wordpress?.userName || 'utente WordPress',
+      userId: session.user?.id || state.wordpress?.userId || null,
+      lastError: null,
+      pluginDetected: true,
+      pluginVersion: session.version || state.wordpress?.pluginVersion || '',
+      capabilities: Array.isArray(session.capabilities) ? session.capabilities : [],
+      tokenExpiresAt: session.expiresAt || null,
+      authMethod: 'ogos-token-session'
+    };
+    return true;
+  } catch (error) {
+    try { sessionStorage.removeItem(key); } catch {}
+    console.warn('Sessione WordPress non ripristinata', error);
+    return false;
+  }
+};
+
+verifyRestoredConnector = async function() {
+  if (!wpSecret || !state.wordpress?.url) return false;
+  try {
+    const { response, data } = await ogosFetchJsonV1617(ogosRestUrlV161('/wp-json/organic-growth-os/v1/auth/status'), {
+      headers: { Accept: 'application/json', 'X-OGOS-Token': wpSecret }, mode: 'cors', cache: 'no-store'
+    }, 20000);
+    if (!response.ok || data.connected !== true) throw new Error(data.message || `WordPress ha risposto ${response.status}`);
+    state.wordpress.connected = true;
+    state.wordpress.userName = data.user?.name || state.wordpress.userName;
+    state.wordpress.userId = data.user?.id || state.wordpress.userId;
+    state.wordpress.tokenExpiresAt = data.expires_at || state.wordpress.tokenExpiresAt;
+    state.wordpress.lastError = null;
+    state.wordpress.lastTest = new Intl.DateTimeFormat('it-IT', { dateStyle:'short', timeStyle:'short' }).format(new Date());
+    await detectWordPressPlugin();
+    save(true); renderSettings();
+    return true;
+  } catch (error) {
+    const key = connectorSessionKey();
+    state.wordpress.connected = false;
+    state.wordpress.pluginDetected = false;
+    state.wordpress.capabilities = [];
+    state.wordpress.lastError = `Sessione WordPress scaduta o non verificabile: ${error.message}`;
+    wpSecret = '';
+    try { sessionStorage.removeItem(key); } catch {}
+    save(true); renderSettings();
+    return false;
+  }
+};
+
+disconnectWordPress = async function() {
+  if (window.OGOS_EMBEDDED) { toast('La connessione usa la sessione WordPress corrente.'); return; }
+  const key = connectorSessionKey();
+  if (wpSecret && state.wordpress?.url) {
+    try {
+      const { response, data } = await ogosFetchJsonV1617(ogosRestUrlV161('/wp-json/organic-growth-os/v1/auth/revoke'), {
+        method:'POST', headers:{ Accept:'application/json', 'X-OGOS-Token':wpSecret }, mode:'cors', cache:'no-store'
+      }, 20000);
+      if (!response.ok || data.revoked !== true) throw new Error(data.message || `WordPress ha risposto ${response.status}`);
+    } catch (error) {
+      toast(`Token non revocato: ${error.message}. La connessione resta attiva.`, 'error');
+      return;
+    }
+  }
+  wpSecret = ''; wpPendingState = '';
+  try { sessionStorage.removeItem(key); } catch {}
+  state.wordpress = { url:state.wordpress?.url || '', restUrl:'', username:'', connected:false, userName:'', userId:null, lastError:null, lastTest:null, pluginDetected:false, pluginVersion:'', capabilities:[], tokenExpiresAt:null, authMethod:null };
+  save(true); renderSettings(); toast('Connettore WordPress disconnesso e token revocato');
+};
+
+const switchProjectV1619 = switchProject;
+switchProject = function(value) {
+  const result = switchProjectV1619(value);
+  if (!window.OGOS_EMBEDDED && value !== '__new__' && restoreConnectorToken()) {
+    verifyRestoredConnector();
+  }
+  return result;
+};
 
 init();
 })();
