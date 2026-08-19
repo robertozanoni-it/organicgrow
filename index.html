@@ -133,10 +133,10 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.16.18';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.16.19';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
-let projectRegistryCache=null;
+var projectRegistryCache=null;/* PATCH: era let -> TDZ al boot */
 function projectRegistry(){if(projectRegistryCache)return projectRegistryCache;try{const parsed=JSON.parse(localStorage.getItem('organicGrowthOSProjects')||'{}');projectRegistryCache={active:String(parsed.active||''),projects:parsed.projects&&typeof parsed.projects==='object'?parsed.projects:{}}}catch{projectRegistryCache={active:'',projects:{}}}return projectRegistryCache}
 function normalizeProjectDomain(value){const raw=String(value||'').trim();if(!raw)return '';try{const url=new URL(/^https?:\/\//i.test(raw)?raw:`https://${raw}`);if(!url.hostname.includes('.'))return '';return url.hostname.replace(/^www\./,'').toLowerCase()}catch{return ''}}
 function projectStorageKey(project){return normalizeProjectDomain(project?.domain)}
@@ -267,8 +267,15 @@ function renderPages(){
   state.ui.pageTablePage=Math.max(1,Math.min(totalPages,Number(state.ui.pageTablePage)||1));
   const currentPage=state.ui.pageTablePage,visible=arr.slice((currentPage-1)*perPage,currentPage*perPage);
   $('#pageCount').innerHTML=`${arr.length} pagine${totalPages>1?` · <button type="button" class="btn page-list-prev" ${currentPage===1?'disabled':''}>←</button> ${currentPage}/${totalPages} <button type="button" class="btn page-list-next" ${currentPage===totalPages?'disabled':''}>→</button>`:''}`;
+  // PATCH PERFORMANCE: keywordProposals() veniva chiamata una volta PER RIGA
+  // (fino a 100 volte per render) e ogni chiamata ricostruiva da zero
+  // l'intera mappa GSC. Ora si calcola una volta sola per il blocco visibile.
+  const ogosNeedProposal=visible.filter(p=>!p.keyword),ogosProposalByUrl=new Map();
+  if(ogosNeedProposal.length&&typeof keywordProposals==='function'){
+    keywordProposals(ogosNeedProposal).forEach(pr=>{if(pr&&!ogosProposalByUrl.has(pr.url))ogosProposalByUrl.set(pr.url,pr)});
+  }
   $('#pagesBody').innerHTML=visible.map(p=>{
-    const proposal=!p.keyword&&typeof keywordProposals==='function'?keywordProposals([p])[0]:null;
+    const proposal=p.keyword?null:(ogosProposalByUrl.get(p.url)||null);
     const keywordCell=p.keyword?`<b>${esc(p.keyword)}</b>`:proposal?`<div class="keyword-proposal"><span class="tag high">Da abbinare</span><b>Proposta: ${esc(proposal.keyword)}</b><small>Pagina: ${esc(p.url)}<br>${esc(proposal.source)}<br>Inseriscila naturalmente nel title, nell’H1 e nel testo solo se descrive davvero il contenuto.</small><button type="button" class="btn ghost apply-page-keyword" data-id="${p.id}" data-keyword="${esc(proposal.keyword)}" data-intent="${esc(proposal.intent)}">Usa proposta →</button></div>`:'<span class="tag high">Da abbinare · nessuna proposta affidabile</span>';
     return `<tr><td><b>${esc(p.url)}</b></td><td>${keywordCell}</td><td>${esc(p.intent)}</td><td><span class="tag ${p.status==='Indicizzata'?'':'high'}">${esc(p.status)}</span></td><td>${esc(p.canonical)}${p.canonical==='Da verificare'?'<small class="help" style="display:block">Esegui il crawl reale: poi controlla che sia autoreferenziale o intenzionalmente diretta a un duplicato.</small>':''}</td><td><div class="row-actions"><button class="edit-page" data-id="${p.id}" aria-label="Modifica">${icon('edit')}</button><button class="delete-page" data-id="${p.id}" aria-label="Elimina">${icon('trash')}</button></div></td></tr>`;
   }).join('')||'<tr><td colspan="6" class="empty">Nessuna pagina corrisponde ai filtri.</td></tr>';
@@ -1405,35 +1412,87 @@ function gscSlugWords(pathOrUrl) { let path = pathOrUrl; try { path = new URL(pa
 function gscJaccard(aWords, bWords) { if (!aWords.length || !bWords.length) return 0; const a = new Set(aWords), b = new Set(bWords); let inter = 0; a.forEach(w => { if (b.has(w)) inter++; }); const union = new Set([...a, ...b]).size; return union ? inter / union : 0; }
 // Stima l'abbinamento pagina<->query più probabile in base alle parole condivise tra la query e lo slug dell'URL.
 // Non è un incrocio diretto di Search Console (quell'esportazione non lo fornisce): è dichiarato come stima testuale.
+// PATCH PERFORMANCE: la versione precedente ri-tokenizzava OGNI query di
+// Search Console per OGNI pagina (O(pagine x query), con normalize()+regex
+// a ogni confronto) e faceva state.pages.find() dentro il map (O(pagine^2)),
+// senza alcuna cache. Ora: token delle query calcolati una sola volta,
+// lookup delle pagine con Map, risultato memoizzato finche' non cambiano
+// le query o l'elenco degli URL.
+let gscTokCacheSrc = null, gscTokCache = null, gscMatchKey = null, gscMatchVal = null;
+let gscIndexSrc = null, gscIndex = null;
+function gscQueryTokenSets(queries) {
+  if (gscTokCacheSrc === queries && gscTokCache) return gscTokCache;
+  gscTokCacheSrc = queries;
+  gscTokCache = queries.map(q => new Set(gscWords(q.query)));
+  return gscTokCache;
+}
+// Indice invertito parola -> query che la contengono. La similarita' di
+// Jaccard e' > 0 solo se c'e' almeno una parola in comune, quindi confrontare
+// una pagina con TUTTE le query era sprecato: bastano quelle che condividono
+// almeno una parola con lo slug. Il risultato e' identico, il lavoro no.
+function gscWordIndex(queries, tokens) {
+  if (gscIndexSrc === queries && gscIndex) return gscIndex;
+  gscIndexSrc = queries;
+  gscIndex = new Map();
+  for (let i = 0; i < tokens.length; i++) {
+    tokens[i].forEach(w => { let arr = gscIndex.get(w); if (!arr) { arr = []; gscIndex.set(w, arr); } arr.push(i); });
+  }
+  return gscIndex;
+}
+function gscJaccardSets(a, b) {
+  if (!a.size || !b.size) return 0;
+  const small = a.size <= b.size ? a : b, large = small === a ? b : a;
+  let inter = 0;
+  small.forEach(w => { if (large.has(w)) inter++; });
+  const union = a.size + b.size - inter;
+  return union ? inter / union : 0;
+}
+function gscInvalidateMatchCache() { gscMatchKey = null; gscMatchVal = null; }
 function gscKeywordMatches() {
   const queries = (state.gsc && state.gsc.queries) || [];
   if (!queries.length) return [];
-  const topQuery = queries.slice().sort((a, b) => b.impressions - a.impressions)[0];
-  const candidatePages = state.pages.length ? state.pages.map(p => ({ url: p.url })) : ((state.gsc.pages || []).map(p => ({ url: p.path })));
-  const seen = new Set();
-  return candidatePages.filter(p => { if (seen.has(p.url)) return false; seen.add(p.url); return true; }).map(p => {
-    const slugW = gscSlugWords(p.url);
-    let best = null, method = 'text';
-    if (!slugW.length) {
-      if (topQuery) { best = { score: null, q: topQuery }; method = 'top-query'; }
-    } else {
-      for (const q of queries) {
-        const score = gscJaccard(gscWords(q.query), slugW);
-        if (score <= 0) continue;
-        if (!best || score > best.score || (score === best.score && q.impressions > best.q.impressions)) best = { score, q };
+  const usePages = state.pages.length > 0;
+  const candidateUrls = usePages ? state.pages.map(p => p.url) : ((state.gsc.pages || []).map(p => p.path));
+  const key = queries.length + ' ' + candidateUrls.join('\n');
+  let core;
+  if (gscMatchKey === key && gscMatchVal && gscTokCacheSrc === queries) {
+    core = gscMatchVal;
+  } else {
+    const tokens = gscQueryTokenSets(queries);
+    const index = gscWordIndex(queries, tokens);
+    let topIdx = 0;
+    for (let i = 1; i < queries.length; i++) if (queries[i].impressions > queries[topIdx].impressions) topIdx = i;
+    const seen = new Set();
+    core = [];
+    for (const url of candidateUrls) {
+      if (seen.has(url)) continue;
+      seen.add(url);
+      const slugW = new Set(gscSlugWords(url));
+      let bestScore = -1, bestIdx = -1, method = 'text';
+      if (!slugW.size) {
+        if (queries.length) { bestIdx = topIdx; bestScore = null; method = 'top-query'; }
+      } else {
+        const candSet = new Set();
+        slugW.forEach(w => { const arr = index.get(w); if (arr) for (let k = 0; k < arr.length; k++) candSet.add(arr[k]); });
+        const candidates = [...candSet].sort((x, y) => x - y);
+        for (let c = 0; c < candidates.length; c++) {
+          const i = candidates[c];
+          const score = gscJaccardSets(tokens[i], slugW);
+          if (score <= 0) continue;
+          if (bestIdx < 0 || score > bestScore || (score === bestScore && queries[i].impressions > queries[bestIdx].impressions)) { bestScore = score; bestIdx = i; }
+        }
+        if (bestIdx >= 0 && bestScore < 0.15) bestIdx = -1;
       }
-      if (best && best.score < 0.15) best = null;
+      if (bestIdx < 0) continue;
+      const q = queries[bestIdx];
+      core.push({ url: url, suggestedKeyword: q.query, confidence: method === 'text' ? Math.round(bestScore * 100) : null, method: method, impressions: Math.round(q.impressions) });
     }
-    const page = state.pages.find(x => x.url === p.url);
-    return {
-      url: p.url,
-      suggestedKeyword: best ? best.q.query : '',
-      confidence: best && method === 'text' ? Math.round(best.score * 100) : null,
-      method: best ? method : 'none',
-      impressions: best ? Math.round(best.q.impressions) : 0,
-      currentKeyword: page ? page.keyword : '',
-    };
-  }).filter(s => s.suggestedKeyword).sort((a, b) => b.impressions - a.impressions);
+    core.sort((a, b) => b.impressions - a.impressions);
+    gscMatchKey = key; gscMatchVal = core;
+  }
+  const byUrl = new Map();
+  if (usePages) for (const p of state.pages) if (!byUrl.has(p.url)) byUrl.set(p.url, p);
+  return core.map(m => ({ url: m.url, suggestedKeyword: m.suggestedKeyword, confidence: m.confidence, method: m.method, impressions: m.impressions, currentKeyword: byUrl.has(m.url) ? (byUrl.get(m.url).keyword || '') : '' }));
 }
 function renderKeywordMatching() {
   const el = $('#ogosKeywordMatch');
@@ -4108,6 +4167,92 @@ init = function() {
   if (search) search.oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.ui.pageTablePage = 1; renderPages(); }, 120); };
   if (filter) filter.onchange = () => { state.ui.pageTablePage = 1; renderPages(); };
 };
+
+// ---- PATCH PERFORMANCE: salvataggio locale ---------------------------
+// Prima: ogni save() faceva clone(state) = JSON.parse(JSON.stringify(state))
+// PIU' JSON.stringify(registry) PIU' localStorage.setItem() sincrono, cioe'
+// tre serializzazioni complete dell'intero archivio a ogni singola azione
+// (~30 ms con 1000 pagine, e save() e' invocata da un centinaio di punti).
+// Ora: clone strutturato (piu' veloce di JSON) e scrittura su disco
+// accorpata e differita, con flush garantito prima di chiudere o nascondere
+// la pagina e a ogni cambio di progetto.
+const ogosDeepClone = (typeof structuredClone === 'function')
+  ? (v => { try { return structuredClone(v); } catch (e) { return JSON.parse(JSON.stringify(v)); } })
+  : (v => JSON.parse(JSON.stringify(v)));
+let ogosFlushTimer = null;
+function ogosFlushRegistry() {
+  if (ogosFlushTimer) { clearTimeout(ogosFlushTimer); ogosFlushTimer = null; }
+  try { localStorage.setItem('organicGrowthOSProjects', JSON.stringify(projectRegistry())); }
+  catch (e) { toast('Salvataggio locale non disponibile', 'error'); }
+}
+function ogosScheduleFlush() {
+  if (ogosFlushTimer) return;
+  ogosFlushTimer = setTimeout(function () { ogosFlushTimer = null; ogosFlushRegistry(); }, 250);
+}
+save = function (force) {
+  if (!force && state.settings.autosave === 'off') return;
+  try {
+    const key = projectStorageKey(state.project);
+    if (!key) return;
+    const copy = ogosDeepClone(state);
+    if (copy.wordpress) {
+      copy.wordpress.connected = false; copy.wordpress.pluginDetected = false; copy.wordpress.capabilities = [];
+      delete copy.wordpress.pendingState; delete copy.wordpress.token; delete copy.wordpress.secret;
+    }
+    const registry = projectRegistry();
+    registry.projects[key] = copy;
+    registry.active = key;
+    ogosScheduleFlush();
+  } catch (e) { toast('Salvataggio locale non disponibile', 'error'); }
+};
+// ---- PATCH PERFORMANCE: comparableUrl / normalizeProjectDomain / pageWords
+// comparableUrl() costruisce un oggetto URL e chiama due volte
+// normalizeProjectDomain() (che a sua volta costruisce un altro URL). Viene
+// invocata dentro cicli annidati: internalLinkProposals() la chiama quattro
+// volte per ogni coppia di pagine, cioe' ~1 milione di parsing di URL con
+// 500 pagine. Sono funzioni pure a parita' di dominio del progetto: le
+// memoizziamo. Stesso discorso per pageWords(), ricalcolata per ogni coppia.
+let ogosCmpCache = new Map(), ogosCmpDomain = null;
+const ogosComparableUrlBase = comparableUrl;
+comparableUrl = function (value) {
+  const dom = (state.project && state.project.domain) || '';
+  if (dom !== ogosCmpDomain) { ogosCmpDomain = dom; ogosCmpCache = new Map(); }
+  const k = String(value);
+  const hit = ogosCmpCache.get(k);
+  if (hit !== undefined) return hit;
+  const out = ogosComparableUrlBase(value);
+  if (ogosCmpCache.size > 50000) ogosCmpCache.clear();
+  ogosCmpCache.set(k, out);
+  return out;
+};
+const ogosNormDomainBase = normalizeProjectDomain;
+const ogosNormDomainCache = new Map();
+normalizeProjectDomain = function (value) {
+  const k = String(value == null ? '' : value);
+  const hit = ogosNormDomainCache.get(k);
+  if (hit !== undefined) return hit;
+  const out = ogosNormDomainBase(value);
+  if (ogosNormDomainCache.size > 20000) ogosNormDomainCache.clear();
+  ogosNormDomainCache.set(k, out);
+  return out;
+};
+const ogosPageWordsBase = pageWords;
+let ogosPageWordsCache = new Map();
+pageWords = function (page) {
+  const k = (page && page.keyword || '') + '|' + (page && page.wpTitle || '') + '|' + (page && page.url || '');
+  const hit = ogosPageWordsCache.get(k);
+  if (hit !== undefined) return hit;
+  const out = ogosPageWordsBase(page);
+  if (ogosPageWordsCache.size > 20000) ogosPageWordsCache = new Map();
+  ogosPageWordsCache.set(k, out);
+  return out;
+};
+
+const ogosPersistBase = persistCurrentProject;
+persistCurrentProject = function (force) { ogosPersistBase(force); ogosFlushRegistry(); };
+addEventListener('pagehide', ogosFlushRegistry);
+addEventListener('beforeunload', ogosFlushRegistry);
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') ogosFlushRegistry(); });
 
 init();
 })();
