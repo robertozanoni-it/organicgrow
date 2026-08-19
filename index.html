@@ -84,7 +84,7 @@
       </div>
     </section>
 
-    <section class="view" id="view-start"><div class="page-head"><div><div class="eyebrow">Passaggio 1 di 4</div><h1>Imposta il progetto</h1><p>Queste informazioni aiutano a interpretare dati e priorità nel contesto giusto.</p></div></div><form class="panel form-panel" id="projectForm"><div class="form-grid"><div class="field"><label for="siteName">Nome del progetto</label><input id="siteName" name="name" required></div><div class="field"><label for="domain">Dominio</label><div class="domain-autofill"><input id="domain" name="domain" inputmode="url" placeholder="esempio.it" required><button type="button" class="btn" id="semanticProjectBtn"><svg data-icon="search"></svg>Compila dal sito</button></div><small class="help">Senza percorsi o parametri. “Compila dal sito” analizza contenuti e intento complessivo, non solo la keyword del dominio.</small><div class="semantic-status" id="semanticProjectStatus" aria-live="polite"></div></div><div class="field"><label for="sector">Settore</label><input id="sector" name="sector" placeholder="Es. ricette e alimentazione"></div><div class="field"><label for="geo">Area geografica</label><input id="geo" name="geo" placeholder="Es. Italia o Bergamo e provincia"></div><div class="field wide"><label for="audience">Pubblico</label><textarea id="audience" name="audience" placeholder="Chi vuoi raggiungere e quali esigenze ha?"></textarea></div><div class="field wide"><label for="goals">Obiettivi SEO</label><textarea id="goals" name="goals" placeholder="Es. aumentare le pagine indicizzate e il traffico qualificato..."></textarea></div></div><div class="form-actions"><button type="button" class="btn ghost" data-view="dashboard">Annulla</button><button class="btn primary" type="submit">Salva e continua</button></div></form></section>
+    <section class="view" id="view-start"><div class="page-head"><div><div class="eyebrow">Passaggio 1 di 4</div><h1>Imposta il progetto</h1><p>Queste informazioni aiutano a interpretare dati e priorità nel contesto giusto.</p></div></div><form class="panel form-panel" id="projectForm"><div class="form-grid"><div class="field"><label for="siteName">Nome del progetto</label><input id="siteName" name="name" required></div><div class="field"><label for="domain">Dominio</label><div class="domain-autofill"><input id="domain" name="domain" inputmode="url" placeholder="esempio.it" required><button type="button" class="btn" id="semanticProjectBtn"><svg data-icon="search"></svg>Compila dal sito</button></div><small class="help">Senza percorsi o parametri. “Compila dal sito” analizza contenuti e intento complessivo, non solo la keyword del dominio.</small><div class="semantic-status" id="semanticProjectStatus" aria-live="polite"></div></div><div class="field"><label for="sector">Settore</label><input id="sector" name="sector" placeholder="Es. ricette e alimentazione"></div><div class="field"><label for="brand">Nome brand</label><input id="brand" name="brand" placeholder="Es. Buena Onda Yoga"><small class="help">Il nome come lo mostra il sito. Va in coda al Title SEO. Se vuoto viene usato il nome del progetto, che spesso arriva dal dominio (“Yogabuenaonda” invece di “Buena Onda Yoga”).</small></div><div class="field"><label for="city">Località</label><input id="city" name="city" placeholder="Es. Cinisello Balsamo"><small class="help">Comune in cui operi. Entra nel Title e nella meta description delle pagine di servizio e contatto e sostituisce le query “near me”. Se lo lasci vuoto provo a dedurlo dall’indirizzo trovato nel crawl.</small></div><div class="field"><label for="geo">Area geografica servita</label><input id="geo" name="geo" placeholder="Es. Italia o Milano e provincia"><small class="help">Il bacino che servi, diverso dalla località della sede. Non entra nel Title.</small></div><div class="field wide"><label for="audience">Pubblico</label><textarea id="audience" name="audience" placeholder="Chi vuoi raggiungere e quali esigenze ha?"></textarea></div><div class="field wide"><label for="goals">Obiettivi SEO</label><textarea id="goals" name="goals" placeholder="Es. aumentare le pagine indicizzate e il traffico qualificato..."></textarea></div></div><div class="form-actions"><button type="button" class="btn ghost" data-view="dashboard">Annulla</button><button class="btn primary" type="submit">Salva e continua</button></div></form></section>
 
     <section class="view" id="view-audit"><div class="page-head"><div><div class="eyebrow">Passaggio 2 di 4</div><h1>Controlla il sito</h1><p>Esegui controlli sui dati locali e trasforma i segnali tecnici in spiegazioni utilizzabili.</p></div><button class="btn primary" id="runAllBtn"><svg data-icon="play"></svg>Esegui tutti i controlli</button></div><div class="tool-grid" id="auditTools"></div><div class="panel audit-result"><div class="audit-head"><div><h2 class="section-title">Ultimo controllo</h2><small id="lastAudit">Dati demo pronti · nessuna scansione live</small></div><button class="btn" id="createPlanBtn">Crea piano operativo →</button></div><div class="issue-grid"><button type="button" class="issue-stat" data-issue-target="critical"><b id="criticalCount">0</b><small>Critici · apri</small></button><button type="button" class="issue-stat" data-issue-target="high"><b id="highCount">0</b><small>Alta priorità · apri</small></button><button type="button" class="issue-stat" data-issue-target="medium"><b id="mediumCount">0</b><small>Media priorità · apri</small></button><button type="button" class="issue-stat" data-issue-target="opportunities"><b id="opportunityCount">0</b><small>Opportunità · apri</small></button></div></div></section>
 
@@ -133,7 +133,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='1.16.19';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='1.17.0';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 var projectRegistryCache=null;/* PATCH: era let -> TDZ al boot */
@@ -4253,6 +4253,415 @@ persistCurrentProject = function (force) { ogosPersistBase(force); ogosFlushRegi
 addEventListener('pagehide', ogosFlushRegistry);
 addEventListener('beforeunload', ogosFlushRegistry);
 document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') ogosFlushRegistry(); });
+
+/* ==================================================================
+   PATCH SEO LOCALE
+   ------------------------------------------------------------------
+   ogosSeoCopyFromPage() leggeva gia' `state.project.geo` nella prima
+   riga ma non lo usava MAI: la componente locale non finiva ne' nel
+   Title ne' nella meta description. Il brand veniva preso da
+   `state.project.name`, che di norma e' il nome dedotto dal dominio
+   ("Yogabuenaonda"). La meta description restava vuota ogni volta che
+   il testo della pagina non offriva una frase della lunghezza giusta.
+   E i segnaposto dei temi ("Kit predefinito" di Elementor) passavano
+   per titoli veri. Qui si correggono tutti questi punti, per ogni
+   progetto.
+   ================================================================== */
+
+/* Valori che descrivono un bacino nazionale: non sono una localita' da
+   mettere nel Title. "Italia" in un title non qualifica nulla. */
+const OGOS_GEO_GENERICO = new Set(['italia', 'italy', 'tutta italia', 'in tutta italia', 'nazionale', 'tutto il territorio nazionale', 'internazionale', 'online', 'web', 'mondo', 'worldwide', 'global', 'globale', 'europa', 'europe', 'remoto', 'da remoto']);
+
+/* Segnaposto lasciati da temi e page builder. Non sono titoli: vanno
+   trattati come campo mancante, altrimenti "Kit predefinito" supera il
+   controllo di lunghezza e resta in pagina. */
+const OGOS_SEGNAPOSTO = [
+  /^kit\s+predefinito$/i, /^default\s+kit$/i, /^predefinit[oa]$/i, /^default$/i,
+  /^elementor\s*#?\d*$/i, /^#\d+$/i, /^\(?\s*no\s+title\s*\)?$/i,
+  /^nuova\s+pagina$/i, /^new\s+page$/i, /^senza\s+titolo$/i, /^untitled$/i,
+  /^pagina\s*\d*$/i, /^page\s*\d*$/i, /^post\s*\d*$/i, /^articolo\s*\d*$/i,
+  /^pagina\s+di\s+esempio$/i, /^sample\s+page$/i, /^hello\s+world!?$/i, /^ciao\s+mondo!?$/i,
+  /^test\s*\d*$/i, /^bozza$/i, /^draft$/i, /^lorem\s+ipsum/i,
+  /^il\s+tuo\s+titolo$/i, /^your\s+title(\s+here)?$/i, /^titolo$/i, /^title$/i,
+  /^home\s*(page)?$/i, /^esempio$/i, /^example$/i, /^demo$/i
+];
+function ogosIsSegnaposto(text) {
+  const t = ogosCleanEditorialText(text);
+  if (!t) return true;
+  return OGOS_SEGNAPOSTO.some(re => re.test(t));
+}
+
+/* Pattern di intento locale: NON sono keyword da usare testualmente.
+   "yoga classes near me" non si scrive in un title: si traduce nella
+   localita' reale. Google ricava la prossimita' dalla posizione di chi
+   cerca, non dal testo della pagina. */
+const OGOS_INTENTO_LOCALE = /(?:^|\s)(?:near\s*me|near\s*you|nearby|close\s+to\s+me|around\s+me|in\s+my\s+area|in\s+the\s+area|vicino\s+a\s+me|vicino\s+casa|vicino\s+a\s+casa|nelle\s+vicinanze|nella\s+mia\s+zona|nella\s+zona|qui\s+vicino|dalle\s+mie\s+parti|in\s+zona|zona\s+mia)(?=\s|$)/gi;
+function ogosHaIntentoLocale(text) { OGOS_INTENTO_LOCALE.lastIndex = 0; return OGOS_INTENTO_LOCALE.test(String(text || '')); }
+function ogosRimuoviIntentoLocale(text) { return ogosCleanEditorialText(String(text || '').replace(OGOS_INTENTO_LOCALE, ' ')); }
+
+/* titleCase() dell'app maiuscola OGNI parola: "Corsi Yoga A Cinisello".
+   Le preposizioni e gli articoli restano minuscoli, tranne in prima
+   posizione. */
+const OGOS_PAROLE_MINUSCOLE = new Set(['a', 'e', 'i', 'o', 'da', 'di', 'del', 'della', 'dei', 'delle', 'dello', 'degli', 'in', 'nel', 'nella', 'con', 'per', 'su', 'sul', 'sulla', 'tra', 'fra', 'il', 'lo', 'la', 'gli', 'le', 'un', 'uno', 'una', 'al', 'alla', 'ai', 'alle', 'the', 'of', 'and', 'or', 'to', 'at', 'on', 'for', 'with', 'in', 'a', 'an', 'near', 'by']);
+function ogosTitleCaseSmart(text) {
+  const t = ogosCleanEditorialText(text);
+  if (!t) return '';
+  return t.split(/\s+/).map((w, i) => {
+    const low = w.toLowerCase();
+    if (i > 0 && OGOS_PAROLE_MINUSCOLE.has(low)) return low;
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).join(' ');
+}
+/* Applica il Title Case solo se il testo e' tutto minuscolo (arriva da
+   uno slug o da una query). Un H1 scritto a mano va lasciato com'e'. */
+function ogosNormalizzaCase(text) {
+  const t = ogosCleanEditorialText(text);
+  if (!t) return '';
+  return t === t.toLowerCase() ? ogosTitleCaseSmart(t) : t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+/* Il brand come lo mostra il sito. Campo esplicito, nessuna euristica:
+   separare "Yogabuenaonda" in "Buena Onda Yoga" senza un dizionario
+   produce errori peggiori del problema che risolve. */
+function ogosProjectBrand() {
+  return ogosCleanEditorialText((state.project && state.project.brand) || '')
+      || ogosCleanEditorialText((state.project && state.project.name) || '');
+}
+
+/* Rilevamento della localita' dai dati gia' raccolti, usato solo se il
+   campo Localita' e' vuoto. Due sorgenti, in ordine di affidabilita':
+   1. CAP italiano a cinque cifre seguito dal nome del comune, nei testi
+      del crawl (e' il formato di ogni indirizzo in un footer);
+   2. il campo "Area geografica servita", se non e' un valore nazionale.
+   Memoizzato: la scansione tocca tutte le pagine. */
+let ogosCityCache = null, ogosCityCacheKey = null;
+function ogosDetectCity() {
+  const pages = state.pages || [];
+  const key = pages.length + '|' + ((state.project && state.project.geo) || '') + '|' + ((pages[0] && pages[0].url) || '');
+  if (ogosCityCacheKey === key && ogosCityCache) return ogosCityCache;
+  const conteggi = new Map();
+  const capRe = /\b\d{5}\s+([A-ZÀ-ÖØ-Þ][\p{L}'’.-]+(?:\s+(?:[a-zà-öø-þ]{1,3}\s+)?[A-ZÀ-ÖØ-Þ][\p{L}'’.-]+){0,3})/gu;
+  for (const page of pages) {
+    const crawl = (page && page.crawl) || {}, live = (page && page.live) || {};
+    const testo = ogosCleanEditorialText([crawl.contentExcerpt, live.contentExcerpt, live.excerpt, page && page.content_excerpt].filter(Boolean).join(' '));
+    if (!testo) continue;
+    capRe.lastIndex = 0;
+    let m;
+    while ((m = capRe.exec(testo))) {
+      const nome = ogosCleanEditorialText(m[1]).replace(/\s*\([A-Z]{2}\)\s*$/, '').trim();
+      if (nome.length < 3 || nome.length > 40) continue;
+      conteggi.set(nome, (conteggi.get(nome) || 0) + 1);
+    }
+  }
+  let esito = { value: '', source: '' };
+  if (conteggi.size) {
+    const migliore = [...conteggi.entries()].sort((a, b) => b[1] - a[1] || a[0].length - b[0].length)[0];
+    esito = { value: migliore[0], source: `indirizzo rilevato dal crawl (${migliore[1]} occorrenze)` };
+  } else {
+    const geo = ogosCleanEditorialText((state.project && state.project.geo) || '');
+    if (geo && !OGOS_GEO_GENERICO.has(geo.toLowerCase())) {
+      esito = { value: geo.replace(/\s+e\s+(provincia|dintorni|hinterland).*$/i, '').trim(), source: 'campo “Area geografica servita” del progetto' };
+    }
+  }
+  ogosCityCacheKey = key; ogosCityCache = esito;
+  return esito;
+}
+function ogosProjectCity() {
+  const esplicita = ogosCleanEditorialText((state.project && state.project.city) || '');
+  if (esplicita) return { value: esplicita, source: 'campo “Località” del progetto' };
+  return ogosDetectCity();
+}
+
+/* Preposizione corretta secondo la lingua del focus: l'app parla
+   italiano, ma una pagina puo' puntare a un pubblico anglofono
+   ("Yoga Classes in Cinisello Balsamo"). */
+const OGOS_MARK_EN = /\b(the|and|with|for|your|our|near|best|classes|class|lessons|courses|course|training|beginners|schedule|booking|guide|tips|near\s+me)\b/i;
+const OGOS_MARK_IT = /\b(corsi?|lezion\w*|scuola|centro|prezzi?|orari?|servizi?|trattament\w*|consulenz\w*|dove|come|per|con|del|della|dei|delle|nella|sulla|nostr\w+)\b/i;
+function ogosFocusInInglese(text) { const t = String(text || ''); return OGOS_MARK_EN.test(t) && !OGOS_MARK_IT.test(t); }
+function ogosPreposizioneLuogo(text) { return ogosFocusInInglese(text) ? 'in' : 'a'; }
+
+function ogosContieneCitta(text, city) {
+  if (!city) return true;
+  const hay = new Set(ogosTerms(text));
+  const termini = ogosTerms(city);
+  return termini.length ? termini.some(t => hay.has(t)) : true;
+}
+/* Per il brand serve il match COMPLETO: con la logica "una parola in
+   comune" un brand come "Buena Onda Yoga" risultava gia' presente in
+   "Corsi yoga a Cinisello Balsamo" (condividono "yoga") e il suffisso
+   spariva dal Title. */
+function ogosContieneBrand(text, brand) {
+  if (!brand) return true;
+  const t = ogosCleanEditorialText(text).toLowerCase();
+  if (t.indexOf(ogosCleanEditorialText(brand).toLowerCase()) !== -1) return true;
+  const hay = new Set(ogosTerms(text)), termini = ogosTerms(brand);
+  return termini.length ? termini.every(x => hay.has(x)) : true;
+}
+
+/* ogosPageType() non riconosceva i plurali ne' i termini inglesi:
+   "/corsi-yoga" veniva classificato "information" e restava senza
+   componente locale. */
+const ogosPageTypeBase = ogosPageType;
+ogosPageType = function (page, focus) {
+  const base = ogosPageTypeBase(page, focus);
+  if (base !== 'information') return base;
+  const hay = `${(page && page.url) || ''} ${focus || ''} ${(page && page.wpTitle) || ''}`.toLowerCase();
+  if (/cors[oi]|lezion\w*|class(?:e|i|es)?\b|lesson|training|corsi|servizi?\b|service|trattament\w*|terapi\w*|consulenz\w*|prestazion\w*|attivit[aà]|studio|palestr\w*|centro\b|scuola|laborator\w*|workshop|seminari\w*|percors\w*/.test(hay)) return 'service';
+  if (/\bprezzi?\b|\bpricing\b|\btariff\w*|\bcostr?i\b|\blistino\b|\borari?\b|\bschedule\b/.test(hay)) return 'service';
+  return base;
+};
+
+/* Riscrittura del focus: toglie il pattern "near me" e lo sostituisce
+   con la localita' reale. Attiva solo sui progetti con una localita'
+   nota; per gli altri il comportamento resta quello di prima. */
+function ogosLocalizzaFocus(rawFocus, page, tipo) {
+  const focus = ogosCleanEditorialText(rawFocus);
+  const city = ogosProjectCity().value;
+  if (!focus) return { focus: focus, localized: false, city: city };
+  if (!city) return { focus: ogosHaIntentoLocale(focus) ? (ogosRimuoviIntentoLocale(focus) || focus) : focus, localized: false, city: '' };
+  const intentoEsplicito = ogosHaIntentoLocale(focus);
+  const base = intentoEsplicito ? (ogosRimuoviIntentoLocale(focus) || focus) : focus;
+  if (ogosContieneCitta(base, city)) return { focus: base, localized: false, city: city };
+  const tipiLocali = ['service', 'contact', 'home', 'team'];
+  if (!intentoEsplicito && tipiLocali.indexOf(tipo) === -1) return { focus: base, localized: false, city: city };
+  return { focus: `${base} ${ogosPreposizioneLuogo(base)} ${city}`, localized: true, city: city, base: base };
+}
+
+/* Meta description: prima il testo reale della pagina, poi la
+   composizione. Non deve MAI restare vuota: senza description Google
+   estrae una frase a caso dal contenuto e il risultato in SERP e'
+   peggiore. Struttura: keyword+localita' in apertura, elemento
+   distintivo, invito all'azione. */
+const OGOS_META_INVITO = {
+  service: 'Scopri i dettagli e contattaci.',
+  contact: 'Scrivici per informazioni e disponibilità.',
+  team: 'Conosci chi ti seguirà.',
+  hub: 'Leggi l’approfondimento completo.',
+  collection: 'Sfoglia la selezione completa.',
+  legal: 'Consulta il documento completo.',
+  information: 'Scopri tutti i dettagli nella pagina.'
+};
+/* Se il focus e' in inglese la description deve esserlo tutta: prima
+   usciva "Yoga Classes in Cinisello Balsamo con Buena Onda Yoga.
+   Classes for every level e schedule and prices. Scopri i dettagli". */
+const OGOS_META_INVITO_EN = {
+  service: 'Discover the details and get in touch.',
+  contact: 'Write to us for information and availability.',
+  team: 'Meet the people who will guide you.',
+  hub: 'Read the full article.',
+  collection: 'Browse the full selection.',
+  legal: 'Read the complete document.',
+  information: 'See all the details on the page.'
+};
+function ogosMetaLead(focus, city, brand, tipo) {
+  const f = ogosNormalizzaCase(focus);
+  const en = ogosFocusInInglese(focus);
+  const prep = ogosPreposizioneLuogo(focus);
+  const luogo = city && !ogosContieneCitta(f, city) ? ` ${prep} ${city}` : '';
+  const marchio = brand && !ogosContieneBrand(f, brand) ? brand : '';
+  if (tipo === 'contact' || tipo === 'team' || tipo === 'legal') return marchio ? `${f} ${en ? 'by' : 'di'} ${marchio}${luogo}.` : `${f}${luogo}.`;
+  if (tipo === 'service') return marchio ? `${f}${luogo} ${en ? 'with' : 'con'} ${marchio}.` : `${f}${luogo}.`;
+  return `${f}${luogo}.`;
+}
+/* Frase distintiva dai dati reali: prima i sottotitoli della pagina,
+   poi il pubblico dichiarato (solo per servizi e home), poi il settore. */
+function ogosDettaglioDistintivo(page, headings, tipo, inglese) {
+  const h = (headings || []).map(ogosCleanEditorialText).filter(t => t.length >= 12 && t.length <= 70 && !ogosIsSegnaposto(t));
+  const cong = inglese ? 'and' : 'e';
+  if (h.length >= 2) return `${h[0]} ${cong} ${h[1].charAt(0).toLowerCase()}${h[1].slice(1)}.`;
+  if (h.length === 1) return `${h[0]}.`;
+  if (inglese) return '';
+  if (tipo === 'service' || tipo === 'home') {
+    const audience = ogosCleanEditorialText((state.project && state.project.audience) || '');
+    if (audience && audience.length <= 90) return audience.replace(/[.!?]*$/, '.');
+  }
+  const sector = ogosCleanEditorialText((state.project && state.project.sector) || '');
+  if (sector && sector.length <= 60) return `Specializzati in ${sector.charAt(0).toLowerCase()}${sector.slice(1)}.`;
+  return '';
+}
+function ogosMetaComposta(opts) {
+  const lead = ogosMetaLead(opts.focus, opts.city, opts.brand, opts.tipo);
+  const en = ogosFocusInInglese(opts.focus);
+  const tabella = en ? OGOS_META_INVITO_EN : OGOS_META_INVITO;
+  const invito = tabella[opts.tipo] || tabella.information;
+  const candidati = [];
+  if (opts.dettaglio) candidati.push(`${lead} ${opts.dettaglio} ${invito}`);
+  candidati.push(`${lead} ${invito}`);
+  if (opts.dettaglio) candidati.push(`${lead} ${opts.dettaglio}`);
+  candidati.push(lead);
+  for (const c of candidati) {
+    const testo = ogosCleanEditorialText(c);
+    if (testo.length >= 110 && testo.length <= 155) return testo;
+  }
+  for (const c of candidati) {
+    const testo = ogosCleanEditorialText(c);
+    if (testo.length >= 80 && testo.length <= 155) return testo;
+  }
+  const primo = ogosCleanEditorialText(candidati[0] || lead);
+  return primo.length > 155 ? ogosTrimEditorial(primo, 155) : primo;
+}
+
+const ogosSeoCopyBase = ogosSeoCopyFromPage;
+const ogosKeywordProposalsBase = keywordProposals;
+
+ogosSeoCopyFromPage = function (page, forcedKeyword) {
+  const copy = ogosSeoCopyBase(page, forcedKeyword);
+  const brand = ogosProjectBrand();
+  const cityInfo = ogosProjectCity(), city = cityInfo.value;
+  const crawl = (page && page.crawl) || {}, live = (page && page.live) || {};
+  const note = [];
+
+  /* --- il valore attuale e' un segnaposto del tema? --- */
+  const h1Info = typeof ogosPageH1 === 'function' ? ogosPageH1(page) : { text: '', source: '' };
+  const h1Segnaposto = ogosIsSegnaposto(h1Info.text);
+  const titleAttuale = ogosCleanEditorialText(crawl.titleText || live.seoTitle || (page && page.wpTitle));
+  const titleSegnaposto = ogosIsSegnaposto(titleAttuale);
+  if (titleSegnaposto || h1Segnaposto) note.push('il valore attuale è un segnaposto del tema, non un titolo');
+
+  /* --- focus: se la stima da Search Console e' debole e la pagina ha
+         un H1 vero, il contenuto della pagina vale piu' della query --- */
+  let focusGrezzo = copy.focus;
+  const senzaKeyword = !(page && page.keyword) && !live.focusKeyphrase && !forcedKeyword;
+  if (senzaKeyword && !h1Segnaposto) {
+    /* keywordProposals() non riporta method/confidence: la confidenza
+       va letta dalla sorgente, gscKeywordMatches() (ora memoizzata). */
+    const match = (typeof gscKeywordMatches === 'function' ? gscKeywordMatches() : []).find(x => x.url === (page && page.url));
+    const debole = match && match.method === 'text' && Number(match.confidence) < 50;
+    const h1Pulito = ogosNaturalFocusLabel(h1Info.text);
+    if (debole && h1Pulito && h1Pulito.length >= 12) {
+      focusGrezzo = h1Pulito;
+      note.push(`focus preso dall’H1 della pagina: la stima da Search Console era al ${Number(match.confidence)}% e puntava a un’altra intenzione`);
+    }
+  }
+
+  const tipo = ogosPageType(page, `${focusGrezzo} ${copy.keyword}`);
+  const loc = ogosLocalizzaFocus(focusGrezzo, page, tipo);
+  /* Il Title Case si applica alla parte di servizio, non alla localita'
+     (che ha gia' le maiuscole giuste): "corsi yoga" -> "Corsi Yoga". */
+  const focus = loc.localized
+    ? `${ogosNormalizzaCase(loc.base)} ${ogosPreposizioneLuogo(loc.base)} ${loc.city}`
+    : ogosNormalizzaCase(loc.focus || focusGrezzo);
+  const keyword = ogosHaIntentoLocale(copy.keyword)
+    ? (loc.localized ? focus : (ogosRimuoviIntentoLocale(copy.keyword) || copy.keyword))
+    : (focusGrezzo !== copy.focus ? focus : copy.keyword);
+
+  /* --- Title: focus + localita' + brand, keyword vicino all'inizio --- */
+  const titleBaseCorrente = ogosCleanEditorialText(String(copy.title || '').split(/\s*\|\s*/)[0]);
+  let base = (titleSegnaposto || ogosIsSegnaposto(titleBaseCorrente) || focusGrezzo !== copy.focus)
+    ? focus
+    : ogosNormalizzaCase(ogosHaIntentoLocale(titleBaseCorrente) ? (ogosRimuoviIntentoLocale(titleBaseCorrente) || titleBaseCorrente) : titleBaseCorrente);
+  if (!base) base = focus;
+  base = ogosNormalizzaCase(base);
+  const tipiLocali = ['service', 'contact', 'home', 'team'];
+  const vuoleCitta = city && !ogosContieneCitta(base, city) && (loc.localized || tipiLocali.indexOf(tipo) !== -1);
+  const conCitta = vuoleCitta ? `${base} ${ogosPreposizioneLuogo(base)} ${city}` : base;
+  const suffisso = brand && !ogosContieneBrand(conCitta, brand) ? ` | ${brand}` : '';
+  let title;
+  if ((conCitta + suffisso).length <= 60) title = conCitta + suffisso;
+  else if (conCitta.length <= 60) title = conCitta;                 // la località vale più del brand
+  else if ((base + suffisso).length <= 60) title = base + suffisso;
+  else title = ogosTrimEditorial(conCitta, 59).replace(/…$/, '').trim();
+
+  /* --- H1: coerente col Title, mai un segnaposto --- */
+  let h1 = ogosCleanEditorialText(copy.h1);
+  if (ogosHaIntentoLocale(h1)) h1 = ogosRimuoviIntentoLocale(h1) || h1;
+  if (!h1 || ogosIsSegnaposto(h1) || h1.length < 12) h1 = conCitta || focus;
+  h1 = ogosNormalizzaCase(h1);
+
+  /* --- meta description: sempre presente --- */
+  const headings = (Array.isArray(crawl.headings) ? crawl.headings : []).map(ogosCleanEditorialText).filter(Boolean);
+  let meta = ogosCleanEditorialText(copy.meta);
+  const metaEstrattaOk = meta && meta.length >= 110 && meta.length <= 155 && (!city || ogosContieneCitta(meta, city) || tipiLocali.indexOf(tipo) === -1);
+  if (!metaEstrattaOk) {
+    /* La localita' entra nella meta SOLO per le pagine locali: su un
+       articolo di blog "a Cinisello Balsamo" e' rumore. */
+    const composta = ogosMetaComposta({ focus: focus || base, city: vuoleCitta || loc.localized ? city : '', brand: brand, tipo: tipo, dettaglio: ogosDettaglioDistintivo(page, headings, tipo, ogosFocusInInglese(focus || base)) });
+    if (!meta || composta.length > meta.length) { meta = composta; note.push('meta description composta dai dati del progetto: il testo della pagina non offriva una frase utilizzabile'); }
+  }
+  if (meta && !/[.!?…]$/.test(meta)) meta += '.';
+  if (meta.length > 155) meta = ogosTrimEditorial(meta, 155);
+
+  const evidence = copy.evidence.slice();
+  if (loc.localized) evidence.push(`località «${city}» (${cityInfo.source})`);
+  if (brand && brand !== ogosCleanEditorialText((state.project && state.project.name) || '')) evidence.push('nome brand dichiarato nel progetto');
+
+  return Object.assign({}, copy, {
+    keyword: keyword, focus: focus, type: tipo, title: title, h1: h1, meta: meta,
+    evidence: evidence, city: city, cityInfo: cityInfo, localized: !!loc.localized,
+    placeholder: titleSegnaposto || h1Segnaposto, notes: note
+  });
+};
+
+/* keywordProposals(): stessa riscrittura sulla proposta di focus che
+   compare nella tabella pagine e nel controllo "Keyword e intento". */
+keywordProposals = function (list) {
+  const out = ogosKeywordProposalsBase(list) || [];
+  const cityInfo = ogosProjectCity(), city = cityInfo.value;
+  if (!city) {
+    return out.map(p => {
+      if (!p || !ogosHaIntentoLocale(p.keyword)) return p;
+      const pulita = ogosRimuoviIntentoLocale(p.keyword);
+      return pulita ? Object.assign({}, p, { keyword: ogosNormalizzaCase(pulita), source: `${p.source} · rimosso “near me”: è un segnale di intento locale, non un testo da scrivere in pagina. Compila la Località del progetto per qualificarlo` }) : p;
+    });
+  }
+  const byUrl = new Map((state.pages || []).map(pg => [pg.url, pg]));
+  const matches = typeof gscKeywordMatches === 'function' ? gscKeywordMatches() : [];
+  const byUrlMatch = new Map(matches.map(m => [m.url, m]));
+  return out.map(p => {
+    if (!p) return p;
+    const page = byUrl.get(p.url) || { url: p.url };
+    /* Stessa regola usata per il copy: se la stima da Search Console e'
+       debole e la pagina ha un H1 vero, il contenuto della pagina vale
+       piu' della query. Senza questo, un articolo sul pranayama si
+       vedeva proporre "corsi yoga" al 25% di confidenza. */
+    let keywordBase = p.keyword, notaFocus = '';
+    const m = byUrlMatch.get(p.url);
+    if (!page.keyword && m && m.method === 'text' && Number(m.confidence) < 50) {
+      const h1 = typeof ogosPageH1 === 'function' ? ogosPageH1(page) : { text: '' };
+      const h1Pulito = ogosIsSegnaposto(h1.text) ? '' : ogosNaturalFocusLabel(h1.text);
+      if (h1Pulito && h1Pulito.length >= 12) {
+        keywordBase = h1Pulito;
+        notaFocus = ` · focus preso dall’H1 della pagina: la stima da Search Console era al ${Number(m.confidence)}% e puntava a un’altra intenzione`;
+      }
+    }
+    const tipo = ogosPageType(page, keywordBase);
+    const loc = ogosLocalizzaFocus(keywordBase, page, tipo);
+    if (!loc.localized && loc.focus === p.keyword) return p;
+    if (!loc.localized) return Object.assign({}, p, { keyword: ogosNormalizzaCase(loc.focus), source: `${p.source}${notaFocus}` });
+    const motivo = ogosHaIntentoLocale(p.keyword)
+      ? '“near me” sostituito con la località reale: Google ricava la prossimità dalla posizione di chi cerca, il testo della pagina deve dire dove sei'
+      : `qualificata con la località del progetto (${cityInfo.source})`;
+    return Object.assign({}, p, {
+      keyword: `${ogosNormalizzaCase(loc.base)} ${ogosPreposizioneLuogo(loc.base)} ${loc.city}`,
+      intent: /prezzo|servizio|cors[oi]|acquist|prenota|iscrizion|class|lesson|book/i.test(loc.focus) ? 'Commerciale' : p.intent,
+      source: `${p.source}${notaFocus} · ${motivo}`
+    });
+  });
+};
+
+/* Promemoria dell'ordine di lavoro nella pagina della proposta: title,
+   H1, contenuto e meta description vanno costruiti attorno alla stessa
+   intenzione di ricerca, non copiati uno dall'altro. */
+const ogosRenderKeywordProposalPageBase = renderKeywordProposalPage;
+renderKeywordProposalPage = function () {
+  ogosRenderKeywordProposalPageBase();
+  const root = $('#keywordProposalRoot');
+  if (!root || root.querySelector('.ogos-ordine-lavoro')) return;
+  const city = ogosProjectCity();
+  const nota = document.createElement('div');
+  nota.className = 'panel ogos-ordine-lavoro';
+  nota.style.cssText = 'margin-bottom:16px';
+  nota.innerHTML = '<h2 class="section-title">Ordine di lavoro consigliato</h2>'
+    + '<ol style="margin:8px 0 0;padding-left:20px;line-height:1.9">'
+    + '<li><b>Keyword e intento</b> della pagina</li><li><b>Title SEO</b></li><li><b>H1</b></li>'
+    + '<li><b>Contenuto</b> della pagina</li><li><b>Meta description</b></li>'
+    + '<li><b>Link interni, immagini e ALT</b></li><li><b>Controllo dell’indicizzazione</b></li></ol>'
+    + '<p class="help">Title, H1, contenuto e meta description vanno costruiti attorno alla stessa intenzione di ricerca, senza essere copie uno dell’altro. La meta description non determina il posizionamento: serve a far cliccare il risultato in SERP.</p>'
+    + (city.value
+        ? `<p class="help">Località usata per questo progetto: <b>${esc(city.value)}</b> — ${esc(city.source)}.</p>`
+        : '<p class="help"><b>Località non impostata.</b> Compila il campo “Località” nel progetto: senza, il Title non può qualificare il servizio con il comune e le query “near me” restano inutilizzabili.</p>');
+  root.prepend(nota);
+};
 
 init();
 })();
