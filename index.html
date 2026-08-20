@@ -153,7 +153,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='3.4.0';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='3.4.2';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 var projectRegistryCache=null;/* PATCH: era let -> TDZ al boot */
@@ -778,6 +778,8 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.4.2', date: '2026-08-20', notes: 'Generatore SEO riscritto: Title, H1 e meta description hanno ruoli distinti, partono dall’intento e usano prove specifiche della pagina. Aggiunti controlli su duplicati tra URL, formule generiche, keyword stuffing, segnaposto e specificità; ogni proposta mostra qualità, promessa e fonte. Audit funzionale esteso a cluster, orfani, link rotti, task e selezioni on-page.', compatibility: 'Plugin unificato 3.4.2 consigliato per applicare Title, H1 e meta e acquisire il crawl HTML completo.' },
+  { version: '3.4.1', date: '2026-08-20', notes: 'SEO copy: Title e meta description partono dal bisogno di ricerca reale e da una prova specifica trovata in heading o testo della pagina. Topical map: “Analizza cluster” apre pillar, pagine, keyword, intento, link in entrata e collegamenti mancanti; il click non modifica il sito. Pagine orfane: la diagnosi è confermata solo dopo copertura completa del crawl HTML renderizzato, inclusi header, footer, menu e template; con dati parziali le URL restano candidate e non generano task. Normalizzati anche i confronti dei link rotti per evitare falsi 404 dovuti a slash e varianti URL.', compatibility: 'Plugin unificato 3.4.1: per la verifica completa degli orfani installare il connettore 3.4.1 ed eseguire il crawl reale.' },
   { version: '3.4.0', date: '2026-08-20', notes: 'Copy: la località entra nelle frasi in forma breve (niente più «a Cinisello Balsamo (MI), provincia di Milano» dentro Title e meta description), percorsi e query string non finiscono più nel copy («Blog/custom Css Guida?custom_css=1» diventa «Custom Css Guida»), i cognomi prendono la maiuscola, il brand va prima della località e la frase distintiva della meta description viene presa dal testo reale della pagina invece di ripetere il settore su tutte. Indicizzazione: risolto il caso in cui tutte le URL risultavano «Errore server» in P1 pur essendo il sito sano — l\'analisi dei dati reali crea un oggetto crawl senza stato HTTP e veniva scambiata per un crawl fallito; ora gli stati distinti sono «controllo mai eseguito», «nessuna risposta» ed errore 5xx reale, e «Ultimo controllo» non mostra più la data di oggi per un controllo mai fatto. Link interni rotti: nel dettaglio dell\'attività compaiono un pulsante di correzione per ogni riga e uno per applicarle tutte, con ambito rispettato anche su WordPress. Pagine e keyword: i pulsanti Modifica ed Elimina tornano visibili, lo stato «Da verificare» spiega cosa manca e come ottenerlo, lo stato si allinea al registro Indicizzazione e l\'intento viene dedotto dalla keyword. Topical map: cluster e pillar suggeriti dalle pagine in inventario invece di una sezione vuota.', compatibility: 'Plugin unificato 3.4.0: stessa numerazione.' },
   { version: '3.3.0', date: '2026-08-20', notes: 'Da questa versione l\'app e il plugin condividono lo stesso numero: quello che sarebbe stato l\'app 1.19.0 si chiama 3.3.0, come il connettore. Report on-page: la tabella nasce tutta deselezionata e le caselle sono sparite dalle intestazioni (Pagina e focus, Title SEO, H1 SEO, Meta description); la selezione di massa resta nei pulsanti Solo Title/H1/Meta. Panoramica navigabile: le attività prioritarie, le opportunità, i quattro riquadri di Salute SEO e il cerchio del punteggio si aprono con un clic o da tastiera. Sei correzioni: il cerchio "Salute SEO" usava una formula propria senza tetti e mostrava un punteggio diverso da quello spiegato dal pannello sottostante; la mini-serie storica era una curva disegnata a mano nell\'HTML; "Riepilogo dati" mostrava impressioni, click, CTR e posizione inventati e uguali per ogni sito; "Attività prioritarie" ordinava per data di creazione invece che per priorità; il pannello "Opportunità" restava vuoto per sempre sui dati reali; la fusione delle attività per campo ignorava quelle create prima della 1.16.16 e ne creava un doppione.', compatibility: 'Plugin unificato 3.3.0: stessa numerazione.' },
   { version: '1.16.18', date: '2026-08-19', notes: 'Secondo audit completo: corretti caricamento iniziale e retry dello storico condiviso, conflitti di revisione, duplicazione dei task nei retry SEO parziali e perdita dei rollback precedenti. Il generatore ora privilegia il focus specifico rilevato da H1 e titolo, riconosce davvero un H1 assente, consente di sostituire H1 generici e propone meta description solo quando può fondarle sul contenuto acquisito. Chiusa una XSS da backup JSON. Aggiunti paginazione dell’inventario, ricerca ritardata, salvataggio differito e cache del registro progetti; eliminate scritture duplicate e implementazioni legacy del generatore/connettore non più raggiungibili.', compatibility: 'Compatibile con i backup precedenti. Richiede il connettore 3.0.18 per la distribuzione integrata aggiornata.' },
@@ -1170,12 +1172,12 @@ function suggestReplacementUrl(brokenUrl) {
   return bestScore <= Math.max(3, Math.round(brokenUrl.length * 0.4)) ? best : null;
 }
 function detectBrokenLinksReport() {
-  const knownUrls = new Set(state.pages.map(p => p.url));
+  const knownUrls = new Set(state.pages.map(p => comparableUrl(p.url)).filter(Boolean));
   const report = [];
   state.pages.forEach(source => {
     (source.internalLinks || (source.live && source.live.internalLinks) || []).forEach(href => {
-      let path = href;
-      try { path = new URL(href, `https://${state.project.domain}`).pathname.replace(/\/$/, '') || '/'; } catch {}
+      const path = comparableUrl(href);
+      if (!path) return;
       // Falsi positivi noti, non sono link "rotti" verso una pagina:
       // 1) mailto:/tel:/ecc. da scansioni fatte con una versione del plugin che li interpretava come percorsi
       //    relativi del sito (es. "tel:+39..." diventava "/tel:+39..."): dati residui di vecchie scansioni.
@@ -2852,7 +2854,11 @@ applyCurrentAudit = function (items, source, observedAt) {
   const result = applyCurrentAuditV121(items, source, observedAt);
   (items || []).forEach(item => {
     const path = comparableUrl(item.path || item.url), page = state.pages.find(p => comparableUrl(p.url) === path || (item.id != null && String(p.wpId) === String(item.id)));
-    if (page?.live) page.live.internalLinkDetails = Array.isArray(item.internal_link_details) ? clone(item.internal_link_details) : [];
+    if (page?.live) {
+      page.live.internalLinkDetails = Array.isArray(item.internal_link_details) ? clone(item.internal_link_details) : [];
+      page.live.internalLinkSource = /gptsites-live-scan/i.test(String(source || '')) ? 'rendered-html' : 'content-model';
+      page.live.internalLinkObservedAt = observedAt || new Date().toISOString();
+    }
   });
   save(true); return result;
 };
@@ -3607,7 +3613,7 @@ exchangeWordPressPairCode = async function(code,stateValue){const ok=await excha
 testWordPress = async function(){const button=$('#wpBtn'),raw=$('#wpUrl').value.trim();if(!raw){toast('Inserisci l’URL WordPress','error');return}let base;try{base=normalizeWpBase(raw)}catch{toast('URL WordPress non valido o non sicuro','error');return}const stateCode=(crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/[^a-zA-Z0-9_-]/g,'');state.wordpress.url=base;wpPendingState=stateCode;state.wordpress.lastError=null;save(true);const origin=location.origin&&location.origin!=='null'?location.origin:'null',authUrl=`${base}/wp-admin/admin.php?page=organic-growth-os-auth&ogos_authorize=1&ogos_state=${encodeURIComponent(stateCode)}&ogos_origin=${encodeURIComponent(origin)}`;button.disabled=true;button.textContent='Attendo WordPress…';try{const popup=window.open(authUrl,'ogos_wordpress_auth','width=680,height=760,resizable=yes,scrollbars=yes');if(!popup)throw new Error('Il browser ha bloccato la finestra di login. Consenti i popup.');const result=await new Promise((resolve,reject)=>{const expected=new URL(base).origin;let settled=false;const cleanup=()=>{clearTimeout(timer);clearInterval(closed);window.removeEventListener('message',onMessage)};const finish=value=>{if(settled)return;settled=true;cleanup();resolve(value)};wpPairingFinishV160=()=>finish({manual:true});const timer=setTimeout(()=>{cleanup();wpPairingFinishV160=null;reject(new Error('Autorizzazione non completata entro 10 minuti.'))},600000);const closed=setInterval(()=>{if(popup.closed){cleanup();wpPairingFinishV160=null;reject(new Error('Finestra WordPress chiusa prima del completamento.'))}},800);const onMessage=ev=>{const d=ev.data;if(ev.origin!==expected||!d||d.type!=='ogos-auth-code'||d.state!==stateCode)return;finish(d)};window.addEventListener('message',onMessage)});if(result.code)await exchangeWordPressPairCode(result.code,stateCode)}catch(e){state.wordpress.lastError=e.message||'Errore di collegamento';save(true);renderSettings();toast(state.wordpress.lastError,'error')}finally{wpPairingFinishV160=null;button.disabled=false;button.textContent='Collega WordPress'}};
 syncWordPress = async function() { const button=$('#wpSyncBtn');if(button){button.disabled=true;button.textContent='Sincronizzazione…'}try{const {items}=await wpCurrentAuditCollection();let added=0,updated=0;items.forEach(item=>{const path=comparableUrl(item.path||item.url);if(!path)return;const current=(state.pages||[]).find(p=>String(p.wpId)===String(item.id))||(state.pages||[]).find(p=>comparableUrl(p.url)===path);const values={url:path,wpId:item.id,wpType:item.type,wpBuilder:item.builder||'',wpStatus:'publish',wpTitle:item.title||'',status:item.indexed===false?'Non indicizzata':'Da verificare',canonical:item.canonical&&comparableUrl(item.canonical)===path?'Corretta':'Da verificare'};if(current){Object.assign(current,values);updated++}else{state.pages.push({id:Date.now()+Math.random(),keyword:'',intent:'Da definire',...values});added++}});state.wordpress.lastSync=new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(new Date());save(true);renderShell();renderPages();toast(`WordPress sincronizzato: ${added} nuove, ${updated} aggiornate su ${items.length}`)}catch(e){toast(`Sincronizzazione non riuscita: ${e.message}`,'error')}finally{if(button){button.disabled=false;button.textContent='Sincronizza pagine e articoli'}} };
 disconnectWordPress = async function(){if(window.OGOS_EMBEDDED){toast('La connessione è integrata nel plugin e usa la sessione WordPress corrente.');return}if(wpSecret&&state.wordpress.url){try{const{response,data}=await ogosFetchJsonV1617(`${wpBase()}/wp-json/organic-growth-os/v1/auth/revoke`,{method:'POST',headers:{Accept:'application/json','X-OGOS-Token':wpSecret},mode:'cors',cache:'no-store'},20000);if(!response.ok||data.revoked!==true)throw new Error(data.message||`WordPress ha risposto ${response.status}`)}catch(e){toast(`Token non revocato: ${e.message}. La connessione locale resta attiva.`, 'error');return}}wpSecret='';wpPendingState='';state.wordpress={url:state.wordpress.url||'',username:'',connected:false,userName:'',userId:null,lastError:null,lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],tokenExpiresAt:null,authMethod:null};save(true);renderSettings();toast('Connettore WordPress disconnesso e token revocato')};
-runWordPressCrawl = async function(){const el=$('#ogosCrawlResult'),btn=$('#ogosCrawlBtn');if(!state.wordpress.connected||!wpSecret){toast('Collega WordPress prima di eseguire il crawl','error');return false}if(!state.wordpress.capabilities.includes('crawl')){toast('Il connettore non espone il crawl reale','error');return false}if(btn){btn.disabled=true;btn.textContent='Crawl in corso…'}try{const byId={},byUrl={};let sitewide=null,page=1,totalPages=1,total=0;do{const data=await wpRequest(`/wp-json/organic-growth-os/v1/crawl/current?per_page=10&page=${page}`);(data.items||[]).forEach(item=>{if(item.id!=null)byId[String(item.id)]=item;byUrl[comparableUrl(item.path||item.url)]=item});if(data.sitewide)sitewide=data.sitewide;totalPages=Number(data.total_pages)||1;total=Number(data.total)||0;if(totalPages>1000)throw new Error(`Sito troppo grande per il crawl interattivo (${total} URL): usa una scansione server-side`);page++}while(page<=totalPages);let matched=0;state.pages.forEach(p=>{const c=(p.wpId!=null&&byId[String(p.wpId)])||byUrl[comparableUrl(p.url)];if(!c)return;matched++;p.crawl={httpStatus:c.http_status,redirectHops:c.redirect_hops,h1Count:c.h1_count,h1Text:c.h1_text||'',titleText:c.title_text||'',headings:Array.isArray(c.headings_text)?c.headings_text:[],contentExcerpt:c.content_excerpt||'',robotsMeta:[c.robots_meta,c.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!c.robots_blocked,soft404:!!c.soft_404,canonicalHtml:c.canonical_html,hreflang:c.hreflang,imagesTotal:c.images_total,imagesMissingAlt:c.images_missing_alt,checkedAt:new Date().toISOString()}});state.crawlSitewide=sitewide;save(true);renderShell();renderPages();renderAudit();if(el)el.innerHTML=crawlResultHtml(sitewide,matched,total);toast(`Crawl reale completato: ${matched} pagine analizzate e contenuto acquisito per le proposte SEO`);return true}catch(e){toast(`Crawl non riuscito: ${e.message}`,'error');if(el)el.innerHTML=`<p class="empty">Crawl non riuscito: ${esc(e.message)}</p>`;return false}finally{if(btn){btn.disabled=false;btn.textContent='Esegui crawl reale (status, robots, sitemap, H1 e contenuto…)'}}};
+runWordPressCrawl = async function(){const el=$('#ogosCrawlResult'),btn=$('#ogosCrawlBtn');if(!state.wordpress.connected||!wpSecret){toast('Collega WordPress prima di eseguire il crawl','error');return false}if(!state.wordpress.capabilities.includes('crawl')){toast('Il connettore non espone il crawl reale','error');return false}if(btn){btn.disabled=true;btn.textContent='Crawl in corso…'}try{const byId={},byUrl={};let sitewide=null,page=1,totalPages=1,total=0;do{const data=await wpRequest(`/wp-json/organic-growth-os/v1/crawl/current?per_page=10&page=${page}`);(data.items||[]).forEach(item=>{if(item.id!=null)byId[String(item.id)]=item;byUrl[comparableUrl(item.path||item.url)]=item});if(data.sitewide)sitewide=data.sitewide;totalPages=Number(data.total_pages)||1;total=Number(data.total)||0;if(totalPages>1000)throw new Error(`Sito troppo grande per il crawl interattivo (${total} URL): usa una scansione server-side`);page++}while(page<=totalPages);let matched=0;state.pages.forEach(p=>{const c=(p.wpId!=null&&byId[String(p.wpId)])||byUrl[comparableUrl(p.url)];if(!c)return;matched++;p.crawl={httpStatus:c.http_status,redirectHops:c.redirect_hops,h1Count:c.h1_count,h1Text:c.h1_text||'',titleText:c.title_text||'',headings:Array.isArray(c.headings_text)?c.headings_text:[],contentExcerpt:c.content_excerpt||'',robotsMeta:[c.robots_meta,c.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!c.robots_blocked,soft404:!!c.soft_404,canonicalHtml:c.canonical_html,hreflang:c.hreflang,imagesTotal:c.images_total,imagesMissingAlt:c.images_missing_alt,checkedAt:new Date().toISOString()};if(Array.isArray(c.internal_links)){p.live=p.live&&typeof p.live==='object'?p.live:{};const saved=Array.isArray(p.live.internalLinkDetails)?p.live.internalLinkDetails:[];const rendered=Array.isArray(c.internal_link_details)?c.internal_link_details:[];p.live.internalLinks=c.internal_links.slice();p.live.internalLinkDetails=rendered.map(detail=>saved.find(old=>comparableUrl(old?.href)===comparableUrl(detail?.href)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase())||detail);p.live.internalLinkSource='rendered-html';p.live.internalLinkObservedAt=new Date().toISOString()}});state.crawlSitewide=sitewide;save(true);renderShell();renderPages();renderAudit();if(el)el.innerHTML=crawlResultHtml(sitewide,matched,total);toast(`Crawl reale completato: ${matched} pagine analizzate, contenuto e link renderizzati acquisiti`);return true}catch(e){toast(`Crawl non riuscito: ${e.message}`,'error');if(el)el.innerHTML=`<p class="empty">Crawl non riuscito: ${esc(e.message)}</p>`;return false}finally{if(btn){btn.disabled=false;btn.textContent='Esegui crawl reale (status, robots, sitemap, H1, contenuto e link…)'}}};
 runBulkIndexingVerification = async function(button){if(state.audit.running||state.indexing?.currentScan?.running){toast('Una verifica è già in corso','error');return}if(button){button.disabled=true;button.textContent='Verifica bulk in corso…'}closeActionDrawer();closeModal();go('indexing');try{const can=state.wordpress.connected&&wpSecret&&state.wordpress.capabilities.includes('crawl');if(can&&!(await runWordPressCrawl()))throw new Error('il crawl WordPress non è stato completato');await runIndexingAnalysis('all');toast(can?'Verifica bulk completata con dati tecnici aggiornati; lo stato attuale in Google richiede una fonte Google dedicata.':'Verifica completata sui dati disponibili.')}catch(e){toast(`Verifica bulk non completata: ${e.message}`,'error')}finally{if(button){button.disabled=false;button.textContent='Verifica sitemap e indicizzazione in bulk →'}}};
 renderKanban = function(){const statuses=['Da approvare','Da fare','In corso','Completata'],filter=$('#taskFilter').value,scope=state.ui.issueScope||'all',bulk=$('#gptBulkBtn');if(bulk){const count=gptEligibleTasks().length;bulk.hidden=state.integration.mode!=='gptsites';bulk.textContent=`Esporta ${count} approvate per GPTSites`;bulk.disabled=!count}$('#kanban').innerHTML=statuses.map(status=>{const items=(state.tasks||[]).filter(t=>(status==='Completata'?taskIsCompleted(t):t.status===status)&&(filter==='all'||t.priority===filter)&&(scope!=='critical'||isCriticalTask(t))&&(scope!=='high'||(t.priority==='Alta'&&!isCriticalTask(t))));return`<section class="column"><div class="column-head"><span>${status}</span><span class="count">${items.length}</span></div>${items.map(taskCard).join('')||'<div class="empty" style="padding:25px 8px">Nessuna attività</div>'}</section>`}).join('')};
 const KANBAN_SLIDES_V162=['Da approvare','Da fare','In corso','Completata'];
@@ -3830,7 +3836,7 @@ function ogosKeywordPlan(prop) {
     skipped.push({ field: 'H1 SEO', current: h1.text || '(nessun H1 rilevato)', reason: h1Problems.length ? `L’H1 va rivisto, ma non viene sostituito automaticamente perché la proposta non è un miglioramento certo. Fonte: ${h1.source}.` : `L’H1 attuale comunica già il focus ed è più informativo di una riscrittura automatica. Fonte: ${h1.source}.` });
   }
 
-  const genericMeta = /informazioni chiare|contenuti utili|indicazioni aggiornate|scopri tutto/i.test(currentMeta);
+  const genericMeta = /informazioni chiare|contenuti utili|indicazioni aggiornate|scopri tutto|scopri i dettagli|scopri tutti i dettagli|leggi l’approfondimento|consulta il documento|specializzati in/i.test(currentMeta);
   const metaProblems = [];
   if (!currentMeta) metaProblems.push('manca');
   else {
@@ -5145,8 +5151,8 @@ onPageAuditContentV1510 = function () {
   const cella = (row, campo, etichetta, valore, limite) => {
     const disponibile = Object.prototype.hasOwnProperty.call(row.item.changes || {}, campo);
     if (!disponibile) return '<small>Non richiede modifiche automatiche.</small>';
-    const testo = String(valore || '');
-    return `<div class="seo-proposal"><label class="ogos-sel"><input type="checkbox" class="ogos-onpage-check" data-url="${esc(row.page.url)}" data-field="${esc(campo)}"><b>${esc(testo)}</b></label><small>${testo.length}/${limite} caratteri</small><button type="button" class="btn ogos-onpage-field-task" data-url="${esc(row.page.url)}" data-field="${esc(campo)}">Crea task solo ${esc(etichetta)} →</button></div>`;
+    const testo = String(valore || ''), qualita=row.plan.copy.quality?.[campo], fonte=row.plan.copy.needSource || 'dati della pagina';
+    return `<div class="seo-proposal"><label class="ogos-sel"><input type="checkbox" class="ogos-onpage-check" data-url="${esc(row.page.url)}" data-field="${esc(campo)}"><b>${esc(testo)}</b></label><small>${testo.length}/${limite} caratteri${qualita?` · qualità ${qualita.score}/100 (${esc(qualita.label)})`:''}</small>${qualita?`<small>Focus ${qualita.coverage}% · ${qualita.grounded?'prova specifica inclusa':'prova da controllare'} · fonte: ${esc(fonte)}</small>`:''}<button type="button" class="btn ogos-onpage-field-task" data-url="${esc(row.page.url)}" data-field="${esc(campo)}">Crea task solo ${esc(etichetta)} →</button></div>`;
   };
 
   /* Le intestazioni non hanno piu' una casella: erano quattro caselle che
@@ -5160,7 +5166,7 @@ onPageAuditContentV1510 = function () {
       ? `<small class="safe-note warn-note">${row.page.crawl.h1Count} H1 rilevati: rimuovere quelli duplicati.</small><label class="ogos-sel"><input type="checkbox" class="ogos-onpage-check" data-url="${esc(row.page.url)}" data-field="h1_count"><span>Includi la correzione degli H1 multipli</span></label><button type="button" class="btn ogos-onpage-field-task" data-url="${esc(row.page.url)}" data-field="h1_count">Crea task correzione H1 multipli →</button>`
       : '';
     return `<tr><td class="ogos-sel-cell"><input type="checkbox" class="ogos-onpage-row-check" aria-label="Seleziona tutti i campi di ${esc(row.page.url)}"></td>`
-      + `<td>${operationalPageLink(row.page.url)}<small><b>Focus:</b> ${esc(row.plan.focus.label || row.prop.keyword)}</small>${h1Multipli}</td>`
+      + `<td>${operationalPageLink(row.page.url)}<small><b>Focus:</b> ${esc(row.plan.focus.label || row.prop.keyword)}</small>${row.plan.copy.need ? `<small><b>Bisogno:</b> ${esc(row.plan.copy.need)}</small>` : ''}${h1Multipli}</td>`
       + `<td>${cella(row, 'title', 'Title', row.plan.copy.title, 60)}</td>`
       + `<td>${cella(row, 'post_title', 'H1', row.plan.copy.h1, 95)}</td>`
       + `<td>${cella(row, 'meta_description', 'Meta', row.plan.copy.meta, 155)}</td></tr>`;
@@ -6119,6 +6125,550 @@ renderMap = function () {
   });
   return esito;
 };
+
+/* =====================================================================
+   v3.4.1 — intento reale, cluster esplorabili e orfani verificati
+   ===================================================================== */
+
+/* Il bisogno non viene inventato da una formula unica: prima si legge
+   l'intento esplicito della query/URL, poi si cerca una promessa concreta
+   in heading e contenuto. Il risultato resta spiegabile nell'anteprima. */
+function ogosNeedEvidenceV341(page, focus) {
+  const crawl = (page && page.crawl) || {}, live = (page && page.live) || {};
+  const headings = (Array.isArray(crawl.headings) ? crawl.headings : []).map(text => ({ text: ogosCleanEditorialText(text), source: 'sottotitolo della pagina' }));
+  const content = ogosCleanEditorialText(crawl.contentExcerpt || live.contentExcerpt || live.excerpt || '');
+  const sentences = content.split(/(?<=[.!?])\s+/).map(text => ({ text: ogosCleanEditorialText(text), source: 'testo reale della pagina' }));
+  const focusTerms = new Set(ogosTerms(focus));
+  const generic = /^(scopri|leggi|approfondisci|contattaci|prenota|clicca|home|blog|faq|domande frequenti|chi siamo|i nostri servizi|servizi|conclusioni?)\b|cookie|privacy|newsletter|copyright|partita iva/i;
+  const benefit = /\b(aiut\w*|miglior\w*|riduc\w*|aument\w*|ritrov\w*|scegl\w*|impar\w*|capir\w*|orient\w*|risolv\w*|ottien\w*|raggiung\w*|svilupp\w*|preven\w*|confront\w*|valut\w*|benefic\w*|vantagg\w*|risultat\w*|benessere|sicurezza|comfort|tempo|costi?|prezzi?|orari?)\b/i;
+  const candidates = [...headings, ...sentences].filter(item => {
+    const text = item.text.replace(/[.!?]+$/, '');
+    if (text.length < 18 || text.length > 125 || generic.test(text) || ogosIsSegnaposto(text)) return false;
+    const terms = ogosTerms(text), newTerms = terms.filter(term => !focusTerms.has(term));
+    return newTerms.length >= 2;
+  }).map(item => {
+    const terms = ogosTerms(item.text), overlap = terms.filter(term => focusTerms.has(term)).length;
+    const practical = /\b(come|quando|quanto|dove|per chi|livell\w*|modalit\w*|programma|metodo|esperienza|anni|lezion\w*|corso|guida|passaggi|consigli)\b/i.test(item.text);
+    return { ...item, score: (item.source === 'sottotitolo della pagina' ? 3 : 1) + overlap * 2 + (benefit.test(item.text) ? 4 : 0) + (practical ? 3 : 0) };
+  }).sort((a, b) => b.score - a.score || a.text.length - b.text.length);
+  if (!candidates.length) return { text: '', source: '', titleText: '' };
+  const titleCandidate = candidates.find(item => item.source === 'sottotitolo della pagina' && item.text.length <= 75) || candidates[0];
+  return { text: candidates[0].text.replace(/[.!?]+$/, ''), source: candidates[0].source, titleText: titleCandidate.text.replace(/[.!?]+$/, '') };
+}
+
+function ogosNeedProfileV341(page, focus, type) {
+  const hay = `${focus || ''} ${(page && page.url) || ''} ${(page && page.wpTitle) || ''}`.toLowerCase();
+  if (type === 'contact' || /\b(contatt|dove siamo|sede|recapit)\w*/.test(hay)) return { key: 'contact', label: 'trovare contatti, disponibilità e modalità per richiedere informazioni', hook: 'Informazioni e contatti' };
+  if (/\b(prezz|cost|tariff|listino|orari|schedule|timetable)\w*/.test(hay)) return { key: 'practical', label: 'confrontare orari, costi e modalità prima di scegliere', hook: 'Orari, costi e modalità' };
+  if (/\b(principiant|iniziar|prima volta|livello base|avvicinarsi)\w*/.test(hay)) return { key: 'beginner', label: 'capire come iniziare e scegliere un percorso adatto al proprio livello', hook: 'Come iniziare' };
+  if (/\b(benefic|vantagg|a cosa serve|perch[eé]|indicazioni|controindicazioni)\w*/.test(hay)) return { key: 'benefits', label: 'capire benefici, indicazioni e aspetti da valutare', hook: 'Benefici e indicazioni' };
+  if (/\b(come|guida|consigl|tutorial|passaggi|idee|esempi)\b/.test(hay)) return { key: 'guide', label: 'trovare una risposta pratica e applicabile', hook: 'Guida pratica' };
+  if (/\b(recension|testimonian|opinioni|esperienze)\w*/.test(hay)) return { key: 'reviews', label: 'valutare esperienze reali prima di scegliere', hook: 'Esperienze e recensioni' };
+  if (type === 'team' || /\b(insegnant|team|professionist|trainer|coach|chi siamo)\w*/.test(hay)) return { key: 'team', label: 'valutare esperienza, metodo e approccio della persona', hook: 'Esperienza e metodo' };
+  if (/\b(prenot|prova|iscriz|acquist|ordina|preventiv)\w*/.test(hay)) return { key: 'action', label: 'verificare modalità e passare all’azione senza dubbi', hook: 'Modalità e disponibilità' };
+  if (type === 'service' || type === 'home') return { key: 'service', label: 'capire l’offerta e scegliere la soluzione più adatta alle proprie esigenze', hook: '' };
+  if (type === 'collection') return { key: 'collection', label: 'confrontare le opzioni e trovare quella più adatta', hook: 'Opzioni e consigli' };
+  if (type === 'hub') return { key: 'hub', label: 'orientarsi tra guide e risposte sul tema', hook: 'Guide e approfondimenti' };
+  if (type === 'legal') return { key: 'legal', label: 'consultare condizioni e informazioni ufficiali', hook: 'Informazioni ufficiali' };
+  return { key: 'information', label: 'capire l’argomento e trovare indicazioni utili per decidere', hook: '' };
+}
+
+function ogosSentenceV341(text) {
+  const value = ogosCleanEditorialText(text).replace(/[.!?]+$/, '');
+  return value ? value.charAt(0).toUpperCase() + value.slice(1) : '';
+}
+function ogosLowerFirstV341(text) {
+  const value = ogosCleanEditorialText(text);
+  if (!value) return '';
+  let natural = value.toLocaleLowerCase('it');
+  const preserve = [ogosProjectBrand(), (ogosProjectCity() || {}).value, ...(value.match(/\b[A-Z0-9]{2,}\b/g) || [])].filter(Boolean);
+  preserve.forEach(term => { natural = natural.replace(new RegExp(String(term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig'), term); });
+  return natural;
+}
+function ogosShortenWordsV341(text, limit) {
+  const value = ogosCleanEditorialText(text);
+  if (!limit || value.length <= limit) return value;
+  let cut = value.slice(0, limit + 1);
+  const boundary = cut.lastIndexOf(' ');
+  if (boundary >= 8) cut = cut.slice(0, boundary);
+  return cut.replace(/\s+\b(?:e|o|a|di|da|in|con|per|su|tra|fra|del|della|dei|delle)\s*$/i, '').trim();
+}
+function ogosTitleHookV341(evidence, focus, fallback) {
+  let text = ogosCleanEditorialText((evidence && (evidence.titleText || evidence.text)) || '').replace(/[.!?]+$/, '');
+  if (text) {
+    const focusTerms = new Set(ogosTerms(focus)), extra = ogosTerms(text).filter(term => !focusTerms.has(term));
+    if (extra.length < 2) text = '';
+    if (text.length > 34) text = text.split(/[:;,.]|\s+[–—-]\s+/)[0];
+    if (text.length > 34) text = ogosShortenWordsV341(text, 34);
+  }
+  return text || fallback || '';
+}
+function ogosTitleV341(copy, evidence, profile, brand, page) {
+  const focus = ogosCleanEditorialText(copy.focus || copy.keyword || '');
+  if (!focus) return copy.title;
+  const hook = ogosTitleHookV341(evidence, focus, profile.hook);
+  const candidates = [];
+  if (profile.key === 'team') {
+    const h1 = ogosCleanEditorialText(ogosPageH1(page).text);
+    const city = (ogosProjectCity() || {}).value;
+    const named = h1 && !ogosIsSegnaposto(h1) ? `${h1}${city && !ogosContieneCitta(h1, city) ? ` a ${city}` : ''}` : '';
+    if (named) candidates.push(named);
+  }
+  if (profile.key === 'contact' && brand) candidates.push(`Contatti ${brand}: informazioni e disponibilità`);
+  if (hook) {
+    const available = 60 - focus.length - 2;
+    const fitted = available >= 12 && hook.length > available ? ogosShortenWordsV341(hook, available) : hook;
+    if (fitted && fitted.length >= 8) candidates.push(`${focus}: ${fitted}`);
+  }
+  if (profile.hook && profile.hook !== hook) candidates.push(`${focus}: ${profile.hook}`);
+  if (brand && !ogosContieneBrand(focus, brand)) candidates.push(`${focus} | ${brand}`);
+  candidates.push(focus);
+  const essentialTerms = ogosTerms(copy.keyword || focus);
+  const valid = candidates.find(value => value.length >= 25 && value.length <= 60 && ogosCovers(value, essentialTerms));
+  return valid || copy.title;
+}
+function ogosMetaV341(copy, evidence, profile, brand, page) {
+  const focus = ogosCleanEditorialText(copy.focus || copy.keyword || '');
+  if (!focus) return copy.meta;
+  const subject = ogosLowerFirstV341(focus), detail = ogosSentenceV341(evidence && (evidence.titleText || evidence.text));
+  const withDetail = detail ? `${detail}. ` : '';
+  const city = (ogosProjectCity() || {}).value;
+  const contactSubject = `${brand || focus}${city && ogosContieneCitta(focus, city) && !ogosContieneCitta(brand || '', city) ? ` a ${city}` : ''}`;
+  const teamH1 = profile.key === 'team' ? ogosCleanEditorialText(ogosPageH1(page).text) : '';
+  const teamSubject = teamH1 && !ogosIsSegnaposto(teamH1) ? `${teamH1}${city && !ogosContieneCitta(teamH1, city) ? ` a ${city}` : ''}` : subject;
+  const candidates = [];
+  if (profile.key === 'contact') candidates.push(`Contatta ${contactSubject}: ${withDetail}Verifica modalità e disponibilità per ricevere una risposta chiara.`, `Contatta ${contactSubject}: chiedi informazioni e verifica modalità e disponibilità per ricevere una risposta chiara.`);
+  else if (profile.key === 'practical') candidates.push(`Consulta ${focus}: ${withDetail}Trova orari, costi e modalità utili per confrontare le opzioni e scegliere con più consapevolezza.`, `Consulta ${focus}: trova orari, costi e modalità per confrontare le opzioni e scegliere con più consapevolezza.`);
+  else if (profile.key === 'beginner') candidates.push(`Vuoi iniziare con ${subject}? ${withDetail}Scopri cosa aspettarti e come scegliere il percorso più adatto al tuo livello.`, `Vuoi iniziare con ${subject}? Scopri cosa aspettarti e come scegliere il percorso più adatto al tuo livello.`);
+  else if (profile.key === 'benefits') candidates.push(`Scopri ${subject}: ${withDetail}Approfondisci benefici, indicazioni e aspetti da valutare per capire se fa al caso tuo.`, `Scopri ${subject}: approfondisci benefici, indicazioni e aspetti da valutare per capire se fa al caso tuo.`);
+  else if (profile.key === 'guide') candidates.push(`${focus}: ${withDetail}Segui indicazioni pratiche e chiare per trovare una risposta utile e passare dalla domanda all’azione.`, `${focus}: indicazioni pratiche e chiare per trovare una risposta utile e passare dalla domanda all’azione.`);
+  else if (profile.key === 'reviews') candidates.push(`${focus}: ${withDetail}Leggi esperienze e informazioni utili per valutare le alternative e scegliere con maggiore fiducia.`, `${focus}: esperienze e informazioni utili per valutare le alternative e scegliere con maggiore fiducia.`);
+  else if (profile.key === 'team') candidates.push(`Conosci ${teamSubject}: ${withDetail}Valuta esperienza e metodo per capire chi ti accompagnerà nel percorso.`, `Conosci ${teamSubject}: scopri esperienza, metodo e approccio per capire chi ti accompagnerà nel percorso.`);
+  else if (profile.key === 'action') candidates.push(`Cerchi ${subject}? ${withDetail}Verifica modalità e disponibilità, chiarisci i dubbi e scegli il prossimo passo più adatto a te.`, `Cerchi ${subject}? Verifica modalità e disponibilità, chiarisci i dubbi e scegli il prossimo passo più adatto a te.`);
+  else if (profile.key === 'hub') candidates.push(`${focus}: ${withDetail}Esplora guide e approfondimenti pensati per orientarti e trovare rapidamente la risposta più utile.`, `${focus}: guide e approfondimenti per orientarti e trovare rapidamente la risposta più utile.`);
+  else if (profile.key === 'collection') candidates.push(`${focus}: ${withDetail}Confronta le opzioni disponibili e trova quella più coerente con ciò che stai cercando.`, `${focus}: confronta le opzioni disponibili e trova quella più coerente con ciò che stai cercando.`);
+  else if (profile.key === 'legal') candidates.push(`${focus}: consulta condizioni e informazioni ufficiali in modo chiaro, con tutti i riferimenti raccolti nella pagina.`);
+  else if (profile.key === 'service') candidates.push(`Cerchi ${subject}? ${withDetail}Valuta se è il percorso adatto alle tue esigenze.`, `Cerchi ${subject}? Scopri come funziona, a chi è rivolto e valuta se è la soluzione più adatta alle tue esigenze.`);
+  else candidates.push(`${focus}: ${withDetail}Una risposta chiara per capire l’argomento, valutare le informazioni importanti e decidere con più consapevolezza.`, `${focus}: una risposta chiara per capire l’argomento e decidere con più consapevolezza.`);
+  candidates.push(copy.meta);
+  for (const raw of candidates) {
+    let text = ogosCleanEditorialText(raw);
+    if (!text || !ogosCovers(text, ogosTerms(focus))) continue;
+    if (text.length > 155) continue;
+    if (text && !/[.!?…]$/.test(text)) text += '.';
+    if (text.length >= 90 && text.length <= 160) return text;
+  }
+  return copy.meta;
+}
+
+const ogosSeoCopyV340 = ogosSeoCopyFromPage;
+ogosSeoCopyFromPage = function(page, forcedKeyword) {
+  const copy = ogosSeoCopyV340(page, forcedKeyword);
+  if (!copy) return copy;
+  const evidence = ogosNeedEvidenceV341(page, copy.focus || copy.keyword);
+  const profile = ogosNeedProfileV341(page, copy.focus || copy.keyword, copy.type);
+  const brand = ogosProjectBrand();
+  const title = ogosTitleV341(copy, evidence, profile, brand, page);
+  const meta = ogosMetaV341(copy, evidence, profile, brand, page);
+  const sources = [...(copy.evidence || [])];
+  if (evidence.source && !sources.includes(evidence.source)) sources.push(evidence.source);
+  sources.push(`bisogno di ricerca: ${profile.label}`);
+  return { ...copy, title, meta, need: profile.label, needType: profile.key, needEvidence: evidence.text, needSource: evidence.source || 'intento della query e tipo di pagina', evidence: [...new Set(sources)] };
+};
+
+const renderKeywordProposalPageV340 = renderKeywordProposalPage;
+renderKeywordProposalPage = function() {
+  const result = renderKeywordProposalPageV340.apply(this, arguments);
+  const root = $('#keywordProposalRoot'), prop = selectedKeywordProposal();
+  if (!root || !prop) return result;
+  const plan = ogosKeywordPlan(prop);
+  if (!plan.copy.need || root.querySelector('.ogos-user-need')) return result;
+  const note = root.querySelector('.keyword-proposal-main > .safe-note');
+  if (note) {
+    const need = document.createElement('div');
+    need.className = 'safe-note ogos-user-need';
+    const title = document.createElement('b'); title.textContent = 'Bisogno reale dell’utente: ';
+    const text = document.createTextNode(plan.copy.need);
+    const small = document.createElement('small');
+    small.style.display = 'block'; small.style.marginTop = '4px';
+    small.textContent = plan.copy.needEvidence ? `Prova usata: “${plan.copy.needEvidence}” (${plan.copy.needSource}).` : `Fonte: ${plan.copy.needSource}.`;
+    need.append(title, text, small); note.after(need);
+  }
+  return result;
+};
+
+/* =====================================================================
+   v3.4.2 — Title, H1 e meta con ruoli distinti e controllo qualità
+   ===================================================================== */
+const OGOS_COPY_GENERICA_V342 = /\b(?:scopri (?:tutto|i dettagli|di più)|contenuti? util[ei]|informazioni chiare|indicazioni aggiornate|soluzioni? su misura|servizio di qualità|la scelta giusta|adatto alle tue esigenze|fa al caso tuo|passa all[’']azione|non perdere|imperdibile|leader del settore|specializzati in)\b/i;
+const OGOS_COPY_VERBI_DEBOLI_V342 = /^(?:scopri|leggi|approfondisci|esplora|consulta)\b/i;
+
+function ogosNormalizzaCopyV342(value) {
+  return ogosCleanEditorialText(value).replace(/\s+([,.;:!?])/g, '$1').replace(/([,.;:!?]){2,}/g, '$1').trim();
+}
+function ogosFocusNaturaleV342(base) {
+  const original=ogosNormalizzaCopyV342(base.focus || base.keyword || '');
+  if (!original || !base.keyword || base.keyword !== String(base.keyword).toLocaleLowerCase('it')) return original;
+  let text=original.toLocaleLowerCase('it');
+  const preserve=[ogosProjectBrand(),(ogosProjectCity()||{}).value,...(original.match(/\b[A-Z0-9]{2,}\b/g)||[])].filter(Boolean);
+  preserve.sort((a,b)=>b.length-a.length).forEach(term=>{text=text.replace(new RegExp(String(term).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'ig'),term)});
+  text=text.replace(/\b(insegnante|istruttore|maestro)\s+(yoga|pilates)\b/i,'$1 di $2');
+  const city=(ogosProjectCity()||{}).value;
+  if(city&&ogosContieneCitta(text,city)&&!new RegExp(`\\b(?:a|in|di)\\s+${String(city).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}`,'i').test(text)) text=text.replace(new RegExp(String(city).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'),`a ${city}`);
+  return text ? text.charAt(0).toLocaleUpperCase('it')+text.slice(1) : text;
+}
+function ogosInizioNaturaleV342(value) {
+  const text=ogosNormalizzaCopyV342(value);
+  return /^(?:[A-Z0-9]{2,})(?:\s|$)/.test(text) ? text : text ? text.charAt(0).toLocaleLowerCase('it')+text.slice(1) : '';
+}
+function ogosFraseV342(value) {
+  const text = ogosNormalizzaCopyV342(value).replace(/[.!?…]+$/, '');
+  if (!text) return '';
+  const sentence = `${text.charAt(0).toLocaleUpperCase('it')}${text.slice(1)}`.replace(/:\s+([A-ZÀ-Ü])/u,(_,letter)=>`: ${letter.toLocaleLowerCase('it')}`);
+  return `${sentence}.`;
+}
+function ogosSovrapposizioneV342(a,b) {
+  const left=[...new Set(ogosTerms(a))], right=new Set(ogosTerms(b));
+  return left.length ? left.filter(term=>right.has(term)).length / Math.min(left.length,Math.max(1,right.size)) : 0;
+}
+function ogosCompattaFattoV342(value,max) {
+  const text=ogosNormalizzaCopyV342(value).replace(/[.!?…]+$/,'');
+  if (!max || text.length<=max) return text;
+  const boundaries=[]; let match; const re=/[,;.]|\s+(?:per|così da|in modo da)\s+/gi;
+  while((match=re.exec(text))) if(match.index>=Math.floor(max*.58)&&match.index<=max) boundaries.push(match.index);
+  let compact=boundaries.length?text.slice(0,boundaries[boundaries.length-1]):ogosShortenWordsV341(text,max);
+  return compact.replace(/[,:;\s-]+$/,'').replace(/\s+\b(?:e|o|a|di|da|in|con|per|su|tra|fra|del|della|dei|delle|il|lo|la|i|gli|le|un|uno|una)\s*$/i,'').trim();
+}
+function ogosOccorrenzeTerminiV342(text) {
+  const count = {};
+  ogosTerms(text).forEach(term => { count[term] = (count[term] || 0) + 1; });
+  return count;
+}
+function ogosKeywordStuffingV342(text, field) {
+  const limit = field === 'meta_description' ? 3 : 2;
+  return Object.values(ogosOccorrenzeTerminiV342(text)).some(value => value > limit);
+}
+function ogosValoreCorrenteV342(page, field) {
+  if (field === 'title') {
+    const raw = String(page?.live?.seoTitle || '');
+    return ogosNormalizzaCopyV342((ogosHasSeoTemplate(raw) ? ogosResolveSeoTemplate(raw, page) : raw) || page?.crawl?.titleText || page?.wpTitle || '');
+  }
+  if (field === 'post_title') return ogosNormalizzaCopyV342(ogosPageH1(page).text);
+  return ogosNormalizzaCopyV342(page?.live?.metaDescription || '');
+}
+function ogosDuplicatiCampoV342(page, field, value) {
+  const key = ogosTerms(value).join(' ');
+  if (!key) return [];
+  return (state.pages || []).filter(other => comparableUrl(other.url) !== comparableUrl(page?.url) && ogosTerms(ogosValoreCorrenteV342(other, field)).join(' ') === key).map(other => other.url);
+}
+function ogosFattiPaginaV342(page, focus) {
+  const crawl = page?.crawl || {}, live = page?.live || {}, focusTerms = new Set(ogosTerms(focus));
+  const raw = [];
+  const push = (text, source, weight) => {
+    const value = ogosNormalizzaCopyV342(text).replace(/[.!?…]+$/, '');
+    if (!value || value.length < 18 || value.length > 180 || ogosIsSegnaposto(value) || OGOS_COPY_GENERICA_V342.test(value) || /cookie|privacy|newsletter|copyright|partita iva/i.test(value)) return;
+    const terms = ogosTerms(value), extra = terms.filter(term => !focusTerms.has(term));
+    if (extra.length < 2) return;
+    const practical = /\b(?:orari?|prezz[oi]|cost[oi]|durata|modalit[aà]|disponibilit[aà]|programma|ingredient[ei]|temp[oi]|livell[oi]|lezion[ei]|passaggi?|material[ei])\b/i.test(value);
+    const benefit = /\b(?:aiut\w*|miglior\w*|riduc\w*|aument\w*|impar\w*|scegl\w*|capir\w*|valut\w*|risolv\w*|benefic\w*|vantagg\w*|benessere|sicurezza|comfort|risultat\w*)\b/i.test(value);
+    const proof = /\b(?:anni?|esperienza|formazione|metodo|certificat\w*|testat\w*|recension\w*|client\w*|alliev\w*)\b|\d/.test(value);
+    raw.push({ text:value, source, score:weight + (practical ? 5 : 0) + (benefit ? 4 : 0) + (proof ? 3 : 0) + Math.min(4, extra.length) });
+  };
+  (Array.isArray(crawl.headings) ? crawl.headings : []).forEach(text => push(text, 'sottotitolo della pagina', 7));
+  const content = ogosNormalizzaCopyV342(crawl.contentExcerpt || live.contentExcerpt || live.excerpt || '');
+  content.split(/(?<=[.!?])\s+/).forEach(text => push(text, 'testo pubblicato', 4));
+  if (!raw.length) push(state.project?.audience, 'pubblico dichiarato nel progetto', 1);
+  const seen = new Set();
+  return raw.sort((a,b) => b.score-a.score || a.text.length-b.text.length).filter(item => { const key=ogosTerms(item.text).join(' '); if(seen.has(key)) return false; seen.add(key); return true; }).slice(0,6);
+}
+function ogosProfiloBisognoV342(page, focus, type) {
+  const hay = `${focus || ''} ${page?.url || ''} ${page?.wpTitle || ''}`.toLowerCase();
+  if (/\b(?:ricett\w*|ingredient\w*|preparazion\w*|cottura)\b/.test(hay)) return { key:'recipe', label:'capire ingredienti, tempi e preparazione prima di cucinare', hook:'Ingredienti, tempi e preparazione', close:'Trova ingredienti, tempi e passaggi utili per prepararla senza dubbi.' };
+  if (/\b(?:confront\w*|differenz\w*|versus|\bvs\b|quale scegliere|meglio)\b/.test(hay)) return { key:'comparison', label:'confrontare alternative e criteri prima di scegliere', hook:'Differenze e criteri di scelta', close:'Confronta differenze e criteri rilevanti prima di decidere.' };
+  if (/\b(?:problema|errore|non funziona|risolvere|soluzione|rimedio)\b/.test(hay)) return { key:'solution', label:'risolvere un problema con indicazioni concrete', hook:'Cause e soluzioni', close:'Individua cause, controlli e passaggi utili per risolvere il problema.' };
+  if (type === 'information' && /\b(?:realizzazion\w*|svilupp\w*|creazion\w*|progettazion\w*|siti? web|web design|consulenz\w*|agenzi\w*|preventiv\w*)\b/.test(hay)) return { key:'service', label:'capire cosa comprende il servizio, come viene realizzato e quale risultato produce', hook:'Metodo, tempi e risultati', close:'Comprendi metodo, attività incluse e risultato atteso prima di richiedere un preventivo.' };
+  const base = ogosNeedProfileV341(page, focus, type);
+  const closes = {
+    contact:'Trova recapiti, modalità di contatto e indicazioni sulla disponibilità.', practical:'Confronta orari, costi e modalità prima di scegliere.', beginner:'Capisci cosa aspettarti e quale percorso è coerente con il tuo livello.', benefits:'Valuta benefici, indicazioni e aspetti da considerare.', guide:'Segui i passaggi utili per arrivare a una decisione concreta.', reviews:'Confronta esperienze e informazioni verificabili prima di scegliere.', team:'Valuta esperienza, formazione e metodo della persona che ti seguirà.', action:'Verifica modalità, disponibilità e prossimo passo.', service:'Comprendi come funziona il servizio, a chi è rivolto e cosa comprende.', collection:'Confronta le opzioni disponibili in base al tuo obiettivo.', hub:'Orientati tra guide e approfondimenti dedicati al tema.', legal:'Consulta condizioni e riferimenti ufficiali raccolti nella pagina.', information:'Trova i dati essenziali e gli aspetti da valutare sul tema.'
+  };
+  const labels = {
+    service:'capire cosa offre il servizio, a chi si rivolge e quale risultato concreto promette',
+    information:'capire l’argomento attraverso dati specifici e utili alla decisione',
+    contact:'trovare rapidamente recapiti, disponibilità e modalità di contatto'
+  };
+  return { ...base, label:labels[base.key] || base.label, close:closes[base.key] || closes.information };
+}
+function ogosHookV342(facts, profile, focus, max=42) {
+  const heading = facts.find(item => item.source === 'sottotitolo della pagina' && item.text.length <= 105);
+  let value = heading?.text || facts[0]?.text || profile.hook || '';
+  value = value.replace(OGOS_COPY_VERBI_DEBOLI_V342, '').replace(/^[:;,.\s-]+/, '').replace(/[.!?…]+$/, '');
+  if (ogosCovers(value, ogosTerms(focus))) value = value.split(/[:;,.]|\s+[–—-]\s+/)[1] || value;
+  value = ogosShortenWordsV341(value, max);
+  return value ? `${value.charAt(0).toLocaleUpperCase('it')}${value.slice(1)}` : '';
+}
+function ogosTitoloV342(base, page, profile, facts) {
+  const focus = ogosFocusNaturaleV342(base), brand = ogosProjectBrand(), hook = ogosHookV342(facts, profile, focus);
+  const candidates = [];
+  if (profile.key === 'team') {
+    const current = ogosPageH1(page).text, city = (ogosProjectCity() || {}).value;
+    if (current && !ogosIsSegnaposto(current)) candidates.push(`${current}${city && !ogosContieneCitta(current, city) ? ` a ${city}` : ''}`);
+  }
+  if (profile.key === 'contact' && brand) candidates.push(`Contatti ${brand}: informazioni e disponibilità`);
+  if (hook) candidates.push(`${focus}: ${hook}`);
+  if (profile.hook && profile.hook !== hook) candidates.push(`${focus}: ${profile.hook}`);
+  if (brand && !ogosContieneBrand(focus, brand)) candidates.push(`${focus} | ${brand}`);
+  candidates.push(focus, base.title);
+  const terms = ogosTerms(base.keyword || focus);
+  for (let candidate of candidates) {
+    candidate = ogosNormalizzaCopyV342(candidate);
+    if (candidate.length > 60 && candidate.startsWith(`${focus}: `)) candidate = `${focus}: ${ogosShortenWordsV341(candidate.slice(focus.length+2), Math.max(10,58-focus.length))}`;
+    if (candidate.length >= 28 && candidate.length <= 60 && ogosCovers(candidate, terms) && !OGOS_COPY_GENERICA_V342.test(candidate) && !ogosKeywordStuffingV342(candidate,'title')) return candidate;
+  }
+  return ogosNormalizzaCopyV342(base.title || focus);
+}
+function ogosH1V342(base, page, profile, facts, title) {
+  const focus = ogosFocusNaturaleV342(base), hook = ogosHookV342(facts, profile, focus, 58), brand = ogosProjectBrand();
+  const candidates = [];
+  if (profile.key === 'contact') candidates.push(`Contatta ${brand || focus} per informazioni e disponibilità`);
+  else if (profile.key === 'team' && ogosPageH1(page).text && !ogosIsSegnaposto(ogosPageH1(page).text)) candidates.push(ogosPageH1(page).text);
+  if (hook && profile.hook && ogosSovrapposizioneV342(hook,profile.hook) < .4) {
+    const combined=`${focus}: ${ogosInizioNaturaleV342(profile.hook)} e ${ogosInizioNaturaleV342(hook)}`;
+    if(combined.length<=95) candidates.push(combined);
+  }
+  if (hook) candidates.push(`${focus}: ${ogosInizioNaturaleV342(hook)}`);
+  candidates.push(`${focus}: ${ogosInizioNaturaleV342(profile.hook || profile.close)}`, focus, base.h1);
+  const terms = ogosTerms(base.keyword || focus);
+  for (let candidate of candidates) {
+    candidate = ogosNormalizzaCopyV342(candidate).replace(/[.!?…]+$/, '');
+    if (candidate.length > 95 && candidate.startsWith(`${focus}: `)) candidate = `${focus}: ${ogosCompattaFattoV342(candidate.slice(focus.length+2), Math.max(12,93-focus.length))}`;
+    if (candidate.length >= 16 && candidate.length <= 95 && ogosCovers(candidate, terms) && !ogosKeywordStuffingV342(candidate,'post_title')) {
+      if (ogosTerms(candidate).join(' ') !== ogosTerms(title).join(' ') || candidate.length > title.length) return candidate;
+    }
+  }
+  return ogosNormalizzaCopyV342(base.h1 || focus);
+}
+function ogosMetaV342(base, profile, facts) {
+  const focus = ogosFocusNaturaleV342(base), brand = ogosProjectBrand();
+  const preferred = (['contact','practical','recipe'].includes(profile.key) ? facts.find(item=>item.source==='sottotitolo della pagina') : null) || facts[0];
+  const second = facts.find(item=>item!==preferred && item.source!=='pubblico dichiarato nel progetto');
+  const factOne = ogosNormalizzaCopyV342(preferred?.text || '').replace(/[.!?…]+$/,'');
+  let factTwo = ogosNormalizzaCopyV342(second?.text || '').replace(/[.!?…]+$/,'');
+  if (profile.key === 'contact') {
+    factTwo = factTwo.replace(/^Scrivici per conoscere\b/i,'Trova').replace(/^Contattaci per conoscere\b/i,'Trova');
+    if (/disponibilit[aà]/i.test(factOne)) factTwo=factTwo.replace(/,?\s*disponibilit[aà]\s+e\s+/i,' e ').replace(/\s+e\s+disponibilit[aà](?=\s|$)/i,'');
+  }
+  const open = profile.key === 'contact'
+    ? `Contatta ${brand || focus}: ${factOne || 'richiedi informazioni su modalità e disponibilità'}`
+    : `${focus}: ${factOne || profile.close || ''}`;
+  const openSentence=ogosFraseV342(open), close=ogosSovrapposizioneV342(factOne,profile.close||'')>=.2?'':(profile.close||'');
+  const remaining=Math.max(0,157-openSentence.length-1), compactSecond=remaining>=24?ogosCompattaFattoV342(factTwo,remaining):'';
+  const candidates = [
+    `${openSentence} ${close}`,
+    `${openSentence} ${compactSecond ? ogosFraseV342(compactSecond) : ''}`,
+    openSentence
+  ];
+  const terms = ogosTerms(base.keyword || focus);
+  for (let candidate of candidates) {
+    candidate = ogosNormalizzaCopyV342(candidate);
+    if (candidate && !/[.!?…]$/.test(candidate)) candidate += '.';
+    if (candidate.length >= 95 && candidate.length <= 160 && ogosCovers(candidate, terms) && !OGOS_COPY_GENERICA_V342.test(candidate) && !ogosKeywordStuffingV342(candidate,'meta_description')) return candidate;
+  }
+  const available = Math.max(30, 157 - focus.length - 2), compact = ogosCompattaFattoV342(factOne || profile.close || '', available);
+  const fallback = ogosFraseV342(`${focus}: ${compact}`);
+  if (fallback.length >= 80 && fallback.length <= 160 && ogosCovers(fallback,terms)) return fallback;
+  return ogosNormalizzaCopyV342(base.meta);
+}
+function ogosQualitaCopyV342(page, field, value, focus, proof) {
+  const text = ogosNormalizzaCopyV342(value), terms = ogosTerms(focus), have = new Set(ogosTerms(text));
+  const coverage = terms.length ? terms.filter(term => have.has(term)).length / terms.length : 1;
+  const lengthOk = field === 'title' ? text.length >= 28 && text.length <= 60 : field === 'post_title' ? text.length >= 16 && text.length <= 95 : text.length >= 95 && text.length <= 160;
+  const proofTerms = ogosTerms(proof).filter(term => !terms.includes(term)), grounded = proofTerms.length ? proofTerms.some(term => have.has(term)) : false;
+  const generic = OGOS_COPY_GENERICA_V342.test(text), stuffed = ogosKeywordStuffingV342(text,field), duplicates = ogosDuplicatiCampoV342(page,field,text);
+  let score = 30 + (lengthOk?15:0) + Math.round(coverage*20) + (grounded?20:0) + (!generic?5:0) + (!stuffed?5:0) + (!duplicates.length?5:0);
+  score = Math.max(0,Math.min(100,score));
+  return { score, label:score>=88?'Ottima':score>=75?'Solida':score>=60?'Da controllare':'Debole', coverage:Math.round(coverage*100), grounded, generic, stuffed, duplicates };
+}
+
+const ogosSeoCopyV341Final = ogosSeoCopyFromPage;
+ogosSeoCopyFromPage = function(page, forcedKeyword) {
+  const base = ogosSeoCopyV341Final(page, forcedKeyword);
+  if (!base) return base;
+  const facts = ogosFattiPaginaV342(page, base.focus || base.keyword), profile = ogosProfiloBisognoV342(page, base.focus || base.keyword, base.type);
+  const title = ogosTitoloV342(base,page,profile,facts), h1 = ogosH1V342(base,page,profile,facts,title), meta = ogosMetaV342(base,profile,facts);
+  const proof = facts[0]?.text || base.needEvidence || '', qualityProof=facts.slice(0,3).map(item=>item.text).join(' ');
+  const quality = { title:ogosQualitaCopyV342(page,'title',title,base.keyword||base.focus,qualityProof), post_title:ogosQualitaCopyV342(page,'post_title',h1,base.keyword||base.focus,qualityProof), meta_description:ogosQualitaCopyV342(page,'meta_description',meta,base.keyword||base.focus,qualityProof) };
+  return { ...base, title, h1, meta, need:profile.label, needType:profile.key, needEvidence:proof, needSource:facts[0]?.source || base.needSource || 'intento e contesto del progetto', facts, promise:ogosHookV342(facts,profile,base.focus||base.keyword,72) || profile.hook, quality, generationConfidence:facts.length>=2?'alta':facts.length?'media':'bassa' };
+};
+
+function ogosProblemiCopyV342(page, field, current, copy) {
+  const problems = [], focus = copy.keyword || copy.focus, terms = ogosTerms(focus), have = new Set(ogosTerms(current));
+  if (!current) problems.push('manca');
+  if (current && ogosDuplicatiCampoV342(page,field,current).length) problems.push(`duplica un’altra pagina (${ogosDuplicatiCampoV342(page,field,current).slice(0,2).join(', ')})`);
+  if (current && OGOS_COPY_GENERICA_V342.test(current)) problems.push('usa una promessa generica');
+  if (current && ogosKeywordStuffingV342(current,field)) problems.push('ripete eccessivamente gli stessi termini');
+  if (current && terms.length && terms.filter(term=>have.has(term)).length/terms.length < .7) problems.push('non copre chiaramente il focus');
+  if (field === 'title' && current && (current.length < 28 || current.length > 60)) problems.push('ha una lunghezza poco efficace in SERP');
+  if (field === 'post_title' && current && (current.length < 16 || current.length > 95 || ogosIsSegnaposto(current))) problems.push('non descrive bene il contenuto principale');
+  if (field === 'meta_description' && current) {
+    if (current.length < 90 || current.length > 165) problems.push('ha una lunghezza poco utile in SERP');
+    const extra = ogosTerms(current).filter(term => !terms.includes(term));
+    if (extra.length < 3) problems.push('non aggiunge informazioni concrete oltre alla keyword');
+  }
+  return [...new Set(problems)];
+}
+const ogosKeywordPlanV341Final = ogosKeywordPlan;
+ogosKeywordPlan = function(prop) {
+  const plan = ogosKeywordPlanV341Final(prop), labels = { title:'Title SEO', post_title:'H1 SEO', meta_description:'Meta description' };
+  const proposedValues = { title:plan.copy.title, post_title:plan.copy.h1, meta_description:plan.copy.meta };
+  const currentValues = { title:plan.currentTitle, post_title:plan.h1.text, meta_description:plan.currentMeta };
+  Object.keys(proposedValues).forEach(field => {
+    const problems = ogosProblemiCopyV342(plan.page,field,currentValues[field],plan.copy), quality = plan.copy.quality?.[field], already = plan.proposed.find(item=>item.key===field);
+    if (already) {
+      already.note = `${already.note || ''} Qualità proposta: ${quality?.score || '—'}/100 (${quality?.label || 'da controllare'}). Bisogno: ${plan.copy.need}. Prova: ${plan.copy.needEvidence || 'dati di pagina limitati'}.`.trim();
+      return;
+    }
+    if (!problems.length || !quality || quality.score < 72 || !proposedValues[field] || ogosTerms(proposedValues[field]).join(' ') === ogosTerms(currentValues[field]).join(' ')) return;
+    if (field === 'post_title' && Number(plan.page?.crawl?.h1Count) > 1) return;
+    plan.changes[field] = proposedValues[field];
+    plan.proposed.push({ key:field, field:labels[field], from:currentValues[field] || '(non presente)', to:proposedValues[field], reason:`Il valore attuale ${problems.join('; ')}. La proposta risponde a “${plan.copy.need}” e usa un dettaglio verificabile della pagina.`, note:`Qualità ${quality.score}/100 (${quality.label}). Fonte: ${plan.copy.needSource}.` });
+    plan.skipped = plan.skipped.filter(item=>item.field!==labels[field]);
+  });
+  plan.hasChanges = Object.keys(plan.changes).length > 0;
+  plan.link = plan.hasChanges ? null : ogosLinkProposalForPage(prop.url);
+  return plan;
+};
+
+const renderKeywordProposalPageV342Base = renderKeywordProposalPage;
+renderKeywordProposalPage = function() {
+  const result = renderKeywordProposalPageV342Base.apply(this,arguments), root=$('#keywordProposalRoot'), prop=selectedKeywordProposal();
+  if (!root || !prop) return result;
+  const plan=ogosKeywordPlan(prop), need=root.querySelector('.ogos-user-need');
+  if (need && !root.querySelector('.ogos-copy-strategy')) {
+    const strategy=document.createElement('div'); strategy.className='safe-note ogos-copy-strategy';
+    strategy.innerHTML=`<b>Strategia dei tre campi:</b> il Title conquista il click in SERP, l’H1 conferma subito contenuto e destinatario, la meta anticipa informazioni concrete senza slogan.<br><small>Affidabilità generazione: ${esc(plan.copy.generationConfidence)} · Promessa rilevata: ${esc(plan.copy.promise || 'da verificare manualmente')}.</small>`;
+    need.after(strategy);
+  }
+  Object.entries(plan.copy.quality || {}).forEach(([field,quality])=>{
+    const section=root.querySelector(`[data-seo-section="${field}"]`); if(!section || section.querySelector('.ogos-copy-quality')) return;
+    const note=document.createElement('div'); note.className='safe-note ogos-copy-quality';
+    note.innerHTML=`<b>Qualità proposta: ${quality.score}/100 · ${esc(quality.label)}</b><br><small>Copertura focus ${quality.coverage}% · ${quality.grounded?'dettaglio reale incluso':'prova specifica da controllare'} · ${quality.duplicates.length?'attenzione: possibile duplicato':'testo distinto dalle altre pagine'}.</small>`;
+    section.append(note);
+  });
+  return result;
+};
+
+/* Identità delle pagine valida per il grafo: template, parametri tecnici,
+   bozze/noindex e duplicati artificiali non diventano falsi orfani. */
+function ogosOrphanEligibleV341(page, target) {
+  if (!page || !page.url || (typeof ogosPaginaTecnica === 'function' && ogosPaginaTecnica(page))) return false;
+  const path = comparableUrl(page.url);
+  if (!path || (target && path === '/') || /[?&](?:ogos_id|elementor_library|post_type|preview|custom_css|product_variation)=/i.test(path)) return false;
+  if (target && (page.status === 'Non indicizzata' || page.live?.indexed === false || page.wpStatus && page.wpStatus !== 'publish')) return false;
+  return true;
+}
+function ogosOrphanGraphV341() {
+  const pages = (state.pages || []).filter(page => ogosOrphanEligibleV341(page, false));
+  const targets = pages.filter(page => ogosOrphanEligibleV341(page, true));
+  const inbound = {}, sources = {};
+  pages.forEach(source => {
+    const sourcePath = comparableUrl(source.url);
+    const seen = new Set();
+    (source.live?.internalLinks || []).forEach(href => {
+      const target = comparableUrl(href);
+      if (!target || target === sourcePath || seen.has(target)) return;
+      seen.add(target); inbound[target] = (inbound[target] || 0) + 1;
+      sources[target] = sources[target] || []; sources[target].push(source.url);
+    });
+  });
+  const rendered = pages.filter(page => page.live?.internalLinkSource === 'rendered-html').length;
+  const complete = pages.length > 0 && rendered === pages.length;
+  const completed = typeof completedOperationalChangeKeys === 'function' ? completedOperationalChangeKeys() : new Set();
+  const candidates = targets.filter(page => !inbound[comparableUrl(page.url)] && !completed.has(`internal_link|${comparableUrl(page.url)}`)).map(target => {
+    const words = pageWords(target); let best = null, score = -1;
+    pages.filter(source => comparableUrl(source.url) !== comparableUrl(target.url)).forEach(source => {
+      const value = gscJaccard(words, pageWords(source)) + (comparableUrl(source.url) === '/' ? .03 : 0);
+      if (value > score) { score = value; best = source; }
+    });
+    return { target: target.url, source: best?.url || '/', anchor: target.keyword || keywordProposals([target])[0]?.keyword || ogosEtichettaDaPercorso(target.url), confidence: complete ? (score > .15 ? 'confermata dal crawl renderizzato; sorgente scelta per pertinenza' : 'confermata dal crawl renderizzato; sorgente da rivedere') : 'candidata non confermata: mancano pagine nel crawl renderizzato', confirmed: complete };
+  });
+  return { pages, targets, inbound, sources, rendered, complete, candidates };
+}
+
+// Il modulo Indicizzazione condivide la stessa soglia probatoria:
+// una pagina è orfana solo dopo un crawl HTML renderizzato e completo.
+idxHasInternalLinkData = function() { return ogosOrphanGraphV341().complete; };
+idxInboundLinksIndex = function() { return { ...ogosOrphanGraphV341().inbound }; };
+
+internalLinkProposals = function() { return ogosOrphanGraphV341().candidates.filter(row => row.confirmed); };
+const internalLinkAuditV340 = internalLinkAuditContentV159;
+internalLinkAuditContentV140 = function() {
+  const graph = ogosOrphanGraphV341(), possible = graph.complete ? [] : graph.candidates;
+  let html = internalLinkAuditV340();
+  const coverage = graph.pages.length ? Math.round(graph.rendered / graph.pages.length * 100) : 0;
+  const status = graph.complete
+    ? `<div class="safe-note"><b>Verifica completa.</b> Tutte le ${graph.pages.length} pagine sono state lette dall’HTML pubblicato, inclusi header, footer, menu e template renderizzati.</div>`
+    : `<div class="safe-note warn-note"><b>Diagnosi orfani non ancora completa: ${graph.rendered}/${graph.pages.length} pagine (${coverage}%) hanno un crawl HTML renderizzato.</b><br>Le pagine sotto sono soltanto candidate e non generano task. Esegui “Crawl reale” per confermarle o escluderle.</div>`;
+  html = html.replace('<h4>Pagine orfane: link da creare</h4>', `${status}<h4>Pagine orfane confermate: link da creare</h4>`);
+  if (possible.length) {
+    const block = `<h4 style="margin-top:24px">Possibili orfane da verificare (${possible.length})</h4><div class="table-wrap"><table><thead><tr><th>Pagina candidata</th><th>Perché non è confermata</th><th>Prossimo controllo</th></tr></thead><tbody>${possible.slice(0,50).map(row => `<tr><td>${operationalPageLink(row.target)}</td><td>Nessun link in entrata nei dati parziali, ma template o pagine non ancora renderizzate possono contenerlo.</td><td>Esegui il crawl reale completo; nessuna correzione viene proposta ora.</td></tr>`).join('')}</tbody></table></div>`;
+    html = html.replace('<h4 style="margin-top:24px">Link interni rotti già presenti</h4>', `${block}<h4 style="margin-top:24px">Link interni rotti già presenti</h4>`);
+  }
+  return html;
+};
+const auditCategoryCountV340 = auditCategoryCount;
+auditCategoryCount = function(index) { return index === 3 ? internalLinkProposals().length + detectBrokenLinksReport().length : auditCategoryCountV340(index); };
+
+/* Un cluster creato ora apre una vista operativa: pillar, pagine reali,
+   keyword/intento, link in entrata e collegamenti mancanti. */
+function ogosClusterPagesV341(cluster) {
+  const byPath = new Map((state.pages || []).map(page => [comparableUrl(page.url), page]));
+  const explicit = (Array.isArray(cluster?.pages) ? cluster.pages : []).map(url => byPath.get(comparableUrl(url))).filter(Boolean);
+  if (explicit.length) return [...new Map(explicit.map(page => [comparableUrl(page.url), page])).values()];
+  const terms = ogosTerms(cluster?.name || '');
+  return (state.pages || []).filter(page => terms.length && ogosTerminiPagina(page).some(term => terms.includes(term)));
+}
+function ogosClusterModelV341(cluster) {
+  const pages = ogosClusterPagesV341(cluster);
+  const pillar = pages.find(page => comparableUrl(page.url) === comparableUrl(cluster?.pillar)) || pages.slice().sort((a,b) => comparableUrl(a.url).length - comparableUrl(b.url).length)[0] || null;
+  const graph = ogosOrphanGraphV341(), gaps = [];
+  const hasLink = (source, target) => (source?.live?.internalLinks || []).some(href => comparableUrl(href) === comparableUrl(target?.url));
+  if (graph.complete && pillar) pages.filter(page => comparableUrl(page.url) !== comparableUrl(pillar.url)).forEach(page => {
+    if (!hasLink(pillar, page)) gaps.push({ source: pillar, target: page, direction: 'pillar → cluster' });
+    if (!hasLink(page, pillar)) gaps.push({ source: page, target: pillar, direction: 'cluster → pillar' });
+  });
+  return { pages, pillar, graph, gaps };
+}
+function ogosOpenClusterV341(index) {
+  const cluster = (state.clusters || [])[index]; if (!cluster) return;
+  const model = ogosClusterModelV341(cluster), inbound = model.graph.inbound;
+  const rows = model.pages.map(page => `<tr><td>${operationalPageLink(page.url)}</td><td>${model.pillar && comparableUrl(page.url) === comparableUrl(model.pillar.url) ? '<span class="tag">Pillar</span>' : '<span class="tag">Cluster</span>'}</td><td>${esc(page.keyword || 'Da assegnare')}</td><td>${esc(page.intent || 'Da definire')}</td><td>${inbound[comparableUrl(page.url)] || 0}</td></tr>`).join('');
+  const linkState = !model.graph.complete
+    ? '<div class="safe-note warn-note">Il piano link non viene creato finché il crawl renderizzato non copre tutte le pagine: evitiamo di proporre collegamenti già presenti in header, footer o template.</div>'
+    : model.gaps.length ? `<div class="safe-note"><b>${model.gaps.length} collegamenti bidirezionali mancanti.</b> Il piano collega il pillar alle pagine cluster e ogni pagina cluster al pillar, senza duplicare link esistenti.</div><button type="button" class="btn primary" id="ogosClusterLinksTask" data-cluster-index="${index}">Crea piano link del cluster (${model.gaps.length}) →</button>`
+      : '<div class="safe-note">Pillar e pagine cluster risultano già collegati in entrambe le direzioni.</div>';
+  openActionDrawer(`Cluster: ${cluster.name}`, `${model.pages.length} pagine reali · copertura keyword ${Number(cluster.coverage) || 0}%`, `<div class="safe-note"><b>Pillar:</b> ${model.pillar ? operationalPageLink(model.pillar.url) : 'non determinabile'}<br><small>Aprire il cluster non modifica il sito: mostra struttura, copertura e link mancanti. Le modifiche partono soltanto da un’attività approvata.</small></div>${model.pages.length ? `<div class="table-wrap"><table><thead><tr><th>Pagina</th><th>Ruolo</th><th>Keyword</th><th>Intento</th><th>Sorgenti interne</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="empty">Nessuna pagina dell’inventario corrisponde a questo cluster. Modifica il nome o crea il cluster da un suggerimento.</p>'}${linkState}`);
+  $('#actionDrawer')?.classList.add('audit-wide');
+  const taskButton = $('#ogosClusterLinksTask');
+  if (taskButton) taskButton.onclick = () => {
+    const current = ogosClusterModelV341(cluster);
+    if (!current.graph.complete || !current.gaps.length) { toast('Esegui un nuovo crawl: il piano non è più confermato', 'error'); return; }
+    const affected = current.gaps.map(gap => ({ url: gap.source.url, issue: `Manca il collegamento ${gap.direction} nel cluster “${cluster.name}”`, fix: `Inserisci “${gap.target.keyword || ogosEtichettaDaPercorso(gap.target.url)}” verso ${gap.target.url}`, changes: { internal_link: { target: gap.target.url, anchor: gap.target.keyword || ogosEtichettaDaPercorso(gap.target.url), position: 'after_first_paragraph' } } }));
+    upsertOperationalTask(`Collega il cluster “${cluster.name}”`, `${affected.length} link contestuali mancanti verificati nell’HTML renderizzato`, 'Media', affected, { type: 'internal_link', cluster: cluster.name }, true);
+  };
+}
+
+const renderMapV340 = renderMap;
+renderMap = function() {
+  const result = renderMapV340.apply(this, arguments);
+  $$('#mapGrid .edit-cluster').forEach(button => { button.textContent = 'Analizza cluster →'; });
+  return result;
+};
+document.addEventListener('click', event => {
+  const button = event.target.closest && event.target.closest('#mapGrid .edit-cluster');
+  if (!button) return;
+  event.preventDefault(); event.stopImmediatePropagation();
+  ogosOpenClusterV341(Number(button.dataset.id));
+}, true);
 
 init();
 })();
