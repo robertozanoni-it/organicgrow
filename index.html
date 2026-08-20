@@ -153,7 +153,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='3.5.0';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='3.5.2';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 var projectRegistryCache=null;/* PATCH: era let -> TDZ al boot */
@@ -789,6 +789,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.5.1', date: '2026-08-20', notes: 'Velocizzati i passaggi tra attività, sezioni e pulsanti: la navigazione non serializza più tutto il progetto prima di mostrare la vista, i salvataggi materiali vengono accorpati dopo il rendering e la sidebar non esegue doppi render. I task con molte URL aprono 25 righe alla volta e caricano le successive su richiesta; rimossa anche la riconciliazione duplicata dal render del dashboard.', compatibility: 'Aggiornamento consigliato soprattutto per progetti con molte pagine o attività. Dati, backup e connettore restano compatibili.' },
   { version: '3.5.0', date: '2026-08-20', notes: 'Il generatore distingue i termini ambigui usando il contesto: ricetta elettronica, Camera di Commercio, camera fotografica e visita immobiliare non vengono più classificati come cucina o ricettività. Title e H1 hanno una barriera di distinzione, mentre le meta incomplete vengono rigenerate da prove reali o bloccate. Allineati anche H1 multipli nei problemi aperti, copertura orfani, identità URL GSC, retry del crawl, precedenza Googlebot e cache del grafo.', compatibility: 'Richiede il connettore unificato 3.5.0 per la correzione robots e il crawl resiliente. Backup e progetti precedenti restano compatibili.' },
   { version: '3.4.9', date: '2026-08-20', notes: 'Corretti H1 multipli chiusi per errore, falsi orfani causati da parametri, deduplica per conteggio e numeri Search Console con separatori locali. Il generatore usa contesto e co-occorrenze per evitare verticali sbagliati; alt vuoti e robots Googlebot ricevono controlli distinti.', compatibility: 'Richiede il connettore unificato 3.4.9 per i nuovi dati alt e la precedenza Googlebot. Backup e progetti precedenti restano compatibili.' },
   { version: '3.4.8', date: '2026-08-20', notes: 'La riconciliazione richiede esattamente un H1 osservato e una canonical live; i CSV combinati conservano pagina e query anche quando il nome contiene “query” o “page”. Il generatore riconosce prodotti, ricettività, trattamenti e software, tutela le maiuscole dei marchi e penalizza testi generici o ripetitivi. Migliorati anche crawl a cursore ID, immagini decorative, cluster e accesso rapido ai problemi.', compatibility: 'Richiede il connettore unificato 3.4.8 per il crawl stabile basato su ID. I dati precedenti restano compatibili.' },
@@ -8042,6 +8043,205 @@ ogosDashboardIssues=function(){
   if(state.audit?.liveVerified||state.crawlCoverage?.observedAt)ogosRiconciliaProblemiApertiV343({save:true});
   return ogosDashboardIssuesV350Base();
 };
+
+/* ==========================================================================
+   v3.5.1 — navigazione e task senza blocchi del thread principale
+   ========================================================================== */
+let ogosUiSaveTimerV351=null,ogosDataSaveTimerV351=null;
+function ogosScheduleUiSaveV351(){clearTimeout(ogosUiSaveTimerV351);ogosUiSaveTimerV351=setTimeout(()=>{ogosUiSaveTimerV351=null;save(false);},600);}
+function ogosScheduleDataSaveV351(){clearTimeout(ogosDataSaveTimerV351);ogosDataSaveTimerV351=setTimeout(()=>{ogosDataSaveTimerV351=null;save(true);},80);}
+window.addEventListener?.('pagehide',()=>{if(ogosDataSaveTimerV351){clearTimeout(ogosDataSaveTimerV351);ogosDataSaveTimerV351=null;save(true);}});
+
+/* Il vecchio wrapper della shell rigenerava tutti i report avanzati a ogni
+   navigazione, inclusi quelli invisibili. Manteniamo sincroni intestazione,
+   avanzamento e contenuto richiesto; i report accessori vengono aggiornati
+   solo nelle viste che li usano e dopo che il cambio schermata e' visibile. */
+const ogosRenderShellCoreV351=renderShellWithExtensions;
+let ogosExtensionRenderTimerV351=null,ogosExtensionRenderIdleV351=null;
+function ogosCancelExtensionRenderV351(){
+  if(ogosExtensionRenderTimerV351){clearTimeout(ogosExtensionRenderTimerV351);ogosExtensionRenderTimerV351=null;}
+  if(ogosExtensionRenderIdleV351!==null&&typeof cancelIdleCallback==='function')cancelIdleCallback(ogosExtensionRenderIdleV351);
+  ogosExtensionRenderIdleV351=null;
+}
+function ogosScheduleExtensionsV351(view){
+  ogosCancelExtensionRenderV351();
+  if(!['dashboard','audit','pages','settings'].includes(view))return;
+  const run=()=>{ogosExtensionRenderTimerV351=null;ogosExtensionRenderIdleV351=null;if(state.ui?.view===view)renderAllExtensions();};
+  ogosExtensionRenderTimerV351=setTimeout(()=>{
+    ogosExtensionRenderTimerV351=null;
+    if(typeof requestIdleCallback==='function')ogosExtensionRenderIdleV351=requestIdleCallback(run,{timeout:500});else run();
+  },0);
+}
+renderShell=function(){
+  ogosRenderShellCoreV351();
+  if(!$('#view-dashboard')?.classList.contains('active'))renderSidebarTaskPickerV166();
+  ogosScheduleExtensionsV351(state.ui?.view||'dashboard');
+};
+
+go=function(view){
+  if(!$('#view-'+view))view='dashboard';
+  if(state.ui?.view===view&&$('#view-'+view)?.classList.contains('active'))return;
+  state.ui=state.ui&&typeof state.ui==='object'?state.ui:{};state.ui.view=view;
+  $$('.view').forEach(element=>element.classList.toggle('active',element.id==='view-'+view));
+  $$('[data-view]').forEach(button=>button.classList.toggle('active',button.closest('nav')&&button.dataset.view===view));
+  $('#sidebar')?.classList.remove('open');window.scrollTo({top:0,behavior:'auto'});
+  renderView(view);ogosScheduleUiSaveV351();
+};
+
+/* Audit e crawl riconciliano gia' i dati: rifarlo a ogni render del dashboard
+   duplicava calcoli e poteva forzare una scrittura al semplice click. */
+ogosDashboardIssues=ogosDashboardIssuesV350Base;
+
+function ogosRenderTaskSurfaceV351(){
+  renderKanban();renderShell();
+  const updateVerify=()=>{if($('#view-verify')?.classList.contains('active'))renderVerify();};
+  if(typeof requestIdleCallback==='function')requestIdleCallback(updateVerify,{timeout:300});else setTimeout(updateVerify,0);
+}
+
+const ogosRenderSidebarTaskPickerV351Base=renderSidebarTaskPickerV166;
+let ogosTaskPickerSignatureV351='';
+renderSidebarTaskPickerV166=function(){
+  const rows=(state.tasks||[]),signature=JSON.stringify([state.ui?.selectedTaskId,rows.map(task=>[task.id,task.status,task.priority,task.title])]);
+  if(signature===ogosTaskPickerSignatureV351){const select=$('#sidebarTaskPicker');if(select&&state.ui?.selectedTaskId!=null)select.value=String(state.ui.selectedTaskId);return;}
+  ogosTaskPickerSignatureV351=signature;
+  ogosRenderSidebarTaskPickerV351Base();
+  const select=$('#sidebarTaskPicker'),button=$('#sidebarOpenTaskBtn');if(!select||!button)return;
+  select.onchange=()=>{state.ui=state.ui&&typeof state.ui==='object'?state.ui:{};state.ui.selectedTaskId=Number(select.value);ogosScheduleUiSaveV351();};
+  button.onclick=()=>{
+    const task=(state.tasks||[]).find(item=>String(item.id)===String(select.value||state.ui?.selectedTaskId));if(!task){toast('Scegli prima un’attività','error');return;}
+    state.ui=state.ui&&typeof state.ui==='object'?state.ui:{};state.ui.selectedTaskId=task.id;state.ui.issueScope='all';const filter=$('#taskFilter');if(filter)filter.value='all';
+    const alreadyOpen=$('#view-fix')?.classList.contains('active');go('fix');if(alreadyOpen)renderKanban();
+    $('#sidebar')?.classList.remove('open');ogosScheduleUiSaveV351();
+  };
+};
+
+approveTaskV164=function(id){
+  const task=(state.tasks||[]).find(item=>item.id===Number(id));if(!task||task.status!=='Da approvare')return false;
+  const applied=(state.repairs||[]).some(repair=>String(repair.taskId)===String(task.id)&&!repair.undone),nextStatus=applied?'Completata':'Da fare';
+  recordTaskStatus(task,nextStatus);task.approved=true;if(!applied)delete task.partialApply;
+  ogosRenderTaskSurfaceV351();ogosScheduleDataSaveV351();toast(applied?'Attività approvata e archiviata come completata':'Attività approvata e spostata in Da fare');return true;
+};
+
+/* I task con molte URL non costruiscono piu' centinaia di righe e pulsanti
+   prima di aprire la modale. Si parte da 25 righe, poi blocchi da 50. */
+const OGOS_TASK_ROWS_V351=25;
+function ogosRenderTaskDetailV351(task,limit=OGOS_TASK_ROWS_V351){
+  const affected=Array.isArray(task?.affected)?task.affected:[],visible=affected.slice(0,limit),reasons=normalizedPartialReasons(task),completed=taskIsCompleted(task),correctable=affected.filter(item=>item?.changes&&Object.keys(item.changes).length);
+  $('#modalTitle').textContent=task.title||'Attività';$('#modalHelp').textContent=`${task.priority||'Media'} · ${task.status||'Da approvare'}`;
+  const partial=reasons.length?`<div class="safe-note warn-note"><b>${reasons.length} modifiche da controllare</b>${reasons.slice(0,10).map(row=>`<div><code>${esc(row.url||'')}</code> · ${esc(row.operation||'operazione')} · ${esc(row.reason||'motivo non disponibile')}</div>`).join('')}${reasons.length>10?`<small>Altre ${reasons.length-10} motivazioni disponibili nel task.</small>`:''}</div>`:'';
+  const rows=visible.map((item,index)=>`<tr><td>${operationalPageLink(item.url)}</td><td>${esc(item.issue||'—')}</td><td>${esc(item.fix||'—')}</td><td>${taskChangesHtml(item)}</td><td>${!completed&&item?.changes&&Object.keys(item.changes).length?`<button type="button" class="btn ghost ogos-fix-riga-v351" data-i="${index}">Correggi →</button>`:'—'}</td></tr>`).join('');
+  const more=limit<affected.length?`<button type="button" class="btn" id="ogosMoreTaskRowsV351" data-limit="${Math.min(affected.length,limit+50)}">Mostra altre ${Math.min(50,affected.length-limit)} righe →</button>`:'';
+  $('#modalForm').innerHTML=`<p>${esc(task.detail||'')}</p>${partial}<div class="task-detail-summary"><div><b>${affected.length}</b><small>Pagine coinvolte</small></div><div><b>${esc(task.priority||'Media')}</b><small>Priorità</small></div><div><b>${esc(task.status||'Da approvare')}</b><small>Stato</small></div><div><b>${correctable.length?'Disponibile':'Manuale'}</b><small>Correzione</small></div></div>${affected.length?`<div class="safe-note"><b>Visualizzate ${visible.length} di ${affected.length} righe.</b> Le altre vengono caricate solo quando richieste.</div><div class="table-wrap task-detail-table"><table><thead><tr><th>Pagina</th><th>Problema</th><th>Azione</th><th>Modifica</th><th>Correzione</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="empty">Nessuna pagina associata.</p>'}<div class="repair-actions" style="margin-top:18px">${more}<button type="button" class="btn" data-close>Chiudi</button><button type="button" class="btn" id="taskPopupEdit">Modifica task</button>${completed?'':correctable.length?`<button type="button" class="btn primary" id="ogosFixTutteV351">Correggi tutte le ${correctable.length} righe →</button>`:`<button type="button" class="btn primary" id="taskPopupRepair">Apri piano operativo →</button>`}</div>`;
+  $('#modalForm').dataset.type='task-detail';$('#modalForm').dataset.id=task.id;$('#modalBackdrop').classList.add('open');
+  const edit=$('#taskPopupEdit');if(edit)edit.onclick=()=>{closeModal();openModal('task',task);};
+  const moreButton=$('#ogosMoreTaskRowsV351');if(moreButton)moreButton.onclick=()=>ogosRenderTaskDetailV351(task,Number(moreButton.dataset.limit));
+  const repair=$('#taskPopupRepair');if(repair)repair.onclick=()=>{closeModal();openRepair(task);};
+  const bulk=$('#ogosFixTutteV351');if(bulk)bulk.onclick=()=>{ogosImpostaAmbito(correctable.map(item=>item.url));ogosMantieniAmbito=true;openRepair(ogosFiltraPerAmbito(task));};
+  $$('#modalForm .ogos-fix-riga-v351').forEach(button=>button.onclick=()=>{const item=visible[Number(button.dataset.i)];if(!item)return;ogosImpostaAmbito([item.url]);ogosMantieniAmbito=true;openRepair(ogosFiltraPerAmbito(task));});
+}
+openTaskDrawer=function(task){if(!task)return;go('fix');closeActionDrawer();$('.modal')?.classList.add('task-detail-modal');ogosRenderTaskDetailV351(task);};
+
+const ogosInitV351Base=init;
+init=function(){
+  ogosInitV351Base();
+  const board=$('#kanban');if(board)board.onchange=event=>{
+    if(!event.target.matches('.task-status'))return;const task=(state.tasks||[]).find(item=>item.id===Number(event.target.dataset.id));if(!task)return;
+    recordTaskStatus(task,event.target.value);task.approved=task.status!=='Da approvare';if(task.status!=='Completata')delete task.partialApply;
+    ogosRenderTaskSurfaceV351();ogosScheduleDataSaveV351();toast('Stato aggiornato');
+  };
+  const approveAll=$('#approveAllBtn');if(approveAll)approveAll.onclick=()=>{
+    let count=0;(state.tasks||[]).forEach(task=>{if(taskIsCompleted(task)||task.status!=='Da approvare')return;const applied=(state.repairs||[]).some(repair=>String(repair.taskId)===String(task.id)&&!repair.undone);recordTaskStatus(task,applied?'Completata':'Da fare');task.approved=true;if(!applied)delete task.partialApply;count++;});
+    ogosRenderTaskSurfaceV351();ogosScheduleDataSaveV351();toast(count?`${count} attività approvate`:'Nessuna attività nuova da approvare');
+  };
+};
+
+/* ==========================================================================
+   v3.5.2 — indici SEO e grafo rapido sui progetti grandi
+   ========================================================================== */
+
+/* La valutazione di ogni candidato SEO cercava i duplicati scansionando e
+   tokenizzando l'intero inventario. Con piu' varianti per tre campi il costo
+   diventava pagine x candidati x pagine. L'indice seguente viene costruito
+   una volta per inventario e restituisce esattamente le stesse collisioni. */
+let ogosSeoFieldIndexV352=null,ogosSeoCopyCacheV352=new WeakMap();
+function ogosInvalidatePerformanceCachesV352(){ogosSeoFieldIndexV352=null;ogosSeoCopyCacheV352=new WeakMap();ogosOrphanCacheV350={signature:'',value:null};}
+function ogosSeoFieldIndexBuildV352(){
+  const pages=state.pages||[],fields=['title','post_title','meta_description'],maps={title:new Map(),post_title:new Map(),meta_description:new Map()};
+  pages.forEach(page=>{const url=comparableUrl(page.url);fields.forEach(field=>{const key=ogosTerms(ogosValoreCorrenteV342(page,field)).join(' ');if(!key)return;const rows=maps[field].get(key)||[];rows.push({url,page});maps[field].set(key,rows);});});
+  ogosSeoFieldIndexV352={pages, length:pages.length, maps};return ogosSeoFieldIndexV352;
+}
+ogosDuplicatiCampoV342=function(page,field,value){
+  const pages=state.pages||[];
+  if(!ogosSeoFieldIndexV352||ogosSeoFieldIndexV352.pages!==pages||ogosSeoFieldIndexV352.length!==pages.length)ogosSeoFieldIndexBuildV352();
+  const key=ogosTerms(value).join(' ');if(!key)return[];const current=comparableUrl(page?.url);
+  return (ogosSeoFieldIndexV352.maps[field]?.get(key)||[]).filter(row=>row.url!==current).map(row=>row.page.url);
+};
+
+/* Una proposta gia' calcolata per la stessa pagina, focus, progetto e vista
+   viene riusata da anteprima, qualita' e piano operativo. Le modifiche reali
+   invalidano la cache attraverso save(). */
+const ogosSeoCopyFromPageV352Base=ogosSeoCopyFromPage;
+ogosSeoCopyFromPage=function(page,forcedKeyword){
+  if(!page||typeof page!=='object')return ogosSeoCopyFromPageV352Base(page,forcedKeyword);
+  const variantKey=['title','post_title','meta_description'].map(field=>ogosSeoVariantSelectionV345(page,field)).join('|');
+  const key=JSON.stringify([forcedKeyword||'',state.project?.name||'',state.project?.sector||'',state.project?.geo||'',state.project?.audience||'',state.ui?.view||'',variantKey,page.url,page.keyword,page.wpTitle,page.h1,page.live?.focusKeyphrase,page.live?.seoTitle,page.live?.metaDescription,page.live?.contentExcerpt,page.live?.excerpt,page.crawl?.h1Text,page.crawl?.h1Count,page.crawl?.titleText,page.crawl?.contentExcerpt,page.crawl?.headings]);
+  let rows=ogosSeoCopyCacheV352.get(page);if(!rows){rows=new Map();ogosSeoCopyCacheV352.set(page,rows);}
+  if(rows.has(key))return rows.get(key);const copy=ogosSeoCopyFromPageV352Base(page,forcedKeyword);if(rows.size>8)rows.clear();rows.set(key,copy);return copy;
+};
+
+/* Il grafo conserva la stessa formula di pertinenza, ma normalizza URL e
+   token una sola volta per pagina. Un indice invertito evita confronti con
+   sorgenti che non condividono alcun termine; homepage e primo fallback
+   restano inclusi per mantenere invariato il risultato nei pareggi. */
+function ogosOrphanGraphFastV352(){
+  const pages=(state.pages||[]).filter(page=>ogosOrphanEligibleV341(page,false));
+  const entries=pages.map((page,index)=>({page,index,path:comparableUrl(page.url),words:new Set(pageWords(page))}));
+  const targets=entries.filter(entry=>ogosOrphanEligibleV341(entry.page,true)),inbound={},sources={},wordIndex=new Map();
+  entries.forEach(entry=>{
+    entry.words.forEach(word=>{const indexes=wordIndex.get(word)||[];indexes.push(entry.index);wordIndex.set(word,indexes);});
+    const seen=new Set();(entry.page.live?.internalLinks||[]).forEach(href=>{const target=comparableUrl(href);if(!target||target===entry.path||seen.has(target))return;seen.add(target);inbound[target]=(inbound[target]||0)+1;(sources[target]||(sources[target]=[])).push(entry.page.url);});
+  });
+  const rendered=entries.filter(entry=>entry.page.live?.internalLinkSource==='rendered-html').length;
+  const preliminaryComplete=entries.length>0&&rendered===entries.length,completed=typeof completedOperationalChangeKeys==='function'?completedOperationalChangeKeys():new Set();
+  const homepage=entries.find(entry=>entry.path==='/');
+  const candidates=targets.filter(entry=>!inbound[entry.path]&&!completed.has(`internal_link|${entry.path}`)).map(target=>{
+    const indexes=new Set();target.words.forEach(word=>(wordIndex.get(word)||[]).forEach(index=>indexes.add(index)));if(homepage)indexes.add(homepage.index);
+    if(!indexes.size){const fallback=entries.find(entry=>entry.index!==target.index);if(fallback)indexes.add(fallback.index);}
+    let best=null,score=-1;[...indexes].sort((a,b)=>a-b).forEach(index=>{const source=entries[index];if(!source||source.index===target.index)return;const value=gscJaccardSets(target.words,source.words)+(source.path==='/'?.03:0);if(value>score){score=value;best=source;}});
+    return{target:target.page.url,source:best?.page.url||'/',anchor:target.page.keyword||keywordProposals([target.page])[0]?.keyword||ogosEtichettaDaPercorso(target.page.url),confidence:preliminaryComplete?(score>.15?'confermata dal crawl renderizzato; sorgente scelta per pertinenza':'confermata dal crawl renderizzato; sorgente da rivedere'):'candidata non confermata: mancano pagine nel crawl renderizzato',confirmed:preliminaryComplete};
+  });
+  const graph={pages,targets:targets.map(entry=>entry.page),inbound,sources,rendered,complete:preliminaryComplete,candidates},coverage=ogosCoperturaOrfaniV346(graph);
+  graph.complete=coverage.complete;graph.coverage=coverage;graph.candidates=graph.candidates.map(row=>({...row,confirmed:coverage.complete,confidence:coverage.complete?row.confidence:`candidata non confermata: crawl ${coverage.matched}/${coverage.total||'?'} URL, inventario ${coverage.inventory||'?'}${coverage.sitemapCount?`, sitemap ${coverage.sitemapCount}`:''}`}));return graph;
+}
+ogosOrphanGraphV341=function(){const signature=ogosOrphanRevisionV350();if(ogosOrphanCacheV350.value&&ogosOrphanCacheV350.signature===signature)return ogosOrphanCacheV350.value;const value=ogosOrphanGraphFastV352();ogosOrphanCacheV350={signature,value};return value;};
+
+const ogosSaveV352Base=save;
+save=function(force=false){ogosInvalidatePerformanceCachesV352();return ogosSaveV352Base(force);};
+
+/* I passaggi di vista modificano soltanto state.ui: non serve clonare pagine,
+   crawl e task. Le modifiche materiali mantengono il salvataggio completo,
+   ma lo eseguono nella prima finestra inattiva disponibile (massimo 700 ms). */
+let ogosUiSaveIdleV352=null,ogosDataSaveIdleV352=null;
+function ogosIdleV352(callback,timeout){return typeof requestIdleCallback==='function'?requestIdleCallback(callback,{timeout}):setTimeout(callback,0);}
+function ogosCancelIdleV352(handle){if(handle===null)return;if(typeof cancelIdleCallback==='function')cancelIdleCallback(handle);else clearTimeout(handle);}
+function ogosPersistUiOnlyV352(){
+  if(state.settings?.autosave==='off')return;const key=projectStorageKey(state.project);if(!key)return;
+  const registry=projectRegistry(),stored=registry.projects[key];
+  if(!stored){save(false);return;}stored.ui=ogosDeepClone(state.ui||{});registry.active=key;ogosScheduleFlush();
+}
+ogosScheduleUiSaveV351=function(){
+  clearTimeout(ogosUiSaveTimerV351);ogosCancelIdleV352(ogosUiSaveIdleV352);ogosUiSaveIdleV352=null;
+  ogosUiSaveTimerV351=setTimeout(()=>{ogosUiSaveTimerV351=null;ogosUiSaveIdleV352=ogosIdleV352(()=>{ogosUiSaveIdleV352=null;ogosPersistUiOnlyV352();},700);},300);
+};
+ogosScheduleDataSaveV351=function(){
+  clearTimeout(ogosDataSaveTimerV351);ogosCancelIdleV352(ogosDataSaveIdleV352);ogosDataSaveIdleV352=null;
+  ogosDataSaveTimerV351=setTimeout(()=>{ogosDataSaveTimerV351=null;ogosDataSaveIdleV352=ogosIdleV352(()=>{ogosDataSaveIdleV352=null;save(true);},700);},40);
+};
+window.addEventListener?.('pagehide',()=>{
+  const pending=!!ogosDataSaveTimerV351||ogosDataSaveIdleV352!==null;
+  clearTimeout(ogosDataSaveTimerV351);ogosDataSaveTimerV351=null;ogosCancelIdleV352(ogosDataSaveIdleV352);ogosDataSaveIdleV352=null;
+  if(pending)save(true);
+});
 
 init();
 })();
