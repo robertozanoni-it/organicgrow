@@ -42,6 +42,13 @@
     .score.ogos-clickable:hover .ring:before{background:var(--surface-2)}
     .trend-empty{position:absolute;inset:auto 0 8px;text-align:center;color:var(--muted)}
     .summary .help{display:block;margin-top:12px;color:var(--muted)}
+    .row-actions button{display:inline-flex;align-items:center;justify-content:center;line-height:0}
+    .row-actions svg{width:18px;height:18px;flex:0 0 18px}
+    .ogos-stato-aiuto{display:block;margin-top:6px;line-height:1.4}
+    .ogos-stato-aiuto .btn{border:0;background:none;padding:0;margin:0;font-size:12px;color:var(--green-2);text-decoration:underline;text-underline-offset:2px}
+    .ogos-cella-correggi{white-space:nowrap;vertical-align:top}
+    .ogos-cella-correggi .btn{padding:6px 10px;font-size:12px}
+    #ogosClusterSuggeriti .tool-card p{margin:8px 0 0}
   </style>
 </head>
 <body>
@@ -146,7 +153,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='3.3.0';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='3.4.0';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 var projectRegistryCache=null;/* PATCH: era let -> TDZ al boot */
@@ -771,6 +778,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.4.0', date: '2026-08-20', notes: 'Copy: la località entra nelle frasi in forma breve (niente più «a Cinisello Balsamo (MI), provincia di Milano» dentro Title e meta description), percorsi e query string non finiscono più nel copy («Blog/custom Css Guida?custom_css=1» diventa «Custom Css Guida»), i cognomi prendono la maiuscola, il brand va prima della località e la frase distintiva della meta description viene presa dal testo reale della pagina invece di ripetere il settore su tutte. Indicizzazione: risolto il caso in cui tutte le URL risultavano «Errore server» in P1 pur essendo il sito sano — l\'analisi dei dati reali crea un oggetto crawl senza stato HTTP e veniva scambiata per un crawl fallito; ora gli stati distinti sono «controllo mai eseguito», «nessuna risposta» ed errore 5xx reale, e «Ultimo controllo» non mostra più la data di oggi per un controllo mai fatto. Link interni rotti: nel dettaglio dell\'attività compaiono un pulsante di correzione per ogni riga e uno per applicarle tutte, con ambito rispettato anche su WordPress. Pagine e keyword: i pulsanti Modifica ed Elimina tornano visibili, lo stato «Da verificare» spiega cosa manca e come ottenerlo, lo stato si allinea al registro Indicizzazione e l\'intento viene dedotto dalla keyword. Topical map: cluster e pillar suggeriti dalle pagine in inventario invece di una sezione vuota.', compatibility: 'Plugin unificato 3.4.0: stessa numerazione.' },
   { version: '3.3.0', date: '2026-08-20', notes: 'Da questa versione l\'app e il plugin condividono lo stesso numero: quello che sarebbe stato l\'app 1.19.0 si chiama 3.3.0, come il connettore. Report on-page: la tabella nasce tutta deselezionata e le caselle sono sparite dalle intestazioni (Pagina e focus, Title SEO, H1 SEO, Meta description); la selezione di massa resta nei pulsanti Solo Title/H1/Meta. Panoramica navigabile: le attività prioritarie, le opportunità, i quattro riquadri di Salute SEO e il cerchio del punteggio si aprono con un clic o da tastiera. Sei correzioni: il cerchio "Salute SEO" usava una formula propria senza tetti e mostrava un punteggio diverso da quello spiegato dal pannello sottostante; la mini-serie storica era una curva disegnata a mano nell\'HTML; "Riepilogo dati" mostrava impressioni, click, CTR e posizione inventati e uguali per ogni sito; "Attività prioritarie" ordinava per data di creazione invece che per priorità; il pannello "Opportunità" restava vuoto per sempre sui dati reali; la fusione delle attività per campo ignorava quelle create prima della 1.16.16 e ne creava un doppione.', compatibility: 'Plugin unificato 3.3.0: stessa numerazione.' },
   { version: '1.16.18', date: '2026-08-19', notes: 'Secondo audit completo: corretti caricamento iniziale e retry dello storico condiviso, conflitti di revisione, duplicazione dei task nei retry SEO parziali e perdita dei rollback precedenti. Il generatore ora privilegia il focus specifico rilevato da H1 e titolo, riconosce davvero un H1 assente, consente di sostituire H1 generici e propone meta description solo quando può fondarle sul contenuto acquisito. Chiusa una XSS da backup JSON. Aggiunti paginazione dell’inventario, ricerca ritardata, salvataggio differito e cache del registro progetti; eliminate scritture duplicate e implementazioni legacy del generatore/connettore non più raggiungibili.', compatibility: 'Compatibile con i backup precedenti. Richiede il connettore 3.0.18 per la distribuzione integrata aggiornata.' },
   { version: '1.16.17', date: '2026-08-19', notes: 'Corretti falsi completamenti e aggiornamenti locali nelle applicazioni parziali. Lo storico condiviso usa merge, revisioni e sincronizzazione iniziale protetta; aggiunti timeout e validazione JSON. Rafforzati H1 multipli, focus semantico, template SEO sconosciuti, import, clipboard e credenziali solo in memoria. Corretto anche il contesto dell’app incorporata in WordPress.', compatibility: 'Richiede il connettore 3.0.17 per storico revisionato e protezione completa dei flussi remoti.' },
@@ -5541,6 +5549,575 @@ ogosTaskApertoPerFirma = function (firma) {
     const campi = Array.isArray(op.fields) ? op.fields : [];
     return campi.length === 1 && campi[0] === firma;
   }) || null;
+};
+
+/* ==========================================================================
+   v3.4.0 — copy leggibile, correzioni applicabili, stati spiegati
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. LOCALITÀ IN FORMA BREVE
+   Il campo "Località" del progetto conteneva «Cinisello Balsamo (MI),
+   provincia di Milano». Quella stringa entrava così com'era dentro Title,
+   H1, focus e meta description, e produceva frasi come «Yoga Buena Onda a
+   Cinisello Balsamo (MI), provincia di Milano.»: quarantaquattro caratteri
+   di burocrazia dentro uno spazio da 155. Nelle frasi va il nome del
+   comune; la forma lunga resta disponibile in .full.
+   -------------------------------------------------------------------------- */
+function ogosCittaBreve(value) {
+  let t = ogosCleanEditorialText(value);
+  if (!t) return '';
+  t = t.split(/\s*[,;(]/)[0];
+  t = t.replace(/\s*\b(?:in\s+)?(?:provincia|prov\.?|regione|comune|città metropolitana)\s+di\s+.*$/i, '');
+  t = t.replace(/\s*\([^)]*\)\s*$/, '');
+  return ogosCleanEditorialText(t);
+}
+const ogosProjectCityLunga = ogosProjectCity;
+ogosProjectCity = function () {
+  const info = ogosProjectCityLunga();
+  const breve = ogosCittaBreve(info && info.value);
+  if (!info || !breve || breve === info.value) return info;
+  return Object.assign({}, info, { value: breve, full: info.value });
+};
+
+/* --------------------------------------------------------------------------
+   2. SLUG: NIENTE PERCORSI E QUERY DENTRO IL COPY
+   keywordProposals() ripiegava su `p.url.replace(/^\//,'').replace(/-/g,' ')`
+   senza togliere né le barre né la query string. Risultato, visibile nei
+   report reali: focus «Landing/black Friday», Title «Blog/custom Css
+   Guida?custom_css=1 | Buena Onda Yoga», meta «Negozio?product_variation=12.
+   Lezioni per tutti i livelli…». Sono testi che sarebbero finiti nel
+   <title> del sito.
+   -------------------------------------------------------------------------- */
+const OGOS_SEGMENTI_GENERICI = new Set(['blog', 'landing', 'landings', 'page', 'pages', 'pagina', 'pagine', 'post', 'posts', 'articolo', 'articoli', 'category', 'categoria', 'categorie', 'tag', 'tags', 'prodotto', 'prodotti', 'product', 'products', 'shop', 'index', 'archivio', 'archive', 'wp', 'it', 'en']);
+function ogosTestoSporco(value) { return /[\/?=&#]|%[0-9a-f]{2}/i.test(String(value || '')); }
+function ogosEtichettaDaPercorso(url) {
+  const grezzo = String(url || '').split('#')[0].split('?')[0];
+  let segmenti;
+  try { segmenti = decodeURIComponent(grezzo).split('/'); } catch (e) { segmenti = grezzo.split('/'); }
+  segmenti = segmenti.map(s => s.trim()).filter(Boolean)
+    .filter(s => !/^https?:$/i.test(s) && s.indexOf('.') === -1)
+    .filter(s => !/^\d+$/.test(s));
+  const utili = segmenti.filter(s => !OGOS_SEGMENTI_GENERICI.has(s.toLowerCase()));
+  const scelti = (utili.length ? utili : segmenti).slice(-2);
+  return ogosCleanEditorialText(scelti.join(' ').replace(/[-_+]+/g, ' ').replace(/\s+/g, ' '));
+}
+
+/* --------------------------------------------------------------------------
+   3. MAIUSCOLE DEI NOMI PROPRI
+   ogosNormalizzaCase() applicava il Title Case solo alle stringhe
+   interamente minuscole: «Caterina cuppari» aveva già una maiuscola, quindi
+   restava «Caterina cuppari» — cognome minuscolo nel <title> e nella meta
+   description. Qui si completano le maiuscole solo sui testi corti (fino a
+   quattro parole), dove la probabilità che sia un nome proprio è alta e il
+   rischio di rovinare una frase è nullo.
+   -------------------------------------------------------------------------- */
+const OGOS_PAROLE_MINUSCOLE_V340 = new Set(["di","de","del","dello","della","dei","degli","delle","da","dal","a","al","allo","alla","ai","agli","alle","e","ed","o","od","con","per","su","in","tra","fra","il","lo","la","i","gli","le","un","uno","una","the","of","and"]);
+function ogosNomeProprioCase(testo) {
+  const t = ogosCleanEditorialText(testo);
+  if (!t) return t;
+  const parole = t.split(/\s+/);
+  if (parole.length > 4) return t;
+  if (!parole.some(p => /^[A-ZÀ-Ý]/.test(p))) return t;
+  return parole.map((p, i) => {
+    if (i > 0 && OGOS_PAROLE_MINUSCOLE_V340.has(p.toLowerCase())) return p;
+    return /^[a-zà-ÿ]/.test(p) ? p.charAt(0).toUpperCase() + p.slice(1) : p;
+  }).join(' ');
+}
+const ogosNormalizzaCaseBase = ogosNormalizzaCase;
+ogosNormalizzaCase = function (text) { return ogosNomeProprioCase(ogosNormalizzaCaseBase(text)); };
+
+/* --------------------------------------------------------------------------
+   4. META DESCRIPTION
+   Tre difetti, tutti visibili negli screenshot:
+   a) «Caterina cuppari a Cinisello Balsamo (MI), provincia di Milano di
+      Yogabuenaonda.» — il brand veniva appeso DOPO la località, perché la
+      località era già dentro il focus e il ramo `${f} di ${brand}${luogo}`
+      aggiungeva comunque il brand in coda. Ordine corretto: soggetto,
+      brand, luogo.
+   b) «Specializzati in yoga, Pilates, fitness e benessere psicofisico.»
+      identica su ogni pagina: descrizioni duplicate su tutto il sito, che
+      è esattamente ciò che una meta description non deve essere. Ora la
+      frase distintiva si cerca prima nel testo reale della pagina
+      (content_excerpt del crawl), che è diverso pagina per pagina.
+   c) «Pilates Blog.» come apertura di un blog: un'etichetta, non una
+      promessa di contenuto.
+   -------------------------------------------------------------------------- */
+function ogosFraseDallaPagina(page, focus) {
+  const crawl = (page && page.crawl) || {}, live = (page && page.live) || {};
+  const testo = ogosCleanEditorialText(crawl.contentExcerpt || live.contentExcerpt || live.excerpt || '');
+  if (!testo) return '';
+  const frasi = testo.split(/(?<=[.!?])\s+/).map(ogosCleanEditorialText).filter(f =>
+    f.length >= 35 && f.length <= 125
+    && !ogosIsSegnaposto(f)
+    && !ogosFocusInInglese(f)
+    /* Cookie e privacy sono nel testo di quasi ogni pagina e non
+       descrivono il contenuto. */
+    && !/\b(cookie|privacy|newsletter|copyright|javascript|partita iva|p\. ?iva)\b/i.test(f)
+    && /^[A-ZÀ-Ýa-zà-ÿ]/.test(f)
+  );
+  if (!frasi.length) return '';
+  const termini = typeof ogosTerms === 'function' ? ogosTerms(String(focus || '')) : [];
+  /* La seconda frase non deve ricominciare con lo stesso soggetto della
+     prima: «Caterina Cuppari di X a Y. Caterina Cuppari insegna...». */
+  const inizio = ogosCleanEditorialText(focus).toLowerCase().split(/\s+/).slice(0, 2).join(' ');
+  const nonRipetitive = inizio.length >= 5 ? frasi.filter(f => f.toLowerCase().indexOf(inizio) !== 0) : frasi;
+  const pool = nonRipetitive.length ? nonRipetitive : frasi;
+  const migliore = (termini.length ? pool.find(f => ogosCovers(f, termini)) : null) || pool[0];
+  return migliore.replace(/[.!?]*$/, '.');
+}
+const ogosDettaglioDistintivoBase = ogosDettaglioDistintivo;
+ogosDettaglioDistintivo = function (page, headings, tipo, focus) {
+  const dallaPagina = ogosFraseDallaPagina(page, focus);
+  if (dallaPagina) return dallaPagina;
+  /* Su una cookie policy «Specializzati in yoga, Pilates e benessere» non
+     descrive la pagina: meglio una frase in meno che una frase sbagliata. */
+  if (tipo === 'legal') return '';
+  return ogosDettaglioDistintivoBase(page, headings, tipo, focus);
+};
+
+/* «Yoga Buena Onda di Yogabuenaonda»: ogosContieneBrand() confronta parola
+   per parola e non riconosceva il brand scritto tutto attaccato nel dominio.
+   Il confronto va fatto anche sulla forma senza spazi. */
+const ogosContieneBrandSpazi = ogosContieneBrand;
+ogosContieneBrand = function (text, brand) {
+  if (ogosContieneBrandSpazi(text, brand)) return true;
+  const compatta = v => ogosCleanEditorialText(v).toLowerCase().replace(/[^a-z0-9]/g, '');
+  const t = compatta(text), b = compatta(brand);
+  return !!b && b.length >= 5 && t.indexOf(b) !== -1;
+};
+
+ogosMetaLead = function (focus, city, brand, tipo) {
+  const f = ogosNormalizzaCase(focus);
+  if (!f) return '';
+  const cittaInFocus = city && ogosContieneCitta(f, city);
+  const luogo = city && !cittaInFocus ? ' ' + ogosPreposizioneLuogo() + ' ' + city : '';
+  const marchio = brand && !ogosContieneBrand(f, brand) ? brand : '';
+  /* Un blog non si presenta con la propria etichetta: «Pilates Blog.» non
+     dice a chi legge che cosa troverà. */
+  if (tipo === 'hub') {
+    const argomento = ogosCleanEditorialText(f.replace(/\bblog\b/i, '')) || f;
+    return marchio ? `Guide e articoli su ${argomento} di ${marchio}.` : `Guide e articoli su ${argomento}.`;
+  }
+  /* Un focus lungo o con i due punti è già una frase: appendere «di
+     Brand» produce «Yoga Principianti a X: Consigli per Iniziare di
+     Brand.». Il brand, in quel caso, si lascia fuori. */
+  if (!marchio || f.length > 45 || /[:;]/.test(f)) return `${f}${luogo}.`;
+  /* Il brand va prima della località, mai dopo. Se la località è già
+     dentro il focus, si stacca e si rimette in coda. */
+  if (cittaInFocus) {
+    const re = new RegExp('\\s+' + ogosPreposizioneLuogo() + '\\s+' + String(city).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$', 'i');
+    if (re.test(f)) {
+      const base = f.replace(re, '').trim();
+      return `${base} di ${marchio} ${ogosPreposizioneLuogo()} ${city}.`;
+    }
+    return `${f} · ${marchio}.`;
+  }
+  if (tipo === 'service') return `${f}${luogo} con ${marchio}.`;
+  return `${f} di ${marchio}${luogo}.`;
+};
+
+/* Il focus non deve mai contenere pezzi di URL. Si interviene sull'ingresso
+   del generatore: se la keyword della pagina è un percorso, viene
+   sostituita con l'etichetta pulita PRIMA che Title, H1 e meta vengano
+   composti; quello che resta viene ripulito in uscita. */
+const ogosSeoCopySporca = ogosSeoCopyFromPage;
+ogosSeoCopyFromPage = function (page, forcedKeyword) {
+  let kw = ogosTestoSporco(forcedKeyword) ? '' : forcedKeyword;
+  if (!kw && ogosTestoSporco(page && page.keyword)) kw = ogosEtichettaDaPercorso(page && page.url);
+  if (!kw && !(page && page.keyword) && ogosTestoSporco(String((page && page.url) || '').replace(/^\//, ''))) {
+    kw = ogosEtichettaDaPercorso(page && page.url);
+  }
+  const copy = ogosSeoCopySporca(page, kw);
+  if (!copy) return copy;
+  const etichetta = ogosEtichettaDaPercorso(page && page.url);
+  ['keyword', 'focus', 'title', 'h1'].forEach(campo => {
+    if (!ogosTestoSporco(copy[campo])) return;
+    const ripulito = ogosCleanEditorialText(String(copy[campo])
+      .replace(/\S*[?&=]\S*|[^\s|]*\/[^\s|]*/g, ' ' + etichetta + ' ')
+      .replace(/\s{2,}/g, ' '));
+    copy[campo] = ogosNormalizzaCase(ripulito) || ogosNormalizzaCase(etichetta);
+  });
+  return copy;
+};
+
+/* Stessa ripulitura sulla proposta di keyword mostrata nella tabella
+   pagine, dove il valore era «Blog/custom Css Guida?custom_css=1». */
+const ogosKeywordProposalsSporche = keywordProposals;
+keywordProposals = function (list) {
+  const out = ogosKeywordProposalsSporche(list) || [];
+  return out.map(p => {
+    if (!p || !ogosTestoSporco(p.keyword)) return p;
+    const pulita = ogosNormalizzaCase(ogosEtichettaDaPercorso(p.url));
+    if (!pulita) return p;
+    return Object.assign({}, p, { keyword: pulita, source: `${p.source} · percorso e parametri rimossi dallo slug` });
+  });
+};
+
+/* --------------------------------------------------------------------------
+   5. «ERRORE SERVER» SU TUTTE LE URL
+   idxClassify() considera "crawl eseguito" la sola presenza di p.crawl. Ma
+   applyCurrentAudit() — la «Nuova analisi dati reali» — crea p.crawl con
+   H1, title, sottotitoli ed estratto e SENZA httpStatus, perché l'endpoint
+   audit/current non fa richieste HTTP: quelle le fa crawl/current, che è
+   un'altra cosa («Esegui crawl reale» in Impostazioni). Il ramo
+   `if (!tech.httpStatus) status = 'errore-server'` scattava quindi su ogni
+   URL di un sito perfettamente sano e, siccome 'errore-server' è
+   nell'elenco dei problemi verificati, assegnava anche P1 a tutte e 43.
+   Ora si distinguono tre casi: controllo mai eseguito, controllo eseguito
+   senza risposta, errore 5xx reale.
+   -------------------------------------------------------------------------- */
+IDX_STATUS_LABELS['nessuna-risposta'] = 'Nessuna risposta';
+IDX_STATUS_SEVERITY['nessuna-risposta'] = 3;
+const OGOS_IDX_SOGLIE = [[75, 'P1'], [55, 'P2'], [35, 'P3'], [15, 'P4']];
+function ogosIdxLivello(score) {
+  const s = Math.max(0, Math.min(100, Math.round(Number(score) || 0)));
+  const trovata = OGOS_IDX_SOGLIE.find(coppia => s >= coppia[0]);
+  return trovata ? trovata[1] : 'NO ACTION';
+}
+const idxClassifyCrawlAssente = idxClassify;
+idxClassify = function (path) {
+  const r = idxClassifyCrawlAssente(path);
+  if (!r || r.status !== 'errore-server') return r;
+  const tech = r.technical || {};
+  if (tech.httpStatus) return r;                    // 5xx vero: si lascia com'è
+  if (tech.checkedAt) {
+    r.status = 'nessuna-risposta';
+    r.statusReason = 'Il crawl reale è stato eseguito ma la pagina non ha risposto (timeout, DNS o connessione rifiutata). Non è un errore 5xx del sito: di solito è WordPress che non riesce a chiamare se stesso (loopback bloccato da firewall, WAF o plugin di sicurezza) oppure un certificato HTTPS non valido.';
+  } else {
+    r.status = 'da-verificare';
+    r.statusReason = 'Nessun controllo HTTP è mai stato eseguito su questa URL. L’analisi dei dati reali importa titoli, sottotitoli e contenuto ma non lo stato HTTP: per averlo esegui «Esegui crawl reale» da Impostazioni.';
+  }
+  /* La priorità era stata calcolata con +25 per «problema tecnico
+     verificato»: quel problema non era verificato. */
+  if (Array.isArray(r.priorityFactors)) {
+    const i = r.priorityFactors.findIndex(f => f && /Problema tecnico verificato/.test(f.label || ''));
+    if (i !== -1) {
+      r.priorityScore = Math.max(0, Math.min(100, Math.round((r.priorityScore || 0) - (r.priorityFactors[i].points || 0))));
+      r.priorityFactors.splice(i, 1);
+      r.priorityFactors.push({ label: `Stato riclassificato: ${IDX_STATUS_LABELS[r.status]} — nessun errore 5xx verificato`, points: 0 });
+      r.priorityLevel = ogosIdxLivello(r.priorityScore);
+    }
+  }
+  /* «Ultimo controllo» mostrava la data di oggi anche quando nessun
+     controllo tecnico era stato fatto: riclassificare non è controllare. */
+  r.lastCheckedAt = tech.checkedAt || null;
+  return r;
+};
+const idxSuggestedActionBase = idxSuggestedAction;
+idxSuggestedAction = function (status) {
+  if (status === 'nessuna-risposta') return 'Il sito non ha risposto alla richiesta del crawl. Controlla che WordPress possa raggiungere se stesso (richieste loopback), il firewall o il WAF e il certificato HTTPS, poi riesegui il crawl reale.';
+  return idxSuggestedActionBase(status);
+};
+
+/* --------------------------------------------------------------------------
+   6. PAGINE E KEYWORD: COSA VUOL DIRE «DA VERIFICARE» E COME SI VERIFICA
+   a) I due pulsanti della colonna Azioni erano vuoti: gli <svg> generati da
+      icon() non hanno width/height e la regola CSS che li dimensiona vale
+      solo per .btn e .icon-btn, mentre questi hanno classe edit-page /
+      delete-page. L'icona veniva disegnata alla dimensione predefinita del
+      browser e usciva dal pulsante.
+   b) Lo stato non diventava MAI «Indicizzata»: il motore di verifica scrive
+      in state.indexing.urls, un registro diverso da quello letto dalla
+      tabella pagine. Nessuna funzione, in tutto il file, assegnava
+      p.status = 'Indicizzata'.
+   c) «Intento» restava «Da definire» su tutte le pagine finché non si
+      premeva «Abbina automaticamente».
+   -------------------------------------------------------------------------- */
+function ogosIntentoDaKeyword(keyword) {
+  const k = String(keyword || '').toLowerCase();
+  if (!k) return '';
+  if (/prezz|costo|tariff|acquist|prenota|iscrizion|preventiv|offert|abbonament|cors[oi]|servizi/.test(k)) return 'Commerciale';
+  if (/contatt|dove siamo|orari|telefono|indirizzo/.test(k)) return 'Navigazionale';
+  return 'Informazionale';
+}
+function ogosAllineaStatoPagine() {
+  const registro = (state.indexing && state.indexing.urls) || {};
+  let cambiate = 0;
+  (state.pages || []).forEach(p => {
+    if (!p || !p.url) return;
+    if ((!p.intent || p.intent === 'Da definire') && p.keyword) {
+      const intento = ogosIntentoDaKeyword(p.keyword);
+      if (intento) { p.intent = intento; cambiate++; }
+    }
+    const rec = registro[comparableUrl(p.url)] || registro[p.url];
+    if (!rec || !rec.status) return;
+    if (rec.status === 'indicizzata' && p.status !== 'Indicizzata') {
+      p.status = 'Indicizzata'; p.statusSource = 'registro indicizzazione'; cambiate++;
+    } else if (['404', 'noindex', 'bloccata-robots'].indexOf(rec.status) !== -1 && p.status !== 'Non indicizzata') {
+      p.status = 'Non indicizzata'; p.statusSource = `registro indicizzazione (${IDX_STATUS_LABELS[rec.status]})`; cambiate++;
+    }
+  });
+  if (cambiate) save(true);
+  return cambiate;
+}
+const ogosRenderPagesBase = renderPages;
+renderPages = function () {
+  ogosAllineaStatoPagine();
+  const esito = ogosRenderPagesBase.apply(this, arguments);
+  /* Spiegazione e azione sotto ogni stato non verificato: prima c'era
+     un'etichetta arancione e nessuna indicazione su cosa fare. */
+  ogosAggiornaNotaIndicizzazione();
+  document.querySelectorAll('#pagesBody tr').forEach(tr => {
+    const cella = tr.children[3];
+    if (!cella || cella.querySelector('.ogos-stato-aiuto')) return;
+    if (ogosCleanEditorialText(cella.textContent) !== 'Da verificare') return;
+    const nota = document.createElement('small');
+    nota.className = 'help ogos-stato-aiuto';
+    nota.innerHTML = 'Nessun segnale reale sullo stato in Google. <button type="button" class="btn ghost ogos-verifica-stato">Come si verifica →</button>';
+    cella.appendChild(nota);
+  });
+  return esito;
+};
+/* La nota sopra la tabella dichiarava «Pubblicata/Indicizzabile/Google
+   verificati per N di N pagine tramite crawl reale» contando le pagine che
+   hanno un oggetto crawl. Ma quell'oggetto lo crea anche l'analisi dei dati
+   reali, che non fa nessuna richiesta HTTP: la nota affermava una verifica
+   mai avvenuta. Ora conta solo i controlli veri. */
+function ogosAggiornaNotaIndicizzazione() {
+  const nota = $('#ogosIndexingNote');
+  if (!nota) return;
+  const pagine = state.pages || [];
+  const totale = pagine.length;
+  const verificate = pagine.filter(p => p && p.crawl && (p.crawl.checkedAt || p.crawl.httpStatus)).length;
+  const conTesto = pagine.filter(p => p && p.crawl).length;
+  nota.textContent = verificate
+    ? `Stato HTTP verificato con crawl reale su ${verificate} di ${totale} pagine. Esegui il crawl da Impostazioni per aggiornare le altre.`
+    : conTesto
+      ? `Titoli, sottotitoli e contenuto acquisiti per ${conTesto} di ${totale} pagine, ma nessun controllo HTTP è stato eseguito: «Pubblicata», «Indicizzabile» e lo stato su Google non sono verificati. Esegui «Esegui crawl reale» da Impostazioni.`
+      : 'Stato di indicizzazione basato solo sui metadati salvati. Esegui il crawl reale da Impostazioni per distinguere pubblicata, indicizzabile e indicizzata da Google.';
+}
+/* renderAllExtensions() riscrive la nota dopo renderPages(): la
+   correzione va agganciata lì, altrimenti dura un istante. */
+const ogosRenderAllExtensionsBase = renderAllExtensions;
+renderAllExtensions = function () {
+  const esito = ogosRenderAllExtensionsBase.apply(this, arguments);
+  ogosAggiornaNotaIndicizzazione();
+  return esito;
+};
+document.addEventListener('click', event => {
+  if (!event.target.closest || !event.target.closest('.ogos-verifica-stato')) return;
+  event.preventDefault();
+  go('indexing');
+  setTimeout(() => toast('Lo stato HTTP arriva da «Esegui crawl reale» in Impostazioni; lo stato su Google da un export Search Console importato. «Rianalizza tutto» qui riclassifica i dati già raccolti.'), 400);
+});
+
+/* --------------------------------------------------------------------------
+   7. LINK INTERNI ROTTI: PULSANTI DI CORREZIONE, PER RIGA E IN BLOCCO
+   La modale di dettaglio dell'attività elencava 29 sostituzioni e non
+   offriva un solo modo per applicarle: l'unico pulsante, in fondo, apriva
+   il piano completo. Il pannello «Link interni rotti» del controllo aveva
+   già i pulsanti giusti; qui mancavano.
+   L'ambito di correzione viene passato al flusso già esistente
+   (applyRepair e pluginTaskPayload), così una riga sola non ne applica 29.
+   -------------------------------------------------------------------------- */
+let ogosAmbitoCorrezione = null;
+let ogosMantieniAmbito = false;
+function ogosImpostaAmbito(urls) {
+  ogosAmbitoCorrezione = Array.isArray(urls) && urls.length ? new Set(urls.map(u => comparableUrl(u))) : null;
+}
+function ogosFiltraPerAmbito(task) {
+  if (!ogosAmbitoCorrezione || !task || !Array.isArray(task.affected)) return task;
+  const ridotte = task.affected.filter(a => a && ogosAmbitoCorrezione.has(comparableUrl(a.url)));
+  return ridotte.length ? Object.assign({}, task, { affected: ridotte }) : task;
+}
+const ogosPluginTaskPayloadBase = pluginTaskPayload;
+pluginTaskPayload = function (t) { return ogosPluginTaskPayloadBase(ogosFiltraPerAmbito(t)); };
+const ogosApplyRepairAmbito = applyRepair;
+applyRepair = function (id) {
+  if (!ogosAmbitoCorrezione) return ogosApplyRepairAmbito(id);
+  const task = (state.tasks || []).find(t => t.id === id);
+  if (!task || !Array.isArray(task.affected)) return ogosApplyRepairAmbito(id);
+  const complete = task.affected;
+  const scelte = complete.filter(a => a && ogosAmbitoCorrezione.has(comparableUrl(a.url)));
+  if (!scelte.length) return ogosApplyRepairAmbito(id);
+  const riparazioniPrima = (state.repairs || []).filter(r => String(r.taskId) === String(id) && !r.undone).length;
+  task.affected = scelte;
+  try {
+    return ogosApplyRepairAmbito(id);
+  } finally {
+    const riuscito = (state.repairs || []).filter(r => String(r.taskId) === String(id) && !r.undone).length > riparazioniPrima;
+    if (!riuscito) {
+      /* Applicazione non riuscita (per esempio: la pagina sorgente non è
+         nell'inventario): l'attività deve restare intatta. */
+      task.affected = complete;
+    } else {
+      /* Le righe non selezionate tornano nell'attività: applicarne una non
+         deve far sparire le altre ventotto. */
+      const applicate = new Set(scelte.map(a => comparableUrl(a.url)));
+      const rimaste = complete.filter(a => !applicate.has(comparableUrl(a.url)));
+      if (rimaste.length) {
+        task.affected = rimaste;
+        if (taskIsCompleted(task)) { task.status = 'In corso'; task.approved = true; }
+      } else {
+        task.affected = complete;
+      }
+    }
+    save(true);
+    if (typeof renderKanban === 'function') renderKanban();
+  }
+};
+const ogosCloseModalAmbito = closeModal;
+closeModal = function () {
+  if (ogosMantieniAmbito) {
+    /* openRepair riusa la stessa modale: chiudendola perderemmo l'ambito
+       appena impostato. Si conserva per un solo giro. */
+    ogosMantieniAmbito = false;
+    const ambito = ogosAmbitoCorrezione;
+    const esito = ogosCloseModalAmbito();
+    ogosAmbitoCorrezione = ambito;
+    return esito;
+  }
+  ogosAmbitoCorrezione = null;
+  return ogosCloseModalAmbito();
+};
+
+const ogosOpenTaskDrawerSenzaPulsanti = openTaskDrawer;
+openTaskDrawer = function (task) {
+  const esito = ogosOpenTaskDrawerSenzaPulsanti(task);
+  if (!task || taskIsCompleted(task)) return esito;
+  const tabella = document.querySelector('#modalForm .task-detail-table table');
+  const affected = Array.isArray(task.affected) ? task.affected : [];
+  const correggibili = affected.filter(a => a && a.changes && Object.keys(a.changes).length);
+  if (!tabella || !correggibili.length) return esito;
+
+  const intestazione = tabella.querySelector('thead tr');
+  if (intestazione && !intestazione.querySelector('.ogos-col-correggi')) {
+    const th = document.createElement('th');
+    th.className = 'ogos-col-correggi';
+    th.textContent = 'Correzione';
+    intestazione.appendChild(th);
+  }
+  [...tabella.querySelectorAll('tbody tr')].forEach((tr, i) => {
+    if (tr.querySelector('.ogos-cella-correggi')) return;
+    const item = affected[i];
+    const td = document.createElement('td');
+    td.className = 'ogos-cella-correggi';
+    td.innerHTML = item && item.changes && Object.keys(item.changes).length
+      ? `<button type="button" class="btn ghost ogos-fix-riga" data-i="${i}">Correggi →</button>`
+      : '<span class="help">—</span>';
+    tr.appendChild(td);
+  });
+
+  const barra = document.querySelector('#modalForm .repair-actions');
+  if (barra && !document.querySelector('#ogosFixTutte')) {
+    const bulk = document.createElement('button');
+    bulk.type = 'button';
+    bulk.className = 'btn primary';
+    bulk.id = 'ogosFixTutte';
+    bulk.textContent = `Correggi tutte le ${correggibili.length} righe →`;
+    barra.insertBefore(bulk, barra.firstChild);
+  }
+
+  const avvia = urls => {
+    ogosImpostaAmbito(urls);
+    ogosMantieniAmbito = true;
+    openRepair(ogosFiltraPerAmbito(task));
+  };
+  document.querySelectorAll('#modalForm .ogos-fix-riga').forEach(btn => {
+    btn.onclick = () => {
+      const item = affected[Number(btn.dataset.i)];
+      if (item) avvia([item.url]);
+    };
+  });
+  const bulk = document.querySelector('#ogosFixTutte');
+  if (bulk) bulk.onclick = () => avvia(correggibili.map(a => a.url));
+  return esito;
+};
+
+/* --------------------------------------------------------------------------
+   8. TOPICAL MAP: SUGGERIMENTI INVECE DI UN RIQUADRO VUOTO
+   state.clusters è popolato solo nei dati dimostrativi e viene azzerato
+   appena si caricano dati veri: la sezione restava una pagina bianca con un
+   pulsante. I cluster si possono dedurre dalle pagine già in inventario,
+   raggruppandole per i termini che condividono.
+   -------------------------------------------------------------------------- */
+const OGOS_TERMINI_NEUTRI = new Set(['pagina', 'pagine', 'blog', 'articolo', 'articoli', 'home', 'contatti', 'privacy', 'cookie', 'policy', 'index', 'post', 'news', 'siamo', 'about', 'landing', 'servizi', 'grazie']);
+function ogosTerminiPagina(page) {
+  const citta = (ogosProjectCity() || {}).value, brand = ogosProjectBrand();
+  const termini = t => (typeof ogosTerms === 'function' ? ogosTerms(t) : []);
+  const esclusi = new Set([...termini(citta), ...termini(brand)]);
+  return [...new Set(termini(`${page.keyword || ''} ${ogosEtichettaDaPercorso(page.url)}`))]
+    .filter(t => t.length >= 4 && !OGOS_TERMINI_NEUTRI.has(t) && !esclusi.has(t));
+}
+function ogosClusterSuggeriti() {
+  const pagine = (state.pages || []).filter(p => p && p.url);
+  if (pagine.length < 3) return [];
+  const perTermine = new Map();
+  pagine.forEach(p => ogosTerminiPagina(p).forEach(t => {
+    if (!perTermine.has(t)) perTermine.set(t, []);
+    perTermine.get(t).push(p);
+  }));
+  const esistenti = new Set((state.clusters || []).map(c => ogosCleanEditorialText(c && c.name).toLowerCase()));
+  const gruppi = [...perTermine.entries()]
+    .filter(coppia => coppia[1].length >= 2)
+    .map(coppia => {
+      const termine = coppia[0], ps = coppia[1];
+      /* Pillar = la pagina con il percorso più corto del gruppo: è quella
+         che sta più in alto nella gerarchia del sito. */
+      const pillar = ps.slice().sort((a, b) => a.url.length - b.url.length)[0];
+      const conKeyword = ps.filter(p => p.keyword).length;
+      return {
+        name: ogosNormalizzaCase(termine), type: 'Cluster', items: ps.length,
+        coverage: Math.round((conKeyword / ps.length) * 100),
+        pillar: pillar.url, pages: ps.map(p => p.url),
+      };
+    })
+    .filter(g => g.name && !esistenti.has(g.name.toLowerCase()))
+    .sort((a, b) => b.items - a.items || a.name.localeCompare(b.name));
+  /* Un gruppo per ogni termine produrrebbe decine di raggruppamenti
+     sovrapposti: si tengono i primi sei, saltando quelli le cui pagine
+     sono già tutte coperte da un gruppo più grande. */
+  const coperte = new Set(), scelti = [];
+  gruppi.forEach(g => {
+    if (scelti.length >= 6) return;
+    if (g.pages.every(u => coperte.has(u))) return;
+    g.pages.forEach(u => coperte.add(u));
+    scelti.push(g);
+  });
+  return scelti;
+}
+const ogosRenderMapVuota = renderMap;
+renderMap = function () {
+  const esito = ogosRenderMapVuota.apply(this, arguments);
+  const griglia = $('#mapGrid');
+  if (!griglia) return esito;
+  const vecchio = document.querySelector('#ogosClusterSuggeriti');
+  if (vecchio) vecchio.remove();
+  const suggeriti = ogosClusterSuggeriti();
+  const contenitore = document.createElement('div');
+  contenitore.id = 'ogosClusterSuggeriti';
+  contenitore.style.marginTop = '18px';
+  if (!(state.pages || []).length) {
+    contenitore.innerHTML = '<p class="empty">Acquisisci i dati del sito: i cluster si costruiscono sulle pagine in inventario.</p>';
+  } else if (!suggeriti.length) {
+    contenitore.innerHTML = (state.clusters || []).length
+      ? '<p class="empty">Nessun altro raggruppamento con almeno due pagine in comune oltre a quelli già creati.</p>'
+      : '<p class="empty">Le pagine in inventario non condividono abbastanza termini per proporre un cluster. Abbina le keyword da «Pagine e keyword» e riprova.</p>';
+  } else {
+    contenitore.innerHTML = '<h2 class="section-title" style="margin-bottom:6px">Cluster suggeriti dalle tue pagine</h2>'
+      + `<p class="help" style="margin:0 0 14px">Raggruppamenti dedotti da keyword e slug delle ${(state.pages || []).length} pagine in inventario. Il pillar proposto è la pagina più in alto nella gerarchia del gruppo.</p>`
+      + `<div class="tool-grid">${suggeriti.map((c, i) => '<article class="tool-card" style="display:block">'
+        + `<div style="display:flex;justify-content:space-between;gap:8px"><span class="tag">Suggerito</span><b>${c.coverage}%</b></div>`
+        + `<h3 style="margin-top:14px">${esc(c.name)}</h3>`
+        + `<p>${c.items} pagine · pillar proposto ${operationalPageLink(c.pillar)}</p>`
+        + `<small class="help" style="display:block;margin-top:8px">${esc(c.pages.slice(0, 4).join(' · '))}${c.pages.length > 4 ? ` · +${c.pages.length - 4}` : ''}</small>`
+        + `<div class="bar" style="margin-top:15px"><i style="width:${c.coverage}%"></i></div>`
+        + `<button type="button" class="btn ghost ogos-crea-cluster" data-i="${i}" style="margin-top:14px">Crea questo cluster →</button>`
+        + '</article>').join('')}</div>`;
+  }
+  griglia.after(contenitore);
+  contenitore.querySelectorAll('.ogos-crea-cluster').forEach(btn => {
+    btn.onclick = () => {
+      const c = suggeriti[Number(btn.dataset.i)];
+      if (!c) return;
+      state.clusters = Array.isArray(state.clusters) ? state.clusters : [];
+      state.clusters.push({ name: c.name, type: c.type, items: c.items, coverage: c.coverage, pillar: c.pillar, pages: c.pages, source: 'suggerito dall’inventario' });
+      save(true); renderMap();
+      toast(`Cluster “${c.name}” creato con ${c.items} pagine`);
+    };
+  });
+  return esito;
 };
 
 init();
