@@ -56,7 +56,8 @@
     @media(max-width:900px){.ogos-task-toolbar .spacer{display:none}.ogos-task-toolbar>*{flex:1 1 220px}.ogos-task-toolbar .ogos-toolbar-hint{flex-basis:100%;order:-1}.ogos-task-nav{position:sticky;top:8px;z-index:4;box-shadow:var(--shadow)}}
     @media(max-width:560px){.ogos-task-nav{grid-template-columns:1fr 1fr;display:grid}.ogos-task-nav-status{grid-column:1/-1;grid-row:1}.ogos-task-nav .btn{width:100%}.ogos-task-toolbar>*{flex-basis:100%}.page-head{align-items:flex-start}.page-head>.btn{width:100%;justify-content:center}}
     .ogos-task-field-compare{display:grid;gap:7px;padding:9px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2)}.ogos-task-field-compare+.ogos-task-field-compare{margin-top:7px}.ogos-task-field-row{display:grid;grid-template-columns:70px minmax(0,1fr);gap:8px;align-items:start}.ogos-task-field-row small{font-weight:850;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}.ogos-task-field-row span{overflow-wrap:anywhere}.ogos-task-field-row.proposed{padding-top:7px;border-top:1px solid var(--line);color:var(--green-2)}.verify-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:24px 0 10px}.verify-section-head:first-child{margin-top:0}.verify-section-head h2{margin:0;font-size:18px}.verify-section-head small{color:var(--muted)}.ogos-onpage-bulk-field[aria-pressed="true"]{background:var(--sage);border-color:var(--green);color:var(--green);font-weight:850}
-    @media(max-width:620px){.ogos-task-field-row{grid-template-columns:1fr}.verify-section-head{display:block}.verify-section-head small{display:block;margin-top:4px}}
+    .ogos-proposal-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch}.ogos-proposal-actions .btn{margin-top:0;justify-content:center}.ogos-discard-task svg,.ogos-archive-task svg{width:16px;height:16px}.single-task-stage>.task>.repair-actions{margin-top:12px}.single-task-stage>.task>.repair-actions .btn{width:100%;justify-content:center}
+    @media(max-width:620px){.ogos-task-field-row{grid-template-columns:1fr}.verify-section-head{display:block}.verify-section-head small{display:block;margin-top:4px}.ogos-proposal-actions{grid-template-columns:1fr}.ogos-proposal-actions .btn{width:100%}}
   </style>
 </head>
 <body>
@@ -84,6 +85,8 @@
       <label for="sidebarQuickAccess">Cose da fare</label>
       <select id="sidebarQuickAccess" aria-label="Apri un problema o un'attività"><option value="">Caricamento attività…</option></select>
       <small class="sidebar-count" id="sidebarQuickCount"></small>
+      <button type="button" id="sidebarRecountBtn">↻ Riconteggia attività</button>
+      <button type="button" id="sidebarArchivedTasksBtn">↥ Attività archiviate (0)</button>
       <button type="button" id="sidebarCompletedTasksBtn">✓ Task superati</button>
       <button type="button" id="sidebarGlobalReportBtn">↓ Scarica report globale</button>
     </div>
@@ -166,7 +169,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.6.13';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='3.6.18';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 /* Il registro viene letto prima dell'inizializzazione dell'interfaccia. Se il
@@ -5265,7 +5268,7 @@ onPageAuditContentV1510 = function () {
     if (!disponibile) return `<div class="ogos-seo-compare">${bloccoAttuale}<div class="ogos-seo-keep"><small class="ogos-compare-label">Esito</small><b>Mantieni attuale</b><small>Nessuna modifica proposta.</small></div></div>`;
     const testo = String(valore || ''), qualita=row.plan.copy.quality?.[campo], fonte=row.plan.copy.needSource || 'dati della pagina', delta=qualita&&qualitaAttuale?qualita.score-qualitaAttuale.score:null;
     const differenza=delta==null?'':`<span class="ogos-quality-delta ${delta>0?'positive':delta<0?'negative':'neutral'}">${delta>0?'+':''}${delta} qualità${delta<0?' · verifica necessaria':''}</span>`;
-    const proposta = `<div class="seo-proposal ogos-seo-proposed"><small class="ogos-compare-label">Proposta</small><label class="ogos-sel"><input type="checkbox" class="ogos-onpage-check" data-url="${esc(row.page.url)}" data-field="${esc(campo)}"><b>${esc(testo)}</b></label><small>${testo.length}/${limite} caratteri${qualita?` · qualità ${qualita.score}/100 (${esc(qualita.label)})`:''}</small>${differenza}${qualita?`<small>Focus ${qualita.coverage}% · ${qualita.grounded?'prova specifica inclusa':'prova da controllare'} · fonte: ${esc(fonte)}</small>`:''}<button type="button" class="btn ogos-onpage-field-task" data-url="${esc(row.page.url)}" data-field="${esc(campo)}">Crea task solo ${esc(etichetta)} →</button></div>`;
+    const proposta = `<div class="seo-proposal ogos-seo-proposed"><small class="ogos-compare-label">Proposta</small><label class="ogos-sel"><input type="checkbox" class="ogos-onpage-check" data-url="${esc(row.page.url)}" data-field="${esc(campo)}"><b>${esc(testo)}</b></label><small>${testo.length}/${limite} caratteri${qualita?` · qualità ${qualita.score}/100 (${esc(qualita.label)})`:''}</small>${differenza}${qualita?`<small>Focus ${qualita.coverage}% · ${qualita.grounded?'prova specifica inclusa':'prova da controllare'} · fonte: ${esc(fonte)}</small>`:''}<div class="ogos-proposal-actions"><button type="button" class="btn ogos-onpage-field-task" data-url="${esc(row.page.url)}" data-field="${esc(campo)}">Crea task solo ${esc(etichetta)} →</button><button type="button" class="btn ghost ogos-dismiss-onpage" data-url="${esc(row.page.url)}" data-field="${esc(campo)}">Scarta proposta</button></div></div>`;
     return `<div class="ogos-seo-compare">${bloccoAttuale}${proposta}</div>`;
   };
 
@@ -5277,7 +5280,7 @@ onPageAuditContentV1510 = function () {
 
   const corpo = righe.map(row => {
     const h1Multipli = row.multipleH1
-      ? `<small class="safe-note warn-note">${row.page.crawl.h1Count} H1 rilevati: rimuovere quelli duplicati.</small><label class="ogos-sel"><input type="checkbox" class="ogos-onpage-check" data-url="${esc(row.page.url)}" data-field="h1_count"><span>Includi la correzione degli H1 multipli</span></label><button type="button" class="btn ogos-onpage-field-task" data-url="${esc(row.page.url)}" data-field="h1_count">Crea task correzione H1 multipli →</button>`
+      ? `<small class="safe-note warn-note">${row.page.crawl.h1Count} H1 rilevati: rimuovere quelli duplicati.</small><label class="ogos-sel"><input type="checkbox" class="ogos-onpage-check" data-url="${esc(row.page.url)}" data-field="h1_count"><span>Includi la correzione degli H1 multipli</span></label><div class="ogos-proposal-actions"><button type="button" class="btn ogos-onpage-field-task" data-url="${esc(row.page.url)}" data-field="h1_count">Crea task correzione H1 multipli →</button><button type="button" class="btn ghost ogos-dismiss-onpage" data-url="${esc(row.page.url)}" data-field="h1_count">Scarta proposta</button></div>`
       : '';
     return `<tr><td class="ogos-sel-cell"><input type="checkbox" class="ogos-onpage-row-check" aria-label="Seleziona tutti i campi di ${esc(row.page.url)}"></td>`
       + `<td>${operationalPageLink(row.page.url)}<small><b>Focus:</b> ${esc(row.plan.focus.label || row.prop.keyword)}</small>${row.plan.copy.need ? `<small><b>Bisogno:</b> ${esc(row.plan.copy.need)}</small>` : ''}${h1Multipli}</td>`
@@ -9446,6 +9449,332 @@ importFile=async function(file){
 
 const ogosInitV3613Base=init;
 init=function(){ogosHardenStateV3613();ogosInitV3613Base();if(ogosHardenStateV3613())save(true);};
+
+/* ==========================================================================
+   v3.6.14 — selezione multipla on-page affidabile
+   ========================================================================== */
+
+/* In alcuni browser la pseudo-classe :checked, interrogata durante il click
+   sul bottone sticky, non rifletteva ancora la proprieta' corrente delle
+   caselle. Il contatore leggeva correttamente `checked`, mentre la creazione
+   del task usava :checked e restituiva "Nessun campo selezionato". La stessa
+   sorgente di verita' viene ora usata per conteggio e applicazione. Se una
+   riga e' selezionata, vengono inoltre inclusi difensivamente tutti i campi
+   realmente proponibili presenti in quella riga. */
+ogosSelezioneOnPage=function(){
+  const perCampo=new Map(),aggiungi=cb=>{
+    if(!cb||!cb.checked)return;const campo=String(cb.dataset?.field||''),url=String(cb.dataset?.url||'');if(!campo||!url)return;
+    if(!perCampo.has(campo))perCampo.set(campo,[]);const urls=perCampo.get(campo);if(!urls.some(item=>comparableUrl(item)===comparableUrl(url)))urls.push(url);
+  };
+  [...document.querySelectorAll('#modalForm .ogos-onpage-check')].forEach(aggiungi);
+  [...document.querySelectorAll('#modalForm .ogos-onpage-row-check')].filter(cb=>cb.checked).forEach(rowCheck=>{
+    const row=rowCheck.closest?.('tr');if(row)[...row.querySelectorAll('.ogos-onpage-check')].forEach(cb=>{if(!cb.checked)cb.checked=true;aggiungi(cb);});
+  });
+  return perCampo;
+};
+
+/* Sincronizza una volta ancora subito prima dell'azione, cosi' la barra non
+   puo' mostrare una selezione diversa da quella che verra' trasformata in
+   attivita'. */
+document.addEventListener('pointerdown',event=>{
+  if(!event.target.closest?.('#ogosCreateFromSelection'))return;
+  ogosAggiornaContatoreSelezione();
+},true);
+
+/* ==========================================================================
+   v3.6.15 — proposte scartabili e lista aperti sempre ricalcolata
+   ========================================================================== */
+
+function ogosDismissedRowsV3615(){
+  state.dismissedProposals=Array.isArray(state.dismissedProposals)?state.dismissedProposals.filter(row=>row&&row.key):[];
+  return state.dismissedProposals;
+}
+function ogosDismissValueV3615(value){
+  const raw=typeof value==='string'?value:JSON.stringify(value??'');return ogosCleanEditorialText(String(raw||'')).toLowerCase();
+}
+function ogosDismissKeyV3615(url,field,value){return`${comparableUrl(url)}|${String(field||'__issue__')}|${ogosDismissValueV3615(value)}`;}
+function ogosIsDismissedV3615(url,field,value){const key=ogosDismissKeyV3615(url,field,value);return ogosDismissedRowsV3615().some(row=>row.key===key);}
+function ogosStoreDismissalV3615(url,field,value,label=''){
+  const key=ogosDismissKeyV3615(url,field,value),rows=ogosDismissedRowsV3615();if(rows.some(row=>row.key===key))return false;
+  rows.push({key,url:comparableUrl(url),field:String(field||'__issue__'),value:ogosDismissValueV3615(value),label:String(label||''),dismissedAt:new Date().toISOString()});
+  if(rows.length>1500)state.dismissedProposals=rows.slice(-1500);return true;
+}
+function ogosDismissItemV3615(item,task){
+  const changes=item?.changes&&typeof item.changes==='object'?item.changes:{};let added=0;
+  Object.entries(changes).forEach(([field,value])=>{if(ogosStoreDismissalV3615(item.url,field,value,task?.title))added++;});
+  if(!Object.keys(changes).length&&ogosStoreDismissalV3615(item?.url,'__issue__',`${item?.issue||''}|${item?.fix||''}|${task?.operation?.type||''}`,task?.title))added++;
+  return added;
+}
+
+/* Tutti i generatori che passano da pendingOperationalItem rispettano lo
+   scarto. Una proposta diversa puo' ricomparire perché il valore proposto è
+   parte della firma; non vengono quindi nascosti miglioramenti futuri. */
+const ogosPendingOperationalItemV3615Base=pendingOperationalItem;
+pendingOperationalItem=function(item,task,completed){
+  const pending=ogosPendingOperationalItemV3615Base.apply(this,arguments);if(!pending)return pending;
+  const changes=pending.changes&&typeof pending.changes==='object'?pending.changes:{},filtered={};
+  Object.entries(changes).forEach(([field,value])=>{if(!ogosIsDismissedV3615(pending.url,field,value))filtered[field]=value;});
+  if(Object.keys(changes).length){if(!Object.keys(filtered).length)return null;return{...pending,changes:filtered};}
+  return ogosIsDismissedV3615(pending.url,'__issue__',`${pending.issue||''}|${pending.fix||''}|${task?.operation?.type||''}`)?null:pending;
+};
+
+/* Il report on-page usa una cache: il filtro finale applica gli scarti anche
+   alle righe già calcolate e ricostruisce un item indipendente, senza mutare
+   il dataset in cache. */
+const ogosOnPageCandidateRowsV3615Base=onPageCandidateRowsV1616;
+let ogosDismissedOnPageCacheV3615={base:null,signature:'',value:null};
+onPageCandidateRowsV1616=function(){
+  const base=ogosOnPageCandidateRowsV3615Base(),signature=ogosDismissedRowsV3615().map(row=>row.key).join('\n');
+  if(ogosDismissedOnPageCacheV3615.base===base&&ogosDismissedOnPageCacheV3615.signature===signature)return ogosDismissedOnPageCacheV3615.value;
+  const value=base.map(row=>{
+    const item={...row.item,changes:{...(row.item?.changes||{})}},copy={...row,item};
+    Object.entries(item.changes).forEach(([field,value])=>{if(ogosIsDismissedV3615(row.page.url,field,value))delete item.changes[field];});
+    if(copy.multipleH1&&ogosIsDismissedV3615(row.page.url,'h1_count',Number(row.page?.crawl?.h1Count)||0))copy.multipleH1=false;
+    return copy;
+  }).filter(row=>Object.keys(row.item?.changes||{}).length||row.multipleH1);
+  ogosDismissedOnPageCacheV3615={base,signature,value};return value;
+};
+onPageCandidateRowsV1510=onPageCandidateRowsV1616;
+
+const ogosOnPageAuditContentV3615Base=onPageAuditContentV1510;
+onPageAuditContentV1510=function(){
+  const html=ogosOnPageAuditContentV3615Base(),count=ogosDismissedRowsV3615().filter(row=>['title','post_title','meta_description','h1_count'].includes(row.field)).length;
+  return count?`<div class="safe-note"><b>${count} ${count===1?'proposta scartata':'proposte scartate'}.</b> Non vengono conteggiate fra le cose da fare. <button type="button" class="btn ghost" id="ogosRestoreDismissedV3615">Ripristina proposte scartate</button></div>${html}`:html;
+};
+
+function ogosProposalValueV3615(url,field){
+  const row=ogosOnPageCandidateRowsV3615Base().find(item=>comparableUrl(item.page?.url)===comparableUrl(url));if(!row)return undefined;
+  return field==='h1_count'?(Number(row.page?.crawl?.h1Count)||0):row.item?.changes?.[field];
+}
+function ogosRefreshOpenListsV3615(){
+  ogosTaskPickerSignatureV351='';ogosOnPageRowsCacheV366=null;ogosInvalidatePerformanceCachesV352();renderKanban();renderShell();if($('#view-audit')?.classList.contains('active'))renderAudit();
+}
+function ogosDiscardTaskV3615(id){
+  const index=(state.tasks||[]).findIndex(task=>String(task.id)===String(id));if(index<0)return false;const task=state.tasks[index];
+  const applied=(state.repairs||[]).some(repair=>String(repair.taskId)===String(task.id)&&!repair.undone);if(applied||task.partialApply){toast('Questa attività contiene modifiche applicate: usa prima il ripristino, poi potrai eliminarla.','error');return false;}
+  if(!confirm(`Eliminare “${task.title}” dalle cose da fare? La stessa proposta non verrà ripresentata finché i valori suggeriti non cambiano.`))return false;
+  (task.affected||[]).forEach(item=>ogosDismissItemV3615(item,task));state.tasks.splice(index,1);if(String(state.ui?.selectedTaskId)===String(id))delete state.ui.selectedTaskId;
+  closeModal();closeActionDrawer();save(true);ogosRefreshOpenListsV3615();toast('Attività eliminata e conteggio aggiornato');return true;
+}
+
+/* Il comando è disponibile sia sulla scheda sia nel dettaglio, accanto alle
+   azioni che trasformano o applicano il task. */
+const ogosTaskCardV3615Base=taskCard;
+taskCard=function(task){const html=ogosTaskCardV3615Base(task);if(taskIsCompleted(task))return html;return html.replace('<div class="task-foot">',`<div class="repair-actions"><button type="button" class="btn ghost ogos-discard-task" data-id="${task.id}">${icon('trash')} Elimina attività</button></div><div class="task-foot">`);};
+const ogosRenderTaskDetailV3615Base=ogosRenderTaskDetailV351;
+ogosRenderTaskDetailV351=function(task,limit){const result=ogosRenderTaskDetailV3615Base(task,limit);if(task&&!taskIsCompleted(task)){const actions=$('#modalForm .repair-actions');if(actions&&!actions.querySelector('.ogos-discard-task'))actions.insertAdjacentHTML('afterbegin',`<button type="button" class="btn ghost ogos-discard-task" data-id="${task.id}">${icon('trash')} Elimina attività</button>`);}return result;};
+
+document.addEventListener('click',event=>{
+  const proposal=event.target.closest?.('.ogos-dismiss-onpage'),taskButton=event.target.closest?.('.ogos-discard-task'),restore=event.target.closest?.('#ogosRestoreDismissedV3615'),recount=event.target.closest?.('#sidebarRecountBtn');
+  if(!proposal&&!taskButton&&!restore&&!recount)return;event.preventDefault();event.stopImmediatePropagation();
+  if(taskButton){ogosDiscardTaskV3615(taskButton.dataset.id);return;}
+  if(proposal){const value=ogosProposalValueV3615(proposal.dataset.url,proposal.dataset.field);if(value===undefined){toast('Proposta non trovata: riapri il controllo e riprova.','error');return;}ogosStoreDismissalV3615(proposal.dataset.url,proposal.dataset.field,value,'Proposta on-page scartata');save(true);ogosOnPageRowsCacheV366=null;openAuditCategory(0);renderShell();toast('Proposta scartata e rimossa dalle cose da fare');return;}
+  if(restore){state.dismissedProposals=[];save(true);ogosOnPageRowsCacheV366=null;openAuditCategory(0);renderShell();toast('Proposte scartate ripristinate');return;}
+  const result=(state.audit?.liveVerified||state.crawlCoverage?.observedAt)?ogosRiconciliaProblemiApertiV343({save:false}):{changed:false,resolvedRows:0,closedTasks:0};if(result.changed)save(true);ogosRefreshOpenListsV3615();toast(result.changed?`${result.resolvedRows} problemi già risolti rimossi; conteggio aggiornato`:'Conteggio aggiornato: nessun task già concluso resta fra le cose da fare');
+},true);
+
+/* La sidebar viene aggiornata immediatamente dopo completamento, verifica,
+   eliminazione o nuovo audit. La firma evita di ricostruirla a ogni render. */
+const ogosRenderShellV3615Base=renderShell;let ogosOpenListSignatureV3615='';
+renderShell=function(){const result=ogosRenderShellV3615Base.apply(this,arguments),signature=JSON.stringify({tasks:(state.tasks||[]).map(task=>[task.id,task.status,task.affected?.length||0,task.resolvedAffected?.length||0]),dismissed:ogosDismissedRowsV3615().map(row=>row.key),audit:state.audit?.last,pages:(state.pages||[]).map(page=>[page.url,page.status,page.canonical,page.keyword,page.live?.seoTitle,page.live?.metaDescription,page.crawl?.h1Count])});if(signature!==ogosOpenListSignatureV3615){ogosOpenListSignatureV3615=signature;renderDashboardQuickAccess();}return result;};
+
+const ogosInitV3615Base=init;
+init=function(){ogosDismissedRowsV3615();ogosInitV3615Base();};
+
+/* ==========================================================================
+   v3.6.16 — archivio attività non risolte con ripristino
+   ========================================================================== */
+
+function ogosArchivedTasksV3616(){state.archivedTasks=Array.isArray(state.archivedTasks)?state.archivedTasks.filter(task=>task&&task.id!=null).slice(0,500):[];return state.archivedTasks;}
+function ogosArchivedKeysV3616(){const keys=new Set();ogosArchivedTasksV3616().forEach(task=>(task.affected||[]).forEach(item=>operationalChangeKeys(item,task).forEach(key=>keys.add(key))));return keys;}
+
+/* Un task archiviato rappresenta ancora un problema noto, ma volutamente
+   messo da parte. I generatori non devono ricrearlo tra gli aperti. */
+const ogosPendingOperationalItemV3616Base=pendingOperationalItem;
+pendingOperationalItem=function(item,task,completed){
+  const pending=ogosPendingOperationalItemV3616Base.apply(this,arguments);if(!pending)return pending;const archived=ogosArchivedKeysV3616(),changes=pending.changes&&typeof pending.changes==='object'?pending.changes:{};
+  if(Object.keys(changes).length){const filtered={};Object.entries(changes).forEach(([field,value])=>{const one={...pending,changes:{[field]:value}};if(!operationalChangeKeys(one,task).some(key=>archived.has(key)))filtered[field]=value;});return Object.keys(filtered).length?{...pending,changes:filtered}:null;}
+  return operationalChangeKeys(pending,task).some(key=>archived.has(key))?null:pending;
+};
+
+function ogosArchiveTaskV3616(id){
+  const index=(state.tasks||[]).findIndex(task=>String(task.id)===String(id));if(index<0)return false;const task=state.tasks[index],applied=(state.repairs||[]).some(repair=>String(repair.taskId)===String(task.id)&&!repair.undone);
+  if(applied||task.partialApply){toast('Questa attività contiene modifiche applicate: usa prima il ripristino, poi potrai archiviarla.','error');return false;}
+  if(!confirm(`Archiviare “${task.title}”? Resterà non risolta, ma verrà tolta dalle cose da fare e potrai ripristinarla in seguito.`))return false;
+  const before=new Set(ogosDismissedRowsV3615().map(row=>row.key));(task.affected||[]).forEach(item=>ogosDismissItemV3615(item,task));const dismissalKeys=ogosDismissedRowsV3615().map(row=>row.key).filter(key=>!before.has(key));
+  const archived={...clone(task),archivedAt:new Date().toISOString(),archivedFromStatus:task.status||'Da approvare',archivedDismissalKeys:dismissalKeys};ogosArchivedTasksV3616().unshift(archived);state.tasks.splice(index,1);if(String(state.ui?.selectedTaskId)===String(id))delete state.ui.selectedTaskId;
+  closeModal();closeActionDrawer();save(true);ogosRefreshOpenListsV3615();toast('Attività archiviata: resta disponibile per il ripristino');return true;
+}
+function ogosRestoreArchivedTaskV3616(id){
+  const archive=ogosArchivedTasksV3616(),index=archive.findIndex(task=>String(task.id)===String(id));if(index<0)return false;const stored=archive[index],task=clone(stored);
+  ['archivedAt','archivedFromStatus','archivedDismissalKeys'].forEach(key=>delete task[key]);task.status=stored.archivedFromStatus||task.status||'Da approvare';task.approved=task.status!=='Da approvare';
+  const used=new Set((state.tasks||[]).map(item=>String(item.id)));if(used.has(String(task.id)))task.id=Math.max(100000,...(state.tasks||[]).map(item=>Number(item.id)||0))+1;
+  const remove=new Set(stored.archivedDismissalKeys||[]);state.dismissedProposals=ogosDismissedRowsV3615().filter(row=>!remove.has(row.key));archive.splice(index,1);state.tasks.push(task);state.ui=state.ui&&typeof state.ui==='object'?state.ui:{};state.ui.selectedTaskId=task.id;
+  closeActionDrawer();save(true);ogosRefreshOpenListsV3615();go('fix');renderKanban();toast('Attività ripristinata nelle cose da fare');return true;
+}
+function ogosOpenArchivedTasksV3616(){
+  const rows=ogosArchivedTasksV3616().slice().sort((a,b)=>Date.parse(b.archivedAt||0)-Date.parse(a.archivedAt||0));
+  const dateLabel=task=>{const ms=Date.parse(task.archivedAt||'');return Number.isFinite(ms)?new Intl.DateTimeFormat('it-IT',{dateStyle:'medium',timeStyle:'short'}).format(new Date(ms)):'data non disponibile';};
+  openActionDrawer('Attività archiviate',`${rows.length} ${rows.length===1?'attività non risolta messa da parte':'attività non risolte messe da parte'}`,rows.length?rows.map(task=>`<div class="drawer-task"><b>${esc(task.title)}</b><small>Archiviata ${dateLabel(task)} · stato precedente ${esc(task.archivedFromStatus||task.status||'Da approvare')}</small><button type="button" class="btn primary ogos-restore-archived" data-id="${task.id}">Ripristina nelle cose da fare →</button></div>`).join(''):'<p class="empty">Nessuna attività archiviata.</p>');
+}
+
+/* Sostituisce il precedente comando distruttivo con un archivio reversibile. */
+const ogosTaskCardV3616Base=taskCard;
+taskCard=function(task){return ogosTaskCardV3616Base(task).replace(/class="btn ghost ogos-discard-task"/g,'class="btn ghost ogos-archive-task"').replace(/Elimina attività/g,'Archivia attività');};
+const ogosRenderTaskDetailV3616Base=ogosRenderTaskDetailV351;
+ogosRenderTaskDetailV351=function(task,limit){const result=ogosRenderTaskDetailV3616Base(task,limit),button=$('#modalForm .ogos-discard-task');if(button){button.classList.remove('ogos-discard-task');button.classList.add('ogos-archive-task');button.innerHTML=`${icon('trash')} Archivia attività`;}return result;};
+
+/* Cose da fare: gli audit coperti da task archiviati non vengono conteggiati
+   di nuovo; task superati e archivio restano due elenchi distinti. */
+ogosDashboardIssues=function(){
+  const open=ogosOperationalTasksV355().filter(task=>!taskIsCompleted(task)),represented=new Set(),archived=new Set();open.forEach(task=>ogosDashboardTaskKeysV349(task).forEach(key=>represented.add(key)));ogosArchivedTasksV3616().forEach(task=>ogosDashboardTaskKeysV349(task).forEach(key=>archived.add(key)));
+  const items=[];if(state.pages.length)for(let index=0;index<audits.length;index++){const remaining=[...ogosDashboardAuditKeysV349(index)].filter(key=>!represented.has(key)&&!archived.has(key)).length;if(remaining)items.push({type:'audit',index,label:`${audits[index][0]} — ${remaining} ${remaining===1?'controllo non ancora in attività':'controlli non ancora in attività'}`});}
+  open.forEach(task=>items.push({type:'task',id:task.id,label:`Attività: ${task.title} (${Math.max(1,(task.affected||[]).length)} ${(task.affected||[]).length===1?'pagina':'pagine'})`}));return items;
+};
+
+const ogosRenderDashboardQuickAccessV3616Base=renderDashboardQuickAccess;
+renderDashboardQuickAccess=function(){const result=ogosRenderDashboardQuickAccessV3616Base.apply(this,arguments),button=$('#sidebarArchivedTasksBtn'),count=ogosArchivedTasksV3616().length;if(button){button.textContent=`↥ Attività archiviate (${count})`;button.disabled=!count;button.onclick=ogosOpenArchivedTasksV3616;}return result;};
+
+document.addEventListener('click',event=>{
+  const archive=event.target.closest?.('.ogos-archive-task'),restore=event.target.closest?.('.ogos-restore-archived');if(!archive&&!restore)return;event.preventDefault();event.stopImmediatePropagation();if(archive)ogosArchiveTaskV3616(archive.dataset.id);else ogosRestoreArchivedTaskV3616(restore.dataset.id);
+},true);
+
+const ogosInitV3616Base=init;
+init=function(){ogosArchivedTasksV3616();ogosInitV3616Base();};
+
+/* ==========================================================================
+   v3.6.17 — controllo linguistico italiano e contesti leggibili
+   ========================================================================== */
+
+const OGOS_ITALIAN_DANGLING_V3617=/\b(?:non|no|che|di|a|da|in|con|per|su|tra|fra|e|o|il|lo|la|i|gli|le|un|uno|una|del|dello|della|dei|degli|delle)[.!?…]?$/i;
+const OGOS_DOUBLE_INFINITIVE_V3617=/\b(?:iniziare|scoprire|capire|imparare|scegliere|praticare|trovare|conoscere|valutare|consultare)\s+(?:iniziare|scoprire|capire|imparare|scegliere|praticare|trovare|conoscere|valutare|consultare)\b/i;
+const OGOS_AFTER_COLON_LOWER_V3617=new Set(['assistenza','benefici','caratteristiche','come','consigli','corso','corsi','crea','dettagli','guida','impianti','indicazioni','informazioni','lezioni','menu','modalità','offerta','orari','prezzi','scopri','servizi','soluzioni','vantaggi','visita']);
+const OGOS_COMMON_LOWER_V3617=new Set([...OGOS_AFTER_COLON_LOWER_V3617,'bambini','essenziali','fisici','ideale','mentali','pilates','psicologici','terapia','yoga']);
+
+/* Ripara esclusivamente difetti meccanici certi. Non tenta di "indovinare"
+   parole mancanti: quando la grammatica resta dubbia, il campo viene bloccato. */
+function ogosItalianNormalizeV3617(value){
+  let text=ogosCleanEditorialText(value).replace(/([a-zà-öø-ÿ]{3})([A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ]{2})/gu,'$1 $2');
+  text=text.replace(/\s+([,.;:!?])/g,'$1').replace(/([,;:!?])(?=[\p{L}\p{N}])/gu,'$1 ').replace(/\.{2,}/g,'…').replace(/\s{2,}/g,' ').trim();
+  text=text.replace(/:\s+([A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ'’-]+)/gu,(match,word)=>OGOS_AFTER_COLON_LOWER_V3617.has(word.toLowerCase())?`: ${word.toLowerCase()}`:match);
+  text=text.replace(/\b[A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ'’-]+\b/gu,(word,index)=>{const before=text.slice(0,index).trimEnd();return before&&!/[.!?…|–—]$/.test(before)&&OGOS_COMMON_LOWER_V3617.has(word.toLowerCase())?word.toLowerCase():word;});
+  return text;
+}
+function ogosItalianCopyIssuesV3617(field,value){
+  const raw=ogosCleanEditorialText(value),text=ogosItalianNormalizeV3617(raw),issues=[];
+  if(!text)issues.push('testo vuoto');
+  if(/[a-zà-öø-ÿ]{3}[A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ]{2}/u.test(raw))issues.push('parole unite');
+  if(OGOS_DOUBLE_INFINITIVE_V3617.test(text))issues.push('verbi concatenati senza legame grammaticale');
+  if(/\b([\p{L}]{3,})\s+\1\b/iu.test(text))issues.push('parola ripetuta');
+  if(OGOS_ITALIAN_DANGLING_V3617.test(text))issues.push('frase incompleta');
+  if(/[,;:–—-]\s*$/.test(text))issues.push('punteggiatura sospesa');
+  if(field==='meta_description'&&!/[.!?…]$/.test(text))issues.push('meta description senza chiusura');
+  if(field==='meta_description'&&(text.length<80||text.length>160))issues.push('lunghezza meta non affidabile');
+  if(field==='title'&&(text.length<15||text.length>60))issues.push('lunghezza title non valida');
+  if(field==='post_title'&&(text.length<10||text.length>95))issues.push('lunghezza H1 non valida');
+  return[...new Set(issues)];
+}
+function ogosItalianCandidateV3617(page,copy,field,value){
+  const text=ogosItalianNormalizeV3617(value);if(ogosItalianCopyIssuesV3617(field,text).length)return'';
+  const focus=copy?.focus||copy?.keyword||page?.keyword||'',proof=[...(copy?.facts||[]).map(row=>row?.text),page?.crawl?.h1Text,page?.crawl?.titleText,page?.crawl?.contentExcerpt,page?.live?.contentExcerpt,page?.live?.excerpt].filter(Boolean).join(' ');
+  if(focus&&ogosSovrapposizioneV342(text,focus)<(field==='meta_description'?.25:.35))return'';
+  if(ogosClaimNonSupportatiV343(text,proof).length)return'';
+  return text;
+}
+
+let ogosItalianCopyCacheV3617=new WeakMap();
+const ogosSeoCopyFromPageV3617Base=ogosSeoCopyFromPage;
+ogosSeoCopyFromPage=function(page,forcedKeyword){
+  if(!page||typeof page!=='object')return ogosSeoCopyFromPageV3617Base(page,forcedKeyword);
+  let rows=ogosItalianCopyCacheV3617.get(page);if(!rows){rows=new Map();ogosItalianCopyCacheV3617.set(page,rows);}const key=String(forcedKeyword||'');if(rows.has(key))return rows.get(key);
+  const base=ogosSeoCopyFromPageV3617Base(page,forcedKeyword);if(!base)return base;
+  const blocked={...(base.blockedFields||{})},current={title:ogosValoreCorrenteV342(page,'title'),post_title:ogosValoreCorrenteV342(page,'post_title'),meta_description:ogosValoreCorrenteV342(page,'meta_description')},original={title:base.title,post_title:base.h1,meta_description:base.meta},variants={...(base.variants||{})},values={};
+  ['title','post_title','meta_description'].forEach(field=>{
+    const evidenceBlocked=base.evidenceReliability&&base.evidenceReliability!=='confirmed'&&base.blockedFields?.[field];
+    const alternatives=evidenceBlocked?[original[field]].filter(Boolean):[original[field],...(variants[field]||[]).map(row=>row?.value),current[field]].filter(Boolean);let selected='';
+    for(const candidate of alternatives){selected=ogosItalianCandidateV3617(page,base,field,candidate);if(selected)break;}
+    values[field]=selected;if(selected)delete blocked[field];else if(!evidenceBlocked)blocked[field]=`Proposta bloccata dal controllo linguistico: ${ogosItalianCopyIssuesV3617(field,original[field]).join(', ')||'nessun testo italiano sufficientemente affidabile'}`;
+    if(Array.isArray(variants[field])){const seen=new Set();variants[field]=variants[field].map(row=>{const value=ogosItalianCandidateV3617(page,base,field,row?.value);return value?{...row,value}:null;}).filter(row=>{if(!row||seen.has(row.value.toLowerCase()))return false;seen.add(row.value.toLowerCase());return true;}).slice(0,3);}
+  });
+  const proof=[...(base.facts||[]).map(row=>row?.text),page?.crawl?.h1Text,page?.crawl?.titleText,page?.crawl?.contentExcerpt,page?.live?.contentExcerpt].filter(Boolean).join(' '),focus=base.focus||base.keyword||forcedKeyword||page.keyword||'',quality={title:ogosQualitaCopyV343(page,'title',values.title,focus,proof,[]),post_title:ogosQualitaCopyV343(page,'post_title',values.post_title,focus,proof,[values.title]),meta_description:ogosQualitaCopyV343(page,'meta_description',values.meta_description,focus,proof,[values.title,values.post_title])};
+  const copy={...base,title:values.title,h1:values.post_title,meta:values.meta_description,variants,blockedFields:blocked,quality,generationMethod:'italian-language-guard-v3.6.17'};if(rows.size>8)rows.clear();rows.set(key,copy);return copy;
+};
+const ogosSaveV3617Base=save;
+save=function(force=false){if(force)ogosItalianCopyCacheV3617=new WeakMap();return ogosSaveV3617Base(force);};
+
+/* I contesti legacy gia' salvati possono contenere parole unite o spezzoni.
+   In quel caso non mostriamo una falsa frase: chiediamo un nuovo crawl, che
+   dalla 3.6.17 estrae il blocco semantico corretto senza troncare parole. */
+function ogosReliableLinkContextV3617(detail){
+  const raw=String(detail?.context||''),text=ogosItalianNormalizeV3617(raw),anchor=String(detail?.anchor||'');if(!text)return'';
+  const startsMidWord=/^[a-zà-öø-ÿ]/u.test(text)&&!text.startsWith('…'),glued=/[a-zà-öø-ÿ]{3}[A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ]{2}/u.test(raw),anchorMissing=anchor&&!text.toLowerCase().includes(anchor.toLowerCase()),truncated=OGOS_ITALIAN_DANGLING_V3617.test(text)||(/.{120,}/.test(text)&&!/[.!?…]$/.test(text));
+  return startsMidWord||glued||anchorMissing||truncated?'':text;
+}
+highlightedLinkContext=function(detail){
+  const text=ogosReliableLinkContextV3617(detail);if(!text)return'<span class="help">Contesto precedente non affidabile: esegui una nuova scansione live per acquisire la frase completa.</span>';
+  const anchor=String(detail?.anchor||''),index=anchor?text.toLowerCase().indexOf(anchor.toLowerCase()):-1;if(index<0)return`<div class="link-context">${esc(text)}</div>`;
+  return`<div class="link-context">${esc(text.slice(0,index))}<mark>${esc(text.slice(index,index+anchor.length))}</mark>${esc(text.slice(index+anchor.length))}</div>`;
+};
+
+/* ========================================================================== 
+   v3.6.18 — segnalazioni realmente azionabili e link applicabili
+   ========================================================================== */
+
+function ogosActionableKeywordRowsV3618(){
+  const necessary=new Set(onPageCandidateRowsV1616().filter(row=>Object.keys(row.item?.changes||{}).length).map(row=>comparableUrl(row.page.url)));
+  return keywordProposals((state.pages||[]).filter(page=>!page.keyword)).map((proposal,sourceIndex)=>({proposal,sourceIndex,plan:ogosKeywordPlan(proposal)})).filter(row=>necessary.has(comparableUrl(row.proposal.url))&&row.plan?.hasChanges&&Object.keys(row.plan?.changes||{}).length);
+}
+
+/* Una cannibalizzazione viene confermata soltanto da righe Search Console
+   che contengono nello stesso record query e pagina. Le esportazioni con le
+   due tabelle separate non consentono di dimostrare la competizione. */
+cannibalizationFromGsc=function(){
+  const raw=Array.isArray(state.gsc?.rows)?state.gsc.rows:[],groups=new Map(),pageByUrl=new Map((state.pages||[]).map(page=>[comparableUrl(page.url),page]));
+  raw.forEach(row=>{
+    const query=String(row?.query??row?.keys?.[0]??'').trim().toLocaleLowerCase('it'),url=String(row?.url??row?.page??row?.path??row?.keys?.[1]??'').trim();if(!query||!url)return;
+    const page=pageByUrl.get(comparableUrl(url));if(!page||ogosPaginaTecnica(page)||ogosSourceRedirectedV356(url)||['noindex','Esclusa','Redirect','Non indicizzata'].includes(page.status))return;
+    const clicks=Math.max(0,Number(row.clicks)||0),impressions=Math.max(0,Number(row.impressions)||0),key=query;
+    if(!groups.has(key))groups.set(key,new Map());const urls=groups.get(key),identity=comparableUrl(url),current=urls.get(identity)||{url,clicks:0,impressions:0};current.clicks+=clicks;current.impressions+=impressions;urls.set(identity,current);
+  });
+  const results=[];groups.forEach((urls,query)=>{
+    const metrics=[...urls.values()].filter(item=>item.clicks>=1||item.impressions>=3).sort((a,b)=>b.clicks-a.clicks||b.impressions-a.impressions),totalClicks=metrics.reduce((sum,item)=>sum+item.clicks,0),totalImpressions=metrics.reduce((sum,item)=>sum+item.impressions,0);
+    if(metrics.length<2||(totalClicks<2&&totalImpressions<20))return;const secondary=metrics[1],share=totalImpressions?secondary.impressions/totalImpressions:secondary.clicks/Math.max(1,totalClicks);if(share<.10)return;
+    results.push({query,urls:metrics.map(item=>item.url),urlMetrics:metrics,totalClicks,totalImpressions,evidence:'direct-query-page'});
+  });
+  return results.sort((a,b)=>b.totalClicks-a.totalClicks||b.totalImpressions-a.totalImpressions);
+};
+cannibalizationProposals=function(){
+  return cannibalizationFromGsc().map(row=>({query:row.query,primary:row.urlMetrics[0].url,secondary:row.urlMetrics.slice(1).map(item=>item.url),urlMetrics:row.urlMetrics,totalClicks:row.totalClicks,totalImpressions:row.totalImpressions,evidence:row.evidence,action:'Mantieni una pagina primaria soltanto se contenuto e intento coincidono davvero.'})).map(row=>({...row,...cannibalizationDecision(row)}));
+};
+
+function ogosOpenInvolvedPagesV3618(urls,title='Pagine coinvolte',metrics=[]){
+  const unique=[...new Map((urls||[]).filter(Boolean).map(url=>[comparableUrl(url),url])).values()];
+  openActionDrawer(title,`${unique.length} ${unique.length===1?'pagina coinvolta':'pagine coinvolte'}`,unique.length?unique.map(url=>{const metric=metrics.find(item=>comparableUrl(item.url)===comparableUrl(url)),href=/^https?:\/\//i.test(url)?url:ogosLiveUrl(url);return`<div class="drawer-task"><b>${operationalPageLink(url)}</b>${metric?`<small>${Number(metric.clicks)||0} clic · ${Number(metric.impressions)||0} impressioni per la query</small>`:''}${href?`<a class="btn primary" href="${esc(href)}" target="_blank" rel="noopener noreferrer">Apri pagina ↗</a>`:''}</div>`;}).join(''):'<p class="empty">Nessuna pagina da aprire.</p>');
+}
+
+const ogosAuditContentV3618Base=auditCategoryContent;
+auditCategoryContent=function(index){
+  if(index===4){const rows=ogosActionableKeywordRowsV3618();return rows.length?`<p><b>${rows.length}</b> interventi on-page realmente necessari.</p><div class="table-wrap"><table><thead><tr><th>Pagina</th><th>Keyword</th><th>Intento</th><th>Intervento</th><th>Azione</th></tr></thead><tbody>${rows.map(({proposal:r,sourceIndex,plan})=>`<tr><td>${operationalPageLink(r.url)}</td><td><b>${esc(r.keyword)}</b></td><td>${esc(r.intent)}</td><td>${esc(Object.keys(plan.changes).map(field=>field==='post_title'?'H1':field==='meta_description'?'Meta description':'Title SEO').join(', '))}</td><td><button type="button" class="btn ogos-keyword-detail" data-proposal-index="${sourceIndex}" data-url="${esc(r.url)}" data-keyword="${esc(r.keyword)}" data-intent="${esc(r.intent)}" data-source="${esc(r.source||'Proposta verificata')}">Confronta attuale e proposta →</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="safe-note">Nessun intervento on-page necessario: le pagine già coerenti non vengono elencate.</p>';
+  }
+  if(index===5){const rows=cannibalizationProposals(),hasDirect=(state.gsc?.rows||[]).some(row=>(row?.query??row?.keys?.[0])&&(row?.url??row?.page??row?.path??row?.keys?.[1]));return rows.length?`<p class="help">Sono mostrati solo gruppi confermati da dati Search Console query‑pagina, con almeno due URL e segnale sufficiente.</p><div class="table-wrap"><table><thead><tr><th>Query</th><th>Pagina primaria</th><th>Concorrenti reali</th><th>Prova</th><th>Azione</th></tr></thead><tbody>${rows.map((row,index)=>`<tr><td><b>${esc(row.query)}</b></td><td>${operationalPageLink(row.primary)}</td><td>${row.secondary.map(url=>operationalPageLink(url)).join('<br>')}</td><td>${row.totalClicks} clic · ${row.totalImpressions} impressioni</td><td><button type="button" class="btn ogos-open-cannibal-pages" data-index="${index}">Vedi pagine coinvolte →</button></td></tr>`).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>La decisione resta editoriale: nessun redirect automatico.</small><button type="button" class="btn primary" id="ogosCreateCannibalBulk">Crea piano (${rows.length}) →</button></div>`:`<p class="safe-note">Nessuna cannibalizzazione confermata.</p><p class="help">${hasDirect?'I dati query‑pagina non mostrano due URL realmente in competizione con un segnale sufficiente.':'L’esportazione contiene query e pagine in tabelle separate: non è attendibile dedurre cannibalizzazioni. Importa il rapporto Search Console con dimensioni Query + Pagina o usa il collegamento API.'}</p>`;
+  }
+  return ogosAuditContentV3618Base(index);
+};
+
+const ogosAuditCountV3618Base=auditCategoryCount;
+auditCategoryCount=function(index){if(index===4)return ogosActionableKeywordRowsV3618().length;if(index===5)return cannibalizationFromGsc().length;return ogosAuditCountV3618Base(index);};
+const ogosDashboardKeysV3618Base=ogosDashboardAuditKeysV349;
+ogosDashboardAuditKeysV349=function(index){if(index===4)return new Set(ogosActionableKeywordRowsV3618().map(row=>`keyword|${comparableUrl(row.proposal.url)}`));if(index===5)return new Set(cannibalizationFromGsc().map(row=>`cannibalization|${row.query}`));return ogosDashboardKeysV3618Base(index);};
+
+const ogosTaskCardV3618Base=taskCard;
+taskCard=function(task){let html=ogosTaskCardV3618Base(task);if(!(task?.affected||[]).length)return html;return html.replace('<div class="task-foot">',`<button type="button" class="btn ghost ogos-open-task-pages" data-id="${task.id}">Vedi e apri le pagine coinvolte →</button><div class="task-foot">`);};
+document.addEventListener('click',event=>{
+  const cannibal=event.target.closest?.('.ogos-open-cannibal-pages'),taskButton=event.target.closest?.('.ogos-open-task-pages');if(!cannibal&&!taskButton)return;event.preventDefault();event.stopImmediatePropagation();
+  if(cannibal){const row=cannibalizationProposals()[Number(cannibal.dataset.index)];if(row)ogosOpenInvolvedPagesV3618([row.primary,...row.secondary],`Pagine in competizione per “${row.query}”`,row.urlMetrics);return;}
+  const task=(state.tasks||[]).find(item=>String(item.id)===String(taskButton.dataset.id));if(task)ogosOpenInvolvedPagesV3618((task.affected||[]).map(item=>item.url),task.title);
+},true);
+
+window.__ogosTest={...(window.__ogosTest||{}),ogosActionableKeywordRowsV3618,cannibalizationFromGsc,cannibalizationProposals};
 
 init();
 })();
