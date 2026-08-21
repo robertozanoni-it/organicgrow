@@ -49,6 +49,9 @@
     .ogos-cella-correggi{white-space:nowrap;vertical-align:top}
     .ogos-cella-correggi .btn{padding:6px 10px;font-size:12px}
     #ogosClusterSuggeriti .tool-card p{margin:8px 0 0}
+    body.ogos-overlay-open{overflow:hidden}.field[hidden]{display:none!important}.ogos-operation-help{margin:0 0 2px}.ogos-migration-note{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.task-status:disabled{cursor:default;opacity:.8}.modal [aria-invalid="true"]{border-color:var(--danger)}
+    @media(max-width:760px){.task-detail-summary{grid-template-columns:1fr 1fr}.task-detail-table{border:0;background:transparent;overflow:visible}.task-detail-table table,.task-detail-table tbody,.task-detail-table tr,.task-detail-table td{display:block;width:100%;min-width:0}.task-detail-table thead{display:none}.task-detail-table tr{margin:0 0 12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.task-detail-table td{padding:8px 0;border:0}.task-detail-table td:before{display:block;margin-bottom:3px;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.task-detail-table td:nth-child(1):before{content:'Pagina'}.task-detail-table td:nth-child(2):before{content:'Problema'}.task-detail-table td:nth-child(3):before{content:'Azione'}.task-detail-table td:nth-child(4):before{content:'Modifica'}.task-detail-table td:nth-child(5):before{content:'Correzione'}.task-detail-table .btn{width:100%;justify-content:center}.ogos-migration-note{display:block}.ogos-migration-note .btn{width:100%;margin-top:10px}}
+    @media(max-width:480px){.task-detail-summary{grid-template-columns:1fr}.modal-backdrop{padding:0;align-items:end}.modal{width:100%;max-height:94vh;border-radius:18px 18px 0 0;padding:16px}.form-actions,.repair-actions{display:grid;grid-template-columns:1fr}.form-actions .btn,.repair-actions .btn{width:100%}}
   </style>
 </head>
 <body>
@@ -125,7 +128,7 @@
     <section class="view" id="view-settings"><div class="page-head"><div><h1>Impostazioni e sicurezza</h1><p>Gestisci tema, salvataggio locale, connettori e ripristino.</p></div></div><div class="panel form-panel"><div class="form-grid"><div class="field"><label for="themeSelect">Tema</label><select id="themeSelect"><option value="system">Automatico</option><option value="light">Chiaro</option><option value="dark">Scuro</option></select></div><div class="field"><label for="autosave">Salvataggio locale</label><select id="autosave"><option value="on">Attivo</option><option value="off">Disattivo</option></select><small class="help">I dati del progetto restano solo su questo browser (localStorage), non cifrati e non sincronizzati altrove. Usa Esporta backup per conservarli altrove.</small></div><div class="field wide"><label>Connettore WordPress</label><div class="panel" style="padding:18px;box-shadow:none"><div id="wpStatus" class="safe-note warn-note">Non collegato</div><div class="form-grid"><div class="field wide"><label for="wpUrl">URL WordPress</label><input id="wpUrl" type="url" placeholder="https://esempio.it"><small class="help">Inserisci l’indirizzo HTTPS del sito, senza /wp-admin. La password admin viene inserita soltanto nella schermata di login WordPress e non passa mai attraverso Organic Growth OS.</small></div></div><div class="form-actions" style="justify-content:flex-start"><button type="button" class="btn primary" id="wpBtn">Collega WordPress</button><button type="button" class="btn" id="wpDisconnectBtn">Disconnetti</button></div><details style="margin-top:14px"><summary><b>Se il collegamento automatico non torna alla web app</b></summary><p class="help">Se il collegamento automatico non completa la connessione, la schermata WordPress di autorizzazione resta aperta e mostra un codice monouso con il pulsante “Copia codice”. Incollalo qui entro 2 minuti. Le credenziali admin non vengono mai inserite o salvate in Organic Growth OS.</p><div class="form-actions" style="justify-content:flex-start"><input class="search" id="wpPairCode" placeholder="Codice di collegamento" style="max-width:420px"><button type="button" class="btn" id="wpPairCodeBtn">Usa codice</button></div></details></div></div></div><div class="form-actions"><button class="btn" type="button" id="importBackupBtn">Importa backup</button><button class="btn danger" type="button" id="resetBtn">Azzera analisi del sito</button></div></div></section>
   </main>
 </div>
-<aside class="action-drawer" id="actionDrawer" aria-hidden="true" aria-labelledby="actionDrawerTitle">
+<aside class="action-drawer" id="actionDrawer" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="actionDrawerTitle" tabindex="-1">
   <div class="action-drawer-head"><div><h2 id="actionDrawerTitle">Dettaglio operativo</h2><p class="help" id="actionDrawerHelp"></p></div><button class="icon-btn" id="actionDrawerClose" aria-label="Chiudi pannello"><svg data-icon="x"></svg></button></div>
   <div class="action-drawer-body" id="actionDrawerBody"></div>
 </aside>
@@ -153,7 +156,7 @@ const TASK_DETAILS={
 5:{auto:false,affected:['/ricette-veloci','/ricette-con-zucchine','/ricette-vegane','/ricette-vegetariane','/ingredienti','/guide','/ricette','/metodo-10chef','/frutta-e-verdura-di-stagione'].map(url=>({url,issue:'Contenuto con segnali di aggiornamento debole',fix:'Revisione editoriale e aggiornamento delle informazioni'}))},
 6:{auto:false,affected:[{url:'/ricette-veloci',issue:'CLS mobile da misurare nel browser reale',fix:'Individua elemento instabile e riserva lo spazio necessario'}]}
 };
-const APP_VERSION='3.5.2';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='3.5.5';let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 var projectRegistryCache=null;/* PATCH: era let -> TDZ al boot */
@@ -789,6 +792,8 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.5.5', date: '2026-08-20', notes: 'Ripulite e rigenerate le proposte SEO aperte provenienti da versioni precedenti, uniti i task sovrapposti e riallineati i conteggi. Il generatore finale ora usa una cache propria, le selezioni non provocano salvataggi completi ripetuti e l’approvazione di massa rispetta i filtri visibili. Migliorate anche modali, focus da tastiera, campi contestuali e visualizzazione mobile.', compatibility: 'Aggiornamento consigliato per tutti i siti, soprattutto per backup con attività SEO già create. Task completati, rollback e dati manuali restano invariati.' },
+  { version: '3.5.4', date: '2026-08-20', notes: 'Rafforzata la verifica delle pagine orfane: inventario e crawl devono coincidere e l’assenza di un link vale solo sull’HTML renderizzato. La riconciliazione automatica usa esclusivamente scansioni live recenti, non parte dopo import falliti e la correzione di una singola riga distingue più interventi sulla stessa URL. Il generatore scarta focus obsoleti, intenti incompatibili e frasi troncate, mantenendo un valore esistente quando e’ migliore della proposta.', compatibility: 'Aggiornamento consigliato per tutti i siti. Backup e task precedenti restano compatibili; per confermare le orfane serve il connettore 3.5.4 e un crawl completo.' },
   { version: '3.5.1', date: '2026-08-20', notes: 'Velocizzati i passaggi tra attività, sezioni e pulsanti: la navigazione non serializza più tutto il progetto prima di mostrare la vista, i salvataggi materiali vengono accorpati dopo il rendering e la sidebar non esegue doppi render. I task con molte URL aprono 25 righe alla volta e caricano le successive su richiesta; rimossa anche la riconciliazione duplicata dal render del dashboard.', compatibility: 'Aggiornamento consigliato soprattutto per progetti con molte pagine o attività. Dati, backup e connettore restano compatibili.' },
   { version: '3.5.0', date: '2026-08-20', notes: 'Il generatore distingue i termini ambigui usando il contesto: ricetta elettronica, Camera di Commercio, camera fotografica e visita immobiliare non vengono più classificati come cucina o ricettività. Title e H1 hanno una barriera di distinzione, mentre le meta incomplete vengono rigenerate da prove reali o bloccate. Allineati anche H1 multipli nei problemi aperti, copertura orfani, identità URL GSC, retry del crawl, precedenza Googlebot e cache del grafo.', compatibility: 'Richiede il connettore unificato 3.5.0 per la correzione robots e il crawl resiliente. Backup e progetti precedenti restano compatibili.' },
   { version: '3.4.9', date: '2026-08-20', notes: 'Corretti H1 multipli chiusi per errore, falsi orfani causati da parametri, deduplica per conteggio e numeri Search Console con separatori locali. Il generatore usa contesto e co-occorrenze per evitare verticali sbagliati; alt vuoti e robots Googlebot ricevono controlli distinti.', compatibility: 'Richiede il connettore unificato 3.4.9 per i nuovi dati alt e la precedenza Googlebot. Backup e progetti precedenti restano compatibili.' },
@@ -2835,7 +2840,7 @@ auditCategoryContent = function (i) {
   if (i === 0) {
     const affected = pages.filter(p => p.live && (!String(p.live.seoTitle || '').trim() || !String(p.live.metaDescription || '').trim()));
     if (!pages.some(p => p.live)) return '<p class="empty">Esegui prima una scansione live: title e meta description non possono essere dedotti in modo affidabile da dati storici.</p>';
-    return affected.length ? `<p><b>${affected.length}</b> pagine richiedono un elemento on-page. Controlla la proposta prima di creare l'attività da approvare.</p><div class="table-wrap"><table><thead><tr><th>Pagina</th><th>Problema attuale</th><th>Title SEO proposto</th><th>Meta description proposta</th></tr></thead><tbody>${affected.map(p => { const q = seoProposalForPage(p); return `<tr><td>${operationalPageLink(p.url)}</td><td>${!p.live.seoTitle ? 'Title SEO mancante. ' : ''}${!p.live.metaDescription ? 'Meta description mancante.' : ''}</td><td><div class="seo-proposal"><b>${esc(q.title)}</b><small>${q.title.length}/60 caratteri · keyword: ${esc(q.keyword)}</small></div></td><td><div class="seo-proposal"><span>${esc(q.meta)}</span><small>${q.meta.length}/155 caratteri</small></div></td></tr>`; }).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>Il pulsante crea un'unica attività da approvare, con una modifica distinta per ogni URL: non applica ancora nulla al sito.</small><button type="button" class="btn primary" id="ogosCreateOnPageBulk">Crea attività da approvare (${affected.length}) →</button></div>` : '<p class="safe-note">Title SEO e meta description risultano presenti su tutte le pagine dell’ultima scansione live.</p>';
+    return affected.length ? `<p><b>${affected.length}</b> pagine richiedono un elemento on-page. Controlla la proposta prima di creare l'attività da approvare.</p><div class="table-wrap"><table><thead><tr><th>Pagina</th><th>Problema attuale</th><th>Title SEO proposto</th><th>Meta description proposta</th></tr></thead><tbody>${affected.map(p => { const q = seoProposalForPage(p); return `<tr><td>${operationalPageLink(p.url)}</td><td>${!p.live.seoTitle ? 'Title SEO mancante. ' : ''}${!p.live.metaDescription ? 'Meta description mancante.' : ''}</td><td><div class="seo-proposal"><b>${esc(q.title)}</b><small>${q.title.length}/60 caratteri · keyword: ${esc(q.keyword)}</small></div></td><td><div class="seo-proposal"><span>${esc(q.meta)}</span><small>${q.meta.length}/160 caratteri</small></div></td></tr>`; }).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>Il pulsante crea un'unica attività da approvare, con una modifica distinta per ogni URL: non applica ancora nulla al sito.</small><button type="button" class="btn primary" id="ogosCreateOnPageBulk">Crea attività da approvare (${affected.length}) →</button></div>` : '<p class="safe-note">Title SEO e meta description risultano presenti su tutte le pagine dell’ultima scansione live.</p>';
   }
   if (i === 1) {
     const unresolved = pages.filter(p => p.status !== 'Indicizzata');
@@ -4016,7 +4021,7 @@ renderKeywordProposalPage = function () {
   const connected = state.wordpress.connected && state.wordpress.pluginDetected;
   const compatible = connected && connectorSupportsKeywordInsertion();
 
-  const diff = p => { const enabled = selection[p.key] !== false, limit = p.key === 'title' ? '/60' : p.key === 'meta_description' ? '/155' : '/95'; return `<div class="keyword-proposal-section ${enabled ? '' : 'field-disabled'}" data-seo-section="${esc(p.key)}"><div class="seo-field-control"><label><input type="checkbox" class="ogos-seo-field-toggle" data-field-key="${esc(p.key)}" ${enabled ? 'checked' : ''} ${completed ? 'disabled' : ''}> Abilita ${esc(p.field)}</label><button type="button" class="btn ogos-apply-seo-field" data-field-key="${esc(p.key)}" ${enabled && compatible && !completed ? '' : 'disabled'}>Approva e applica solo questo →</button></div><h2>${esc(p.field)}</h2><div class="keyword-diff-grid"><div class="keyword-diff"><small>Prima</small><h3>${esc(p.from || '—')}</h3><p>${/^\(/.test(String(p.from || '')) || !p.from ? 'valore non presente' : `${String(p.from).length} caratteri`}</p></div><div class="keyword-diff after"><small>Dopo</small><h3>${esc(p.to)}</h3><p>${p.to.length}${limit} caratteri</p></div></div><p class="help"><b>Perché:</b> ${esc(p.reason)}${p.note ? ` ${esc(p.note)}` : ''}</p></div>`; };
+  const diff = p => { const enabled = selection[p.key] !== false, limit = p.key === 'title' ? '/60' : p.key === 'meta_description' ? '/160' : '/95'; return `<div class="keyword-proposal-section ${enabled ? '' : 'field-disabled'}" data-seo-section="${esc(p.key)}"><div class="seo-field-control"><label><input type="checkbox" class="ogos-seo-field-toggle" data-field-key="${esc(p.key)}" ${enabled ? 'checked' : ''} ${completed ? 'disabled' : ''}> Abilita ${esc(p.field)}</label><button type="button" class="btn ogos-apply-seo-field" data-field-key="${esc(p.key)}" ${enabled && compatible && !completed ? '' : 'disabled'}>Approva e applica solo questo →</button></div><h2>${esc(p.field)}</h2><div class="keyword-diff-grid"><div class="keyword-diff"><small>Prima</small><h3>${esc(p.from || '—')}</h3><p>${/^\(/.test(String(p.from || '')) || !p.from ? 'valore non presente' : `${String(p.from).length} caratteri`}</p></div><div class="keyword-diff after"><small>Dopo</small><h3>${esc(p.to)}</h3><p>${p.to.length}${limit} caratteri</p></div></div><p class="help"><b>Perché:</b> ${esc(p.reason)}${p.note ? ` ${esc(p.note)}` : ''}</p></div>`; };
   const keep = s => `<div class="keyword-proposal-section"><h2>${esc(s.field)}</h2><div class="safe-note"><b>Nessuna modifica proposta.</b> ${esc(s.reason)}</div>${s.current ? `<div class="keyword-diff"><small>Valore attuale, lasciato invariato</small><h3>${esc(s.current)}</h3></div>` : ''}</div>`;
 
   const linkBlock = (!plan.hasChanges && plan.link)
@@ -5206,7 +5211,7 @@ onPageAuditContentV1510 = function () {
       + `<td>${operationalPageLink(row.page.url)}<small><b>Focus:</b> ${esc(row.plan.focus.label || row.prop.keyword)}</small>${row.plan.copy.need ? `<small><b>Bisogno:</b> ${esc(row.plan.copy.need)}</small>` : ''}${h1Multipli}</td>`
       + `<td>${cella(row, 'title', 'Title', row.plan.copy.title, 60)}</td>`
       + `<td>${cella(row, 'post_title', 'H1', row.plan.copy.h1, 95)}</td>`
-      + `<td>${cella(row, 'meta_description', 'Meta', row.plan.copy.meta, 155)}</td></tr>`;
+      + `<td>${cella(row, 'meta_description', 'Meta', row.plan.copy.meta, 160)}</td></tr>`;
   }).join('');
 
   return `${notaTecnica}<p><b>${righe.length}</b> ${righe.length === 1 ? 'pagina richiede' : 'pagine richiedono'} una revisione. Nessun campo è selezionato: spunta quelli che vuoi correggere, poi crea le attività in un colpo solo.</p>`
@@ -6819,7 +6824,7 @@ function ogosInboundCorrenteV343(target) {
 function ogosStatoProblemaSempliceV343(page, item, task) {
   const issue = `${task?.title || ''} ${item?.issue || ''}`.toLowerCase();
   if (!page) {
-    const completeAudit = !!state.audit?.liveVerified && ['wordpress-live','gptsites-live'].includes(state.audit?.source);
+    const completeAudit = ogosRiconciliazioneLiveRecenteV354();
     return { known:completeAudit, resolved:completeAudit, reason:'URL non più presente nell’inventario dell’audit live' };
   }
   if (/h1/.test(issue) && /multip|rilevat|pi[uù] di un|riduci a uno/.test(issue)) {
@@ -6853,7 +6858,7 @@ function ogosStatoProblemaSempliceV343(page, item, task) {
 function ogosValutaRigaCorrenteV343(item, task) {
   const page = ogosPaginaCorrenteV343(item?.url), changes = item?.changes && typeof item.changes === 'object' ? item.changes : {};
   const names = Object.keys(changes);
-  const completeLiveAudit = !!state.audit?.liveVerified && ['wordpress-live','gptsites-live'].includes(state.audit?.source);
+  const completeLiveAudit = ogosRiconciliazioneLiveRecenteV354();
   const autoEvaluableMissingPage = !page && completeLiveAudit && !!task?.operation?.type && task.operation.type !== 'redirect' && !names.includes('redirect');
   if (autoEvaluableMissingPage && names.length) {
     return { known:true, resolved:true, pending:null, solved:names.map(field => ({ ...clone(item), changes:{ [field]:clone(changes[field]) }, resolvedReason:'URL non più presente nell’inventario dell’audit live' })) };
@@ -8242,6 +8247,428 @@ window.addEventListener?.('pagehide',()=>{
   clearTimeout(ogosDataSaveTimerV351);ogosDataSaveTimerV351=null;ogosCancelIdleV352(ogosDataSaveIdleV352);ogosDataSaveIdleV352=null;
   if(pending)save(true);
 });
+
+/* ==========================================================================
+   v3.5.3 — task editoriali obsoleti e verifica guidata delle orfane
+   ========================================================================== */
+
+/* Una modifica editoriale non deve restare aperta soltanto perche' il testo
+   corrente non coincide con la vecchia proposta. Se il valore live e' una
+   alternativa completa, specifica, non generica e di qualita' sufficiente,
+   il problema originario e' risolto anche con parole diverse. */
+const ogosStatoCampoV353Base=ogosStatoCampoV343;
+ogosStatoCampoV343=function(page,field,target,item){
+  const base=ogosStatoCampoV353Base(page,field,target,item);
+  if(base.resolved||!['title','post_title','meta_description'].includes(field)||!page)return base;
+  const observed=ogosCampoOsservatoV343(page,field),current=String(observed.value||'').trim();
+  if(!observed.known||!current)return base;
+  if(field==='post_title'&&page?.crawl?.h1Count!==1)return base;
+  const copy=ogosSeoCopyFromPage(page,page.keyword||page.live?.focusKeyphrase||''),focus=copy?.keyword||copy?.focus||page.keyword||'',facts=Array.isArray(copy?.facts)?copy.facts:ogosFattiPaginaV342(page,focus),proof=[...facts.slice(0,4).map(row=>row.text),ogosPageH1(page).text].filter(Boolean).join(' ');
+  const ranked=ogosPunteggioCandidatoV343(page,field,current,focus,proof,[]),quality=ranked.quality||{},expected=typeof target==='string'?target:String(target?.value||''),expectedRank=expected?ogosPunteggioCandidatoV343(page,field,expected,focus,proof,[]):null,limits=field==='title'?[28,65]:field==='post_title'?[16,100]:[95,160],threshold=field==='meta_description'?72:75;
+  const validLength=current.length>=limits[0]&&current.length<=limits[1],complete=ogosFraseCompletaV343(field==='meta_description'&&!/[.!?…]$/.test(current)?`${current}.`:current,field),betterAlternative=!!expectedRank&&quality.score>=Number(expectedRank.quality?.score||0)+5;
+  const safe=validLength&&quality.score>=threshold&&!quality.generic&&!quality.stuffed&&complete&&(!ranked.claims?.length||betterAlternative);
+  if(!safe)return base;
+  return{known:true,resolved:true,reason:`${field} presenta gia' un testo alternativo completo e di qualita' (${quality.score}/100)`};
+};
+
+/* I vecchi task completati composti soltanto da template Elementor restano
+   nello storico e conservano il rollback, ma non occupano il selettore delle
+   attivita' operative della schermata Sistema. */
+function ogosTaskSoloTecnicoV353(task){const rows=Array.isArray(task?.affected)?task.affected:[];return!!rows.length&&rows.every(item=>ogosPaginaTecnica({url:item?.url||'',wpType:item?.wpType||''}));}
+const ogosTaskPickerItemsV353Base=taskPickerItemsV166;
+taskPickerItemsV166=function(){return ogosTaskPickerItemsV353Base().filter(task=>!taskIsCompleted(task)||!ogosTaskSoloTecnicoV353(task));};
+
+/* Il report non si limita piu' a dire "esegui il crawl": offre l'azione nel
+   punto esatto. Senza connessione porta alle impostazioni; con WordPress e
+   capacita' crawl esegue il controllo e riapre il report aggiornato. */
+const ogosInternalLinkAuditV353Base=internalLinkAuditContentV140;
+internalLinkAuditContentV140=function(){
+  let html=ogosInternalLinkAuditV353Base.apply(this,arguments),graph=ogosOrphanGraphV341();if(graph.complete||!graph.candidates?.length)return html;
+  const canCrawl=!!state.wordpress?.connected&&(state.wordpress?.capabilities||[]).includes('crawl'),coverage=graph.coverage||{},action=canCrawl?'Esegui adesso il crawl completo':'Collega WordPress e verifica';
+  const controls=`<div class="safe-note warn-note" id="ogosOrphanVerifyBoxV353"><b>Verifica necessaria: ${graph.rendered}/${graph.pages.length} pagine hanno link letti dall'HTML renderizzato.</b><br><span>${coverage.rawTotal?`Il crawl precedente ha restituito ${coverage.received||0}/${coverage.rawTotal} URL, ma la copertura dei link non e' completa.`:'Il backup non contiene un crawl completo dei link renderizzati.'}</span><div class="repair-actions" style="margin-top:12px"><button type="button" class="btn primary" id="ogosVerifyOrphansV353">${action} →</button></div><small>Cookie policy, termini e pagine legali ricevono spesso link dal footer: non vanno dichiarate orfane finche' header, footer, menu e template non sono stati letti.</small></div>`;
+  return html.replace(/<h4 style="margin-top:24px">Possibili orfane da verificare/,`${controls}<h4 style="margin-top:24px">Possibili orfane da verificare`);
+};
+const ogosOpenAuditCategoryV353Base=openAuditCategory;
+openAuditCategory=function(index){
+  const result=ogosOpenAuditCategoryV353Base.apply(this,arguments);if(index!==3)return result;const button=$('#ogosVerifyOrphansV353');if(!button)return result;
+  button.onclick=async()=>{
+    const canCrawl=!!state.wordpress?.connected&&(state.wordpress?.capabilities||[]).includes('crawl');
+    if(!canCrawl){closeModal();go('settings');toast('Collega WordPress, poi usa "Esegui crawl reale" per verificare le possibili orfane','error');setTimeout(()=>$('#ogosCrawlBtn')?.scrollIntoView({behavior:'smooth',block:'center'}),80);return;}
+    button.disabled=true;button.textContent='Crawl completo in corso…';const ok=await runWordPressCrawl();if(ok!==false)openAuditCategory(3);else{button.disabled=false;button.textContent='Riprova il crawl completo →';}
+  };
+  return result;
+};
+
+/* Applica la riconciliazione anche all'avvio e subito dopo un import: i task
+   obsoleti del backup non devono attendere un nuovo click sul dashboard. */
+const ogosImportFileV353Base=importFile;
+importFile=async function(...args){const result=await ogosImportFileV353Base.apply(this,args),reconciliation=ogosRiconciliaProblemiApertiV343({save:false});if(reconciliation.changed){save(true);renderShell();renderKanban();renderVerify();toast(`${reconciliation.resolvedRows} problemi gia' risolti rimossi dalle attivita' aperte`);}return result;};
+const ogosInitV353Base=init;
+init=function(){ogosInitV353Base();const reconciliation=ogosRiconciliaProblemiApertiV343({save:false});if(reconciliation.changed){ogosScheduleDataSaveV351();renderShell();renderKanban();renderVerify();}};
+
+/* ==========================================================================
+   v3.5.4 — prove recenti, copertura completa e correzioni per riga
+   ========================================================================== */
+
+/* Un crawl non e' completo se il server restituisce piu' contenuti di quelli
+   presenti nell'inventario locale. Questo caso si verifica, per esempio,
+   aprendo un backup e lanciando direttamente il crawl dopo che sul sito sono
+   state pubblicate nuove pagine. Le URL mancanti possono contenere link in
+   entrata: finche' non vengono importate, le candidate restano non confermate. */
+ogosCoperturaOrfaniV346=function(graph){
+  const coverage=state.crawlCoverage||{},domain=normalizeProjectDomain(state.project?.domain),eligible=graph.pages||[],inventory=eligible.length,rawTotal=Number(coverage.total)||0,received=Number(coverage.received)||0,matched=eligible.filter(page=>page.live?.internalLinkSource==='rendered-html').length;
+  const exactInventory=rawTotal>0&&inventory===rawTotal&&Number(coverage.inventory||0)===rawTotal&&Number(coverage.matched||0)===rawTotal;
+  const crawlFinished=coverage.domain===domain&&received>=rawTotal;
+  return{complete:!!(inventory&&matched===inventory&&graph.rendered===inventory&&exactInventory&&crawlFinished),total:inventory,matched,inventory,rawTotal,received,sitemapCount:Number(state.indexing?.sitemap?.urlCount)||0,sitemapComplete:!state.indexing?.sitemap?.truncated,exactInventory};
+};
+
+/* L'assenza di un link e' probatoria soltanto nell'HTML renderizzato della
+   pagina sorgente. Un elenco derivato dal solo modello di contenuto puo'
+   omettere header, footer, menu o widget del builder. */
+function ogosLinkHtmlRenderizzatoV354(page){return page?.live?.internalLinkSource==='rendered-html'&&Array.isArray(page?.live?.internalLinks);}
+const ogosStatoCampoV354Base=ogosStatoCampoV343;
+ogosStatoCampoV343=function(page,field,target,item){
+  if(['title','meta_description','keyword','intent'].includes(field)&&!ogosRiconciliazioneLiveRecenteV354())return{known:false,resolved:false,reason:'serve una scansione editoriale live recente'};
+  if(field==='post_title'&&!ogosRiconciliazioneLiveRecenteV354()&&!ogosRiconciliazioneTecnicaRecenteV354())return{known:false,resolved:false,reason:'serve un crawl H1 recente'};
+  const result=ogosStatoCampoV354Base(page,field,target,item);
+  if(field!=='replace_link'||!result.resolved||!page)return result;
+  const to=comparableUrl(target?.to||''),links=ogosLinkOsservatiV343(page),replacementPresent=!!to&&links.values.includes(to);
+  if(replacementPresent||ogosLinkHtmlRenderizzatoV354(page))return result;
+  return{known:false,resolved:false,reason:'serve l’HTML renderizzato per confermare che il link rotto sia assente'};
+};
+const ogosStatoProblemaSempliceV354Base=ogosStatoProblemaSempliceV343;
+ogosStatoProblemaSempliceV343=function(page,item,task){
+  const result=ogosStatoProblemaSempliceV354Base(page,item,task),issue=`${task?.title||''} ${item?.issue||''}`.toLowerCase();
+  if(result.resolved&&/link/.test(issue)&&/(rott|404|non valid|verso)/.test(issue)&&!ogosLinkHtmlRenderizzatoV354(page))return{known:false,resolved:false,reason:'serve l’HTML renderizzato per confermare l’assenza del link'};
+  return result;
+};
+ogosInboundCorrenteV343=function(target){
+  const graph=ogosOrphanGraphV341(),wanted=comparableUrl(target||''),coverage=graph.coverage||ogosCoperturaOrfaniV346(graph);
+  return{known:!!coverage.complete,count:Number(graph.inbound?.[wanted]||0)};
+};
+
+/* I dati importati possono essere corretti ma non diventano automaticamente
+   una verifica corrente. La chiusura automatica richiede una scansione live
+   recente; un crawl recente abilita soltanto i controlli tecnici che contiene. */
+function ogosDataRecenteV354(value){const at=Date.parse(value||'');return Number.isFinite(at)&&at<=Date.now()+300000&&Date.now()-at<=DATA_FRESH_DAYS*86400000;}
+function ogosRiconciliazioneLiveRecenteV354(){
+  const source=String(state.audit?.source||'');
+  return!!state.audit?.liveVerified&&['wordpress-live','gptsites-live','gptsites-live-scan'].includes(source)&&ogosDataRecenteV354(state.audit?.observedAt);
+}
+function ogosRiconciliazioneTecnicaRecenteV354(){return ogosDataRecenteV354(state.crawlCoverage?.observedAt);}
+
+/* La selezione di una riga usa la firma completa della modifica, non soltanto
+   l'URL. Due link rotti nella stessa pagina rimangono quindi indipendenti. */
+let ogosAmbitoRigheV354=null;
+function ogosChiaveRigaV354(item,task){
+  const keys=typeof operationalChangeKeys==='function'?operationalChangeKeys(item,task):[];
+  return keys.length?keys.slice().sort().join('||'):JSON.stringify([comparableUrl(item?.url||''),item?.changes||{},item?.issue||'',item?.fix||'']);
+}
+function ogosImpostaRigheV354(items,task){
+  const rows=Array.isArray(items)?items.filter(Boolean):[];
+  ogosAmbitoRigheV354=rows.length?new Set(rows.map(item=>ogosChiaveRigaV354(item,task))):null;
+  ogosImpostaAmbito(rows.map(item=>item.url));
+}
+const ogosFiltraPerAmbitoV354Base=ogosFiltraPerAmbito;
+ogosFiltraPerAmbito=function(task){
+  if(!ogosAmbitoRigheV354)return ogosFiltraPerAmbitoV354Base(task);
+  const rows=(task?.affected||[]).filter(item=>ogosAmbitoRigheV354.has(ogosChiaveRigaV354(item,task)));
+  return rows.length?{...task,affected:rows}:task;
+};
+const ogosApplyRepairV354Base=applyRepair;
+applyRepair=function(id){
+  if(!ogosAmbitoRigheV354)return ogosApplyRepairV354Base(id);
+  const task=(state.tasks||[]).find(row=>String(row.id)===String(id));if(!task)return ogosApplyRepairV354Base(id);
+  const original=task.affected,oldUrls=ogosAmbitoCorrezione,selected=(original||[]).filter(item=>ogosAmbitoRigheV354.has(ogosChiaveRigaV354(item,task)));
+  if(!selected.length)return ogosApplyRepairV354Base(id);
+  task.affected=selected;ogosAmbitoCorrezione=null;
+  try{return ogosApplyRepairV354Base(id);}finally{task.affected=original;ogosAmbitoCorrezione=oldUrls;}
+};
+const ogosRenderTaskDetailV354Base=ogosRenderTaskDetailV351;
+ogosRenderTaskDetailV351=function(task,limit=OGOS_TASK_ROWS_V351){
+  const result=ogosRenderTaskDetailV354Base(task,limit),affected=Array.isArray(task?.affected)?task.affected:[],visible=affected.slice(0,limit),correctable=affected.filter(item=>item?.changes&&Object.keys(item.changes).length);
+  const bulk=$('#ogosFixTutteV351');if(bulk)bulk.onclick=()=>{ogosAmbitoRigheV354=null;ogosImpostaAmbito(correctable.map(item=>item.url));ogosMantieniAmbito=true;openRepair(ogosFiltraPerAmbito(task));};
+  $$('#modalForm .ogos-fix-riga-v351').forEach(button=>button.onclick=()=>{const item=visible[Number(button.dataset.i)];if(!item)return;ogosImpostaRigheV354([item],task);ogosMantieniAmbito=true;openRepair(ogosFiltraPerAmbito(task));});
+  return result;
+};
+const ogosCloseModalV354Base=closeModal;
+closeModal=function(){const keep=ogosMantieniAmbito,result=ogosCloseModalV354Base();if(!keep&&!ogosMantieniAmbito)ogosAmbitoRigheV354=null;return result;};
+
+/* Il focus salvato nei plugin SEO puo' essere obsoleto o appartenere alla
+   versione precedente della pagina. Se non trova riscontro in H1, Title e
+   testo pubblicato, il generatore riparte dallo slug reale invece di creare
+   copy formalmente corretto ma riferito a un'altra persona o argomento. */
+function ogosFocusAffidabileV354(page,forcedKeyword){
+  let raw=ogosCleanEditorialText(forcedKeyword||page?.keyword||page?.live?.focusKeyphrase||'');const core=raw.split(/\s+(?:[|–—-])\s+|:\s+/)[0]?.trim();if(raw.length>=55&&core&&core.length>=20&&ogosTerms(core).length>=2)raw=core;const terms=ogosTerms(raw);
+  if(!terms.length)return ogosEtichettaDaPercorso(page?.url||'');
+  const evidence=[page?.crawl?.h1Text,page?.crawl?.titleText,page?.wpTitle,page?.live?.seoTitle,page?.live?.contentExcerpt,page?.live?.excerpt].filter(Boolean).join(' '),evidenceTerms=new Set(ogosTerms(evidence)),matched=terms.filter(term=>evidenceTerms.has(term)).length;
+  if(matched/terms.length>=.6)return raw;
+  return ogosEtichettaDaPercorso(page?.url||'')||raw;
+}
+function ogosCopyFinaleValidoV354(field,value){
+  const text=ogosCleanEditorialText(value),limits=field==='title'?[28,60]:field==='post_title'?[16,95]:[95,160];
+  if(text.length<limits[0]||text.length>limits[1])return false;
+  if(/[,;:–—-]\s*$/.test(text)||/\b(?:di|a|da|in|con|per|su|tra|fra|e|o|che|se|il|lo|la|i|gli|le|un|uno|una|del|dello|della|dei|degli|delle)[.!?…]?$/i.test(text))return false;
+  if(/:\s+[a-zà-öø-ÿ]{2,}\s+[A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ]+/u.test(text))return false;
+  if(field==='meta_description'&&(/\b(?:amo|puoi|devi|serve|trovi|offre|include|comprende|entra|entrare)[.!?…](?:\s|$)/i.test(text)||/:\s*[^.!?]{0,75}:/.test(text)))return false;
+  return ogosFraseCompletaV343(field==='meta_description'&&!/[.!?…]$/.test(text)?`${text}.`:text,field);
+}
+function ogosProfiloAffidabileV354(page,focus,type,reported){
+  const context=`${focus||''} ${page?.url||''} ${page?.wpTitle||''} ${state.project?.sector||''}`.toLowerCase();
+  const recipe=/\bricett\w*\b/.test(context)||(/\b(?:cucin\w*|cottura|forno|piatt\w*|dolc\w*|pasta|risotto|torta)\b/.test(context)&&/\b(?:ingredient\w*|preparazion\w*|cottura|dosi?|porzioni?)\b/.test(context));
+  if(reported?.key!=='recipe'||recipe)return reported;
+  return ogosNeedProfileV341(page,focus,type);
+}
+function ogosCopyFuoriIntentoV354(value,profile){
+  return profile?.key!=='recipe'&&/\b(?:ricett\w*|ingredient[ei]|dosi?|cottura|porzioni?)\b/i.test(String(value||''));
+}
+function ogosFrammentoNaturaleV354(value,max){
+  const text=ogosNormalizzaCopyV342(value).replace(/[.!?…]+$/,'').trim();if(!text||text.length<=max)return text;
+  const positions=[];for(const match of text.matchAll(/[,;:]/g))if(match.index>=Math.max(38,Math.floor(max*.55))&&match.index<=max)positions.push(match.index);
+  const cut=positions.length?text.slice(0,positions.at(-1)):ogosShortenWordsV341(text,max);
+  return cut.replace(/[,;:\s-]+$/,'').replace(/\s+\b(?:di|a|da|in|con|per|su|tra|fra|e|o|che|il|lo|la|i|gli|le|un|uno|una)\s*$/i,'').trim();
+}
+function ogosMetaNaturaliV354(page,focus,facts,profile){
+  const natural=ogosFocusNaturaleV342({focus,keyword:focus}),raw=[...(facts||[]).map(item=>item?.text),...ogosNormalizzaCopyV342(page?.crawl?.contentExcerpt||page?.live?.contentExcerpt||page?.live?.excerpt||'').split(/(?<=[.!?])\s+/)].filter(Boolean).slice(0,12),values=[],details=[];
+  raw.forEach(text=>{
+    let detail=ogosNormalizzaCopyV342(text).replace(/[.!?…]+$/,'').replace(/:/g,',').trim();
+    if(!detail||detail.length<28||ogosCopyFuoriIntentoV354(detail,profile))return;
+    if(ogosSovrapposizioneV342(detail,natural)>.72){const after=detail.split(/[:;,.]/).map(part=>part.trim()).find(part=>part.length>=38&&ogosSovrapposizioneV342(part,natural)<.55);if(after)detail=after;}
+    const max=Math.max(45,157-natural.length-2),fragment=ogosFrammentoNaturaleV354(detail,max);if(fragment.length<35)return;
+    details.push(fragment);values.push(ogosFraseV342(`${natural}: ${ogosInizioNaturaleV342(fragment)}`));
+  });
+  details.slice(0,4).forEach((first,index)=>details.slice(0,4).forEach((second,other)=>{if(index>=other||ogosSovrapposizioneV342(first,second)>.65)return;const prefix=`${natural}: `,available=157-prefix.length-first.length-2;if(available<28)return;const compact=ogosFrammentoNaturaleV354(second,available);if(compact.length<28)return;values.push(ogosFraseV342(`${prefix}${ogosInizioNaturaleV342(first)}. ${ogosInizioNaturaleV342(compact)}`));}));
+  return values;
+}
+const ogosSeoCopyFromPageV354Base=ogosSeoCopyFromPage;
+ogosSeoCopyFromPage=function(page,forcedKeyword){
+  if(!page)return ogosSeoCopyFromPageV354Base(page,forcedKeyword);
+  const reliableFocus=ogosFocusAffidabileV354(page,forcedKeyword),copy=ogosSeoCopyFromPageV354Base(page,reliableFocus);if(!copy)return copy;
+  const facts=Array.isArray(copy.facts)?copy.facts:ogosFattiPaginaV342(page,reliableFocus),profile=ogosProfiloAffidabileV354(page,reliableFocus,copy.type,ogosProfiloBisognoV342(page,reliableFocus,copy.type));
+  const baseForCopy={...copy,keyword:reliableFocus,focus:reliableFocus,needType:profile.key,need:profile.label},proof=[...facts.map(item=>item.text),ogosPageH1(page).text,page?.crawl?.contentExcerpt,page?.live?.contentExcerpt,page?.live?.excerpt].filter(Boolean).join(' '),blocked={...(copy.blockedFields||{})},values={title:copy.title,post_title:copy.h1,meta_description:copy.meta};
+  const variants=copy.variants||{};
+  const generated={
+    title:[ogosTitoloV342(baseForCopy,page,profile,facts)],
+    post_title:[ogosH1V342(baseForCopy,page,profile,facts,values.title),...ogosH1AlternativeV343(baseForCopy,page,profile,facts)],
+    meta_description:[...ogosMetaNaturaliV354(page,reliableFocus,facts,profile),ogosMetaV342(baseForCopy,profile,facts),ogosMetaFattualeV350(baseForCopy,page,profile,facts)]
+  };
+  ['title','post_title','meta_description'].forEach(field=>{
+    const current=ogosValoreCorrenteV342(page,field),others=field==='title'?[]:field==='post_title'?[values.title]:[values.title,values.post_title],pool=[current,...generated[field],values[field],...(variants[field]||[]).map(row=>row?.value)].filter(Boolean),seen=new Set(),ranked=pool.filter(value=>{
+      const key=ogosTestoConfrontabileV343(value);if(!key||seen.has(key)||!ogosCopyFinaleValidoV354(field,value)||ogosCopyFuoriIntentoV354(value,profile))return false;seen.add(key);return true;
+    }).map(value=>{const row=ogosPunteggioCandidatoV343(page,field,value,reliableFocus,proof,others),finalQuality=ogosQualitaCopyV343(page,field,value,reliableFocus,proof,others);return{...row,finalQuality,score:row.score+(ogosTestoConfrontabileV343(value)===ogosTestoConfrontabileV343(current)?4:0)}}).filter(row=>row.finalQuality?.score>=72&&!row.finalQuality?.generic&&!row.finalQuality?.stuffed&&!row.claims?.length).sort((a,b)=>b.score-a.score||b.finalQuality.score-a.finalQuality.score||a.value.length-b.value.length);
+    let selected=ranked[0]?.value||'';
+    if(!selected&&current&&ogosCopyFinaleValidoV354(field,current)&&!ogosCopyFuoriIntentoV354(current,profile)&&!ogosClaimNonSupportatiV343(current,proof).length&&!ogosProblemiCopyV342(page,field,current,baseForCopy).length)selected=current;
+    values[field]=selected;
+    if(!selected)blocked[field]=field==='meta_description'?'Contenuto insufficiente per una meta description specifica, completa e non troncata':`${field==='title'?'Title SEO':'H1'} non valido o non sufficientemente fondato nei dati della pagina`;
+    else delete blocked[field];
+  });
+  if(values.title&&values.post_title){const exact=ogosFirmaEsattaV350(values.title)===ogosFirmaEsattaV350(values.post_title),overlap=ogosSovrapposizioneV342(values.title,values.post_title),distinction=ogosDistinzioneV343(values.post_title,values.title),currentH1=ogosValoreCorrenteV342(page,'post_title'),currentUsable=ogosCopyFinaleValidoV354('post_title',currentH1)&&ogosFirmaEsattaV350(values.title)!==ogosFirmaEsattaV350(currentH1);if(exact||(overlap>.94&&distinction<.18)){if(currentUsable){values.post_title=currentH1;delete blocked.post_title;}else{blocked.post_title='Title SEO e H1 non sufficientemente distinti: revisione manuale richiesta';values.post_title='';}}}
+  const quality={title:ogosQualitaCopyV343(page,'title',values.title,reliableFocus,proof,[]),post_title:ogosQualitaCopyV343(page,'post_title',values.post_title,reliableFocus,proof,[values.title]),meta_description:ogosQualitaCopyV343(page,'meta_description',values.meta_description,reliableFocus,proof,[values.title,values.post_title])};
+  return{...copy,keyword:reliableFocus,focus:reliableFocus,needType:profile.key,need:profile.label,title:values.title,h1:values.post_title,meta:values.meta_description,quality,blockedFields:blocked,generationMethod:'intent-context-ranking-v3.5.4'};
+};
+
+/* Un import fallito non deve modificare il progetto gia' aperto. */
+importFile=async function(...args){
+  const result=await ogosImportFileV353Base.apply(this,args);
+  if(!result?.ok||!ogosRiconciliazioneLiveRecenteV354())return result;
+  const reconciliation=ogosRiconciliaProblemiApertiV343({save:false});
+  if(reconciliation.changed){save(true);renderShell();renderKanban();renderVerify();toast(`${reconciliation.resolvedRows} problemi gia' risolti rimossi dalle attivita' aperte`);}
+  return result;
+};
+
+/* Sostituisce l'init 3.5.3, evitando la sua riconciliazione incondizionata. */
+init=function(){
+  ogosInitV353Base();
+  if(!ogosRiconciliazioneLiveRecenteV354()&&!ogosRiconciliazioneTecnicaRecenteV354())return;
+  const reconciliation=ogosRiconciliaProblemiApertiV343({save:false});
+  if(reconciliation.changed){ogosScheduleDataSaveV351();renderShell();renderKanban();renderVerify();}
+};
+
+/* ==========================================================================
+   v3.5.5 — migrazione proposte, deduplica, velocita' e accessibilita'
+   ========================================================================== */
+
+/* La cache 3.5.2 avvolgeva il generatore precedente. Gli ultimi controlli
+   editoriali 3.5.4 restavano quindi fuori cache e venivano ripetuti da ogni
+   wrapper della pagina proposta. Questa cache finale include anche le scelte
+   di variante e viene invalidata solo quando cambia davvero lo stato. */
+let ogosFinalCopyCacheV355=new WeakMap();
+const OGOS_META_DEBOLE_V355=/\b(?:quest[oa] (?:articolo|pagina)|informazioni utili|scopri tutti i dettagli|approfondimento completo|specializzat[io] in|clicca qui)\b/i;
+function ogosOpeningMetaV355(page,copy){
+  const source=ogosNormalizzaCopyV342(page?.crawl?.contentExcerpt||page?.live?.contentExcerpt||page?.live?.excerpt||''),sentences=source.split(/(?<=[.!?])\s+/).map(value=>value.trim()).filter(value=>value.length>=35&&!OGOS_META_DEBOLE_V355.test(value)&&!ogosCopyFuoriIntentoV354(value,{key:copy?.needType||''}));if(!sentences.length)return'';
+  let meta=ogosFrammentoNaturaleV354(sentences[0],156);for(let index=1;index<Math.min(4,sentences.length)&&meta.length<105;index++){const available=156-meta.length-2,part=ogosFrammentoNaturaleV354(sentences[index],available);if(part.length>=25){const continuation=ogosInizioNaturaleV342(part);meta=`${meta}. ${continuation.charAt(0).toUpperCase()}${continuation.slice(1)}`;}}
+  meta=ogosFraseV342(meta);return ogosCopyFinaleValidoV354('meta_description',meta)&&!OGOS_META_DEBOLE_V355.test(meta)?meta:'';
+}
+function ogosTeamNamesV355(page){
+  const source=[page?.crawl?.h1Text,page?.live?.excerpt,page?.live?.contentExcerpt].filter(Boolean).join(' ').slice(0,900),excluded=new Set(ogosTerms(`${state.project?.name||''} ${state.project?.geo||''} ${state.project?.sector||''}`)),generic=new Set(['yoga','pilates','buena','onda','cinisello','balsamo','yoga alliance']),seen=new Set(),names=[];
+  /* Lookahead sovrapposto: nelle liste "Ilaria Peconio, Alessio Brioschi"
+     una regex a coppie non sovrapposte poteva iniziare dal termine precedente
+     e saltare il primo nome reale. */
+  for(const match of source.matchAll(/(?=\b([A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ'’-]{2,})\s+([A-ZÀ-ÖØ-Ý][a-zà-öø-ÿ'’-]{2,})\b)/gu)){const value=`${match[1]} ${match[2]}`,terms=ogosTerms(value);if(terms.some(term=>generic.has(term))||terms.every(term=>excluded.has(term))||seen.has(value.toLowerCase()))continue;seen.add(value.toLowerCase());names.push(value);if(names.length===3)break;}
+  return names;
+}
+function ogosPolishCopyV355(page,copy){
+  if(!copy)return copy;let title=copy.title,h1=copy.h1,meta=copy.meta;const context=ogosTestoConfrontabileV343(`${page?.url||''} ${page?.crawl?.h1Text||''} ${page?.live?.excerpt||''}`),city=ogosCittaBreve(state.project?.geo||''),brand=ogosCleanEditorialText(state.project?.name||''),names=/\binsegnant/.test(context)?ogosTeamNamesV355(page):[];
+  if(names.length>=2){const where=city?` a ${city}`:'';title=ogosShortenWordsV341(`Insegnanti di Yoga${where}${brand?` | ${brand}`:''}`,60);h1=ogosShortenWordsV341(`Insegnanti di Yoga${where}: ${names.join(', ')}`,95);const trial=/\bprova gratuita\b/i.test(`${page?.live?.contentExcerpt||''} ${page?.crawl?.contentExcerpt||''}`);meta=ogosFraseV342(`Conosci ${names.slice(0,3).join(', ').replace(/, ([^,]+)$/, ' e $1')}, insegnanti di yoga${where}. Scopri approcci e stili${trial?'. Prenota una prova gratuita':''}`);}
+  const opening=ogosOpeningMetaV355(page,copy),currentQuality=copy.quality?.meta_description?.score||0;if(opening&&names.length<2){const openingQuality=ogosQualitaCopyV343(page,'meta_description',opening,copy.focus||copy.keyword||'',(copy.facts||[]).map(row=>row.text).join(' '),[title,h1]);if(OGOS_META_DEBOLE_V355.test(meta)||openingQuality.score>=currentQuality+3)meta=opening;}
+  const proof=[...(copy.facts||[]).map(row=>row.text),page?.crawl?.h1Text,page?.crawl?.contentExcerpt,page?.live?.contentExcerpt].filter(Boolean).join(' '),quality={title:ogosQualitaCopyV343(page,'title',title,copy.focus||copy.keyword||'',proof,[]),post_title:ogosQualitaCopyV343(page,'post_title',h1,copy.focus||copy.keyword||'',proof,[title]),meta_description:ogosQualitaCopyV343(page,'meta_description',meta,copy.focus||copy.keyword||'',proof,[title,h1])};
+  return{...copy,title,h1,meta,quality,variants:{...(copy.variants||{}),meta_description:[{value:meta,score:quality.meta_description.score,quality:quality.meta_description,angle:names.length>=2?'Persone e prova':'Beneficio concreto'},...((copy.variants?.meta_description)||[]).filter(row=>row.value!==meta)].slice(0,3)}};
+}
+function ogosFinalCopyKeyV355(page,forcedKeyword){
+  const variants=['title','post_title','meta_description'].map(field=>ogosSeoVariantSelectionV345(page,field));
+  return JSON.stringify([forcedKeyword||'',state.project?.name||'',state.project?.sector||'',state.project?.geo||'',state.project?.audience||'',...variants,page.url,page.keyword,page.wpTitle,page.h1,page.live?.focusKeyphrase,page.live?.seoTitle,page.live?.metaDescription,page.live?.contentExcerpt,page.live?.excerpt,page.crawl?.h1Text,page.crawl?.h1Count,page.crawl?.titleText,page.crawl?.contentExcerpt,page.crawl?.headings]);
+}
+const ogosSeoCopyFromPageV355Base=ogosSeoCopyFromPage;
+ogosSeoCopyFromPage=function(page,forcedKeyword){
+  if(!page||typeof page!=='object')return ogosSeoCopyFromPageV355Base(page,forcedKeyword);
+  let rows=ogosFinalCopyCacheV355.get(page);if(!rows){rows=new Map();ogosFinalCopyCacheV355.set(page,rows);}
+  const key=ogosFinalCopyKeyV355(page,forcedKeyword);if(rows.has(key))return rows.get(key);
+  const generated=ogosSeoCopyFromPageV355Base(page,forcedKeyword),polished=ogosPolishCopyV355(page,generated),copy=polished?{...polished,generationMethod:'intent-context-ranking-v3.5.5-cache'}:polished;if(rows.size>8)rows.clear();rows.set(key,copy);return copy;
+};
+const ogosSaveV355Base=save;
+save=function(force=false){if(force&&ogosUiSaveTimerV351){clearTimeout(ogosUiSaveTimerV351);ogosUiSaveTimerV351=null;}ogosFinalCopyCacheV355=new WeakMap();return ogosSaveV355Base(force);};
+
+/* Salva le sole preferenze UI senza svuotare gli indici SEO e del grafo. */
+ogosScheduleUiSaveV351=function(){clearTimeout(ogosUiSaveTimerV351);ogosUiSaveTimerV351=setTimeout(()=>{ogosUiSaveTimerV351=null;ogosSaveV352Base(false);},600);};
+
+/* Le selezioni sono preferenze di interfaccia: non devono serializzare
+   l'intero progetto e svuotare tutte le cache a ogni click. */
+setKeywordFieldEnabled=function(prop,fieldKey,enabled){
+  const plan=ogosKeywordPlan(prop),selection=keywordSelectionBucket(prop,plan);selection[fieldKey]=!!enabled;ogosScheduleUiSaveV351();
+};
+document.addEventListener('click',event=>{const button=event.target.closest?.('.ogos-select-copy-variant');if(!button)return;const prop=selectedKeywordProposal();if(!prop)return;event.preventDefault();event.stopImmediatePropagation();const plan=ogosKeywordPlan(prop),field=button.dataset.field,row=plan.copy.variants?.[field]?.[Number(button.dataset.index)];if(!row)return;state.ui.seoVariantSelections=state.ui.seoVariantSelections&&typeof state.ui.seoVariantSelections==='object'?state.ui.seoVariantSelections:{};state.ui.seoVariantSelections[ogosSeoVariantKeyV345(plan.page,field)]=row.value;ogosScheduleUiSaveV351();renderKeywordProposalPage();toast(`${field==='post_title'?'H1':field==='meta_description'?'Meta description':'Title SEO'} aggiornato con la variante selezionata`);},true);
+
+function ogosFieldLabelV355(field){return field==='title'?'Title SEO':field==='post_title'?'H1':field==='meta_description'?'Meta description':field;}
+function ogosTaskCountTitleV355(task){
+  const count=(task.affected||[]).length,signature=String(task.operation?.fieldSignature||'');
+  if(signature==='h1_count')return count===1?`Riduci a uno gli H1 di ${task.affected[0]?.url||''}`:`Riduci a uno gli H1 · ${count} pagine`;
+  const fields=(task.operation?.fields||signature.split('|')).filter(Boolean);
+  if(task.operation?.type==='seo'&&fields.length===1){const label=ogosFieldLabelV355(fields[0]);return `Ottimizza solo ${label} · ${count===1?task.affected[0]?.url:`${count} pagine`}`;}
+  return String(task.title||'').replace(/·\s*\d+\s+pagine\b/i,`· ${count} pagine`);
+}
+function ogosAffectedMergeV355(rows){
+  const merged=new Map();(rows||[]).forEach(item=>{if(!item)return;const fields=Object.keys(item.changes||{}).sort().join('|'),key=`${comparableUrl(item.url)}|${fields}`;merged.set(key,clone(item));});return[...merged.values()];
+}
+function ogosMergeOpenSeoTasksV355(){
+  const groups=new Map(),remove=new Set();let changed=false;
+  (state.tasks||[]).forEach(task=>{
+    const signature=String(task.operation?.fieldSignature||(task.operation?.fields||[]).slice().sort().join('|'));
+    if(taskIsCompleted(task)||task.partialApply||task.operation?.type!=='seo'||!signature)return;
+    const activeRepair=(state.repairs||[]).some(repair=>String(repair.taskId)===String(task.id)&&!repair.undone);if(activeRepair)return;
+    const key=`seo|${signature}`,current=groups.get(key);if(!current){groups.set(key,task);return;}
+    current.affected=ogosAffectedMergeV355([...(current.affected||[]),...(task.affected||[])]);
+    current.resolvedAffected=ogosAffectedMergeV355([...(current.resolvedAffected||[]),...(task.resolvedAffected||[])]);
+    const currentAt=Date.parse(current.evidence?.observedAt||0)||0,otherAt=Date.parse(task.evidence?.observedAt||0)||0;if(otherAt>currentAt)current.evidence=clone(task.evidence);
+    remove.add(String(task.id));changed=true;
+  });
+  if(remove.size)state.tasks=(state.tasks||[]).filter(task=>!remove.has(String(task.id)));
+  (state.tasks||[]).forEach(task=>{if(taskIsCompleted(task)||task.operation?.type!=='seo')return;const title=ogosTaskCountTitleV355(task);if(title!==task.title){task.title=title;changed=true;}});
+  return changed;
+}
+const ogosReconcileOpenV355Base=ogosRiconciliaProblemiApertiV343;
+ogosRiconciliaProblemiApertiV343=function(options={}){const result=ogosReconcileOpenV355Base.apply(this,arguments),normalized=ogosMergeOpenSeoTasksV355();if(normalized){result.changed=true;if(options.save!==false)ogosScheduleDataSaveV351();}return result;};
+const ogosCreateFieldTaskV355Base=ogosCreaTaskCampo;
+ogosCreaTaskCampo=function(rows,field){const result=ogosCreateFieldTaskV355Base.apply(this,arguments);ogosMergeOpenSeoTasksV355();const signature=field==='h1_count'?'h1_count':field;return(state.tasks||[]).find(task=>!taskIsCompleted(task)&&String(task.operation?.fieldSignature||'')===signature)||result;};
+function ogosRefreshOpenSeoTasksV355(){
+  state.ui=state.ui&&typeof state.ui==='object'?state.ui:{};if(state.ui.seoTaskMigrationVersion===APP_VERSION)return false;
+  let changed=false;const removable=new Set(),allowedSources=new Set(['live-audit','operational-proposal','wordpress-live']);
+  (state.tasks||[]).forEach(task=>{
+    if(taskIsCompleted(task)||task.partialApply||task.operation?.type!=='seo'||!allowedSources.has(String(task.evidence?.source||'')))return;
+    const refreshed=[];
+    (task.affected||[]).forEach(item=>{
+      const page=(state.pages||[]).find(row=>comparableUrl(row.url)===comparableUrl(item.url));if(!page){refreshed.push(item);return;}
+      const copy=ogosSeoCopyFromPage(page,page.keyword||page.live?.focusKeyphrase||''),changes={};
+      Object.keys(item.changes||{}).forEach(field=>{
+        if(!['title','post_title','meta_description'].includes(field)){changes[field]=item.changes[field];return;}
+        const proposed=field==='title'?copy?.title:field==='post_title'?copy?.h1:copy?.meta,current=ogosValoreCorrenteV342(page,field);
+        if(proposed&&!copy?.blockedFields?.[field]&&ogosTestoConfrontabileV343(proposed)!==ogosTestoConfrontabileV343(current))changes[field]=proposed;
+      });
+      if(Object.keys(changes).length)refreshed.push({...item,changes,issue:`${Object.keys(changes).map(ogosFieldLabelV355).join(' e ')} da ottimizzare`,fix:'Applica separatamente soltanto i campi approvati'});
+      changed=true;
+    });
+    task.affected=ogosAffectedMergeV355(refreshed);task.copyGeneratorVersion=APP_VERSION;task.title=ogosTaskCountTitleV355(task);
+    task.detail=task.affected.length?`Proposte rigenerate con i dati attuali della pagina. ${task.affected.length} ${task.affected.length===1?'pagina richiede':'pagine richiedono'} ancora una revisione.`:'Nessuna modifica ancora necessaria dopo la rigenerazione.';
+    if(!task.affected.length)removable.add(String(task.id));
+  });
+  if(removable.size){state.tasks=(state.tasks||[]).filter(task=>!removable.has(String(task.id)));changed=true;}
+  if(ogosMergeOpenSeoTasksV355())changed=true;
+  state.ui.seoTaskMigrationVersion=APP_VERSION;state.appVersion=APP_VERSION;return changed;
+}
+
+/* Ripara i vecchi record auto-risolti che avevano lo stato Verificata ma non
+   una data di verifica esportabile. */
+function ogosRepairVerifiedDatesV355(){let changed=false;(state.tasks||[]).forEach(task=>{if(task.status!=='Verificata'||task.verifiedAt)return;const at=task.reconciledAt||task.evidence?.observedAt||task.completedAt;if(at&&Number.isFinite(Date.parse(at))){recordTaskStatus(task,'Verificata',at);changed=true;}});return changed;}
+function ogosResolveTechnicalOpenTasksV355(){let changed=false;(state.tasks||[]).forEach(task=>{if(taskIsCompleted(task)||!ogosTaskSoloTecnicoV353(task))return;const at=new Date().toISOString();recordTaskStatus(task,'Verificata',at);task.approved=true;task.autoResolved=true;task.resolutionReason='Record tecnico o template escluso dalle attività SEO operative.';task.evidence={status:'verified',source:'technical-content-filter',observedAt:at};changed=true;});return changed;}
+function ogosOperationalTasksV355(){return(state.tasks||[]).filter(task=>!ogosTaskSoloTecnicoV353(task));}
+stageProgress=function(){const tasks=ogosOperationalTasksV355(),done=tasks.filter(taskIsCompleted).length;return[projectReady()?100:30,state.audit.last?100:25,Math.round(done/Math.max(1,tasks.length)*100),done?65:10];};
+const ogosRenderShellV355Base=renderShell;
+renderShell=function(){const result=ogosRenderShellV355Base.apply(this,arguments),tasks=ogosOperationalTasksV355(),approved=tasks.filter(task=>task.approved).length,pending=tasks.some(task=>!task.approved);if($('#doneCount'))$('#doneCount').textContent=`${approved} di ${tasks.length} attività operative approvate`;if($('#nextText')&&projectReady()&&state.audit.last)$('#nextText').textContent=pending?'Rivedi e approva le attività suggerite per iniziare.':'Verifica le attività completate e misura il risultato.';if($('#nextBtn')&&projectReady()&&state.audit.last)$('#nextBtn').dataset.target=pending?'fix':'verify';return result;};
+
+function ogosVisibleTasksV355(){
+  const filter=$('#taskFilter')?.value||'all',scope=state.ui?.issueScope||'all';return(state.tasks||[]).filter(task=>(filter==='all'||task.priority===filter)&&(scope!=='critical'||isCriticalTask(task))&&(scope!=='high'||(task.priority==='Alta'&&!isCriticalTask(task))));
+}
+function ogosBindApproveVisibleV355(){
+  const button=$('#approveAllBtn');if(!button)return;const pending=ogosVisibleTasksV355().filter(task=>!taskIsCompleted(task)&&task.status==='Da approvare');
+  button.disabled=!pending.length;button.textContent=pending.length?`Approva ${pending.length} ${pending.length===1?'attività visibile':'attività visibili'}`:'Nessuna attività visibile da approvare';
+  button.onclick=()=>{const targets=ogosVisibleTasksV355().filter(task=>!taskIsCompleted(task)&&task.status==='Da approvare');targets.forEach(task=>{const applied=(state.repairs||[]).some(repair=>String(repair.taskId)===String(task.id)&&!repair.undone);recordTaskStatus(task,applied?'Completata':'Da fare');task.approved=true;if(!applied)delete task.partialApply;});ogosRenderTaskSurfaceV351();ogosScheduleDataSaveV351();toast(targets.length?`${targets.length} attività visibili approvate`:'Nessuna attività visibile da approvare');};
+}
+const ogosRenderKanbanV355Base=renderKanban;
+renderKanban=function(){const result=ogosRenderKanbanV355Base.apply(this,arguments);ogosBindApproveVisibleV355();return result;};
+
+/* Uno stato verificato deriva da un controllo reale e non e' selezionabile
+   manualmente. Nei task gia' verificati il menu resta leggibile ma bloccato. */
+const ogosTaskCardV355Base=taskCard;
+taskCard=function(task){let html=ogosTaskCardV355Base(task);if(task?.status==='Verificata')return html.replace('class="task-status"','class="task-status" disabled title="Stato assegnato dalla verifica reale"');return html.replace(/<option[^>]*>Verificata<\/option>/,'');};
+
+function ogosLabelFormControlsV355(root){
+  if(!root)return;let index=0;root.querySelectorAll('.field').forEach(field=>{const label=field.querySelector(':scope > label'),control=field.querySelector(':scope > input, :scope > select, :scope > textarea');if(!label||!control)return;if(!control.id)control.id=`ogosFieldV355-${Date.now()}-${index++}`;label.htmlFor=control.id;});
+}
+function ogosConfigureTaskOperationV355(){
+  const form=$('#modalForm'),select=form?.querySelector('[name="operationType"]');if(!select)return;
+  const groups={seo:['seoTitle','metaDescription'],canonical:['canonicalUrl'],redirect:['redirectFrom','redirectTo','redirectCode'],internal_link:['linkTarget','linkAnchor','linkPosition']};
+  Object.entries(groups).forEach(([group,names])=>names.forEach(name=>{const control=form.querySelector(`[name="${name}"]`),field=control?.closest('.field');if(field)field.dataset.operationGroup=group;}));
+  let help=form.querySelector('.ogos-operation-help');if(!help){help=document.createElement('p');help.className='help ogos-operation-help';select.closest('.field')?.after(help);}
+  const update=()=>{const value=select.value;form.querySelectorAll('[data-operation-group]').forEach(field=>field.hidden=value==='auto'||field.dataset.operationGroup!==value);help.textContent=value==='auto'?'I valori vengono ricavati dalle modifiche già associate al task.':`Mostro soltanto i campi necessari per: ${select.options[select.selectedIndex]?.textContent||value}.`;};
+  select.onchange=update;update();
+}
+function ogosConfigureTaskStatusV355(data){const form=$('#modalForm'),select=form?.querySelector('select[name="status"]');if(!select)return;const protectedStatus=['Verificata','Superata','Risolta'].includes(String(data?.status||''));if(protectedStatus){select.disabled=true;select.title='Lo stato verificato si modifica soltanto dal flusso di verifica o ripristino';const hidden=document.createElement('input');hidden.type='hidden';hidden.name='status';hidden.value=data.status;select.after(hidden);return;}[...select.options].filter(option=>['Verificata','Superata','Risolta'].includes(option.value)).forEach(option=>option.remove());}
+const ogosOpenModalV355Base=openModal;
+openModal=function(type,data){ogosRememberFocusV355();const result=ogosOpenModalV355Base.apply(this,arguments);ogosLabelFormControlsV355($('#modalForm'));if(type==='task'){ogosConfigureTaskOperationV355();ogosConfigureTaskStatusV355(data);}ogosSyncOverlayV355();return result;};
+
+let ogosLastFocusV355=null;
+function ogosRememberFocusV355(){const active=document.activeElement;if(active&&active!==document.body&&!active.closest?.('.modal,.action-drawer'))ogosLastFocusV355=active;}
+function ogosFocusableV355(root){return[...root.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(node=>!node.hidden&&node.offsetParent!==null);}
+function ogosSyncOverlayV355(){const modal=$('#modalBackdrop')?.classList.contains('open'),drawer=$('#actionDrawer')?.classList.contains('open'),app=document.querySelector('.app');document.body.classList.toggle('ogos-overlay-open',modal||drawer);if(app)app.inert=!!(modal||drawer);}
+function ogosRestoreFocusV355(){const target=ogosLastFocusV355;ogosLastFocusV355=null;setTimeout(()=>{if(target?.isConnected)target.focus();},0);}
+const ogosCloseModalV355Base=closeModal;
+closeModal=function(){const wasOpen=$('#modalBackdrop')?.classList.contains('open'),result=ogosCloseModalV355Base.apply(this,arguments);ogosSyncOverlayV355();if(wasOpen&&!$('#actionDrawer')?.classList.contains('open'))ogosRestoreFocusV355();return result;};
+const ogosOpenActionDrawerV355Base=openActionDrawer;
+openActionDrawer=function(){ogosRememberFocusV355();const result=ogosOpenActionDrawerV355Base.apply(this,arguments);ogosLabelFormControlsV355($('#actionDrawer'));ogosSyncOverlayV355();return result;};
+const ogosCloseActionDrawerV355Base=closeActionDrawer;
+closeActionDrawer=function(){const wasOpen=$('#actionDrawer')?.classList.contains('open'),result=ogosCloseActionDrawerV355Base.apply(this,arguments);ogosSyncOverlayV355();if(wasOpen&&!$('#modalBackdrop')?.classList.contains('open'))ogosRestoreFocusV355();return result;};
+openCompletedTasksModal=function(){
+  const all=(state.tasks||[]).filter(taskIsCompleted).sort((a,b)=>Date.parse(bestTaskDate(b,true)||bestTaskDate(b,false)||0)-Date.parse(bestTaskDate(a,true)||bestTaskDate(a,false)||0)),done=all.filter(task=>!ogosTaskSoloTecnicoV353(task)),technical=all.filter(ogosTaskSoloTecnicoV353),row=task=>`<button type="button" class="drawer-task" data-completed-id="${task.id}"><b>✓ ${esc(task.title)}</b><small>${esc(taskDateLabel(task))} · ${(task.affected||[]).length} pagine · priorità ${esc(task.priority||'Media')}</small>${taskPartialLabel(task)?`<small class="warn-note">${esc(taskPartialLabel(task))}</small>`:''}</button>`;
+  const history=technical.length?`<details style="margin-top:18px"><summary><b>${technical.length} attività tecniche archiviate</b></summary><p class="help">Template e record interni restano nello storico per il ripristino, ma non contano come lavoro SEO operativo.</p>${technical.map(row).join('')}</details>`:'';
+  openActionDrawer('Task e azioni superate',`${done.length} ${done.length===1?'attività operativa superata':'attività operative superate'}`,done.map(row).join('')||'<p class="empty">Nessuna attività operativa completata finora.</p>'+history);if(done.length)$('#actionDrawerBody').insertAdjacentHTML('beforeend',history);
+  $$('#actionDrawer [data-completed-id]').forEach(button=>button.onclick=()=>openTaskDrawer(state.tasks.find(task=>String(task.id)===button.dataset.completedId)));
+};
+document.addEventListener('click',event=>{if(!event.target.closest?.('.modal,.action-drawer'))ogosLastFocusV355=event.target;},true);
+document.addEventListener('keydown',event=>{
+  const modalOpen=$('#modalBackdrop')?.classList.contains('open'),drawerOpen=$('#actionDrawer')?.classList.contains('open'),root=modalOpen?document.querySelector('.modal'):drawerOpen?$('#actionDrawer'):null;if(!root)return;
+  if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();modalOpen?closeModal():closeActionDrawer();return;}
+  if(event.key!=='Tab')return;const nodes=ogosFocusableV355(root);if(!nodes.length){event.preventDefault();root.focus?.();return;}const first=nodes[0],last=nodes[nodes.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+},true);
+
+const ogosImportFileV355Base=importFile;
+importFile=async function(...args){const result=await ogosImportFileV355Base.apply(this,args);if(result?.ok){state.ui=state.ui&&typeof state.ui==='object'?state.ui:{};delete state.ui.seoTaskMigrationVersion;const refreshed=ogosRefreshOpenSeoTasksV355(),dates=ogosRepairVerifiedDatesV355(),technical=ogosResolveTechnicalOpenTasksV355(),changed=refreshed||dates||technical;if(changed){save(true);renderShell();renderKanban();renderVerify();toast('Proposte SEO precedenti aggiornate e attività duplicate unite.');}}return result;};
+
+function ogosObserveOverlaysV355(){
+  const backdrop=$('#modalBackdrop'),drawer=$('#actionDrawer'),observer=new MutationObserver(()=>{const modalOpen=backdrop?.classList.contains('open'),drawerOpen=drawer?.classList.contains('open');if(modalOpen||drawerOpen){ogosLabelFormControlsV355(modalOpen?$('#modalForm'):drawer);setTimeout(()=>{const root=modalOpen?document.querySelector('.modal'):drawer;if(root&&!root.contains(document.activeElement))(ogosFocusableV355(root)[0]||root).focus?.();},0);}ogosSyncOverlayV355();});
+  if(backdrop)observer.observe(backdrop,{attributes:true,attributeFilter:['class']});if(drawer)observer.observe(drawer,{attributes:true,attributeFilter:['class','aria-hidden']});
+}
+
+const ogosInitV355Base=init;
+init=function(){ogosInitV355Base();const refreshed=ogosRefreshOpenSeoTasksV355(),dates=ogosRepairVerifiedDatesV355(),technical=ogosResolveTechnicalOpenTasksV355(),changed=refreshed||dates||technical;state.appVersion=APP_VERSION;if(changed){save(true);renderShell();renderAudit();renderKanban();renderVerify();}ogosBindApproveVisibleV355();ogosObserveOverlaysV355();ogosSyncOverlayV355();};
 
 init();
 })();
