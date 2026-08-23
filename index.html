@@ -89,6 +89,24 @@ main{padding:calc(var(--top) + 24px) 24px 50px}.view{max-width:1320px}.page-head
 @media(max-width:820px){:root{--top:62px}.topbar{padding:0 12px}.ogos-top-menu{position:fixed;right:12px;top:58px}.page-head h1{font-size:25px}.dashboard-grid,.ogos-simple-dashboard-row{grid-template-columns:1fr}.ogos-dashboard-secondary-content{grid-template-columns:1fr}.health-row{grid-template-columns:1fr 1fr}.tool-grid{grid-template-columns:1fr}.ogos-settings-group-content{grid-template-columns:1fr}.ogos-settings-group-content>.field.wide{grid-column:auto}.next-panel{grid-template-columns:1fr}.steps{padding:16px;}.sidebar-actions{padding-bottom:4px}}
 @media(max-width:560px){main{padding-left:12px;padding-right:12px}.project-switcher{padding:10px}.project-switcher .btn{width:100%}.health-row{grid-template-columns:1fr}.metric{border-right:0}.ogos-shortcuts{grid-template-columns:1fr}.page-head>.btn{width:100%}.toolbar>.btn,.toolbar>select.btn{flex:1 1 auto}.import-zone{padding:24px 16px}.ogos-settings-group>summary,.ogos-analysis-advanced>summary{padding:13px 14px}}
 
+
+/* Card di connessione WordPress.
+   3.11.0: qui c'era un blocco "HARD FIX" in cui ogni dichiarazione era marcata
+   !important. Serviva a vincere una regressione in cui il pannello spariva, ma
+   l'unica cosa che nascondeva davvero il campo era la proprieta' .hidden
+   impostata da renderIntegrationSettings() quando la modalita' non e'
+   "wordpress-plugin" — non una regola CSS. Ora e' ogosEnsureWpConnectionControls()
+   a rimuovere quell'attributo, e gira per ultimo nella catena di renderSettings:
+   il !important non aveva piu' nulla da battere, e le dichiarazioni su
+   visibility/opacity non avevano alcun avversario nemmeno prima (nessun punto del
+   codice le tocca). Restano solo le regole che fanno un lavoro vero: layout e
+   dimensioni minime dei controlli. */
+#view-settings .ogos-settings-group[data-group="connections"]>.ogos-settings-group-content{display:grid}
+#view-settings .ogos-wordpress-connection-visible{display:grid}
+#view-settings #ogosWpConnectionActions3100{display:flex;min-height:48px;align-items:center;justify-content:flex-start;gap:10px;flex-wrap:wrap;margin-top:10px}
+#view-settings #wpBtn{min-width:180px;min-height:44px}
+#view-settings #wpDisconnectBtn{min-height:44px}
+#view-settings .ogos-wp-primary-card3100{display:grid;gap:12px;border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface)}
 </style>
 </head>
 <body>
@@ -146,7 +164,7 @@ main{padding:calc(var(--top) + 24px) 24px 50px}.view{max-width:1320px}.page-head
       </div>
     </section>
 
-    <section class="view" id="view-start"><div class="page-head"><div><div class="eyebrow">Passaggio 1 di 4</div><h1>Imposta il progetto</h1><p>Queste informazioni aiutano a interpretare dati e priorità nel contesto giusto.</p></div></div><form class="panel form-panel" id="projectForm"><div class="form-grid"><div class="field"><label for="siteName">Nome del progetto</label><input id="siteName" name="name" required></div><div class="field"><label for="domain">Dominio</label><div class="domain-autofill"><input id="domain" name="domain" inputmode="url" placeholder="esempio.it" required><button type="button" class="btn" id="semanticProjectBtn"><svg data-icon="search"></svg>Compila dal sito</button></div><small class="help">Senza percorsi o parametri. “Compila dal sito” analizza contenuti e intento complessivo, non solo la keyword del dominio.</small><div class="semantic-status" id="semanticProjectStatus" aria-live="polite"></div></div><div class="field"><label for="sector">Settore</label><input id="sector" name="sector" placeholder="Es. ricette e alimentazione"></div><div class="field"><label for="brand">Nome brand</label><input id="brand" name="brand" placeholder="Es. Buena Onda Yoga"><small class="help">Il nome come lo mostra il sito. Va in coda al Title SEO. Se vuoto viene usato il nome del progetto, che spesso arriva dal dominio (“Yogabuenaonda” invece di “Buena Onda Yoga”).</small></div><div class="field"><label for="city">Località</label><input id="city" name="city" placeholder="Es. Cinisello Balsamo"><small class="help">Comune in cui operi. Entra nel Title e nella meta description delle pagine di servizio e contatto e sostituisce le query “near me”. Se lo lasci vuoto provo a dedurlo dall’indirizzo trovato nel crawl.</small></div><div class="field"><label for="geo">Area geografica servita</label><input id="geo" name="geo" placeholder="Es. Italia o Milano e provincia"><small class="help">Il bacino che servi, diverso dalla località della sede. Non entra nel Title.</small></div><div class="field wide"><label for="audience">Pubblico</label><textarea id="audience" name="audience" placeholder="Chi vuoi raggiungere e quali esigenze ha?"></textarea></div><div class="field wide"><label for="goals">Obiettivi SEO</label><textarea id="goals" name="goals" placeholder="Es. aumentare le pagine indicizzate e il traffico qualificato..."></textarea></div></div><div class="form-actions"><button type="button" class="btn ghost" data-view="dashboard">Annulla</button><button class="btn primary" type="submit">Salva e continua</button></div></form></section>
+    <section class="view" id="view-start"><div class="page-head"><div><div class="eyebrow">Passaggio 1 di 4</div><h1>Imposta il progetto</h1><p>Queste informazioni aiutano a interpretare dati e priorità nel contesto giusto.</p></div></div><form class="panel form-panel" id="projectForm"><div class="form-grid"><div class="field"><label for="siteName">Nome del progetto</label><input id="siteName" name="name" required></div><div class="field"><label for="domain">Dominio</label><div class="domain-autofill"><input id="domain" name="domain" inputmode="url" placeholder="esempio.it" required><button type="button" class="btn" id="semanticProjectBtn"><svg data-icon="search"></svg>Compila dal sito</button></div><small class="help">Senza percorsi o parametri. “Compila dal sito” analizza contenuti e intento complessivo, non solo la keyword del dominio.</small><div class="semantic-status" id="semanticProjectStatus" aria-live="polite"></div><div class="ogos-project-wp-connect3100" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn" id="ogosProjectWpConnect3100">Collega WordPress</button><small class="help" style="align-self:center">Usa il connettore quando il browser blocca la lettura pubblica per CORS.</small></div></div><div class="field"><label for="sector">Settore</label><input id="sector" name="sector" placeholder="Es. ricette e alimentazione"></div><div class="field"><label for="brand">Nome brand</label><input id="brand" name="brand" placeholder="Es. Buena Onda Yoga"><small class="help">Il nome come lo mostra il sito. Va in coda al Title SEO. Se vuoto viene usato il nome del progetto, che spesso arriva dal dominio (“Yogabuenaonda” invece di “Buena Onda Yoga”).</small></div><div class="field"><label for="city">Località</label><input id="city" name="city" placeholder="Es. Cinisello Balsamo"><small class="help">Comune in cui operi. Entra nel Title e nella meta description delle pagine di servizio e contatto e sostituisce le query “near me”. Se lo lasci vuoto provo a dedurlo dall’indirizzo trovato nel crawl.</small></div><div class="field"><label for="geo">Area geografica servita</label><input id="geo" name="geo" placeholder="Es. Italia o Milano e provincia"><small class="help">Il bacino che servi, diverso dalla località della sede. Non entra nel Title.</small></div><div class="field wide"><label for="audience">Pubblico</label><textarea id="audience" name="audience" placeholder="Chi vuoi raggiungere e quali esigenze ha?"></textarea></div><div class="field wide"><label for="goals">Obiettivi SEO</label><textarea id="goals" name="goals" placeholder="Es. aumentare le pagine indicizzate e il traffico qualificato..."></textarea></div></div><div class="form-actions"><button type="button" class="btn ghost" data-view="dashboard">Annulla</button><button class="btn primary" type="submit">Salva e continua</button></div></form></section>
 
     <section class="view" id="view-audit"><div class="page-head"><div><div class="eyebrow">Passaggio 2 di 4</div><h1>Controlla il sito</h1><p>Esegui controlli sui dati locali e trasforma i segnali tecnici in spiegazioni utilizzabili.</p></div><button class="btn primary" id="runAllBtn"><svg data-icon="play"></svg>Esegui tutti i controlli</button></div><div class="tool-grid" id="auditTools"></div><div class="panel audit-result"><div class="audit-head"><div><h2 class="section-title">Ultimo controllo</h2><small id="lastAudit">Dati demo pronti · nessuna scansione live</small></div><button class="btn" id="createPlanBtn">Crea piano operativo →</button></div><div class="issue-grid"><button type="button" class="issue-stat" data-issue-target="critical"><b id="criticalCount">0</b><small>Critici · apri</small></button><button type="button" class="issue-stat" data-issue-target="high"><b id="highCount">0</b><small>Alta priorità · apri</small></button><button type="button" class="issue-stat" data-issue-target="medium"><b id="mediumCount">0</b><small>Media priorità · apri</small></button><button type="button" class="issue-stat" data-issue-target="opportunities"><b id="opportunityCount">0</b><small>Opportunità · apri</small></button></div></div></section>
 
@@ -174,7 +192,7 @@ main{padding:calc(var(--top) + 24px) 24px 50px}.view{max-width:1320px}.page-head
 <div class="modal-backdrop" id="modalBackdrop" role="presentation"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1"><div class="modal-head"><div><h2 id="modalTitle">Nuova attività</h2><p class="help" id="modalHelp"></p></div><button class="icon-btn" id="closeModal" aria-label="Chiudi"><svg data-icon="x"></svg></button></div><form id="modalForm"></form></div></div>
 <div class="toast-wrap" id="toasts" aria-live="polite"></div>
 <script>
-window.__OGOS_BUILD_MANIFEST__={"schemaVersion":1,"modules":[{"id":"core-state-ui","file":"00-core-state-ui.js","responsibility":"Bootstrap, stato normalizzato, persistenza di base e shell UI.","dependsOn":[],"publicApi":["normalizeState","save","renderView","toast"]},{"id":"audit-data-connectors","file":"10-audit-data-connectors.js","responsibility":"Audit, importazioni, Search Console e connettori dati.","dependsOn":["core-state-ui"],"publicApi":["renderAudit","runAudit","downloadGlobalReport"]},{"id":"indexing-and-crawl","file":"20-indexing-and-crawl.js","responsibility":"Registro URL, sitemap, classificazione e viste di indicizzazione.","dependsOn":["audit-data-connectors"],"publicApi":["renderIndexing","runIndexingAnalysis","idxClassify"]},{"id":"operational-seo-reports","file":"21-operational-seo-reports.js","responsibility":"Report pagina per pagina, internal linking e azioni SEO granulari.","dependsOn":["indexing-and-crawl"],"publicApi":["internalLinkProposals","auditCategoryContent","showKeywordProposal"]},{"id":"task-history-wordpress-runtime","file":"22-task-history-wordpress-runtime.js","responsibility":"Storico attività, deduplicazione operativa e bootstrap WordPress/crawl.","dependsOn":["operational-seo-reports"],"publicApi":["taskIsCompleted","pendingOperationalItem","recordTaskStatus"]},{"id":"seo-operational-workflows","file":"30-seo-and-operational-workflows.js","responsibility":"Task SEO, approvazione, applicazione e flussi operativi.","dependsOn":["task-history-wordpress-runtime"],"publicApi":["renderKanban","taskCard","applyPluginTaskSingle"]},{"id":"platform-performance","file":"40-platform-performance.js","responsibility":"Persistenza differita, REST, concorrenza e ottimizzazioni di rendering.","dependsOn":["seo-operational-workflows"],"publicApi":["ogosFlushRegistry","ogosScheduleDataSaveV351"]},{"id":"seo-copy-foundation","file":"50-seo-copy-foundation.js","responsibility":"Normalizzazione editoriale, intenzione, copy di base e topical map.","dependsOn":["platform-performance"],"publicApi":["ogosNeedEvidenceV341","ogosSeoCopyFromPage"]},{"id":"seo-quality-engine","file":"51-seo-quality-engine.js","responsibility":"Ruoli distinti di Title/H1/meta e scoring qualitativo.","dependsOn":["seo-copy-foundation"],"publicApi":["ogosQualitaCopyV343","ogosSeoCopyFromPage"]},{"id":"seo-reconciliation-ui","file":"52-seo-reconciliation-ui.js","responsibility":"Riconciliazione problemi aperti, conteggi e interfaccia delle proposte.","dependsOn":["seo-quality-engine"],"publicApi":["ogosRiconciliaProblemiApertiV343","ogosConteggioProblemiApertiV344"]},{"id":"seo-reliability-import","file":"53-seo-reliability-import.js","responsibility":"Affidabilità delle prove, importazioni e varianti editoriali.","dependsOn":["seo-reconciliation-ui"],"publicApi":["ogosDataCompletamentoV345","ogosHandleImportFilesV345"]},{"id":"crawl-quality-runtime","file":"54-crawl-quality-runtime.js","responsibility":"Crawl riprendibile, metriche, guardie finali e qualità multisettore.","dependsOn":["seo-reliability-import"],"publicApi":["ogosRunResumableCrawlV347","onPageCandidateRowsV1616"]},{"id":"fast-ui-caches","file":"60-fast-ui-and-caches.js","responsibility":"Cache limitate, rendering selettivo e navigazione rapida.","dependsOn":["crawl-quality-runtime"],"publicApi":["ogosInvalidatePerformanceCachesV352"]},{"id":"workflow-safety","file":"70-workflow-safety.js","responsibility":"Batch WordPress, rollback, idempotenza e protezione delle operazioni.","dependsOn":["fast-ui-caches"],"publicApi":["ogosRunExclusiveV3613","applyPluginTaskSingle"]},{"id":"current-features","file":"80-current-features.js","responsibility":"Selezione multipla, archivio, lingua italiana e analisi azionabile.","dependsOn":["workflow-safety"],"publicApi":["cannibalizationFromGsc","ogosOpenInvolvedPagesV3618"]},{"id":"inventory-repository","file":"85-indexeddb-inventory-repository.js","responsibility":"Persistenza ibrida degli inventari grandi in IndexedDB con fallback sicuro.","dependsOn":["current-features"],"publicApi":["OGOSInventoryRepository","ogosHydrateInventoryV380"]},{"id":"foundation-diagnostics","file":"90-foundation-diagnostics.js","responsibility":"Registro runtime, logger limitato, health check e bootstrap osservabile.","dependsOn":["inventory-repository"],"publicApi":["OGOSRuntime","ogosRunHealthCheckV371"]},{"id":"platform-hardening","file":"95-platform-hardening.js","responsibility":"Compatibilità browser, coordinamento multi-tab, offline, performance budget, facade operative e self-test.","dependsOn":["foundation-diagnostics"],"publicApi":["OGOSHardening","OGOSOperationManager","OGOSRepositories","OGOSServices","OGOSCommands"]}]};
+window.__OGOS_BUILD_MANIFEST__={"schemaVersion":1,"modules":[{"id":"core-state-ui","file":"00-core-state-ui.js","responsibility":"Bootstrap, stato normalizzato, persistenza di base e shell UI.","dependsOn":[],"publicApi":["normalizeState","save","renderView","toast"]},{"id":"audit-data-connectors","file":"10-audit-data-connectors.js","responsibility":"Audit, importazioni, Search Console e connettori dati.","dependsOn":["core-state-ui"],"publicApi":["renderAudit","runAudit","downloadGlobalReport"]},{"id":"indexing-and-crawl","file":"20-indexing-and-crawl.js","responsibility":"Registro URL, sitemap, classificazione e viste di indicizzazione.","dependsOn":["audit-data-connectors"],"publicApi":["renderIndexing","runIndexingAnalysis","idxClassify"]},{"id":"operational-seo-reports","file":"21-operational-seo-reports.js","responsibility":"Report pagina per pagina, internal linking e azioni SEO granulari.","dependsOn":["indexing-and-crawl"],"publicApi":["internalLinkProposals","auditCategoryContent","showKeywordProposal"]},{"id":"task-history-wordpress-runtime","file":"22-task-history-wordpress-runtime.js","responsibility":"Storico attività, deduplicazione operativa e bootstrap WordPress/crawl.","dependsOn":["operational-seo-reports"],"publicApi":["taskIsCompleted","pendingOperationalItem","recordTaskStatus"]},{"id":"seo-operational-workflows","file":"30-seo-and-operational-workflows.js","responsibility":"Task SEO, approvazione, applicazione e flussi operativi.","dependsOn":["task-history-wordpress-runtime"],"publicApi":["renderKanban","taskCard","applyPluginTaskSingle"]},{"id":"platform-performance","file":"40-platform-performance.js","responsibility":"Persistenza differita, REST, concorrenza e ottimizzazioni di rendering.","dependsOn":["seo-operational-workflows"],"publicApi":["ogosFlushRegistry","ogosScheduleDataSaveV351"]},{"id":"seo-copy-foundation","file":"50-seo-copy-foundation.js","responsibility":"Normalizzazione editoriale, intenzione, copy di base e topical map.","dependsOn":["platform-performance"],"publicApi":["ogosNeedEvidenceV341","ogosSeoCopyFromPage"]},{"id":"seo-quality-engine","file":"51-seo-quality-engine.js","responsibility":"Ruoli distinti di Title/H1/meta e scoring qualitativo.","dependsOn":["seo-copy-foundation"],"publicApi":["ogosQualitaCopyV343","ogosSeoCopyFromPage"]},{"id":"seo-reconciliation-ui","file":"52-seo-reconciliation-ui.js","responsibility":"Riconciliazione problemi aperti, conteggi e interfaccia delle proposte.","dependsOn":["seo-quality-engine"],"publicApi":["ogosRiconciliaProblemiApertiV343","ogosConteggioProblemiApertiV344"]},{"id":"seo-reliability-import","file":"53-seo-reliability-import.js","responsibility":"Affidabilità delle prove, importazioni e varianti editoriali.","dependsOn":["seo-reconciliation-ui"],"publicApi":["ogosDataCompletamentoV345","ogosHandleImportFilesV345"]},{"id":"crawl-quality-runtime","file":"54-crawl-quality-runtime.js","responsibility":"Crawl riprendibile, metriche, guardie finali e qualità multisettore.","dependsOn":["seo-reliability-import"],"publicApi":["ogosRunResumableCrawlV347","onPageCandidateRowsV1616"]},{"id":"fast-ui-caches","file":"60-fast-ui-and-caches.js","responsibility":"Cache limitate, rendering selettivo e navigazione rapida.","dependsOn":["crawl-quality-runtime"],"publicApi":["ogosInvalidatePerformanceCachesV352"]},{"id":"workflow-safety","file":"70-workflow-safety.js","responsibility":"Batch WordPress, rollback, idempotenza e protezione delle operazioni.","dependsOn":["fast-ui-caches"],"publicApi":["ogosRunExclusiveV3613","applyPluginTaskSingle"]},{"id":"current-features","file":"80-current-features.js","responsibility":"Selezione multipla, archivio, lingua italiana e analisi azionabile.","dependsOn":["workflow-safety"],"publicApi":["cannibalizationFromGsc","ogosOpenInvolvedPagesV3618"]},{"id":"inventory-repository","file":"85-indexeddb-inventory-repository.js","responsibility":"Persistenza ibrida degli inventari grandi in IndexedDB con fallback sicuro.","dependsOn":["current-features"],"publicApi":["OGOSInventoryRepository","ogosHydrateInventoryV380"]},{"id":"foundation-diagnostics","file":"90-foundation-diagnostics.js","responsibility":"Registro runtime, logger limitato, health check e bootstrap osservabile.","dependsOn":["inventory-repository"],"publicApi":["OGOSRuntime","ogosRunHealthCheckV371"]},{"id":"guided-ui","file":"91-guided-ui.js","responsibility":"Livello di orchestrazione UI 3.9.0: navigazione raggruppata, dashboard semplificata, impostazioni per aree.","dependsOn":["foundation-diagnostics"],"publicApi":["ogosUi390Init","ogosUi390AfterRender","ogosUi390Settings"]},{"id":"wordpress-semantic-flow","file":"92-wordpress-semantic-flow.js","responsibility":"Analisi semantica del dominio: lettura pubblica, lettura via connettore WordPress e orchestratore unico del flusso.","dependsOn":["guided-ui"],"publicApi":["autoFillProjectFromDomain","ogosCanUseWpSemantic392","ogosSemanticFallbackViaWordPress392","ogosShowWpFallback395"]},{"id":"project-switch-indexeddb","file":"93-project-switch-indexeddb.js","responsibility":"Cambio progetto atomico per gli inventari su IndexedDB: idratazione prima del render.","dependsOn":["wordpress-semantic-flow"],"publicApi":["switchProject"]},{"id":"platform-hardening","file":"95-platform-hardening.js","responsibility":"Compatibilita browser, coordinamento multi-tab, offline, performance budget, facade operative e self-test.","dependsOn":["project-switch-indexeddb"],"publicApi":["OGOSHardening","OGOSOperationManager","OGOSRepositories","OGOSServices","OGOSCommands"]},{"id":"wordpress-connection","file":"96-wordpress-connection.js","responsibility":"Card di connessione WordPress sempre visibile, pairing con codice monouso e letture del connettore annullabili.","dependsOn":["platform-hardening"],"publicApi":["testWordPress","disconnectWordPress","ogosEnsureWpConnectionControls3100","wpCurrentAuditCollection"]},{"id":"bootstrap","file":"99-bootstrap.js","responsibility":"Avvio dell applicazione e chiusura del bundle.","dependsOn":["wordpress-connection"],"publicApi":["init"]}]};
 
 /* #region module:core-state-ui */
 (()=>{'use strict';
@@ -203,7 +221,24 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.10.0',OGOS_SCHEMA_VERSION=1;let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='3.11.0',OGOS_SCHEMA_VERSION=1;
+/* 3.10.1 — Origine reale dell'app per il pairing WordPress.
+   Chrome espone location.origin === "file://" quando la web app viene aperta
+   come file locale, ma l'header Origin che il browser invia nelle richieste
+   fetch verso WordPress in quel caso e' la stringa letterale "null" (Firefox
+   restituisce gia' "null" anche in location.origin). Inviando "file://" nel
+   parametro ogos_origin il connettore salvava un'origine che non coincideva
+   con nessun header Origin reale: il pairing sembrava riuscire (la rotta
+   /auth/exchange e' esente da allowlist) ma tutte le chiamate REST successive
+   restavano senza header CORS e fallivano nel browser, riproducendo l'errore
+   "il browser blocca la lettura diretta". Dichiariamo quindi esattamente la
+   stessa origine che il browser invera' negli header. */
+function ogosAppOrigin3101(){
+  try{
+    if(/^https?:$/i.test(location.protocol)&&location.origin&&location.origin!=='null')return location.origin;
+  }catch{}
+  return 'null';
+}let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.schemaVersion=OGOS_SCHEMA_VERSION;value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 /* Il registro viene letto prima dell'inizializzazione dell'interfaccia. Se il
@@ -401,7 +436,6 @@ async function exchangeWordPressPairCode(code,stateValue){if(!code){toast('Inser
     // pluginDetected=true appena confermato, mostrando "non rilevato"
     // subito dopo un pairing riuscito.
     if(state.wordpress.pluginDetected&&state.integration.mode==='local'){state.integration.mode='wordpress-plugin'}save();renderSettings();renderKanban();toast(state.wordpress.pluginDetected?'WordPress collegato e connettore verificato · modalità di lavoro impostata su "WordPress + plugin connettore" (cambiala in Impostazioni se preferisci)':'WordPress autenticato, ma connettore Organic Growth OS non rilevato',state.wordpress.pluginDetected?'ok':'error');return state.wordpress.pluginDetected}catch(e){state.wordpress.connected=false;state.wordpress.lastError=e.message||'Errore sconosciuto';save();renderSettings();toast(`Collegamento non riuscito: ${e.message}`,'error');return false}}
-async function testWordPress(){const button=$('#wpBtn'),raw=$('#wpUrl').value.trim();if(!raw){toast('Inserisci l’URL WordPress','error');return}let base;try{base=normalizeWpBase(raw)}catch(e){toast('URL WordPress non valido o non sicuro','error');return}const stateCode=(crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/[^a-zA-Z0-9_-]/g,'');state.wordpress.url=base;wpPendingState=stateCode;state.wordpress.lastError=null;save();const origin=location.origin&&location.origin!=='null'?location.origin:'null';const authUrl=`${base}/wp-admin/admin.php?page=organic-growth-os-auth&ogos_authorize=1&ogos_state=${encodeURIComponent(stateCode)}&ogos_origin=${encodeURIComponent(origin)}`;button.disabled=true;button.textContent='Attendo WordPress…';let popup=null;try{popup=window.open(authUrl,'ogos_wordpress_auth','width=680,height=760,resizable=yes,scrollbars=yes');if(!popup)throw new Error('Il browser ha bloccato la finestra di login. Consenti i popup per questa pagina.');const result=await new Promise((resolve,reject)=>{const timer=setTimeout(()=>{cleanup();reject(new Error('Autorizzazione non completata automaticamente entro 10 minuti. Lascia aperta la finestra WordPress: se il codice monouso è ancora visibile, copialo nel campo qui sotto entro 2 minuti dalla sua comparsa.'))},600000);function cleanup(){clearTimeout(timer);window.removeEventListener('message',onMessage)}let expectedOrigin=null;try{expectedOrigin=new URL(base).origin}catch{}async function onMessage(ev){/* BUG corretto: il controllo dell'origine era condizionato a expectedOrigin. Se new URL(base) falliva, expectedOrigin restava null e il confronto veniva saltato del tutto: la finestra accettava un messaggio 'ogos-auth-code' da QUALUNQUE origine, e bastava indovinare lo state per far accettare all'app un codice di collegamento altrui. Ora il controllo fallisce chiuso: senza un'origine attesa certa non si accetta nulla e resta la copia manuale del codice. */if(!expectedOrigin||ev.origin!==expectedOrigin)return;const d=ev.data;if(!d||d.type!=='ogos-auth-code'||d.state!==stateCode)return;cleanup();resolve(d)}window.addEventListener('message',onMessage)});await exchangeWordPressPairCode(result.code,stateCode)}catch(e){state.wordpress.lastError=e.message||'Errore di collegamento';save();renderSettings();toast(state.wordpress.lastError,'error')}finally{button.disabled=false;button.textContent='Collega WordPress'}}
 async function disconnectWordPress(){const token=wpSecret;try{if(token&&state.wordpress.url)await fetch(`${wpBase()}/wp-json/organic-growth-os/v1/auth/revoke`,{method:'POST',headers:{Accept:'application/json','X-OGOS-Token':token},mode:'cors',cache:'no-store'})}catch{}wpSecret='';wpPendingState='';try{sessionStorage.removeItem(connectorSessionKey())}catch{}state.wordpress={url:state.wordpress.url||'',username:'',connected:false,userName:'',userId:null,lastError:null,lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],tokenExpiresAt:null,authMethod:null};save();renderSettings();toast('Connettore WordPress disconnesso e token revocato')}
 let wpRequest;
 async function wpCollection(type){const all=[];for(let page=1;page<=50;page++){const batch=await wpRequest(`/wp-json/wp/v2/${type}?context=edit&per_page=100&page=${page}&_fields=id,link,slug,title,status,type`);all.push(...batch);if(batch.length<100)break;if(page===50)throw new Error(`Sincronizzazione ${type} interrotta: superato il limite di 5.000 elementi`)}return all}
@@ -414,7 +448,14 @@ function applyCurrentAudit(items,source,observedAt){if(!Array.isArray(items)||!i
     // (nessun suggerimento) restano visibili nel pannello "Link interni rotti" ma richiedono una scelta manuale.
     const brokenWithFix = detectBrokenLinksReport().filter(r => r.suggested).map(r => ({ url: r.source, issue: `Link verso ${r.brokenUrl}`, fix: `Sostituisci con ${r.suggested}`, changes: { replace_link: { from: r.href, to: r.suggested } } }));
     const manual=(state.tasks||[]).filter(t=>t.evidence?.source==='manual');const tasks=[];if(missingTitle.length)tasks.push(liveTask('Completa title SEO',`${missingTitle.length} pagine senza title SEO`, 'Alta',missingTitle,{type:'title'},source,observedAt));if(missingMeta.length)tasks.push(liveTask('Completa meta description',`${missingMeta.length} pagine senza meta description`, 'Media',missingMeta,{type:'meta_description'},source,observedAt));if(badCanonical.length)tasks.push(liveTask('Correggi canonical',`${badCanonical.length} canonical non autoreferenziali`, 'Alta',badCanonical,{type:'canonical'},source,observedAt));if(brokenWithFix.length)tasks.push(liveTask('Correggi link interni rotti',`${brokenWithFix.length} link interni rotti con una destinazione suggerita (stima locale, verifica prima di applicare)`, 'Media',brokenWithFix,{type:'replace_link'},source,observedAt));state.tasks=[...manual,...tasks];state.repairs=[];state.audit={last:new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(new Date(observedAt)),running:false,source,liveVerified:true,observedAt,expiresAt:new Date(Date.parse(observedAt)+DATA_FRESH_DAYS*86400000).toISOString()};state.project.dataOrigin='live';state.imports=[{name:source==='wordpress-live'?'Scansione WordPress live':'Scansione GPTSites live',date:state.audit.last,rows:items.length}];save();renderShell();renderAudit();renderKanban();renderPages();return tasks.length}
-async function scanWordPressCurrent(){const button=$('#wpAuditBtn');button.disabled=true;button.textContent='Scansione live…';try{const {items,observedAt}=await wpCurrentAuditCollection(),count=applyCurrentAudit(items,'wordpress-live',observedAt);toast(`Audit WordPress aggiornato: ${items.length} pagine, ${count} gruppi di problemi attuali`)}catch(e){toast(`Audit WordPress non riuscito: ${e.message}`,'error')}finally{button.disabled=false;button.textContent='Scansiona dati SEO attuali'}}
+/* BUG corretto (3.11.0): #wpAuditBtn esiste solo dopo il render della vista
+   Impostazioni. Avviare la scansione da qualsiasi altro punto — la facade
+   pubblica OGOSCommands.scanWordPress(), un'automazione, una scorciatoia —
+   sollevava "Cannot set properties of null" prima ancora di contattare
+   WordPress, e il blocco finally rilanciava lo stesso errore coprendo quello
+   originale. Gli altri comandi analoghi (syncWordPress, runWordPressCrawl)
+   erano gia' protetti da un controllo sul pulsante: qui mancava. */
+async function scanWordPressCurrent(){const button=$('#wpAuditBtn');if(button){button.disabled=true;button.textContent='Scansione live…'}try{const {items,observedAt}=await wpCurrentAuditCollection(),count=applyCurrentAudit(items,'wordpress-live',observedAt);toast(`Audit WordPress aggiornato: ${items.length} pagine, ${count} gruppi di problemi attuali`)}catch(e){toast(`Audit WordPress non riuscito: ${e.message}`,'error')}finally{if(button){button.disabled=false;button.textContent='Scansiona dati SEO attuali'}}}
 async function detectWordPressPlugin(){if(!state.wordpress.connected)return false;
   // Un solo tentativo fallito su questa chiamata (rete lenta, blip
   // temporaneo) non deve far sparire un plugin che magari è davvero
@@ -880,6 +921,8 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.11.0', date: '2026-08-23', notes: 'Consolidamento e manutenibilità, senza nuove funzioni. L’analisi semantica del dominio era stata riassegnata sette volte fra la 3.9.1 e la 3.9.7 e “Collega WordPress” tre volte: solo l’ultima versione girava, le altre restavano nel file come codice morto con lock, messaggi ed effetti collaterali propri. Ora c’è una sola implementazione di ciascuna (−170 righe). Le letture paginate dal connettore (inventario completo e campionamento semantico) passano dall’Operation Manager: sono annullabili, hanno un tetto di tempo, si fermano davvero fra una pagina e l’altra e vengono interrotte al cambio progetto o alla chiusura della scheda; due letture non possono più sovrapporsi. Rimosso il blocco CSS “hard fix” della card WordPress: nascondeva il pannello la proprietà .hidden, non una regola CSS, quindi le dichiarazioni !important non avevano nulla da battere. Corretto un errore reale: avviare la scansione SEO da fuori la schermata Impostazioni sollevava “Cannot set properties of null” prima ancora di contattare WordPress. Lato connettore: i redirect non interrogano più il database a ogni visita del sito (indice dei percorsi attivi in un’opzione autoloaded) e il CSS di servizio della bacheca non viene più stampato su ogni pagina admin. Il codice sorgente è ora diviso in 23 moduli con uno script di build che ricompone lo stesso identico file unico.', compatibility: 'Nessuna modifica ai dati salvati né al formato dei backup. Comportamento dell’app invariato: consigliato il connettore 3.11.0 per le due migliorie lato WordPress.' },
+  { version: '3.10.1', date: '2026-08-23', notes: 'Correzione del collegamento WordPress quando l’app gira come file locale. Chrome espone location.origin come “file://” mentre l’header Origin realmente inviato al sito è la stringa “null”: il connettore registrava quindi un’origine che non corrispondeva a nessuna richiesta reale. Il pairing sembrava riuscito, ma ogni chiamata REST successiva restava senza header CORS e falliva nel browser, riproducendo l’errore “Il browser blocca la lettura diretta del sito” anche con WordPress collegato. L’app dichiara ora esattamente l’origine che il browser invierà. Corretti inoltre: il campo del codice monouso messo a fuoco dopo la chiusura del popup era quello legacy e non quello visibile nella card della connessione; restava un contenitore di pulsanti vuoto nella card WordPress. Lato connettore: la diagnostica non restituiva origini CORS autorizzate e stato della tabella operazioni (il pannello mostrava due falsi allarmi rossi), il controllo dello schema del database girava a ogni richiesta pubblica, e l’app inclusa nel plugin era ferma a una build precedente.', compatibility: 'Compatibile con i dati e i backup 3.x. Richiede il connettore WordPress 3.10.1 per la correzione dell’origine lato server e per la diagnostica completa; la correzione lato app vale già dalla prossima apertura.' },
   { version: '3.10.0', date: '2026-08-23', notes: 'Hardening della piattaforma standalone: Operation Manager centralizzato, facade Repository/Services/Commands, coordinamento multi-tab con BroadcastChannel e fallback storage, stato online/offline, diagnostica compatibilita browser, PerformanceObserver con budget, campionamento memoria quando disponibile e self-test/fuzz non distruttivi. Il layer non sostituisce i workflow SEO esistenti ma li osserva e fornisce contratti piu stabili per gli sviluppi futuri.', compatibility: 'Compatibile con backup 3.x e con il repository IndexedDB esistente. Le API browser non disponibili degradano in modo esplicito senza bloccare il core.' },
   { version: '3.9.12', date: '2026-08-23', notes: 'Audit end-to-end esteso e cambio progetto IndexedDB atomico. I progetti con inventario esteso vengono ora idratati prima del primo render della dashboard, evitando stati intermedi con pages vuoto e riducendo il rischio di salvataggi o rendering prematuri. Verificati inoltre 126 scenari runtime, recovery da storage corrotto, concorrenza del repository, deduplicazione import/sync, cicli ripetuti di modali e navigazione, transizioni stato e failure path.', compatibility: 'Compatibile con backup 3.x e con il repository IndexedDB esistente. Nessuna modifica allo schema dati.' },
   { version: '3.9.11', date: '2026-08-23', notes: 'Serializzato il flush IndexedDB: timer, cambio progetto, pagehide e idratazione non possono più avviare scritture concorrenti. L’idratazione attende anche un flush già partito, non soltanto le righe ancora presenti nella coda. Le nuove scritture arrivate durante un flush vengono conservate e pianificate per il ciclo successivo.', compatibility: 'Correzione di concorrenza senza modifiche al formato dati.' },
@@ -3767,7 +3810,6 @@ toCsv = function(rows, headers) { const cell=v=>{let s=String(v==null?'':v);if(/
 let wpPairingFinishV160 = null;
 const exchangeWordPressPairCodeV160 = exchangeWordPressPairCode;
 exchangeWordPressPairCode = async function(code,stateValue){const ok=await exchangeWordPressPairCodeV160(code,stateValue);if(ok&&wpPairingFinishV160){wpPairingFinishV160();wpPairingFinishV160=null}return ok};
-testWordPress = async function(){const button=$('#wpBtn'),raw=$('#wpUrl').value.trim();if(!raw){toast('Inserisci l’URL WordPress','error');return}let base;try{base=normalizeWpBase(raw)}catch{toast('URL WordPress non valido o non sicuro','error');return}const stateCode=(crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/[^a-zA-Z0-9_-]/g,'');state.wordpress.url=base;wpPendingState=stateCode;state.wordpress.lastError=null;save(true);const origin=location.origin&&location.origin!=='null'?location.origin:'null',authUrl=`${base}/wp-admin/admin.php?page=organic-growth-os-auth&ogos_authorize=1&ogos_state=${encodeURIComponent(stateCode)}&ogos_origin=${encodeURIComponent(origin)}`;button.disabled=true;button.textContent='Attendo WordPress…';try{const popup=window.open(authUrl,'ogos_wordpress_auth','width=680,height=760,resizable=yes,scrollbars=yes');if(!popup)throw new Error('Il browser ha bloccato la finestra di login. Consenti i popup.');const result=await new Promise((resolve,reject)=>{const expected=new URL(base).origin;let settled=false;const cleanup=()=>{clearTimeout(timer);clearInterval(closed);window.removeEventListener('message',onMessage)};const finish=value=>{if(settled)return;settled=true;cleanup();resolve(value)};wpPairingFinishV160=()=>finish({manual:true});const timer=setTimeout(()=>{cleanup();wpPairingFinishV160=null;reject(new Error('Autorizzazione non completata entro 10 minuti.'))},600000);const closed=setInterval(()=>{if(popup.closed){cleanup();wpPairingFinishV160=null;reject(new Error('Finestra WordPress chiusa prima del completamento.'))}},800);const onMessage=ev=>{const d=ev.data;if(ev.origin!==expected||!d||d.type!=='ogos-auth-code'||d.state!==stateCode)return;finish(d)};window.addEventListener('message',onMessage)});if(result.code)await exchangeWordPressPairCode(result.code,stateCode)}catch(e){state.wordpress.lastError=e.message||'Errore di collegamento';save(true);renderSettings();toast(state.wordpress.lastError,'error')}finally{wpPairingFinishV160=null;button.disabled=false;button.textContent='Collega WordPress'}};
 syncWordPress = async function() { const button=$('#wpSyncBtn');if(button){button.disabled=true;button.textContent='Sincronizzazione…'}try{const {items}=await wpCurrentAuditCollection();let added=0,updated=0;items.forEach(item=>{const path=comparableUrl(item.path||item.url);if(!path)return;const current=(state.pages||[]).find(p=>String(p.wpId)===String(item.id))||(state.pages||[]).find(p=>comparableUrl(p.url)===path);const values={url:path,wpId:item.id,wpType:item.type,wpBuilder:item.builder||'',wpStatus:'publish',wpTitle:item.title||'',status:item.indexed===false?'Non indicizzata':'Da verificare',canonical:item.canonical&&comparableUrl(item.canonical)===path?'Corretta':'Da verificare'};if(current){Object.assign(current,values);updated++}else{state.pages.push({id:Date.now()+Math.random(),keyword:'',intent:'Da definire',...values});added++}});state.wordpress.lastSync=new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(new Date());save(true);renderShell();renderPages();toast(`WordPress sincronizzato: ${added} nuove, ${updated} aggiornate su ${items.length}`)}catch(e){toast(`Sincronizzazione non riuscita: ${e.message}`,'error')}finally{if(button){button.disabled=false;button.textContent='Sincronizza pagine e articoli'}} };
 disconnectWordPress = async function(){if(window.OGOS_EMBEDDED){toast('La connessione è integrata nel plugin e usa la sessione WordPress corrente.');return}if(wpSecret&&state.wordpress.url){try{const{response,data}=await ogosFetchJsonV1617(`${wpBase()}/wp-json/organic-growth-os/v1/auth/revoke`,{method:'POST',headers:{Accept:'application/json','X-OGOS-Token':wpSecret},mode:'cors',cache:'no-store'},20000);if(!response.ok||data.revoked!==true)throw new Error(data.message||`WordPress ha risposto ${response.status}`)}catch(e){toast(`Token non revocato: ${e.message}. La connessione locale resta attiva.`, 'error');return}}wpSecret='';wpPendingState='';state.wordpress={url:state.wordpress.url||'',username:'',connected:false,userName:'',userId:null,lastError:null,lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],tokenExpiresAt:null,authMethod:null};save(true);renderSettings();toast('Connettore WordPress disconnesso e token revocato')};
 runWordPressCrawl = async function(){const el=$('#ogosCrawlResult'),btn=$('#ogosCrawlBtn');if(!state.wordpress.connected||!wpSecret){toast('Collega WordPress prima di eseguire il crawl','error');return false}if(!state.wordpress.capabilities.includes('crawl')){toast('Il connettore non espone il crawl reale','error');return false}if(btn){btn.disabled=true;btn.textContent='Crawl in corso…'}try{const byId={},byUrl={};let sitewide=null,page=1,totalPages=1,total=0;do{const data=await wpRequest(`/wp-json/organic-growth-os/v1/crawl/current?per_page=10&page=${page}`);(data.items||[]).forEach(item=>{if(item.id!=null)byId[String(item.id)]=item;byUrl[comparableUrl(item.path||item.url)]=item});if(data.sitewide)sitewide=data.sitewide;totalPages=Number(data.total_pages)||1;total=Number(data.total)||0;if(totalPages>1000)throw new Error(`Sito troppo grande per il crawl interattivo (${total} URL): usa una scansione server-side`);page++}while(page<=totalPages);let matched=0;state.pages.forEach(p=>{const c=(p.wpId!=null&&byId[String(p.wpId)])||byUrl[comparableUrl(p.url)];if(!c)return;matched++;p.crawl={httpStatus:c.http_status,redirectHops:c.redirect_hops,h1Count:c.h1_count,h1Text:c.h1_text||'',titleText:c.title_text||'',headings:Array.isArray(c.headings_text)?c.headings_text:[],contentExcerpt:c.content_excerpt||'',robotsMeta:[c.robots_meta,c.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!c.robots_blocked,soft404:!!c.soft_404,canonicalHtml:c.canonical_html,hreflang:c.hreflang,imagesTotal:c.images_total,imagesMissingAlt:c.images_missing_alt,imagesAltEmptyReview:c.images_alt_empty_review||0,checkedAt:new Date().toISOString()};if(Array.isArray(c.internal_links)){p.live=p.live&&typeof p.live==='object'?p.live:{};const saved=Array.isArray(p.live.internalLinkDetails)?p.live.internalLinkDetails:[];const rendered=Array.isArray(c.internal_link_details)?c.internal_link_details:[];p.live.internalLinks=c.internal_links.slice();p.live.internalLinkDetails=rendered.map(detail=>saved.find(old=>comparableUrl(old?.href)===comparableUrl(detail?.href)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase())||detail);p.live.internalLinkSource='rendered-html';p.live.internalLinkObservedAt=new Date().toISOString()}});state.crawlSitewide=sitewide;save(true);renderShell();renderPages();renderAudit();if(el)el.innerHTML=crawlResultHtml(sitewide,matched,total);toast(`Crawl reale completato: ${matched} pagine analizzate, contenuto e link renderizzati acquisiti`);return true}catch(e){toast(`Crawl non riuscito: ${e.message}`,'error');if(el)el.innerHTML=`<p class="empty">Crawl non riuscito: ${esc(e.message)}</p>`;return false}finally{if(btn){btn.disabled=false;btn.textContent='Esegui crawl reale (status, robots, sitemap, H1, contenuto e link…)'}}};
@@ -9515,11 +9557,12 @@ applyPluginTaskSingle=async function(id,triggerButton=null){
   return result;
 };
 
-/* L'analisi semantica non può riempire il form se nel frattempo l'utente ha
-   cambiato dominio. Il wrapper mantiene la mutazione esclusiva; il controllo
-   puntuale del dominio è eseguito anche dentro la funzione base. */
+/* Alias stabile del CORE dell'analisi semantica: la lettura pubblica del sito
+   dal browser, definita piu' sopra. L'orchestratore unico (in fondo al file) lo
+   invoca direttamente, gia' dentro la propria mutazione esclusiva, quindi qui
+   non c'e' piu' alcun wrapper: fino alla 3.10.1 questa riga era seguita da un
+   secondo lock che veniva poi sovrascritto sette volte. */
 const ogosAutoFillProjectV3613Base=autoFillProjectFromDomain;
-autoFillProjectFromDomain=function(){return ogosRunExclusiveV3613('l’analisi semantica del dominio',()=>ogosAutoFillProjectV3613Base.apply(this,arguments),false);};
 
 const ogosImportFileV3613Base=importFile;
 importFile=async function(file){
@@ -10085,7 +10128,9 @@ importFile=async function(file){
 const OGOSRuntime=Object.freeze({version:APP_VERSION,schemaVersion:OGOS_SCHEMA_VERSION,modules:contractsForDiagnosticsV371,logger:ogosLoggerV371,healthCheck:ogosRunHealthCheckV371});
 window.OGOSRuntime=OGOSRuntime;
 ogosLoggerV371.info('bootstrap','ready',{version:APP_VERSION,schemaVersion:OGOS_SCHEMA_VERSION,modules:ogosModuleRegistryV371.size});
+/* #endregion module:foundation-diagnostics */
 
+/* #region module:guided-ui */
 /* ==========================================================================
    v3.9.0 — UI orchestration layer. Mantiene tutte le route e gli ID originali.
    ========================================================================== */
@@ -10155,8 +10200,12 @@ renderView=function(view){const result=ogosRenderViewV390Base.apply(this,argumen
 const ogosInitV390Base=init;
 init=function(){const result=ogosInitV390Base.apply(this,arguments);if(result&&typeof result.then==='function')return result.then(value=>{ogosUi390Init();return value;});ogosUi390Init();return result;};
 
+/* #endregion module:guided-ui */
 
-/* ==========================================================================\n   v3.9.1 — connessione WordPress sempre raggiungibile + fallback semantico\n   ========================================================================== */
+/* #region module:wordpress-semantic-flow */
+/* ==========================================================================
+   v3.9.1 — connessione WordPress sempre raggiungibile + fallback semantico
+   ========================================================================== */
 function ogosUi391ExposeWordPress(){
   const wpStatus=$('#wpStatus'),wpField=wpStatus?.closest('.field');
   if(!wpField)return;
@@ -10181,58 +10230,7 @@ function ogosUi391ExposeWordPress(){
   }
 }
 
-async function ogosSemanticFallbackViaWordPress391(domain){
-  if(!state.wordpress?.connected||!wpSecret||!state.wordpress?.pluginDetected)throw new Error('WordPress non è ancora collegato');
-  const status=$('#semanticProjectStatus'),btn=$('#semanticProjectBtn');
-  if(status){status.className='semantic-status show';status.textContent='Accesso diretto bloccato dal browser. Provo tramite il connettore WordPress…';}
-  if(btn){btn.disabled=true;btn.innerHTML=`${icon('search')} Analisi WordPress…`;}
-  try{
-    const data=await wpCurrentAuditCollection();
-    const items=Array.isArray(data?.items)?data.items:[];
-    if(!items.length)throw new Error('Il connettore non ha restituito pagine pubblicate');
-    const wp={
-      count:items.length,
-      items:items.map(item=>({
-        title:semanticCleanText(item.title||item.seo_title||''),
-        slug:String(item.path||item.url||'').replace(/^https?:\/\/[^/]+/i,'').replace(/^\/+|\/+$/g,''),
-        link:item.url||item.path||'',
-        text:semanticCleanText([item.title,item.seo_title,item.h1,(item.headings||[]).join(' '),item.excerpt,item.content_excerpt,item.meta_description].filter(Boolean).join(' '))
-      })),
-    };
-    wp.text=semanticCleanText(wp.items.map(x=>x.text).join(' ')).slice(0,90000);
-    const result=semanticInferProject(domain,null,wp,[]);
-    const apply=(id,value)=>{const el=$(id);if(el&&value)el.value=value;};
-    apply('#siteName',result.name);apply('#sector',result.sector);apply('#geo',result.geo);apply('#audience',result.audience);apply('#goals',result.goals);
-    state.ui=state.ui||{};
-    state.ui.lastSemanticProjectAnalysis={domain,observedAt:new Date().toISOString(),confidence:result.confidence,signals:result.signals,sources:['connettore WordPress']};
-    save();
-    if(status){status.className='semantic-status show ok';status.textContent=`Campi compilati tramite WordPress · ${items.length} contenuti letti · confidenza ${result.confidence}%. Rivedi i valori prima di salvare.`;}
-    toast('Progetto compilato tramite il connettore WordPress');
-    return true;
-  }finally{
-    if(btn){btn.disabled=false;btn.innerHTML=`${icon('search')} Rianalizza sito`;}
-  }
-}
 
-const ogosAutoFillProjectV391Base=autoFillProjectFromDomain;
-autoFillProjectFromDomain=async function(){
-  const domain=normalizeProjectDomain($('#domain')?.value||'');
-  const result=await ogosAutoFillProjectV391Base.apply(this,arguments);
-  const status=$('#semanticProjectStatus');
-  const failed=!!status&&/non riesce a leggere|failed to fetch|cors/i.test(status.textContent||'');
-  if(!failed||!domain)return result;
-  if(state.wordpress?.connected&&wpSecret&&state.wordpress?.pluginDetected){
-    try{return await ogosSemanticFallbackViaWordPress391(domain);}catch(error){
-      status.className='semantic-status show warn';
-      status.textContent=`Accesso diretto bloccato dal browser e lettura WordPress non riuscita: ${error.message}. Controlla la connessione WordPress in Impostazioni → Connessioni.`;
-      toast(`Analisi tramite WordPress non riuscita: ${error.message}`,'error');return false;
-    }
-  }
-  status.className='semantic-status show warn';
-  status.innerHTML='Il browser blocca la lettura diretta del sito per CORS. <b>Non è un errore dei contenuti.</b> Collega WordPress in <b>Impostazioni → Connessioni</b>, poi riprova “Compila dal sito”. <button type="button" class="btn" id="ogosGoWp391" style="margin-left:8px;min-height:34px">Apri connessione WordPress</button>';
-  $('#ogosGoWp391')?.addEventListener('click',()=>go('settings'));
-  return false;
-};
 
 const ogosRenderSettingsV391Base=renderSettings;
 renderSettings=function(){const result=ogosRenderSettingsV391Base.apply(this,arguments);ogosUi391ExposeWordPress();return result;};
@@ -10321,22 +10319,6 @@ function ogosOpenWpConnections392(){
     const target=$('#wpUrl')||$('#wpBtn');target?.scrollIntoView({block:'center',behavior:'smooth'});target?.focus?.();
   });
 }
-// Sostituisce il wrapper 3.9.1: se WordPress è già valido per questo stesso dominio,
-// evita del tutto il fetch cross-origin destinato a fallire; altrimenti usa il percorso pubblico originale.
-autoFillProjectFromDomain=async function(){
-  const domain=normalizeProjectDomain($('#domain')?.value||''),status=$('#semanticProjectStatus');
-  if(!domain){toast('Inserisci prima un dominio valido, ad esempio esempio.it','error');$('#domain')?.focus();return false;}
-  if(ogosCanUseWpSemantic392(domain)){
-    try{return await ogosSemanticFallbackViaWordPress392(domain);}catch(error){if(status){status.className='semantic-status show warn';status.textContent=`Lettura WordPress non riuscita: ${error.message}. Provo l’accesso pubblico dal browser…`;}}
-  }
-  const result=await ogosAutoFillProjectV391Base.apply(this,arguments);
-  const failed=!!status&&/non riesce a leggere|failed to fetch|cors/i.test(status.textContent||'');
-  if(!failed)return result;
-  if(ogosCanUseWpSemantic392(domain))try{return await ogosSemanticFallbackViaWordPress392(domain);}catch(error){if(status){status.className='semantic-status show warn';status.textContent=`Accesso diretto bloccato e lettura WordPress non riuscita: ${error.message}.`; }toast(`Analisi tramite WordPress non riuscita: ${error.message}`,'error');return false;}
-  const connected=ogosWpConnectedDomain392();
-  if(status){status.className='semantic-status show warn';status.innerHTML=connected&&connected!==domain?`Il browser blocca la lettura diretta per CORS. Il WordPress collegato appartiene a <b>${esc(connected)}</b>, mentre stai analizzando <b>${esc(domain)}</b>. Collega il WordPress corretto. <button type="button" class="btn" id="ogosGoWp392">Apri connessione WordPress</button>`:`Il browser blocca la lettura diretta per CORS. Collega WordPress per leggere il sito in modo affidabile. <button type="button" class="btn" id="ogosGoWp392">Apri connessione WordPress</button>`;}
-  $('#ogosGoWp392')?.addEventListener('click',ogosOpenWpConnections392,{once:true});return false;
-};
 
 function ogosUi392Accessibility(){
   $$('.ogos-nav-group summary,.ogos-settings-group summary,.ogos-analysis-advanced>summary,.ogos-dashboard-secondary>summary,.ogos-sidebar-secondary>summary').forEach(summary=>{if(!summary.hasAttribute('tabindex'))summary.tabIndex=0;});
@@ -10384,16 +10366,6 @@ ogosLocationFromGeo392=function(value){
 const ogosSemanticFallbackViaWordPress392Base=ogosSemanticFallbackViaWordPress392;
 ogosSemanticFallbackViaWordPress392=async function(domain){
   return ogosRunExclusiveV3613('l’analisi semantica del dominio',()=>ogosSemanticFallbackViaWordPress392Base(domain),false);
-};
-const ogosAutoFillProjectV392Core=autoFillProjectFromDomain;
-autoFillProjectFromDomain=async function(){
-  const result=await ogosRunExclusiveV3613('l’analisi semantica del dominio',()=>ogosAutoFillProjectV392Core.apply(this,arguments),false);
-  if(result!==false){
-    const geo=$('#geo')?.value||'',city=ogosLocationFromGeo392(geo),brand=$('#brand'),siteName=semanticCleanText($('#siteName')?.value||'');
-    if(city&&$('#city')&&!String($('#city').value||'').trim())$('#city').value=city;
-    if(brand&&!String(brand.value||'').trim()&&siteName&&!/^https?:|\.[a-z]{2,}$/i.test(siteName))brand.value=siteName;
-  }
-  return result;
 };
 const ogosApplyRepairV392Base=applyRepair;
 applyRepair=function(id){
@@ -10444,19 +10416,6 @@ ogosSemanticFallbackViaWordPress392=async function(domain){
   if(ogosRemoteMutationV3613==='l’analisi semantica del dominio')return ogosSemanticFallbackViaWordPress392Base(domain);
   return ogosRunExclusiveV3613('l’analisi semantica del dominio',()=>ogosSemanticFallbackViaWordPress392Base(domain),false);
 };
-const ogosAutoFillProjectV393Base=autoFillProjectFromDomain;
-autoFillProjectFromDomain=async function(){
-  const expected=normalizeProjectDomain($('#domain')?.value||''),geoBefore=$('#geo')?.value||'',cityBefore=$('#city')?.value||'';
-  const result=await ogosAutoFillProjectV393Base.apply(this,arguments);
-  if(!expected)return result;
-  /* Il dominio può essere modificato manualmente mentre fetch/crawl sono in corso. */
-  if(normalizeProjectDomain($('#domain')?.value||'')!==expected){
-    const status=$('#semanticProjectStatus');if(status){status.className='semantic-status show warn';status.textContent='Analisi ignorata: il dominio è cambiato durante la lettura. Riprova sul dominio corrente.';}
-    toast('Il dominio è cambiato durante l’analisi: risultati non applicati','error');return false;
-  }
-  if(result!==false)ogosNormalizeSemanticGeoFields393({geoBefore,cityBefore});
-  return result;
-};
 /* Una sola macro-area della sidebar aperta: riduce ambiguità e densità senza
    rimuovere alcuna route. */
 function ogosNavSingleOpen393(){
@@ -10471,15 +10430,10 @@ ogosUi390SyncNavigation=function(){
 };
 const ogosUi392AfterRenderV393Base=ogosUi392AfterRender;
 ogosUi392AfterRender=function(view){const result=ogosUi392AfterRenderV393Base.apply(this,arguments);ogosNavSingleOpen393();return result;};
-/* Evita che la vecchia 3.9.1 lasci in memoria metadati semantici relativi a
-   un dominio non ancora salvato. Vengono registrati soltanto al submit. */
+/* Alias stabile del salvataggio progetto "di base" (core + estensioni +
+   guardia plugin integrato). L'unico wrapper semantico vivo, poco piu' sotto,
+   parte da qui. */
 const ogosSaveProjectFormV393Base=saveProjectForm;
-saveProjectForm=function(e){
-  const form=e?.currentTarget||$('#projectForm'),observed=form?.dataset?.semanticObservedAt||'';
-  const result=ogosSaveProjectFormV393Base.apply(this,arguments);
-  if(observed&&state.project?.domain){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis={...(state.ui.lastSemanticProjectAnalysis||{}),domain:state.project.domain,observedAt:observed};save(true);delete form.dataset.semanticObservedAt;}
-  return result;
-};
 
 
 /* ==========================================================================
@@ -10491,36 +10445,6 @@ function ogosProjectFormSnapshot394(){
 function ogosRestoreProjectForm394(snapshot){
   const form=$('#projectForm');if(!form)return;Object.entries(snapshot||{}).forEach(([key,value])=>{const el=form.elements.namedItem(key);if(el&&'value'in el)el.value=value;});
 }
-const ogosAutoFillProjectV394Base=autoFillProjectFromDomain;
-autoFillProjectFromDomain=async function(){
-  const snapshot=ogosProjectFormSnapshot394(),requested=normalizeProjectDomain(snapshot.domain||''),activeBefore=projectStorageKey(state.project),priorAnalysis=state.ui?.lastSemanticProjectAnalysis?clone(state.ui.lastSemanticProjectAnalysis):null,form=$('#projectForm');
-  const result=await ogosAutoFillProjectV394Base.apply(this,arguments);
-  if(!requested)return result;
-  const currentRequested=normalizeProjectDomain($('#domain')?.value||'');
-  if(currentRequested!==requested){
-    ogosRestoreProjectForm394(snapshot);
-    if(priorAnalysis){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis=priorAnalysis;}else if(state.ui)delete state.ui.lastSemanticProjectAnalysis;
-    if(activeBefore)save(true);
-    const status=$('#semanticProjectStatus');if(status){status.className='semantic-status show warn';status.textContent='Il dominio è cambiato durante l’analisi. Ho ripristinato i valori precedenti: avvia una nuova analisi sul dominio corrente.';}
-    toast('Analisi annullata: dominio cambiato durante la lettura','error');return false;
-  }
-  /* Se stiamo preparando un dominio diverso dal progetto attivo, l'analisi è
-     una bozza del form: non deve essere persistita nel progetto vecchio. */
-  if(activeBefore&&requested!==activeBefore){
-    const generated=state.ui?.lastSemanticProjectAnalysis?clone(state.ui.lastSemanticProjectAnalysis):null;
-    if(form)form._ogosSemanticAnalysis394=generated||{domain:requested,observedAt:new Date().toISOString(),source:'analisi semantica'};
-    if(priorAnalysis){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis=priorAnalysis;}else if(state.ui)delete state.ui.lastSemanticProjectAnalysis;
-    save(true);
-  }else if(form&&state.ui?.lastSemanticProjectAnalysis){form._ogosSemanticAnalysis394=clone(state.ui.lastSemanticProjectAnalysis);}
-  return result;
-};
-const ogosSaveProjectFormV394Base=saveProjectForm;
-saveProjectForm=function(e){
-  const form=e?.currentTarget||$('#projectForm'),draft=form?._ogosSemanticAnalysis394?clone(form._ogosSemanticAnalysis394):null,expected=normalizeProjectDomain(form?.elements?.domain?.value||'');
-  const result=ogosSaveProjectFormV394Base.apply(this,arguments);
-  if(draft&&expected&&projectStorageKey(state.project)===expected){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis={...draft,domain:expected,observedAt:draft.observedAt||new Date().toISOString()};save(true);delete form._ogosSemanticAnalysis394;}
-  return result;
-};
 
 
 /* ==========================================================================
@@ -10534,49 +10458,9 @@ function ogosShowWpFallback395(domain){
   status.innerHTML=connected&&connected!==domain?`Il browser blocca la lettura diretta. Il WordPress collegato è <b>${esc(connected)}</b>, non <b>${esc(domain)}</b>. <button type="button" class="btn" id="ogosGoWp395">Collega il WordPress corretto</button>`:`Il browser blocca la lettura diretta del sito. Collega WordPress per leggere i contenuti senza dipendere dal CORS. <button type="button" class="btn" id="ogosGoWp395">Apri connessione WordPress</button>`;
   $('#ogosGoWp395')?.addEventListener('click',ogosOpenWpConnections392,{once:true});return false;
 }
-/* Sostituisce l'intera catena 3.9.1–3.9.4. Usa una sola guardia globale e
-   richiama esclusivamente i due core affidabili: lettura pubblica originale o
-   lettura WordPress 3.9.2 senza un secondo lock. */
-autoFillProjectFromDomain=async function(){
-  const snapshot=ogosProjectFormSnapshot394(),domain=normalizeProjectDomain(snapshot.domain||''),form=$('#projectForm'),status=$('#semanticProjectStatus');
-  if(!domain){toast('Inserisci prima un dominio valido, ad esempio esempio.it','error');$('#domain')?.focus();return false;}
-  return ogosRunExclusiveV3613('l’analisi semantica del dominio',async()=>{
-    const activeBefore=projectStorageKey(state.project),priorAnalysis=state.ui?.lastSemanticProjectAnalysis?clone(state.ui.lastSemanticProjectAnalysis):null,geoBefore=snapshot.geo||'',cityBefore=snapshot.city||'';
-    let result=false,source='accesso pubblico';
-    if(ogosCanUseWpSemantic392(domain)){
-      source='connettore WordPress';
-      try{result=await ogosSemanticFallbackViaWordPress392Base(domain);}catch(error){if(status){status.className='semantic-status show warn';status.textContent=`Lettura WordPress non riuscita: ${error.message}. Provo l’accesso pubblico…`;}}
-    }
-    if(result===false){
-      source='accesso pubblico';
-      result=await ogosAutoFillProjectV391Base.apply(this,arguments);
-      if(ogosSemanticFailureLooksCors395(status)&&ogosCanUseWpSemantic392(domain)){
-        source='connettore WordPress';
-        try{result=await ogosSemanticFallbackViaWordPress392Base(domain);}catch(error){if(status){status.className='semantic-status show warn';status.textContent=`Accesso pubblico bloccato e lettura WordPress non riuscita: ${error.message}.`; }toast(`Analisi tramite WordPress non riuscita: ${error.message}`,'error');return false;}
-      }
-    }
-    if(normalizeProjectDomain($('#domain')?.value||'')!==domain){
-      ogosRestoreProjectForm394(snapshot);
-      if(priorAnalysis){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis=priorAnalysis;}else if(state.ui)delete state.ui.lastSemanticProjectAnalysis;
-      if(activeBefore)save(true);
-      if(status){status.className='semantic-status show warn';status.textContent='Il dominio è cambiato durante l’analisi. Ho ripristinato i valori precedenti.';}
-      toast('Analisi annullata: dominio cambiato durante la lettura','error');return false;
-    }
-    if(result===false&&ogosSemanticFailureLooksCors395(status))return ogosShowWpFallback395(domain);
-    if(result!==false){
-      ogosNormalizeSemanticGeoFields393({geoBefore,cityBefore});
-      const generated=state.ui?.lastSemanticProjectAnalysis?clone(state.ui.lastSemanticProjectAnalysis):ogosSemanticDraft395(domain,source);
-      generated.domain=domain;generated.observedAt=generated.observedAt||new Date().toISOString();generated.sources=generated.sources?.length?generated.sources:[source];
-      if(form)form._ogosSemanticAnalysis395=generated;
-      /* Un dominio non ancora salvato non può modificare i metadati del sito
-         precedentemente attivo. */
-      if(activeBefore&&activeBefore!==domain){if(priorAnalysis){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis=priorAnalysis;}else if(state.ui)delete state.ui.lastSemanticProjectAnalysis;save(true);}
-    }
-    return result;
-  },false);
-};
-/* Bypassa i wrapper 3.9.3/3.9.4 ormai sostituiti e registra la bozza semantica
-   soltanto se il submit ha davvero attivato lo stesso dominio. */
+/* Unico wrapper semantico del submit: registra la bozza di analisi soltanto se
+   il salvataggio ha davvero attivato lo stesso dominio analizzato, cosi' un
+   progetto diverso non eredita i metadati di un'analisi che non gli appartiene. */
 saveProjectForm=function(e){
   const form=e?.currentTarget||$('#projectForm'),draft=form?._ogosSemanticAnalysis395?clone(form._ogosSemanticAnalysis395):null,expected=normalizeProjectDomain(form?.elements?.domain?.value||'');
   const result=ogosSaveProjectFormV393Base.apply(this,arguments);
@@ -10586,7 +10470,24 @@ saveProjectForm=function(e){
 
 
 /* ==========================================================================
-   v3.9.7 — analisi semantica senza doppio lock
+   ANALISI SEMANTICA DEL DOMINIO — orchestratore unico
+
+   Consolidamento 3.11.0. Dalla 3.9.1 alla 3.9.7 questa funzione era stata
+   riassegnata sette volte: ogni versione riscriveva la logica invece di
+   correggerla, ma solo l'ultima era viva. Le sei precedenti restavano nel
+   bundle come codice morto, con i propri lock, i propri messaggi di stato e i
+   propri effetti collaterali — indistinguibili, leggendo il file, da quello
+   davvero in esecuzione. Sono state rimosse: resta il CORE (lettura pubblica,
+   definita in alto, alias ogosAutoFillProjectV3613Base), la lettura via
+   connettore (ogosSemanticFallbackViaWordPress392Base) e questo orchestratore,
+   che sceglie fra le due, protegge il form dai cambi di dominio in corsa e
+   possiede l'unica mutazione esclusiva del flusso.
+
+   Ordine di preferenza: se il connettore WordPress e' valido per QUESTO
+   dominio si legge da li' (niente CORS, niente fetch destinato a fallire);
+   altrimenti si tenta la lettura pubblica dal browser e, se fallisce per CORS,
+   si ricade sul connettore quando disponibile o si mostra l'invito a
+   collegarlo.
    ========================================================================== */
 function ogosSemanticStatusOk396(){return !!$('#semanticProjectStatus')?.classList.contains('ok');}
 autoFillProjectFromDomain=async function(){
@@ -10625,7 +10526,9 @@ autoFillProjectFromDomain=async function(){
   },false);
 };
 
+/* #endregion module:wordpress-semantic-flow */
 
+/* #region module:project-switch-indexeddb */
 /* ==========================================================================
    v3.9.12 — switch progetto IndexedDB atomico: hydrate prima del render
    ========================================================================== */
@@ -10663,7 +10566,9 @@ switchProject=function(value){
   });
 };
 
+/* #endregion module:project-switch-indexeddb */
 
+/* #region module:platform-hardening */
 /* ========================================================================== 
    v3.10.0 — platform hardening: operazioni, multi-tab, offline, performance
    ========================================================================== */
@@ -10798,66 +10703,87 @@ window.addEventListener('beforeunload',()=>{try{ogosBroadcast310?.close();}catch
 setTimeout(()=>{ogosUpdateNetworkUi310();ogosSampleHeap310('startup');if(typeof ogosLoggerV371!=='undefined')ogosLoggerV371.info('hardening','ready',{version:APP_VERSION,compatibility:ogosCompatibility310()});},0);
 
 
+/* #endregion module:platform-hardening */
 
-/* ==========================================================================\n   v3.10.0 — FIX FINALE CONNESSIONE WORDPRESS SEMPRE VISIBILE\n   ========================================================================== */
+/* #region module:wordpress-connection */
+/* ==========================================================================
+   v3.10.0 — FIX FINALE CONNESSIONE WORDPRESS SEMPRE VISIBILE
+   ========================================================================== */
 function ogosEnsureWpConnectionControls3100(){
+  const root=$('#view-settings');
   const status=$('#wpStatus');
-  if(!status)return;
-  const wpField=status.closest('.field');
-  if(wpField){wpField.hidden=false;wpField.removeAttribute('hidden');wpField.style.display='grid';}
-  const group=$('#view-settings details[data-group="connections"]');
-  if(group)group.open=true;
+  const input=$('#wpUrl');
+  if(!root||!status||!input)return false;
 
-  let button=$('#wpBtn');
-  let disconnect=$('#wpDisconnectBtn');
-  if(!button){
-    button=document.createElement('button');button.type='button';button.id='wpBtn';button.className='btn primary';button.textContent='Collega WordPress';
-  }
-  if(!disconnect){
-    disconnect=document.createElement('button');disconnect.type='button';disconnect.id='wpDisconnectBtn';disconnect.className='btn';disconnect.textContent='Disconnetti';
-  }
+  const wpField=status.closest('.field');
+  if(!wpField)return false;
+  wpField.hidden=false;wpField.removeAttribute('hidden');
+  wpField.classList.add('ogos-wordpress-connection-visible');
+
+  const group=root.querySelector('details[data-group="connections"]');
+  if(group){group.open=true;group.hidden=false;}
+  const groupContent=group?.querySelector(':scope > .ogos-settings-group-content');
+  if(groupContent&&wpField.parentElement!==groupContent)groupContent.prepend(wpField);
+  else if(groupContent&&groupContent.firstElementChild!==wpField)groupContent.prepend(wpField);
+
+  const panel=status.parentElement;
+  if(panel)panel.classList.add('ogos-wp-primary-card3100');
+
+  let button=$('#wpBtn'),disconnect=$('#wpDisconnectBtn');
+  if(!button){button=document.createElement('button');button.type='button';button.id='wpBtn';button.className='btn primary';}
+  if(!disconnect){disconnect=document.createElement('button');disconnect.type='button';disconnect.id='wpDisconnectBtn';disconnect.className='btn';disconnect.textContent='Disconnetti';}
+
   let actions=$('#ogosWpConnectionActions3100');
-  if(!actions){
-    actions=document.createElement('div');actions.id='ogosWpConnectionActions3100';actions.className='form-actions';
-    actions.style.cssText='display:flex!important;visibility:visible!important;opacity:1!important;justify-content:flex-start;gap:10px;flex-wrap:wrap;margin-top:12px';
-    const urlGrid=$('#wpUrl')?.closest('.form-grid');
-    if(urlGrid)urlGrid.after(actions);else status.after(actions);
-  }
+  if(!actions){actions=document.createElement('div');actions.id='ogosWpConnectionActions3100';actions.className='form-actions';}
+  /* Layout e spaziature vivono nel foglio di stile (#ogosWpConnectionActions3100): qui non serve piu' riscriverle inline a ogni render. */
+  const urlField=input.closest('.field')||input.parentElement;
+  const urlGrid=input.closest('.form-grid');
+  if(urlGrid){if(actions.parentElement!==panel)urlGrid.after(actions);}else if(urlField){urlField.after(actions);}else status.after(actions);
+  const legacyActions3101=[button,disconnect].map(el=>el.parentElement).filter(el=>el&&el!==actions&&el.classList&&el.classList.contains('form-actions'));
   if(button.parentElement!==actions)actions.append(button);
   if(disconnect.parentElement!==actions)actions.append(disconnect);
-  button.hidden=false;button.style.display='inline-flex';button.style.visibility='visible';button.style.opacity='1';
-  disconnect.hidden=false;disconnect.style.display='inline-flex';disconnect.style.visibility='visible';disconnect.style.opacity='1';
-  button.textContent=state.wordpress?.connected?'Ricollega WordPress':'Collega WordPress';
-  button.onclick=testWordPress;
-  disconnect.onclick=disconnectWordPress;
-  disconnect.disabled=!state.wordpress?.connected&&!wpSecret;
+  /* 3.10.1: spostando i due pulsanti fuori dal loro .form-actions originale
+     restava un contenitore flex vuoto, con uno spazio bianco nella card della
+     connessione. Lo nascondiamo solo se e' rimasto davvero senza figli. */
+  legacyActions3101.forEach(el=>{if(!el.children.length)el.hidden=true;});
 
-  // Il collegamento deve poter essere avviato anche se la modalità operativa è ancora "Solo dati locali".
-  const mode=$('#ogosIntegrationMode');
-  if(mode && !mode.dataset.ogosWpConnectBound3100){
-    mode.dataset.ogosWpConnectBound3100='1';
-  }
+  [button,disconnect].forEach(el=>{el.hidden=false;el.removeAttribute('hidden');});
+  button.disabled=false;button.textContent=state.wordpress?.connected?'Ricollega WordPress':'Collega WordPress';button.onclick=testWordPress;
+  disconnect.onclick=disconnectWordPress;disconnect.disabled=!state.wordpress?.connected&&!wpSecret;
 
   let helper=$('#ogosWpDirectConnectHelp3100');
-  if(!helper){
-    helper=document.createElement('small');helper.id='ogosWpDirectConnectHelp3100';helper.className='help';
-    helper.style.display='block';helper.style.marginTop='6px';
-    actions.after(helper);
+  if(!helper){helper=document.createElement('small');helper.id='ogosWpDirectConnectHelp3100';helper.className='help';actions.after(helper);}
+  helper.style.display='block';helper.textContent=state.wordpress?.connected
+    ? 'WordPress collegato. Scansioni, audit e correzioni supportate sono disponibili in base alle capability del connettore.'
+    : 'Premi “Collega WordPress”. Puoi farlo anche se la modalità di lavoro è ancora “Solo dati locali”.';
+
+  let manual=$('#ogosWpManualPair3100');
+  if(!manual){
+    manual=document.createElement('details');manual.id='ogosWpManualPair3100';manual.innerHTML='<summary><b>Usa codice monouso</b></summary><p class="help">Se il ritorno automatico non funziona, copia il codice mostrato da WordPress e incollalo qui.</p><div class="form-actions" style="justify-content:flex-start"><input class="search" id="ogosWpPairCodePrimary3100" placeholder="Codice di collegamento" style="max-width:420px"><button type="button" class="btn" id="ogosWpPairCodeBtnPrimary3100">Collega con codice</button></div>';
+    helper.after(manual);
   }
-  helper.textContent=state.wordpress?.connected
-    ? 'WordPress collegato. Puoi cambiare la modalità di lavoro separatamente: la connessione resta disponibile.'
-    : 'Puoi collegare WordPress anche lasciando temporaneamente “Solo dati locali”. Dopo il collegamento l’app abilita automaticamente la modalità WordPress quando il connettore è compatibile.';
+  const pairBtn=$('#ogosWpPairCodeBtnPrimary3100');if(pairBtn)pairBtn.onclick=()=>{const code=$('#ogosWpPairCodePrimary3100')?.value.trim()||'';exchangeWordPressPairCode(code,wpPendingState);};
+  return button.getClientRects().length>0;
 }
 
-// Pairing robusto: la chiusura del popup non viene più trasformata in un falso errore.
-testWordPress=async function(){
+/* ==========================================================================
+   COLLEGAMENTO WORDPRESS (pairing) — implementazione unica
+
+   Consolidamento 3.11.0: esistevano tre definizioni sovrapposte di questa
+   funzione (la originale, la revisione 1.6.0 e questa). Solo l'ultima girava;
+   le altre due restavano nel bundle, con gestioni divergenti della chiusura
+   del popup e messaggi d'errore diversi fra loro. Resta solo questa, promossa
+   a dichiarazione: la chiusura del popup non viene trasformata in un falso
+   errore e il codice monouso resta sempre utilizzabile come fallback.
+   ========================================================================== */
+async function testWordPress(){
   const button=$('#wpBtn'),input=$('#wpUrl'),raw=input?.value.trim()||'';
   if(!button||!input)return;
   if(!raw){toast('Inserisci l’URL WordPress','error');input.focus();return;}
   let base;try{base=normalizeWpBase(raw)}catch{toast('URL WordPress non valido o non sicuro','error');return;}
   const stateCode=(crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/[^a-zA-Z0-9_-]/g,'');
   state.wordpress.url=base;wpPendingState=stateCode;state.wordpress.lastError=null;save(true);
-  const origin=location.origin&&location.origin!=='null'?location.origin:'null';
+  const origin=ogosAppOrigin3101();
   const authUrl=`${base}/wp-admin/admin.php?page=organic-growth-os-auth&ogos_authorize=1&ogos_state=${encodeURIComponent(stateCode)}&ogos_origin=${encodeURIComponent(origin)}`;
   button.disabled=true;button.textContent='Attendo WordPress…';
   let popup=null;
@@ -10877,8 +10803,15 @@ testWordPress=async function(){
     if(result?.code){await exchangeWordPressPairCode(result.code,stateCode);return;}
     // Nessun falso errore: mostriamo il fallback manuale e teniamo valido lo state corrente.
     state.wordpress.lastError=null;save(true);renderSettings();
-    const details=$('#wpPairCode')?.closest('details');if(details)details.open=true;
-    const pair=$('#wpPairCode');pair?.focus();
+    /* 3.10.1: il campo del codice monouso usato dalla card 3.10.0 e'
+       #ogosWpPairCodePrimary3100. Prima si apriva e si metteva a fuoco solo
+       il campo legacy #wpPairCode, che dopo il re-render della card e'
+       fuori dalla vista: l'utente si vedeva chiedere di incollare un codice
+       senza avere davanti il campo giusto. Apriamo entrambi i fallback e
+       diamo il fuoco a quello primario, se presente. */
+    ogosEnsureWpConnectionControls3100();
+    [$('#ogosWpPairCodePrimary3100'),$('#wpPairCode')].forEach(el=>{const d=el?.closest('details');if(d)d.open=true;});
+    const pair=$('#ogosWpPairCodePrimary3100')||$('#wpPairCode');pair?.focus();
     toast('Se hai autorizzato WordPress, copia il codice monouso mostrato nella finestra e incollalo qui.','ok');
   }catch(error){
     state.wordpress.lastError=error.message||'Errore di collegamento';save(true);renderSettings();toast(`Collegamento non riuscito: ${state.wordpress.lastError}`,'error');
@@ -10887,15 +10820,129 @@ testWordPress=async function(){
     const current=$('#wpBtn');if(current){current.disabled=false;current.textContent=state.wordpress?.connected?'Ricollega WordPress':'Collega WordPress';}
     ogosEnsureWpConnectionControls3100();
   }
-};
+}
 
 const ogosRenderSettingsWpVisible3100Base=renderSettings;
 renderSettings=function(){const result=ogosRenderSettingsWpVisible3100Base.apply(this,arguments);ogosEnsureWpConnectionControls3100();return result;};
 const ogosRenderViewWpVisible3100Base=renderView;
 renderView=function(view){const result=ogosRenderViewWpVisible3100Base.apply(this,arguments);if(view==='settings')ogosEnsureWpConnectionControls3100();return result;};
 
+
+function ogosOpenWordPressConnection3100({start=false}={}){
+  const projectDomain=normalizeProjectDomain($('#domain')?.value||state.project?.domain||'');
+  if(projectDomain)state.wordpress.url=`https://${projectDomain}`;
+  go('settings');
+  setTimeout(()=>{
+    ogosEnsureWpConnectionControls3100();
+    const group=$('#view-settings details[data-group="connections"]');if(group)group.open=true;
+    const input=$('#wpUrl');if(input&&projectDomain)input.value=`https://${projectDomain}`;
+    const btn=$('#wpBtn');
+    (btn||input)?.scrollIntoView?.({block:'center',behavior:'auto'});
+    if(start&&btn&&!btn.disabled)btn.click();else btn?.focus?.();
+  },0);
+}
+function ogosBindWordPressEntrypoints3100(){
+  const projectBtn=$('#ogosProjectWpConnect3100');if(projectBtn)projectBtn.onclick=()=>ogosOpenWordPressConnection3100({start:false});
+  const semanticStatus=$('#semanticProjectStatus');
+  if(semanticStatus&&!semanticStatus.dataset.ogosWpDelegated3100){semanticStatus.dataset.ogosWpDelegated3100='1';semanticStatus.addEventListener('click',event=>{if(event.target.closest('#ogosGoWp391,#ogosGoWp392,#ogosGoWp395')){event.preventDefault();ogosOpenWordPressConnection3100({start:false});}});}
+}
+
+/* ==========================================================================
+   v3.11.0 — letture WordPress annullabili e con budget di tempo
+
+   Le letture paginate del connettore (inventario completo: fino a 100
+   richieste in serie; campionamento semantico: fino a 3) giravano fuori da
+   qualunque coordinamento: nessun modo di annullarle, nessun tetto al tempo
+   complessivo, e due letture avviate a distanza di poco si sovrapponevano
+   allegramente sulla stessa connessione. Su un sito grande questo si traduce
+   in minuti di attesa senza via d'uscita se non ricaricare la pagina.
+
+   OGOSOperationManager esisteva gia' e sa fare esattamente questo (chiave
+   univoca, AbortController, timeout, storico); ogosFetchJsonV1617 onora gia'
+   options.signal e wpRequest lo propaga. Mancava solo collegare le due cose e
+   far passare il segnale dentro il ciclo di paginazione, cosi' l'annullamento
+   interrompe davvero la sequenza invece di lasciarla finire in background.
+   ========================================================================== */
+const OGOS_WP_READ_KEY_3110='wordpress:read';
+const OGOS_WP_READ_TIMEOUT_3110=180000;
+
+function ogosAbortWordPressRead3110(){
+  return OGOSOperationManager.abort(OGOS_WP_READ_KEY_3110);
+}
+function ogosWpReadInFlight3110(){
+  return OGOSOperationManager.isActive(OGOS_WP_READ_KEY_3110);
+}
+/* Messaggi in italiano al posto di quelli tecnici dell'Operation Manager:
+   l'utente legge questi testi nei toast e nel pannello di stato. */
+function ogosWpReadError3110(error,label,timeoutMs){
+  if(error?.code==='OGOS_OPERATION_BUSY')return Object.assign(new Error('Una lettura da WordPress è già in corso: attendi che finisca prima di avviarne un’altra.'),{code:error.code});
+  if(error?.code==='OGOS_OPERATION_TIMEOUT')return Object.assign(new Error(`Lettura WordPress interrotta: ${label} ha superato il tempo massimo di ${Math.round(timeoutMs/1000)} secondi. Riprova, oppure usa il crawl a lotti sui siti molto grandi.`),{name:'AbortError',code:error.code});
+  if(error?.name==='AbortError')return Object.assign(new Error(`Lettura WordPress annullata (${label}).`),{name:'AbortError',code:error.code||'OGOS_OPERATION_ABORTED'});
+  return error;
+}
+async function ogosRunWpRead3110(label,worker,{timeoutMs=OGOS_WP_READ_TIMEOUT_3110}={}){
+  try{
+    return await OGOSOperationManager.run(OGOS_WP_READ_KEY_3110,({signal})=>worker(signal),{timeoutMs,meta:{label}});
+  }catch(error){
+    throw ogosWpReadError3110(error,label,timeoutMs);
+  }
+}
+/* Un abort che arriva fra due pagine deve fermare il ciclo subito, senza
+   sprecare la richiesta successiva. */
+function ogosThrowIfAborted3110(signal){
+  if(signal?.aborted)throw Object.assign(new Error('Lettura WordPress annullata.'),{name:'AbortError',code:'OGOS_OPERATION_ABORTED'});
+}
+
+wpCurrentAuditCollection=async function(){
+  return ogosRunWpRead3110('l’inventario completo dei contenuti',async signal=>{
+    const items=[];let observedAt=null;
+    for(let page=1;page<=100;page++){
+      ogosThrowIfAborted3110(signal);
+      const data=await wpRequest(`/wp-json/organic-growth-os/v1/audit/current?per_page=100&page=${page}`,{signal});
+      if(!Array.isArray(data?.items))throw new Error('Risposta audit WordPress non valida');
+      items.push(...data.items);
+      observedAt=data.observed_at||observedAt;
+      if(page>=(Number(data.total_pages)||1))break;
+      if(page===100)throw new Error('Audit interrotto: superato il limite di 10.000 pagine');
+    }
+    return {items,observedAt:observedAt||new Date().toISOString()};
+  });
+};
+
+ogosWpSemanticSample392=async function(maxItems=240){
+  return ogosRunWpRead3110('il campionamento dei contenuti',async signal=>{
+    const items=[];let observedAt=null;
+    for(let page=1;page<=3&&items.length<maxItems;page++){
+      ogosThrowIfAborted3110(signal);
+      const data=await wpRequest(`/wp-json/organic-growth-os/v1/audit/current?per_page=80&page=${page}`,{signal});
+      if(!Array.isArray(data?.items))throw new Error('Risposta audit WordPress non valida');
+      items.push(...data.items.slice(0,Math.max(0,maxItems-items.length)));
+      observedAt=data.observed_at||observedAt;
+      if(page>=(Number(data.total_pages)||1))break;
+    }
+    return {items,observedAt:observedAt||new Date().toISOString()};
+  },{timeoutMs:90000});
+};
+
+/* Una lettura ancora in volo che appartiene al progetto precedente non deve
+   continuare a consumare rete (ne' applicare risultati) dopo un cambio sito o
+   la chiusura della scheda. */
+const ogosSwitchProjectWpAbort3110=switchProject;
+switchProject=function(value){ogosAbortWordPressRead3110();return ogosSwitchProjectWpAbort3110.apply(this,arguments);};
+window.addEventListener('pagehide',()=>{try{ogosAbortWordPressRead3110();}catch{}});
+
+window.OGOSCommands=Object.freeze({...OGOSCommands,
+  abortWordPressRead:ogosAbortWordPressRead3110,
+  wordPressReadInFlight:ogosWpReadInFlight3110
+});
+/* #endregion module:wordpress-connection */
+/* #region module:bootstrap */
+
+window.OGOS_WP_FIX_BUILD="3.11.0-wp-cors-origin-fix";
 init();
+setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
+/* #endregion module:bootstrap */
 </script>
 </body>
 </html>
