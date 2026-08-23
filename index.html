@@ -203,7 +203,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.9.2',OGOS_SCHEMA_VERSION=1;let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='3.9.12',OGOS_SCHEMA_VERSION=1;let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.schemaVersion=OGOS_SCHEMA_VERSION;value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 /* Il registro viene letto prima dell'inizializzazione dell'interfaccia. Se il
@@ -880,6 +880,11 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.9.12', date: '2026-08-23', notes: 'Audit end-to-end esteso e cambio progetto IndexedDB atomico. I progetti con inventario esteso vengono ora idratati prima del primo render della dashboard, evitando stati intermedi con pages vuoto e riducendo il rischio di salvataggi o rendering prematuri. Verificati inoltre 126 scenari runtime, recovery da storage corrotto, concorrenza del repository, deduplicazione import/sync, cicli ripetuti di modali e navigazione, transizioni stato e failure path.', compatibility: 'Compatibile con backup 3.x e con il repository IndexedDB esistente. Nessuna modifica allo schema dati.' },
+  { version: '3.9.11', date: '2026-08-23', notes: 'Serializzato il flush IndexedDB: timer, cambio progetto, pagehide e idratazione non possono più avviare scritture concorrenti. L’idratazione attende anche un flush già partito, non soltanto le righe ancora presenti nella coda. Le nuove scritture arrivate durante un flush vengono conservate e pianificate per il ciclo successivo.', compatibility: 'Correzione di concorrenza senza modifiche al formato dati.' },
+  { version: '3.9.10', date: '2026-08-23', notes: 'Chiuso un race condition del repository IndexedDB: tornando rapidamente a un progetto grande mentre la sua revisione era ancora nella coda differita, il marker poteva risultare più recente del record IndexedDB e lasciare temporaneamente l’inventario vuoto. L’idratazione ora completa prima la scrittura pendente della stessa revisione e legge solo dopo uno stato coerente.', compatibility: 'Aggiornamento raccomandato per progetti oltre 10.000 URL e per chi cambia spesso sito dal selettore.' },
+  { version: '3.9.9', date: '2026-08-23', notes: 'Audit runtime esteso: il salvataggio ad alte prestazioni usa ora il contratto safePersistedState, quindi gli inventari oltre 10.000 URL passano realmente a IndexedDB. Protetta anche la finestra di caricamento: il routing non può più scambiare un inventario IndexedDB non ancora idratato per un elenco vuoto da cancellare. Confermate inoltre le correzioni 3.9.8 su ID dinamici univoci e diagnostica repository dopo cambio progetto.', compatibility: 'Aggiornamento consigliato soprattutto per inventari grandi. Formato backup e moduli restano compatibili.' },
+  { version: '3.9.8', date: '2026-08-23', notes: 'Audit runtime end-to-end: corretta la generazione degli ID dei controlli dinamici nei modali e drawer. Il precedente schema basato su Date.now() poteva produrre ID duplicati quando due interfacce venivano costruite nello stesso millisecondo, rendendo label e selettori DOM ambigui. Riallineato inoltre lo stato diagnostico del repository inventario al progetto attivo dopo i cambi sito, evitando conteggi obsoleti.', compatibility: 'Compatibile con backup e connettore 3.x. Nessuna migrazione dati richiesta.' },
   { version: '3.9.2', date: '2026-08-23', notes: 'Corretto il fallback semantico WordPress: verifica dominio e capability live_audit, usa il connettore prima del fetch CORS quando disponibile, limita la lettura ai contenuti necessari, compila anche Brand e Località, non salva analisi temporanee nel progetto precedente e apre realmente il pannello Connessioni. Rafforzati inoltre accessibilità, stato UI e diagnostica del refactoring 3.9.x.', compatibility: 'Compatibile con backup 3.x e connettore 3.x. Nessuna migrazione dati richiesta.' },
   { version: '3.9.1', date: '2026-08-23', notes: 'Corretta la regressione UI che nascondeva il pannello WordPress quando la modalità iniziale era Solo dati locali. La connessione WordPress resta ora sempre visibile in Impostazioni → Connessioni. Se Compila dal sito viene bloccato dal CORS del browser, l’app prova automaticamente a leggere i contenuti tramite il connettore WordPress già autorizzato; se non è collegato, mostra un accesso diretto alla connessione invece del solo errore Failed to fetch.', compatibility: 'Compatibile con i backup 3.x e con il connettore 3.x. Nessuna modifica al formato dei dati; corregge il livello UI e aggiunge un fallback di lettura tramite il connettore.' },
   { version: '3.9.0', date: '2026-08-23', notes: 'Refactoring UI/UX completo senza riduzione funzionale: sidebar raggruppata per macro-area, dashboard orientata a stato e azioni, importazioni centralizzate, controlli avanzati in progressive disclosure, impostazioni organizzate per contesto, microcopy semplificato e gerarchia delle CTA più chiara. ID, route, listener, moduli, WordPress, GPTSites, Search Console, IndexedDB, localStorage, import/export, rollback e diagnostica restano disponibili.', compatibility: 'Compatibile con i backup 3.x e con il connettore 3.x. Modifica principalmente il livello di presentazione e composizione DOM; nessuna funzione operativa viene sostituita con mockup.' },
@@ -4377,11 +4382,10 @@ save = function (force) {
   try {
     const key = projectStorageKey(state.project);
     if (!key) return;
-    const copy = ogosDeepClone(state);
-    if (copy.wordpress) {
-      copy.wordpress.connected = false; copy.wordpress.pluginDetected = false; copy.wordpress.capabilities = [];
-      delete copy.wordpress.pendingState; delete copy.wordpress.token; delete copy.wordpress.secret;
-    }
+    /* Usa sempre il contratto di persistenza corrente. Dalla v3.8 questo
+       punto può trasformare gli inventari >10.000 URL in un marker IndexedDB:
+       clonare direttamente state qui bypassava completamente il repository. */
+    const copy = safePersistedState();
     const registry = projectRegistry();
     registry.projects[key] = copy;
     registry.active = key;
@@ -8769,8 +8773,19 @@ renderKanban=function(){const result=ogosRenderKanbanV355Base.apply(this,argumen
 const ogosTaskCardV355Base=taskCard;
 taskCard=function(task){let html=ogosTaskCardV355Base(task);if(task?.status==='Verificata')return html.replace('class="task-status"','class="task-status" disabled title="Stato assegnato dalla verifica reale"');return html.replace(/<option[^>]*>Verificata<\/option>/,'');};
 
+let ogosFormControlUidV398=0;
 function ogosLabelFormControlsV355(root){
-  if(!root)return;let index=0;root.querySelectorAll('.field').forEach(field=>{const label=field.querySelector(':scope > label'),control=field.querySelector(':scope > input, :scope > select, :scope > textarea');if(!label||!control)return;if(!control.id)control.id=`ogosFieldV355-${Date.now()}-${index++}`;label.htmlFor=control.id;});
+  if(!root)return;
+  root.querySelectorAll('.field').forEach(field=>{
+    const label=field.querySelector(':scope > label'),control=field.querySelector(':scope > input, :scope > select, :scope > textarea');
+    if(!label||!control)return;
+    if(!control.id){
+      let id;
+      do{id=`ogosField-${++ogosFormControlUidV398}`;}while(document.getElementById(id));
+      control.id=id;
+    }
+    label.htmlFor=control.id;
+  });
 }
 function ogosConfigureTaskOperationV355(){
   const form=$('#modalForm'),select=form?.querySelector('[name="operationType"]');if(!select)return;
@@ -9853,7 +9868,7 @@ window.__ogosTest={...(window.__ogosTest||{}),ogosActionableKeywordRowsV3618,can
 const OGOS_INVENTORY_THRESHOLD_V380=10000;
 const OGOS_INVENTORY_DB_V380='organic-growth-os-inventories';
 const OGOS_INVENTORY_STORE_V380='inventories';
-let ogosInventoryDbPromiseV380=null,ogosInventoryRevisionV380=Date.now(),ogosInventoryTimerV380=null,ogosInventoryExportingV380=false,ogosInventoryWriteLockedV380=false;
+let ogosInventoryDbPromiseV380=null,ogosInventoryRevisionV380=Date.now(),ogosInventoryTimerV380=null,ogosInventoryExportingV380=false,ogosInventoryWriteLockedV380=false,ogosInventoryLoadingKeyV399='',ogosInventoryFlushPromiseV3911=null;
 const ogosInventoryPendingV380=new Map();
 const ogosInventoryRuntimeV380={engine:'localStorage',status:'ready',count:state.pages?.length||0,lastError:'',updatedAt:null};
 
@@ -9884,25 +9899,33 @@ function ogosScheduleInventoryFlushV380(){
   ogosInventoryTimerV380=setTimeout(()=>{ogosInventoryTimerV380=null;ogosFlushInventoriesV380();},250);
 }
 async function ogosFlushInventoriesV380(){
-  if(ogosInventoryTimerV380){clearTimeout(ogosInventoryTimerV380);ogosInventoryTimerV380=null;}
-  const entries=[...ogosInventoryPendingV380.entries()];ogosInventoryPendingV380.clear();
-  for(const [projectKey,payload] of entries)try{
-    ogosInventoryRuntimeV380.status='saving';
-    if(payload.delete)await OGOSInventoryRepository.delete(projectKey);else await OGOSInventoryRepository.put(projectKey,payload.pages,payload.revision);
-    ogosInventoryRuntimeV380.engine=payload.delete?'localStorage':'indexedDB';ogosInventoryRuntimeV380.status='ready';ogosInventoryRuntimeV380.count=payload.delete?0:payload.pages.length;ogosInventoryRuntimeV380.updatedAt=new Date().toISOString();ogosInventoryRuntimeV380.lastError='';
-  }catch(error){
-    ogosInventoryRuntimeV380.status='error';ogosInventoryRuntimeV380.lastError=error.message||'Scrittura IndexedDB non riuscita';
-    const registry=projectRegistry();if(payload.fullState){registry.projects[projectKey]=payload.fullState;registry.active=projectKey;ogosRegistryDirtyV3612=true;ogosFlushRegistry();}
-    toast(`Inventario non salvato in IndexedDB: ${ogosInventoryRuntimeV380.lastError}. I dati restano aperti; esporta un backup prima di chiudere.`,'error');
-  }
-  return ogosInventoryRuntimeV380.status!=='error';
+  if(ogosInventoryFlushPromiseV3911)return ogosInventoryFlushPromiseV3911;
+  ogosInventoryFlushPromiseV3911=(async()=>{
+    if(ogosInventoryTimerV380){clearTimeout(ogosInventoryTimerV380);ogosInventoryTimerV380=null;}
+    const entries=[...ogosInventoryPendingV380.entries()];ogosInventoryPendingV380.clear();
+    for(const [projectKey,payload] of entries)try{
+      ogosInventoryRuntimeV380.status='saving';
+      if(payload.delete)await OGOSInventoryRepository.delete(projectKey);else await OGOSInventoryRepository.put(projectKey,payload.pages,payload.revision);
+      ogosInventoryRuntimeV380.engine=payload.delete?'localStorage':'indexedDB';ogosInventoryRuntimeV380.status='ready';ogosInventoryRuntimeV380.count=payload.delete?0:payload.pages.length;ogosInventoryRuntimeV380.updatedAt=new Date().toISOString();ogosInventoryRuntimeV380.lastError='';
+    }catch(error){
+      ogosInventoryRuntimeV380.status='error';ogosInventoryRuntimeV380.lastError=error.message||'Scrittura IndexedDB non riuscita';
+      const registry=projectRegistry();if(payload.fullState){registry.projects[projectKey]=payload.fullState;registry.active=projectKey;ogosRegistryDirtyV3612=true;ogosFlushRegistry();}
+      toast(`Inventario non salvato in IndexedDB: ${ogosInventoryRuntimeV380.lastError}. I dati restano aperti; esporta un backup prima di chiudere.`,'error');
+    }
+    return ogosInventoryRuntimeV380.status!=='error';
+  })();
+  try{return await ogosInventoryFlushPromiseV3911;}
+  finally{ogosInventoryFlushPromiseV3911=null;if(ogosInventoryPendingV380.size)ogosScheduleInventoryFlushV380();}
 }
 
 const ogosSafePersistedStateV380Base=safePersistedState;
 safePersistedState=function(){
   const copy=ogosSafePersistedStateV380Base(),projectKey=projectStorageKey(copy.project),pages=Array.isArray(copy.pages)?copy.pages:[];
   if(!projectKey)return copy;
-  if(ogosInventoryWriteLockedV380&&state.inventoryStorage?.engine==='indexeddb'){
+  /* Durante il caricamento di un progetto IndexedDB le pagine sono
+     intenzionalmente ancora vuote. Un save() provocato dal routing non deve
+     interpretarle come una richiesta di cancellazione dell'inventario. */
+  if((ogosInventoryWriteLockedV380||ogosInventoryLoadingKeyV399===projectKey)&&state.inventoryStorage?.engine==='indexeddb'){
     const preserved=projectRegistry().projects?.[projectKey];return preserved?JSON.parse(JSON.stringify(preserved)):copy;
   }
   if(ogosInventoryExportingV380){delete copy.inventoryStorage;return copy;}
@@ -9922,7 +9945,16 @@ async function ogosHydrateInventoryV380(target=state){
   const marker=target?.inventoryStorage;if(marker?.engine!=='indexeddb')return true;
   ogosInventoryRuntimeV380.engine='indexedDB';ogosInventoryRuntimeV380.status='loading';ogosInventoryRuntimeV380.count=Number(marker.count)||0;
   try{
-    const stored=await OGOSInventoryRepository.get(marker.projectKey||projectStorageKey(target.project));
+    /* Un cambio progetto può avvenire prima del flush differito (250 ms)
+       dell'inventario appena lasciato. Se il progetto richiesto è nella coda,
+       completa prima la scrittura: il marker e IndexedDB devono descrivere
+       la stessa revisione prima di tentare la lettura. */
+    const markerKey=marker.projectKey||projectStorageKey(target.project);
+    /* Se un flush è già partito, attendilo anche quando la Map pending è già
+       stata svuotata: il record sul disco potrebbe non essere ancora commit. */
+    if(ogosInventoryFlushPromiseV3911){const flushed=await ogosInventoryFlushPromiseV3911;if(!flushed)throw new Error(ogosInventoryRuntimeV380.lastError||'Scrittura inventario in corso non riuscita');}
+    if(ogosInventoryPendingV380.has(markerKey)){const flushed=await ogosFlushInventoriesV380();if(!flushed)throw new Error(ogosInventoryRuntimeV380.lastError||'Scrittura inventario pendente non riuscita');}
+    const stored=await OGOSInventoryRepository.get(markerKey);
     if(!stored||!Array.isArray(stored.pages))throw new Error('Inventario IndexedDB non trovato');
     if(Number(stored.revision)<Number(marker.revision))throw new Error('Inventario IndexedDB precedente alla revisione richiesta');
     if(target!==state)return false;
@@ -9942,11 +9974,25 @@ exportData=async function(){
 
 const ogosSwitchProjectV380Base=switchProject;
 switchProject=function(value){
-  const result=ogosSwitchProjectV380Base.apply(this,arguments);if(value==='__new__'||state.inventoryStorage?.engine!=='indexeddb')return result;
-  const key=projectStorageKey(state.project);toast('Caricamento inventario esteso…');ogosHydrateInventoryV380().then(ok=>{if(!ok||projectStorageKey(state.project)!==key)return;renderShell();renderView(state.ui.view||'dashboard');toast(`${state.pages.length} pagine caricate dall’archivio esteso`);});return result;
+  const incomingMarker=value&&value!=='__new__'?projectRegistry().projects?.[value]?.inventoryStorage:null;
+  ogosInventoryLoadingKeyV399=incomingMarker?.engine==='indexeddb'?String(value):'';
+  const result=ogosSwitchProjectV380Base.apply(this,arguments);
+  if(value==='__new__'||state.inventoryStorage?.engine!=='indexeddb'){
+    ogosInventoryLoadingKeyV399='';
+    ogosInventoryRuntimeV380.engine='localStorage';
+    ogosInventoryRuntimeV380.status='ready';
+    ogosInventoryRuntimeV380.count=(state.pages||[]).length;
+    ogosInventoryRuntimeV380.lastError='';
+    ogosInventoryRuntimeV380.updatedAt=null;
+    return result;
+  }
+  const key=projectStorageKey(state.project);toast('Caricamento inventario esteso…');ogosHydrateInventoryV380().then(ok=>{
+    ogosInventoryLoadingKeyV399='';
+    if(!ok||projectStorageKey(state.project)!==key)return;renderShell();renderView(state.ui.view||'dashboard');toast(`${state.pages.length} pagine caricate dall’archivio esteso`);
+  });return result;
 };
 
-addEventListener('storage',event=>{if(event.key==='organicGrowthOSProjects'&&state.inventoryStorage?.engine==='indexeddb'&&!state.pages.length)ogosHydrateInventoryV380().then(ok=>{if(ok){renderShell();renderView(state.ui.view||'dashboard');}});});
+addEventListener('storage',event=>{if(event.key==='organicGrowthOSProjects'&&state.inventoryStorage?.engine==='indexeddb'&&!state.pages.length){ogosInventoryLoadingKeyV399=projectStorageKey(state.project);ogosHydrateInventoryV380().then(ok=>{ogosInventoryLoadingKeyV399='';if(ok){renderShell();renderView(state.ui.view||'dashboard');}});}});
 addEventListener('pagehide',()=>{if(ogosInventoryPendingV380.size)ogosFlushInventoriesV380();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&ogosInventoryPendingV380.size)ogosFlushInventoriesV380();});
 
@@ -10371,6 +10417,251 @@ freshnessStatus=function(){
   else if(source==='wordpress-live'||source==='wordpress-live-check'||source==='wordpress-preflight'||source==='wordpress-verify')result.source='Scansione WordPress live';
   return result;
 };
+
+
+/* ==========================================================================
+   v3.9.3 — hardening semantico, navigazione e coerenza progetto
+   ========================================================================== */
+function ogosServiceAreaFromSemanticGeo393(value){
+  const raw=semanticCleanText(value||'');if(!raw)return '';
+  const province=raw.match(/provincia\s+di\s+([^,]+)/i);if(province?.[1])return `${province[1].trim()} e provincia`;
+  const region=raw.match(/(?:regione|region)\s+([^,]+)/i);if(region?.[1])return region[1].trim();
+  if(/^(italia|italy)$/i.test(raw))return 'Italia';
+  return '';
+}
+function ogosNormalizeSemanticGeoFields393({geoBefore='',cityBefore=''}={}){
+  const geoEl=$('#geo'),cityEl=$('#city');if(!geoEl||!cityEl)return;
+  const inferred=semanticCleanText(geoEl.value||''),city=ogosLocationFromGeo392(inferred),area=ogosServiceAreaFromSemanticGeo393(inferred);
+  if(!String(cityBefore||'').trim()&&city)cityEl.value=city;
+  /* semanticInferGeo() descrive la sede/località osservata, non il bacino servito.
+     Non lasciamo quindi una località specifica nel campo "Area geografica servita". */
+  if(!String(geoBefore||'').trim()&&city){geoEl.value=area||'';}
+}
+/* Consenti il fallback WordPress quando è già dentro il lock della stessa analisi;
+   blocca invece una seconda analisi avviata davvero in parallelo. */
+ogosSemanticFallbackViaWordPress392=async function(domain){
+  if(ogosRemoteMutationV3613==='l’analisi semantica del dominio')return ogosSemanticFallbackViaWordPress392Base(domain);
+  return ogosRunExclusiveV3613('l’analisi semantica del dominio',()=>ogosSemanticFallbackViaWordPress392Base(domain),false);
+};
+const ogosAutoFillProjectV393Base=autoFillProjectFromDomain;
+autoFillProjectFromDomain=async function(){
+  const expected=normalizeProjectDomain($('#domain')?.value||''),geoBefore=$('#geo')?.value||'',cityBefore=$('#city')?.value||'';
+  const result=await ogosAutoFillProjectV393Base.apply(this,arguments);
+  if(!expected)return result;
+  /* Il dominio può essere modificato manualmente mentre fetch/crawl sono in corso. */
+  if(normalizeProjectDomain($('#domain')?.value||'')!==expected){
+    const status=$('#semanticProjectStatus');if(status){status.className='semantic-status show warn';status.textContent='Analisi ignorata: il dominio è cambiato durante la lettura. Riprova sul dominio corrente.';}
+    toast('Il dominio è cambiato durante l’analisi: risultati non applicati','error');return false;
+  }
+  if(result!==false)ogosNormalizeSemanticGeoFields393({geoBefore,cityBefore});
+  return result;
+};
+/* Una sola macro-area della sidebar aperta: riduce ambiguità e densità senza
+   rimuovere alcuna route. */
+function ogosNavSingleOpen393(){
+  const nav=$('#nav');if(!nav||nav.dataset.singleOpen393==='1')return;nav.dataset.singleOpen393='1';
+  nav.addEventListener('toggle',event=>{const current=event.target;if(!(current instanceof HTMLDetailsElement)||!current.classList.contains('ogos-nav-group')||!current.open)return;$$('.ogos-nav-group',nav).forEach(other=>{if(other!==current)other.open=false;});},true);
+}
+const ogosUi390SyncNavigationV393Base=ogosUi390SyncNavigation;
+ogosUi390SyncNavigation=function(){
+  const result=ogosUi390SyncNavigationV393Base.apply(this,arguments),view=state.ui?.view||'dashboard';
+  $$('.ogos-nav-group').forEach(group=>{const contains=String(group.dataset.views||'').split(',').includes(view);group.open=contains;});
+  return result;
+};
+const ogosUi392AfterRenderV393Base=ogosUi392AfterRender;
+ogosUi392AfterRender=function(view){const result=ogosUi392AfterRenderV393Base.apply(this,arguments);ogosNavSingleOpen393();return result;};
+/* Evita che la vecchia 3.9.1 lasci in memoria metadati semantici relativi a
+   un dominio non ancora salvato. Vengono registrati soltanto al submit. */
+const ogosSaveProjectFormV393Base=saveProjectForm;
+saveProjectForm=function(e){
+  const form=e?.currentTarget||$('#projectForm'),observed=form?.dataset?.semanticObservedAt||'';
+  const result=ogosSaveProjectFormV393Base.apply(this,arguments);
+  if(observed&&state.project?.domain){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis={...(state.ui.lastSemanticProjectAnalysis||{}),domain:state.project.domain,observedAt:observed};save(true);delete form.dataset.semanticObservedAt;}
+  return result;
+};
+
+
+/* ==========================================================================
+   v3.9.4 — transazioni del form semantico e isolamento multi-progetto
+   ========================================================================== */
+function ogosProjectFormSnapshot394(){
+  const form=$('#projectForm');if(!form)return{};const out={};new FormData(form).forEach((value,key)=>{out[key]=String(value??'');});return out;
+}
+function ogosRestoreProjectForm394(snapshot){
+  const form=$('#projectForm');if(!form)return;Object.entries(snapshot||{}).forEach(([key,value])=>{const el=form.elements.namedItem(key);if(el&&'value'in el)el.value=value;});
+}
+const ogosAutoFillProjectV394Base=autoFillProjectFromDomain;
+autoFillProjectFromDomain=async function(){
+  const snapshot=ogosProjectFormSnapshot394(),requested=normalizeProjectDomain(snapshot.domain||''),activeBefore=projectStorageKey(state.project),priorAnalysis=state.ui?.lastSemanticProjectAnalysis?clone(state.ui.lastSemanticProjectAnalysis):null,form=$('#projectForm');
+  const result=await ogosAutoFillProjectV394Base.apply(this,arguments);
+  if(!requested)return result;
+  const currentRequested=normalizeProjectDomain($('#domain')?.value||'');
+  if(currentRequested!==requested){
+    ogosRestoreProjectForm394(snapshot);
+    if(priorAnalysis){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis=priorAnalysis;}else if(state.ui)delete state.ui.lastSemanticProjectAnalysis;
+    if(activeBefore)save(true);
+    const status=$('#semanticProjectStatus');if(status){status.className='semantic-status show warn';status.textContent='Il dominio è cambiato durante l’analisi. Ho ripristinato i valori precedenti: avvia una nuova analisi sul dominio corrente.';}
+    toast('Analisi annullata: dominio cambiato durante la lettura','error');return false;
+  }
+  /* Se stiamo preparando un dominio diverso dal progetto attivo, l'analisi è
+     una bozza del form: non deve essere persistita nel progetto vecchio. */
+  if(activeBefore&&requested!==activeBefore){
+    const generated=state.ui?.lastSemanticProjectAnalysis?clone(state.ui.lastSemanticProjectAnalysis):null;
+    if(form)form._ogosSemanticAnalysis394=generated||{domain:requested,observedAt:new Date().toISOString(),source:'analisi semantica'};
+    if(priorAnalysis){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis=priorAnalysis;}else if(state.ui)delete state.ui.lastSemanticProjectAnalysis;
+    save(true);
+  }else if(form&&state.ui?.lastSemanticProjectAnalysis){form._ogosSemanticAnalysis394=clone(state.ui.lastSemanticProjectAnalysis);}
+  return result;
+};
+const ogosSaveProjectFormV394Base=saveProjectForm;
+saveProjectForm=function(e){
+  const form=e?.currentTarget||$('#projectForm'),draft=form?._ogosSemanticAnalysis394?clone(form._ogosSemanticAnalysis394):null,expected=normalizeProjectDomain(form?.elements?.domain?.value||'');
+  const result=ogosSaveProjectFormV394Base.apply(this,arguments);
+  if(draft&&expected&&projectStorageKey(state.project)===expected){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis={...draft,domain:expected,observedAt:draft.observedAt||new Date().toISOString()};save(true);delete form._ogosSemanticAnalysis394;}
+  return result;
+};
+
+
+/* ==========================================================================
+   v3.9.5 — consolidamento: un solo flusso semantico finale
+   ========================================================================== */
+function ogosSemanticFailureLooksCors395(status){return !!status&&/non riesce a leggere|failed to fetch|cors|blocca la lettura/i.test(status.textContent||'');}
+function ogosSemanticDraft395(domain,source){return{domain,observedAt:new Date().toISOString(),sources:[source],source};}
+function ogosShowWpFallback395(domain){
+  const status=$('#semanticProjectStatus'),connected=ogosWpConnectedDomain392();if(!status)return false;
+  status.className='semantic-status show warn';
+  status.innerHTML=connected&&connected!==domain?`Il browser blocca la lettura diretta. Il WordPress collegato è <b>${esc(connected)}</b>, non <b>${esc(domain)}</b>. <button type="button" class="btn" id="ogosGoWp395">Collega il WordPress corretto</button>`:`Il browser blocca la lettura diretta del sito. Collega WordPress per leggere i contenuti senza dipendere dal CORS. <button type="button" class="btn" id="ogosGoWp395">Apri connessione WordPress</button>`;
+  $('#ogosGoWp395')?.addEventListener('click',ogosOpenWpConnections392,{once:true});return false;
+}
+/* Sostituisce l'intera catena 3.9.1–3.9.4. Usa una sola guardia globale e
+   richiama esclusivamente i due core affidabili: lettura pubblica originale o
+   lettura WordPress 3.9.2 senza un secondo lock. */
+autoFillProjectFromDomain=async function(){
+  const snapshot=ogosProjectFormSnapshot394(),domain=normalizeProjectDomain(snapshot.domain||''),form=$('#projectForm'),status=$('#semanticProjectStatus');
+  if(!domain){toast('Inserisci prima un dominio valido, ad esempio esempio.it','error');$('#domain')?.focus();return false;}
+  return ogosRunExclusiveV3613('l’analisi semantica del dominio',async()=>{
+    const activeBefore=projectStorageKey(state.project),priorAnalysis=state.ui?.lastSemanticProjectAnalysis?clone(state.ui.lastSemanticProjectAnalysis):null,geoBefore=snapshot.geo||'',cityBefore=snapshot.city||'';
+    let result=false,source='accesso pubblico';
+    if(ogosCanUseWpSemantic392(domain)){
+      source='connettore WordPress';
+      try{result=await ogosSemanticFallbackViaWordPress392Base(domain);}catch(error){if(status){status.className='semantic-status show warn';status.textContent=`Lettura WordPress non riuscita: ${error.message}. Provo l’accesso pubblico…`;}}
+    }
+    if(result===false){
+      source='accesso pubblico';
+      result=await ogosAutoFillProjectV391Base.apply(this,arguments);
+      if(ogosSemanticFailureLooksCors395(status)&&ogosCanUseWpSemantic392(domain)){
+        source='connettore WordPress';
+        try{result=await ogosSemanticFallbackViaWordPress392Base(domain);}catch(error){if(status){status.className='semantic-status show warn';status.textContent=`Accesso pubblico bloccato e lettura WordPress non riuscita: ${error.message}.`; }toast(`Analisi tramite WordPress non riuscita: ${error.message}`,'error');return false;}
+      }
+    }
+    if(normalizeProjectDomain($('#domain')?.value||'')!==domain){
+      ogosRestoreProjectForm394(snapshot);
+      if(priorAnalysis){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis=priorAnalysis;}else if(state.ui)delete state.ui.lastSemanticProjectAnalysis;
+      if(activeBefore)save(true);
+      if(status){status.className='semantic-status show warn';status.textContent='Il dominio è cambiato durante l’analisi. Ho ripristinato i valori precedenti.';}
+      toast('Analisi annullata: dominio cambiato durante la lettura','error');return false;
+    }
+    if(result===false&&ogosSemanticFailureLooksCors395(status))return ogosShowWpFallback395(domain);
+    if(result!==false){
+      ogosNormalizeSemanticGeoFields393({geoBefore,cityBefore});
+      const generated=state.ui?.lastSemanticProjectAnalysis?clone(state.ui.lastSemanticProjectAnalysis):ogosSemanticDraft395(domain,source);
+      generated.domain=domain;generated.observedAt=generated.observedAt||new Date().toISOString();generated.sources=generated.sources?.length?generated.sources:[source];
+      if(form)form._ogosSemanticAnalysis395=generated;
+      /* Un dominio non ancora salvato non può modificare i metadati del sito
+         precedentemente attivo. */
+      if(activeBefore&&activeBefore!==domain){if(priorAnalysis){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis=priorAnalysis;}else if(state.ui)delete state.ui.lastSemanticProjectAnalysis;save(true);}
+    }
+    return result;
+  },false);
+};
+/* Bypassa i wrapper 3.9.3/3.9.4 ormai sostituiti e registra la bozza semantica
+   soltanto se il submit ha davvero attivato lo stesso dominio. */
+saveProjectForm=function(e){
+  const form=e?.currentTarget||$('#projectForm'),draft=form?._ogosSemanticAnalysis395?clone(form._ogosSemanticAnalysis395):null,expected=normalizeProjectDomain(form?.elements?.domain?.value||'');
+  const result=ogosSaveProjectFormV393Base.apply(this,arguments);
+  if(draft&&expected&&projectStorageKey(state.project)===expected){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis={...draft,domain:expected};save(true);delete form._ogosSemanticAnalysis395;}
+  return result;
+};
+
+
+/* ==========================================================================
+   v3.9.7 — analisi semantica senza doppio lock
+   ========================================================================== */
+function ogosSemanticStatusOk396(){return !!$('#semanticProjectStatus')?.classList.contains('ok');}
+autoFillProjectFromDomain=async function(){
+  const snapshot=ogosProjectFormSnapshot394(),domain=normalizeProjectDomain(snapshot.domain||''),form=$('#projectForm'),status=$('#semanticProjectStatus');
+  if(!domain){toast('Inserisci prima un dominio valido, ad esempio esempio.it','error');$('#domain')?.focus();return false;}
+  return ogosRunExclusiveV3613('l’analisi semantica del dominio',async()=>{
+    const activeBefore=projectStorageKey(state.project),priorAnalysis=state.ui?.lastSemanticProjectAnalysis?clone(state.ui.lastSemanticProjectAnalysis):null,geoBefore=snapshot.geo||'',cityBefore=snapshot.city||'';
+    let success=false,source='accesso pubblico';
+    if(ogosCanUseWpSemantic392(domain)){
+      source='connettore WordPress';
+      try{success=(await ogosSemanticFallbackViaWordPress392Base(domain))===true;}catch(error){if(status){status.className='semantic-status show warn';status.textContent=`Lettura WordPress non riuscita: ${error.message}. Provo l’accesso pubblico…`;}}
+    }
+    if(!success){
+      source='accesso pubblico';
+      try{await ogosAutoFillProjectV3613Base.apply(this,arguments);}catch(error){if(status){status.className='semantic-status show warn';status.textContent=`Lettura pubblica non riuscita: ${error.message}`;}}
+      success=ogosSemanticStatusOk396();
+      if(!success&&ogosSemanticFailureLooksCors395(status)&&ogosCanUseWpSemantic392(domain)){
+        source='connettore WordPress';
+        try{success=(await ogosSemanticFallbackViaWordPress392Base(domain))===true;}catch(error){if(status){status.className='semantic-status show warn';status.textContent=`Accesso pubblico bloccato e lettura WordPress non riuscita: ${error.message}.`; }toast(`Analisi tramite WordPress non riuscita: ${error.message}`,'error');success=false;}
+      }
+    }
+    if(normalizeProjectDomain($('#domain')?.value||'')!==domain){
+      ogosRestoreProjectForm394(snapshot);
+      if(priorAnalysis){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis=priorAnalysis;}else if(state.ui)delete state.ui.lastSemanticProjectAnalysis;
+      if(activeBefore)save(true);
+      if(status){status.className='semantic-status show warn';status.textContent='Il dominio è cambiato durante l’analisi. Ho ripristinato i valori precedenti.';}
+      toast('Analisi annullata: dominio cambiato durante la lettura','error');return false;
+    }
+    if(!success){if(ogosSemanticFailureLooksCors395(status))ogosShowWpFallback395(domain);return false;}
+    ogosNormalizeSemanticGeoFields393({geoBefore,cityBefore});
+    const generated=state.ui?.lastSemanticProjectAnalysis?clone(state.ui.lastSemanticProjectAnalysis):ogosSemanticDraft395(domain,source);
+    generated.domain=domain;generated.observedAt=generated.observedAt||new Date().toISOString();generated.sources=generated.sources?.length?generated.sources:[source];
+    if(form)form._ogosSemanticAnalysis395=generated;
+    if(activeBefore&&activeBefore!==domain){if(priorAnalysis){state.ui=state.ui||{};state.ui.lastSemanticProjectAnalysis=priorAnalysis;}else if(state.ui)delete state.ui.lastSemanticProjectAnalysis;save(true);}
+    return true;
+  },false);
+};
+
+
+/* ==========================================================================
+   v3.9.12 — switch progetto IndexedDB atomico: hydrate prima del render
+   ========================================================================== */
+const ogosSwitchProjectV3912Base=switchProject;
+switchProject=function(value){
+  const registry=projectRegistry();
+  const marker=value&&value!=='__new__'?registry.projects?.[value]?.inventoryStorage:null;
+  if(marker?.engine!=='indexeddb')return ogosSwitchProjectV3912Base.apply(this,arguments);
+  const busy=typeof ogosBusyMessageV3613==='function'?ogosBusyMessageV3613():'';
+  if(busy){toast(`Cambio sito bloccato finché termina ${busy}.`,'error');renderProjectSelector();return false;}
+  if(!persistCurrentProject(true)){toast('Cambio sito annullato: il progetto corrente non è stato salvato.','error');renderProjectSelector();return false;}
+  const stored=registry.projects[value];
+  if(!stored){toast('Progetto non trovato nei dati locali','error');renderProjectSelector();return false;}
+  wpSecret='';wpPendingState='';
+  state=normalizeState(clone(stored));state.ui=state.ui&&typeof state.ui==='object'?state.ui:{};state.ui.view='dashboard';
+  registry.active=value;
+  if(typeof ogosLoadedProjectRevisionV3612!=='undefined')ogosLoadedProjectRevisionV3612=Number(registry._projectRevisions?.[value])||0;
+  if(typeof ogosRegistryDirtyV3612!=='undefined')ogosRegistryDirtyV3612=true;
+  if(typeof ogosFlushRegistry==='function'&&!ogosFlushRegistry()){toast('Cambio sito annullato perché non è stato possibile registrare il progetto attivo.','error');return false;}
+  ogosInventoryLoadingKeyV399=String(value);
+  ogosInventoryRuntimeV380.engine='indexedDB';ogosInventoryRuntimeV380.status='loading';ogosInventoryRuntimeV380.count=Number(marker.count)||0;ogosInventoryRuntimeV380.lastError='';
+  toast('Caricamento inventario esteso…');
+  return ogosHydrateInventoryV380(state).then(ok=>{
+    ogosInventoryLoadingKeyV399='';
+    if(!ok||projectStorageKey(state.project)!==String(value))return false;
+    applyTheme(state.settings.theme);
+    renderShell();go('dashboard');
+    toast(`${state.pages.length} pagine caricate dall’archivio esteso`);
+    return true;
+  }).catch(error=>{
+    ogosInventoryLoadingKeyV399='';
+    ogosInventoryRuntimeV380.status='error';ogosInventoryRuntimeV380.lastError=error?.message||'Caricamento inventario non riuscito';
+    toast(`Cambio sito non completato: ${ogosInventoryRuntimeV380.lastError}`,'error');
+    renderShell();renderProjectSelector();return false;
+  });
+};
+
 
 init();
 })();
