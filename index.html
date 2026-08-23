@@ -203,7 +203,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.9.0',OGOS_SCHEMA_VERSION=1;let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='3.9.2',OGOS_SCHEMA_VERSION=1;let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.schemaVersion=OGOS_SCHEMA_VERSION;value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 /* Il registro viene letto prima dell'inizializzazione dell'interfaccia. Se il
@@ -880,6 +880,8 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.9.2', date: '2026-08-23', notes: 'Corretto il fallback semantico WordPress: verifica dominio e capability live_audit, usa il connettore prima del fetch CORS quando disponibile, limita la lettura ai contenuti necessari, compila anche Brand e Località, non salva analisi temporanee nel progetto precedente e apre realmente il pannello Connessioni. Rafforzati inoltre accessibilità, stato UI e diagnostica del refactoring 3.9.x.', compatibility: 'Compatibile con backup 3.x e connettore 3.x. Nessuna migrazione dati richiesta.' },
+  { version: '3.9.1', date: '2026-08-23', notes: 'Corretta la regressione UI che nascondeva il pannello WordPress quando la modalità iniziale era Solo dati locali. La connessione WordPress resta ora sempre visibile in Impostazioni → Connessioni. Se Compila dal sito viene bloccato dal CORS del browser, l’app prova automaticamente a leggere i contenuti tramite il connettore WordPress già autorizzato; se non è collegato, mostra un accesso diretto alla connessione invece del solo errore Failed to fetch.', compatibility: 'Compatibile con i backup 3.x e con il connettore 3.x. Nessuna modifica al formato dei dati; corregge il livello UI e aggiunge un fallback di lettura tramite il connettore.' },
   { version: '3.9.0', date: '2026-08-23', notes: 'Refactoring UI/UX completo senza riduzione funzionale: sidebar raggruppata per macro-area, dashboard orientata a stato e azioni, importazioni centralizzate, controlli avanzati in progressive disclosure, impostazioni organizzate per contesto, microcopy semplificato e gerarchia delle CTA più chiara. ID, route, listener, moduli, WordPress, GPTSites, Search Console, IndexedDB, localStorage, import/export, rollback e diagnostica restano disponibili.', compatibility: 'Compatibile con i backup 3.x e con il connettore 3.x. Modifica principalmente il livello di presentazione e composizione DOM; nessuna funzione operativa viene sostituita con mockup.' },
   { version: '3.7.0', date: '2026-08-21', notes: 'L’applicazione è stata separata in moduli ordinati per stato e interfaccia, audit e connettori, indicizzazione, flussi SEO, prestazioni, generatore qualitativo e sicurezza WordPress. La build assembla automaticamente gli stessi moduli in un solo HTML standalone e nel plugin, mantenendo il flusso portabile.', compatibility: 'Aggiornamento architetturale compatibile con i backup 3.x. Interfaccia, dati e connettore restano invariati; gli sviluppi successivi devono modificare i file in src e non l’artefatto generato.' },
   { version: '3.6.12', date: '2026-08-21', notes: 'Corretto il ciclo completo di persistenza e applicazione: registro corrotto conservato senza sovrascrittura, conflitti tra schede bloccati, cambi progetto subordinati a un salvataggio confermato, richieste WordPress idempotenti dopo timeout e rollback riallineato con lo stato locale. Il form manuale include H1 e impedisce di copiare un unico Title, H1, Meta, Canonical o redirect su più URL. Il progresso interrotto non mostra più 100%.', compatibility: 'Aggiornamento consigliato per tutti i siti. Richiede il connettore unificato 3.6.12 per recuperare in sicurezza una risposta WordPress persa. Backup precedenti compatibili.' },
@@ -10105,6 +10107,270 @@ const ogosRenderViewV390Base=renderView;
 renderView=function(view){const result=ogosRenderViewV390Base.apply(this,arguments);ogosUi390AfterRender(view);return result;};
 const ogosInitV390Base=init;
 init=function(){const result=ogosInitV390Base.apply(this,arguments);if(result&&typeof result.then==='function')return result.then(value=>{ogosUi390Init();return value;});ogosUi390Init();return result;};
+
+
+/* ==========================================================================\n   v3.9.1 — connessione WordPress sempre raggiungibile + fallback semantico\n   ========================================================================== */
+function ogosUi391ExposeWordPress(){
+  const wpStatus=$('#wpStatus'),wpField=wpStatus?.closest('.field');
+  if(!wpField)return;
+  wpField.hidden=false;
+  wpField.removeAttribute('hidden');
+  wpField.classList.add('ogos-wordpress-connection-visible');
+  const legacyMode=$('#integrationMode')?.closest('.field');
+  if(legacyMode)legacyMode.hidden=true;
+  const mode=$('#ogosIntegrationMode');
+  if(mode&&mode.value!==(state.integration?.mode||'local'))mode.value=state.integration?.mode||'local';
+  let note=$('#ogosWpConnectionHint391');
+  if(!note){
+    note=document.createElement('div');note.id='ogosWpConnectionHint391';note.className='safe-note';note.style.margin='0 0 12px';
+    wpStatus.before(note);
+  }
+  if(state.wordpress?.connected&&state.wordpress?.pluginDetected){
+    note.className='safe-note';
+    note.textContent='WordPress è collegato. Le correzioni supportate possono usare anteprima, applicazione e ripristino.';
+  }else{
+    note.className='safe-note warn-note';
+    note.textContent='Collega WordPress per leggere il sito anche quando il browser blocca l’accesso diretto per CORS e per abilitare scansioni e correzioni.';
+  }
+}
+
+async function ogosSemanticFallbackViaWordPress391(domain){
+  if(!state.wordpress?.connected||!wpSecret||!state.wordpress?.pluginDetected)throw new Error('WordPress non è ancora collegato');
+  const status=$('#semanticProjectStatus'),btn=$('#semanticProjectBtn');
+  if(status){status.className='semantic-status show';status.textContent='Accesso diretto bloccato dal browser. Provo tramite il connettore WordPress…';}
+  if(btn){btn.disabled=true;btn.innerHTML=`${icon('search')} Analisi WordPress…`;}
+  try{
+    const data=await wpCurrentAuditCollection();
+    const items=Array.isArray(data?.items)?data.items:[];
+    if(!items.length)throw new Error('Il connettore non ha restituito pagine pubblicate');
+    const wp={
+      count:items.length,
+      items:items.map(item=>({
+        title:semanticCleanText(item.title||item.seo_title||''),
+        slug:String(item.path||item.url||'').replace(/^https?:\/\/[^/]+/i,'').replace(/^\/+|\/+$/g,''),
+        link:item.url||item.path||'',
+        text:semanticCleanText([item.title,item.seo_title,item.h1,(item.headings||[]).join(' '),item.excerpt,item.content_excerpt,item.meta_description].filter(Boolean).join(' '))
+      })),
+    };
+    wp.text=semanticCleanText(wp.items.map(x=>x.text).join(' ')).slice(0,90000);
+    const result=semanticInferProject(domain,null,wp,[]);
+    const apply=(id,value)=>{const el=$(id);if(el&&value)el.value=value;};
+    apply('#siteName',result.name);apply('#sector',result.sector);apply('#geo',result.geo);apply('#audience',result.audience);apply('#goals',result.goals);
+    state.ui=state.ui||{};
+    state.ui.lastSemanticProjectAnalysis={domain,observedAt:new Date().toISOString(),confidence:result.confidence,signals:result.signals,sources:['connettore WordPress']};
+    save();
+    if(status){status.className='semantic-status show ok';status.textContent=`Campi compilati tramite WordPress · ${items.length} contenuti letti · confidenza ${result.confidence}%. Rivedi i valori prima di salvare.`;}
+    toast('Progetto compilato tramite il connettore WordPress');
+    return true;
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML=`${icon('search')} Rianalizza sito`;}
+  }
+}
+
+const ogosAutoFillProjectV391Base=autoFillProjectFromDomain;
+autoFillProjectFromDomain=async function(){
+  const domain=normalizeProjectDomain($('#domain')?.value||'');
+  const result=await ogosAutoFillProjectV391Base.apply(this,arguments);
+  const status=$('#semanticProjectStatus');
+  const failed=!!status&&/non riesce a leggere|failed to fetch|cors/i.test(status.textContent||'');
+  if(!failed||!domain)return result;
+  if(state.wordpress?.connected&&wpSecret&&state.wordpress?.pluginDetected){
+    try{return await ogosSemanticFallbackViaWordPress391(domain);}catch(error){
+      status.className='semantic-status show warn';
+      status.textContent=`Accesso diretto bloccato dal browser e lettura WordPress non riuscita: ${error.message}. Controlla la connessione WordPress in Impostazioni → Connessioni.`;
+      toast(`Analisi tramite WordPress non riuscita: ${error.message}`,'error');return false;
+    }
+  }
+  status.className='semantic-status show warn';
+  status.innerHTML='Il browser blocca la lettura diretta del sito per CORS. <b>Non è un errore dei contenuti.</b> Collega WordPress in <b>Impostazioni → Connessioni</b>, poi riprova “Compila dal sito”. <button type="button" class="btn" id="ogosGoWp391" style="margin-left:8px;min-height:34px">Apri connessione WordPress</button>';
+  $('#ogosGoWp391')?.addEventListener('click',()=>go('settings'));
+  return false;
+};
+
+const ogosRenderSettingsV391Base=renderSettings;
+renderSettings=function(){const result=ogosRenderSettingsV391Base.apply(this,arguments);ogosUi391ExposeWordPress();return result;};
+
+const ogosUi390AfterRenderV391Base=ogosUi390AfterRender;
+ogosUi390AfterRender=function(view){const result=ogosUi390AfterRenderV391Base.apply(this,arguments);if(view==='settings')ogosUi391ExposeWordPress();return result;};
+
+
+/* ==========================================================================
+   v3.9.2 — fallback WordPress sicuro e audit di robustezza UI
+   ========================================================================== */
+function ogosWpConnectedDomain392(){
+  return normalizeProjectDomain(state.wordpress?.url||window.OGOS_EMBEDDED?.siteUrl||'');
+}
+function ogosCanUseWpSemantic392(domain){
+  const target=normalizeProjectDomain(domain),connected=ogosWpConnectedDomain392();
+  return !!target&&target===connected&&!!state.wordpress?.connected&&!!wpSecret&&!!state.wordpress?.pluginDetected&&Array.isArray(state.wordpress?.capabilities)&&state.wordpress.capabilities.includes('live_audit');
+}
+async function ogosWpSemanticSample392(maxItems=240){
+  const items=[];let observedAt=null;
+  for(let page=1;page<=3&&items.length<maxItems;page++){
+    const data=await wpRequest(`/wp-json/organic-growth-os/v1/audit/current?per_page=80&page=${page}`);
+    if(!Array.isArray(data?.items))throw new Error('Risposta audit WordPress non valida');
+    items.push(...data.items.slice(0,Math.max(0,maxItems-items.length)));
+    observedAt=data.observed_at||observedAt;
+    if(page>=(Number(data.total_pages)||1))break;
+  }
+  return {items,observedAt:observedAt||new Date().toISOString()};
+}
+function ogosInferBrandFromWp392(items,domain){
+  const suffixes=new Map();
+  for(const item of items||[]){
+    const title=semanticCleanText(item.seo_title||item.title||'');
+    if(!title)continue;
+    const parts=title.split(/\s+[|–—-]\s+/).map(x=>x.trim()).filter(Boolean);
+    if(parts.length<2)continue;
+    const candidate=parts[parts.length-1];
+    if(candidate.length<3||candidate.length>55)continue;
+    suffixes.set(candidate,(suffixes.get(candidate)||0)+1);
+  }
+  const ranked=[...suffixes.entries()].sort((a,b)=>b[1]-a[1]);
+  if(ranked[0]?.[1]>=2)return ranked[0][0];
+  const existing=semanticCleanText($('#brand')?.value||'');
+  if(existing)return existing;
+  return titleCase(String(domain||'').split('.')[0].replace(/[-_]+/g,' '));
+}
+function ogosLocationFromGeo392(value){
+  const raw=semanticCleanText(value||'');if(!raw)return '';
+  return raw.split(/\s*\(|,\s*(?:provincia|province|regione|region)\b/i)[0].trim();
+}
+function ogosApplySemanticProject392(result,{domain,items=[],source='analisi'}={}){
+  const set=(id,value,overwrite=true)=>{const el=$(id);if(!el||!value)return;if(overwrite||!String(el.value||'').trim())el.value=value;};
+  set('#siteName',result.name);set('#sector',result.sector);set('#geo',result.geo);set('#audience',result.audience);set('#goals',result.goals);
+  const brand=ogosInferBrandFromWp392(items,domain);set('#brand',brand,false);
+  const city=ogosLocationFromGeo392(result.geo);set('#city',city,false);
+  // L'analisi appartiene ancora al modulo non salvato: non persisterla nello stato del vecchio progetto.
+  const form=$('#projectForm');if(form)form.dataset.semanticObservedAt=new Date().toISOString();
+  return {brand,city,source};
+}
+async function ogosSemanticFallbackViaWordPress392(domain){
+  const target=normalizeProjectDomain(domain),connected=ogosWpConnectedDomain392();
+  if(!target)throw new Error('Dominio del progetto non valido');
+  if(!state.wordpress?.connected||!wpSecret||!state.wordpress?.pluginDetected)throw new Error('WordPress non è collegato');
+  if(target!==connected)throw new Error(`Il WordPress collegato è ${connected||'un altro dominio'}, non ${target}`);
+  if(!Array.isArray(state.wordpress.capabilities)||!state.wordpress.capabilities.includes('live_audit'))throw new Error('Il connettore WordPress installato non supporta la lettura live_audit');
+  const status=$('#semanticProjectStatus'),btn=$('#semanticProjectBtn');
+  if(status){status.className='semantic-status show';status.textContent='Leggo i contenuti tramite WordPress…';}
+  if(btn){btn.disabled=true;btn.innerHTML=`${icon('search')} Analisi WordPress…`;}
+  try{
+    const data=await ogosWpSemanticSample392(),items=data.items;
+    if(!items.length)throw new Error('Il connettore non ha restituito pagine pubblicate');
+    const wp={count:items.length,items:items.map(item=>({title:semanticCleanText(item.title||item.seo_title||''),slug:String(item.path||item.url||'').replace(/^https?:\/\/[^/]+/i,'').replace(/^\/+|\/+$/g,''),link:item.url||item.path||'',text:semanticCleanText([item.title,item.seo_title,item.h1,(item.headings||[]).join(' '),item.excerpt,item.content_excerpt,item.meta_description].filter(Boolean).join(' '))}))};
+    wp.text=semanticCleanText(wp.items.map(x=>x.text).join(' ')).slice(0,90000);
+    const result=semanticInferProject(target,null,wp,[]);
+    const brand=ogosInferBrandFromWp392(items,target);if(brand&&(!result.name||result.name.toLowerCase()===titleCase(target.split('.')[0]).toLowerCase()))result.name=brand;
+    const applied=ogosApplySemanticProject392(result,{domain:target,items,source:'connettore WordPress'});
+    if(status){status.className='semantic-status show ok';status.textContent=`Campi compilati tramite WordPress · ${items.length} contenuti campionati · confidenza ${result.confidence}%${applied.city?` · località: ${applied.city}`:''}. Rivedi i valori prima di salvare.`;}
+    toast('Progetto compilato tramite WordPress');return true;
+  }finally{if(btn){btn.disabled=false;btn.innerHTML=`${icon('search')} Rianalizza sito`;}}
+}
+function ogosOpenWpConnections392(){
+  go('settings');
+  requestAnimationFrame(()=>{
+    const group=$('#view-settings details[data-group="connections"]');if(group)group.open=true;
+    ogosUi391ExposeWordPress();
+    const target=$('#wpUrl')||$('#wpBtn');target?.scrollIntoView({block:'center',behavior:'smooth'});target?.focus?.();
+  });
+}
+// Sostituisce il wrapper 3.9.1: se WordPress è già valido per questo stesso dominio,
+// evita del tutto il fetch cross-origin destinato a fallire; altrimenti usa il percorso pubblico originale.
+autoFillProjectFromDomain=async function(){
+  const domain=normalizeProjectDomain($('#domain')?.value||''),status=$('#semanticProjectStatus');
+  if(!domain){toast('Inserisci prima un dominio valido, ad esempio esempio.it','error');$('#domain')?.focus();return false;}
+  if(ogosCanUseWpSemantic392(domain)){
+    try{return await ogosSemanticFallbackViaWordPress392(domain);}catch(error){if(status){status.className='semantic-status show warn';status.textContent=`Lettura WordPress non riuscita: ${error.message}. Provo l’accesso pubblico dal browser…`;}}
+  }
+  const result=await ogosAutoFillProjectV391Base.apply(this,arguments);
+  const failed=!!status&&/non riesce a leggere|failed to fetch|cors/i.test(status.textContent||'');
+  if(!failed)return result;
+  if(ogosCanUseWpSemantic392(domain))try{return await ogosSemanticFallbackViaWordPress392(domain);}catch(error){if(status){status.className='semantic-status show warn';status.textContent=`Accesso diretto bloccato e lettura WordPress non riuscita: ${error.message}.`; }toast(`Analisi tramite WordPress non riuscita: ${error.message}`,'error');return false;}
+  const connected=ogosWpConnectedDomain392();
+  if(status){status.className='semantic-status show warn';status.innerHTML=connected&&connected!==domain?`Il browser blocca la lettura diretta per CORS. Il WordPress collegato appartiene a <b>${esc(connected)}</b>, mentre stai analizzando <b>${esc(domain)}</b>. Collega il WordPress corretto. <button type="button" class="btn" id="ogosGoWp392">Apri connessione WordPress</button>`:`Il browser blocca la lettura diretta per CORS. Collega WordPress per leggere il sito in modo affidabile. <button type="button" class="btn" id="ogosGoWp392">Apri connessione WordPress</button>`;}
+  $('#ogosGoWp392')?.addEventListener('click',ogosOpenWpConnections392,{once:true});return false;
+};
+
+function ogosUi392Accessibility(){
+  $$('.ogos-nav-group summary,.ogos-settings-group summary,.ogos-analysis-advanced>summary,.ogos-dashboard-secondary>summary,.ogos-sidebar-secondary>summary').forEach(summary=>{if(!summary.hasAttribute('tabindex'))summary.tabIndex=0;});
+  const top=$('.ogos-top-more>summary');if(top&&!top.getAttribute('role'))top.setAttribute('role','button');
+}
+function ogosUi392AfterRender(view){
+  ogosUi392Accessibility();
+  if(view==='settings')ogosUi391ExposeWordPress();
+  if(view==='import'){
+    const gsc=$('#ogosGscFile')?.closest('.field');if(gsc)gsc.hidden=false;
+  }
+}
+const ogosUi390AfterRenderV392Base=ogosUi390AfterRender;
+ogosUi390AfterRender=function(view){const result=ogosUi390AfterRenderV392Base.apply(this,arguments);ogosUi392AfterRender(view);return result;};
+
+
+/* v3.9.2 hardening aggiuntivo */
+function ogosSemanticBrandCandidate392(items,domain){
+  const home=(items||[]).find(item=>comparableUrl(item.path||item.url)==='/');
+  if(home){
+    const title=semanticCleanText(home.seo_title||home.title||'');
+    const parts=title.split(/\s+[|–—-]\s+/).map(x=>x.trim()).filter(Boolean);
+    const candidate=parts.length>1?parts[parts.length-1]:'';
+    if(candidate&&candidate.length>=3&&candidate.length<=55)return candidate;
+  }
+  return ogosInferBrandFromWp392(items,domain);
+}
+ogosInferBrandFromWp392=function(items,domain){
+  const suffixes=new Map();
+  for(const item of items||[]){
+    const title=semanticCleanText(item.seo_title||item.title||'');if(!title)continue;
+    const parts=title.split(/\s+[|–—-]\s+/).map(x=>x.trim()).filter(Boolean);if(parts.length<2)continue;
+    const candidate=parts[parts.length-1];if(candidate.length<3||candidate.length>55)continue;
+    suffixes.set(candidate,(suffixes.get(candidate)||0)+1);
+  }
+  const ranked=[...suffixes.entries()].sort((a,b)=>b[1]-a[1]);
+  if(ranked[0]?.[1]>=2)return ranked[0][0];
+  const existing=semanticCleanText($('#brand')?.value||'');return existing||'';
+};
+ogosLocationFromGeo392=function(value){
+  const raw=semanticCleanText(value||'');if(!raw||/^(italia|italy|europe|europa)$/i.test(raw))return '';
+  const city=raw.split(/\s*\(|,\s*(?:provincia|province|regione|region)\b/i)[0].trim();
+  return /^(italia|italy|lombardia|lazio|piemonte|veneto|toscana|sicilia|sardegna|emilia[- ]romagna)$/i.test(city)?'':city;
+};
+const ogosSemanticFallbackViaWordPress392Base=ogosSemanticFallbackViaWordPress392;
+ogosSemanticFallbackViaWordPress392=async function(domain){
+  return ogosRunExclusiveV3613('l’analisi semantica del dominio',()=>ogosSemanticFallbackViaWordPress392Base(domain),false);
+};
+const ogosAutoFillProjectV392Core=autoFillProjectFromDomain;
+autoFillProjectFromDomain=async function(){
+  const result=await ogosRunExclusiveV3613('l’analisi semantica del dominio',()=>ogosAutoFillProjectV392Core.apply(this,arguments),false);
+  if(result!==false){
+    const geo=$('#geo')?.value||'',city=ogosLocationFromGeo392(geo),brand=$('#brand'),siteName=semanticCleanText($('#siteName')?.value||'');
+    if(city&&$('#city')&&!String($('#city').value||'').trim())$('#city').value=city;
+    if(brand&&!String(brand.value||'').trim()&&siteName&&!/^https?:|\.[a-z]{2,}$/i.test(siteName))brand.value=siteName;
+  }
+  return result;
+};
+const ogosApplyRepairV392Base=applyRepair;
+applyRepair=function(id){
+  const task=(state.tasks||[]).find(row=>String(row.id)===String(id)),before=task?.status;
+  const result=ogosApplyRepairV392Base.apply(this,arguments);
+  if(task&&task.status!==before&&['Completata','Verificata','Da fare','In corso'].includes(task.status)){
+    const target=task.status;recordTaskStatus(task,target);save(true);
+  }
+  return result;
+};
+const ogosPrepareRepairV392Base=prepareRepair;
+prepareRepair=function(id){
+  const task=(state.tasks||[]).find(row=>String(row.id)===String(id));
+  const result=ogosPrepareRepairV392Base.apply(this,arguments);
+  if(task&&task.status==='Da fare'){recordTaskStatus(task,'Da fare');save(true);}
+  return result;
+};
+const freshnessStatusV392Base=freshnessStatus;
+freshnessStatus=function(){
+  const result=freshnessStatusV392Base.apply(this,arguments),source=String(state.audit?.source||'');
+  if(source==='gptsites-live-scan'||source==='gptsites-live-check')result.source='Scansione GPTSites live';
+  else if(source==='wordpress-live'||source==='wordpress-live-check'||source==='wordpress-preflight'||source==='wordpress-verify')result.source='Scansione WordPress live';
+  return result;
+};
 
 init();
 })();
