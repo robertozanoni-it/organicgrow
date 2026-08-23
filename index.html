@@ -221,7 +221,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.11.0',OGOS_SCHEMA_VERSION=1;
+const APP_VERSION='3.11.1',OGOS_SCHEMA_VERSION=1;
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -413,12 +413,24 @@ let renderMap;
 function renderImports(){const l=$('#importList');l.innerHTML=state.imports.map(x=>`<li><div><strong>${esc(x.name)}</strong><small>${esc(x.date)}</small></div><span class="tag">${esc(x.rows)} righe</span></li>`).join('')||'<li class="empty">Nessuna importazione.</li>'}
 function renderSettings(){
  const wpUrl=$('#wpUrl'); if(wpUrl)wpUrl.value=state.wordpress.url||`https://${state.project.domain||''}`;
- $('#themeSelect').value=state.settings.theme;$('#autosave').value=state.settings.autosave;
- const status=$('#wpStatus');status.className=`safe-note ${state.wordpress.connected?'':'warn-note'}`;
- status.textContent=state.wordpress.connected&&state.wordpress.pluginDetected?`Connesso a ${state.wordpress.url||state.project.domain} come ${state.wordpress.userName||'utente WordPress'} · connettore ${state.wordpress.pluginVersion||'rilevato'}${state.wordpress.tokenExpiresAt?` · token fino al ${new Intl.DateTimeFormat('it-IT',{dateStyle:'short'}).format(new Date(state.wordpress.tokenExpiresAt))}`:''}`:state.wordpress.connected&&!state.wordpress.pluginDetected?`Non supportato: autenticazione WordPress riuscita, ma il connettore Organic Growth OS compatibile non è stato rilevato.${state.wordpress.pluginError?` Dettaglio: ${state.wordpress.pluginError}`:''}`:state.wordpress.lastError?`Errore connessione: ${state.wordpress.lastError}`:'Da collegare: premi “Collega WordPress” e accedi nella finestra WordPress.';
- $('#wpDisconnectBtn').disabled=!state.wordpress.connected&&!wpSecret;
- let sync=$('#wpSyncBtn');if(!sync){sync=document.createElement('button');sync.type='button';sync.className='btn';sync.id='wpSyncBtn';sync.textContent='Sincronizza pagine e articoli';$('#wpDisconnectBtn').after(sync);sync.onclick=syncWordPress}sync.disabled=!state.wordpress.connected||!wpSecret;
- const pairBtn=$('#wpPairCodeBtn');if(pairBtn)pairBtn.onclick=()=>exchangeWordPressPairCode($('#wpPairCode').value.trim(),wpPendingState);
+ const themeSel=$('#themeSelect');if(themeSel)themeSel.value=state.settings.theme;
+ const autosaveSel=$('#autosave');if(autosaveSel)autosaveSel.value=state.settings.autosave;
+ /* BUG corretto (3.11.1): da qui in poi ogni controllo veniva dereferenziato
+    senza verificarne l'esistenza. Se anche UNO solo mancava dal DOM — markup
+    piu' vecchio, un tema che riscrive la pagina, un blocco rimosso a mano —
+    renderSettings() sollevava "Cannot set properties of null" a meta' strada:
+    tutto cio' che viene dopo saltava, compreso il codice in fondo alla catena
+    che RICOSTRUISCE i pulsanti mancanti. Risultato: la card WordPress restava
+    senza "Collega WordPress", senza "Disconnetti" e senza campo per il codice
+    monouso, cioe' senza alcun modo di collegare il sito, e l'errore restava
+    invisibile in console. Ora ogni riferimento e' opzionale e il render arriva
+    sempre in fondo. */
+ const status=$('#wpStatus');
+ if(status){status.className=`safe-note ${state.wordpress.connected?'':'warn-note'}`;
+ status.textContent=state.wordpress.connected&&state.wordpress.pluginDetected?`Connesso a ${state.wordpress.url||state.project.domain} come ${state.wordpress.userName||'utente WordPress'} · connettore ${state.wordpress.pluginVersion||'rilevato'}${state.wordpress.tokenExpiresAt?` · token fino al ${new Intl.DateTimeFormat('it-IT',{dateStyle:'short'}).format(new Date(state.wordpress.tokenExpiresAt))}`:''}`:state.wordpress.connected&&!state.wordpress.pluginDetected?`Non supportato: autenticazione WordPress riuscita, ma il connettore Organic Growth OS compatibile non è stato rilevato.${state.wordpress.pluginError?` Dettaglio: ${state.wordpress.pluginError}`:''}`:state.wordpress.lastError?`Errore connessione: ${state.wordpress.lastError}`:'Da collegare: premi “Collega WordPress” e accedi nella finestra WordPress.';}
+ const disconnectBtn=$('#wpDisconnectBtn');if(disconnectBtn)disconnectBtn.disabled=!state.wordpress.connected&&!wpSecret;
+ let sync=$('#wpSyncBtn');if(!sync&&disconnectBtn){sync=document.createElement('button');sync.type='button';sync.className='btn';sync.id='wpSyncBtn';sync.textContent='Sincronizza pagine e articoli';disconnectBtn.after(sync);sync.onclick=syncWordPress}if(sync)sync.disabled=!state.wordpress.connected||!wpSecret;
+ const pairBtn=$('#wpPairCodeBtn');if(pairBtn)pairBtn.onclick=()=>exchangeWordPressPairCode($('#wpPairCode')?.value.trim()||'',wpPendingState);
  const modeSel=$('#ogosIntegrationMode');if(modeSel&&modeSel.value!==(state.integration.mode||'local')){modeSel.value=state.integration.mode||'local';const help=$('#ogosIntegrationModeHelp');if(help)help.textContent={'wordpress-plugin':'Le attività in Sistema (title, meta description, canonical, link interni rotti) mostrano "Applica in automatico" quando il plugin supporta quel tipo di correzione: generano un\'anteprima delle modifiche e scrivono sul sito solo dopo la tua approvazione, sempre annullabile.',gptsites:'Le attività vengono preparate come pacchetti per GPTSites, senza scrivere direttamente su WordPress da qui.',local:'Nessuna scrittura sul sito: le attività restano piani locali da applicare a mano o convertire in un altro modo. Passa a "WordPress + plugin connettore" per le correzioni automatiche con anteprima.'}[modeSel.value]||''}
 }
 function connectorSessionKey(){return `ogos_wp_token_${normalizeProjectDomain(state.project.domain||state.wordpress.url||'')}`}
@@ -482,7 +494,14 @@ async function gptSitesScanPrompt(){const manifest=await createGPTSitesScanPacka
 async function exportGPTSitesScan(){try{saveGPTSites();const manifest=await createGPTSitesScanPackage();downloadJSON(manifest,`organic-growth-os-scan-${state.project.domain}.json`);toast('Richiesta di scansione attuale esportata per GPTSites')}catch(e){toast(`Scansione non preparata: ${e.message}`,'error')}}
 async function copyGPTSitesScan(){try{saveGPTSites();await copyText(await gptSitesScanPrompt())}catch(e){toast(`Prompt scansione non generato: ${e.message}`,'error')}}
 function saveGPTSites(){state.gptsites.projectName=$('#gptProjectName').value.trim();state.gptsites.projectUrl=$('#gptProjectUrl').value.trim();save();toast('Progetto GPTSites associato')}
-function renderIntegrationSettings(){const wpField=$('#wpStatus').closest('.field'),host=wpField.parentElement;let platform=$('#integrationMode');if(!platform){const field=document.createElement('div');field.className='field wide';field.innerHTML=`<label for="integrationMode">Piattaforma del sito</label><select id="integrationMode"><option value="local">Solo dati locali</option><option value="wordpress-plugin">WordPress + plugin connettore</option><option value="gptsites">GPTSites</option></select><small class="help">La modalità scelta determina come vengono preparate e applicate le correzioni.</small>`;host.insertBefore(field,wpField);platform=field.querySelector('select');platform.onchange=e=>{state.integration.mode=e.target.value;save();renderSettings();renderKanban()}}platform.value=state.integration.mode;wpField.hidden=state.integration.mode!=='wordpress-plugin';let gpt=$('#gptSitesPanel');if(!gpt){gpt=document.createElement('div');gpt.id='gptSitesPanel';gpt.className='field wide';gpt.innerHTML=`<label>Collegamento GPTSites</label><div class="panel" style="padding:18px;box-shadow:none"><div class="safe-note">GPTSites utilizza un pacchetto operativo registrato con ID e impronta: la web app standalone non pubblica direttamente.</div><div class="form-grid"><div class="field"><label for="gptProjectName">Nome progetto Sites</label><input id="gptProjectName" placeholder="Es. Sano in Tavola"></div><div class="field"><label for="gptProjectUrl">URL o riferimento progetto</label><input id="gptProjectUrl" placeholder="https://… oppure nome del progetto"></div></div><div class="form-actions" style="justify-content:flex-start"><button type="button" class="btn" id="gptSaveBtn">Associa progetto</button><button type="button" class="btn primary" id="gptExportBtn">Esporta piano GPTSites</button><button type="button" class="btn" id="gptCopyBtn">Copia prompt operativo</button></div><p class="help">L’esito viene accettato solo se corrisponde a un pacchetto esportato e non contiene task o URL estranei.</p></div>`;wpField.after(gpt);$('#gptSaveBtn').onclick=saveGPTSites;$('#gptExportBtn').onclick=()=>exportGPTSites();$('#gptCopyBtn').onclick=async()=>{try{copyText(await gptSitesPrompt())}catch(e){toast(`Prompt non generato: ${e.message}`,'error')}}}gpt.hidden=state.integration.mode!=='gptsites';$('#gptProjectName').value=state.gptsites.projectName||state.project.name;$('#gptProjectUrl').value=state.gptsites.projectUrl||'';if(state.integration.mode==='wordpress-plugin'){const status=$('#wpStatus');if(state.wordpress.pluginDetected){status.className='safe-note';status.textContent=`Plugin connettore rilevato · versione ${state.wordpress.pluginVersion} · ${state.wordpress.capabilities.length} capacità disponibili`}else if(state.wordpress.connected){status.className='safe-note warn-note';status.textContent=`WordPress collegato in lettura, ma il plugin Organic Growth OS non è stato rilevato.${state.wordpress.pluginError?` Dettaglio: ${state.wordpress.pluginError}`:''}`}}}
+function renderIntegrationSettings(){
+ /* 3.11.1: senza la card WordPress nel DOM questa riga sollevava
+    "Cannot read properties of null (reading 'closest')" e fermava il render
+    delle Impostazioni. La card viene ricostruita piu' avanti nella catena:
+    qui usciamo senza rumore e al render successivo troveremo tutto a posto. */
+ const wpStatusEl=$('#wpStatus');const wpField=wpStatusEl?wpStatusEl.closest('.field'):null;
+ if(!wpField||!wpField.parentElement)return;
+ const host=wpField.parentElement;let platform=$('#integrationMode');if(!platform){const field=document.createElement('div');field.className='field wide';field.innerHTML=`<label for="integrationMode">Piattaforma del sito</label><select id="integrationMode"><option value="local">Solo dati locali</option><option value="wordpress-plugin">WordPress + plugin connettore</option><option value="gptsites">GPTSites</option></select><small class="help">La modalità scelta determina come vengono preparate e applicate le correzioni.</small>`;host.insertBefore(field,wpField);platform=field.querySelector('select');platform.onchange=e=>{state.integration.mode=e.target.value;save();renderSettings();renderKanban()}}platform.value=state.integration.mode;wpField.hidden=state.integration.mode!=='wordpress-plugin';let gpt=$('#gptSitesPanel');if(!gpt){gpt=document.createElement('div');gpt.id='gptSitesPanel';gpt.className='field wide';gpt.innerHTML=`<label>Collegamento GPTSites</label><div class="panel" style="padding:18px;box-shadow:none"><div class="safe-note">GPTSites utilizza un pacchetto operativo registrato con ID e impronta: la web app standalone non pubblica direttamente.</div><div class="form-grid"><div class="field"><label for="gptProjectName">Nome progetto Sites</label><input id="gptProjectName" placeholder="Es. Sano in Tavola"></div><div class="field"><label for="gptProjectUrl">URL o riferimento progetto</label><input id="gptProjectUrl" placeholder="https://… oppure nome del progetto"></div></div><div class="form-actions" style="justify-content:flex-start"><button type="button" class="btn" id="gptSaveBtn">Associa progetto</button><button type="button" class="btn primary" id="gptExportBtn">Esporta piano GPTSites</button><button type="button" class="btn" id="gptCopyBtn">Copia prompt operativo</button></div><p class="help">L’esito viene accettato solo se corrisponde a un pacchetto esportato e non contiene task o URL estranei.</p></div>`;wpField.after(gpt);$('#gptSaveBtn').onclick=saveGPTSites;$('#gptExportBtn').onclick=()=>exportGPTSites();$('#gptCopyBtn').onclick=async()=>{try{copyText(await gptSitesPrompt())}catch(e){toast(`Prompt non generato: ${e.message}`,'error')}}}gpt.hidden=state.integration.mode!=='gptsites';$('#gptProjectName').value=state.gptsites.projectName||state.project.name;$('#gptProjectUrl').value=state.gptsites.projectUrl||'';if(state.integration.mode==='wordpress-plugin'){const status=$('#wpStatus');if(state.wordpress.pluginDetected){status.className='safe-note';status.textContent=`Plugin connettore rilevato · versione ${state.wordpress.pluginVersion} · ${state.wordpress.capabilities.length} capacità disponibili`}else if(state.wordpress.connected){status.className='safe-note warn-note';status.textContent=`WordPress collegato in lettura, ma il plugin Organic Growth OS non è stato rilevato.${state.wordpress.pluginError?` Dettaglio: ${state.wordpress.pluginError}`:''}`}}}
 const renderSettingsBase=renderSettings;renderSettings=function(){renderSettingsBase();renderIntegrationSettings()}
 function comparableUrl(value){
   try{
@@ -510,7 +529,7 @@ async function importGPTSitesResult(file){const importProject=projectStorageKey(
   // risolta con una data di completamento passata accanto.
   recordTaskStatus(task, result.outcome==='not_needed'||result.verified?'Verificata':result.applied?'Completata':'In corso');
   task.evidence={status:result.outcome==='blocked'?'unverified':'confirmed',source:'gptsites-live-check',observedAt:new Date().toISOString()};task.gptSitesResult={packageId:pkg.id,outcome:result.outcome,applied:result.applied,verified:result.verified,changedUrls:result.changed_urls,notes:String(result.notes||'')};updated++});if(!updated)throw new Error('Nessun task valido da aggiornare');pkg.usedAt=new Date().toISOString();pkg.resultVersion=String(data.version);state.gptsites.lastResult=pkg.usedAt;state.gptsites.version=String(data.version);state.gptsites.projectUrl=data.deployment_url||state.gptsites.projectUrl;save();renderShell();renderKanban();renderSettings();toast(`Esito GPTSites importato: ${updated} task verificati`)}catch(e){toast(`Importazione GPTSites non riuscita: ${e.message}`,'error')}}
-const renderSettingsIntegrationBase=renderSettings;renderSettings=function(){renderSettingsIntegrationBase();let audit=$('#wpAuditBtn');if(!audit){audit=document.createElement('button');audit.type='button';audit.className='btn primary';audit.id='wpAuditBtn';audit.textContent='Scansiona dati SEO attuali';$('#wpSyncBtn').after(audit);audit.onclick=scanWordPressCurrent}audit.disabled=!state.wordpress.connected||!wpSecret||!state.wordpress.pluginDetected||!state.wordpress.capabilities.includes('live_audit');const panel=$('#gptSitesPanel');if(!panel)return;const actions=$('#gptCopyBtn').parentElement;if(!$('#gptScanBtn')){const scan=document.createElement('button'),copy=document.createElement('button');scan.type=copy.type='button';scan.className='btn primary';copy.className='btn';scan.id='gptScanBtn';copy.id='gptScanCopyBtn';scan.textContent='Esporta richiesta scansione';copy.textContent='Copia prompt scansione';actions.prepend(scan,copy);scan.onclick=exportGPTSitesScan;copy.onclick=copyGPTSitesScan}if($('#gptResultBtn'))return;const input=document.createElement('input'),button=document.createElement('button');input.type='file';input.accept='.json,application/json';input.hidden=true;input.id='gptResultInput';button.type='button';button.className='btn';button.id='gptResultBtn';button.textContent='Importa esito / scansione GPTSites';actions.append(button,input);button.onclick=()=>input.click();input.onchange=e=>e.target.files[0]&&importGPTSitesResult(e.target.files[0])}
+const renderSettingsIntegrationBase=renderSettings;renderSettings=function(){renderSettingsIntegrationBase();let audit=$('#wpAuditBtn');const syncBtn=$('#wpSyncBtn');if(!audit&&syncBtn){audit=document.createElement('button');audit.type='button';audit.className='btn primary';audit.id='wpAuditBtn';audit.textContent='Scansiona dati SEO attuali';syncBtn.after(audit);audit.onclick=scanWordPressCurrent}if(audit)audit.disabled=!state.wordpress.connected||!wpSecret||!state.wordpress.pluginDetected||!state.wordpress.capabilities.includes('live_audit');const panel=$('#gptSitesPanel');if(!panel)return;const actions=$('#gptCopyBtn').parentElement;if(!$('#gptScanBtn')){const scan=document.createElement('button'),copy=document.createElement('button');scan.type=copy.type='button';scan.className='btn primary';copy.className='btn';scan.id='gptScanBtn';copy.id='gptScanCopyBtn';scan.textContent='Esporta richiesta scansione';copy.textContent='Copia prompt scansione';actions.prepend(scan,copy);scan.onclick=exportGPTSitesScan;copy.onclick=copyGPTSitesScan}if($('#gptResultBtn'))return;const input=document.createElement('input'),button=document.createElement('button');input.type='file';input.accept='.json,application/json';input.hidden=true;input.id='gptResultInput';button.type='button';button.className='btn';button.id='gptResultBtn';button.textContent='Importa esito / scansione GPTSites';actions.append(button,input);button.onclick=()=>input.click();input.onchange=e=>e.target.files[0]&&importGPTSitesResult(e.target.files[0])}
 function renderView(v){if(v==='start')renderProject();if(v==='audit')renderAudit();if(v==='fix')renderKanban();if(v==='verify')renderVerify();if(v==='pages')renderPages();if(v==='keyword-proposal')renderKeywordProposalPage();if(v==='map')renderMap();if(v==='import')renderImports();if(v==='settings')renderSettings();renderShell()}
 function contextualLinkParts(){const language=String(window.OGOS_EMBEDDED?.locale||navigator.language||'it').slice(0,2).toLowerCase(),templates={it:['Per approfondire questo argomento, scopri anche ','.'],en:['To explore this topic further, see ','.'],es:['Para profundizar en este tema, descubre también ','.'],fr:['Pour approfondir ce sujet, découvrez également ','.'],de:['Wenn du dieses Thema vertiefen möchtest, lies auch ','.']};return templates[language]||templates.en}
 function proposedCorrectionHtml(item={}){const link=item.changes?.internal_link;if(!link?.target||!link?.anchor)return esc(item.fix||'');const [before,after]=contextualLinkParts(),position=link.position==='after_first_paragraph'?'Dopo il primo paragrafo pertinente':'In fondo al contenuto';return `<div class="proposed-link-change"><span>${esc(item.fix||'Inserisci il link interno')}</span><div class="proposed-sentence"><small>Frase completa proposta</small><p>${esc(before)}<a href="${esc(link.target)}" target="_blank" rel="noopener noreferrer">${esc(link.anchor)}</a>${esc(after)}</p><div class="proposed-link-meta"><span><b>Destinazione:</b> <code>${esc(link.target)}</code></span><span><b>Posizione:</b> ${esc(position)}</span></div></div><small class="help">Se l’anchor è già presente in una frase naturale della pagina, il plugin collega quella stessa occorrenza senza duplicare il testo.</small></div>`}
@@ -921,6 +940,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.11.1', date: '2026-08-23', notes: 'Corretta la schermata Impostazioni che poteva restare senza alcun modo di collegare WordPress: niente pulsante “Collega WordPress”, niente “Disconnetti”, niente campo per il codice monouso. La causa: renderSettings() dereferenziava i controlli della card senza verificarne l’esistenza, quindi bastava che uno solo mancasse dal DOM perché il render si interrompesse a metà — saltando proprio il codice, in fondo alla catena, che avrebbe ricostruito i pulsanti mancanti. L’errore restava invisibile in console. Ora ogni riferimento è opzionale, il ripristino della card gira in un blocco finally (quindi anche se un passaggio precedente fallisce) e la card si ricostruisce da sola quando il markup non c’è: stato, campo URL, pulsanti e codice monouso vengono ricreati. Promemoria: le credenziali WordPress non si inseriscono mai nell’app. Si indica solo l’URL del sito e si preme “Collega WordPress”: l’accesso avviene nella finestra di login di WordPress e torna indietro un token revocabile.', compatibility: 'Nessuna modifica ai dati salvati. Aggiornamento consigliato a chiunque veda la card di connessione incompleta.' },
   { version: '3.11.0', date: '2026-08-23', notes: 'Consolidamento e manutenibilità, senza nuove funzioni. L’analisi semantica del dominio era stata riassegnata sette volte fra la 3.9.1 e la 3.9.7 e “Collega WordPress” tre volte: solo l’ultima versione girava, le altre restavano nel file come codice morto con lock, messaggi ed effetti collaterali propri. Ora c’è una sola implementazione di ciascuna (−170 righe). Le letture paginate dal connettore (inventario completo e campionamento semantico) passano dall’Operation Manager: sono annullabili, hanno un tetto di tempo, si fermano davvero fra una pagina e l’altra e vengono interrotte al cambio progetto o alla chiusura della scheda; due letture non possono più sovrapporsi. Rimosso il blocco CSS “hard fix” della card WordPress: nascondeva il pannello la proprietà .hidden, non una regola CSS, quindi le dichiarazioni !important non avevano nulla da battere. Corretto un errore reale: avviare la scansione SEO da fuori la schermata Impostazioni sollevava “Cannot set properties of null” prima ancora di contattare WordPress. Lato connettore: i redirect non interrogano più il database a ogni visita del sito (indice dei percorsi attivi in un’opzione autoloaded) e il CSS di servizio della bacheca non viene più stampato su ogni pagina admin. Il codice sorgente è ora diviso in 23 moduli con uno script di build che ricompone lo stesso identico file unico.', compatibility: 'Nessuna modifica ai dati salvati né al formato dei backup. Comportamento dell’app invariato: consigliato il connettore 3.11.0 per le due migliorie lato WordPress.' },
   { version: '3.10.1', date: '2026-08-23', notes: 'Correzione del collegamento WordPress quando l’app gira come file locale. Chrome espone location.origin come “file://” mentre l’header Origin realmente inviato al sito è la stringa “null”: il connettore registrava quindi un’origine che non corrispondeva a nessuna richiesta reale. Il pairing sembrava riuscito, ma ogni chiamata REST successiva restava senza header CORS e falliva nel browser, riproducendo l’errore “Il browser blocca la lettura diretta del sito” anche con WordPress collegato. L’app dichiara ora esattamente l’origine che il browser invierà. Corretti inoltre: il campo del codice monouso messo a fuoco dopo la chiusura del popup era quello legacy e non quello visibile nella card della connessione; restava un contenitore di pulsanti vuoto nella card WordPress. Lato connettore: la diagnostica non restituiva origini CORS autorizzate e stato della tabella operazioni (il pannello mostrava due falsi allarmi rossi), il controllo dello schema del database girava a ogni richiesta pubblica, e l’app inclusa nel plugin era ferma a una build precedente.', compatibility: 'Compatibile con i dati e i backup 3.x. Richiede il connettore WordPress 3.10.1 per la correzione dell’origine lato server e per la diagnostica completa; la correzione lato app vale già dalla prossima apertura.' },
   { version: '3.10.0', date: '2026-08-23', notes: 'Hardening della piattaforma standalone: Operation Manager centralizzato, facade Repository/Services/Commands, coordinamento multi-tab con BroadcastChannel e fallback storage, stato online/offline, diagnostica compatibilita browser, PerformanceObserver con budget, campionamento memoria quando disponibile e self-test/fuzz non distruttivi. Il layer non sostituisce i workflow SEO esistenti ma li osserva e fornisce contratti piu stabili per gli sviluppi futuri.', compatibility: 'Compatibile con backup 3.x e con il repository IndexedDB esistente. Le API browser non disponibili degradano in modo esplicito senza bloccare il core.' },
@@ -1913,6 +1933,26 @@ function isBackupOlder(data) {
 }
 
 // ---- Iniezione delle nuove sezioni nell'interfaccia esistente ----
+/* Contenitore in cui aggiungere nuovi campi della schermata Impostazioni.
+   Non usa mai un selettore di discendenza: restituisce solo contenitori che
+   sono figli diretti del pannello, mai una griglia annidata dentro una card. */
+function ogosSettingsFieldHost3111(){
+  const root=$('#view-settings');if(!root)return null;
+  const panel=root.querySelector(':scope > .panel.form-panel')||root.querySelector('.panel.form-panel');
+  if(!panel)return null;
+  const original=panel.querySelector(':scope > .form-grid');
+  if(original)return original;
+  /* Il layout raggruppato 3.9.0 ha gia' rimosso la griglia originale: usiamo una
+     griglia dedicata in coda al layout, sempre fuori da qualunque card. */
+  const layout=panel.querySelector(':scope > .ogos-settings-layout');
+  if(layout){
+    let late=layout.querySelector(':scope > .form-grid.ogos-late-settings-fields');
+    if(!late){late=document.createElement('div');late.className='form-grid ogos-late-settings-fields';layout.append(late);}
+    return late;
+  }
+  const fresh=document.createElement('div');fresh.className='form-grid';panel.append(fresh);return fresh;
+}
+
 function injectExtensions() {
   if ($('#ogosScoreBreakdown')) return; // già iniettato
   const dashboardGrid = $('#view-dashboard .dashboard-grid');
@@ -1954,7 +1994,24 @@ function injectExtensions() {
     note.style.margin = '8px 0 0';
     pagesToolbar.after(note);
   }
-  const settingsGrid = $('#view-settings .form-grid');
+  /* BUG corretto (3.11.1) — ORIGINE del "manca il pulsante Collega WordPress".
+     Qui c'era $('#view-settings .form-grid'): un selettore di DISCENDENZA, che
+     restituisce la PRIMA .form-grid della vista in ordine di documento. Nel
+     markup originale e' quella giusta (figlia diretta del pannello). Ma
+     ogosUi390Settings() sposta i campi nei gruppi e poi fa grid.remove() sulla
+     griglia esterna: da quel momento la prima .form-grid rimasta e' quella
+     ANNIDATA dentro la card del connettore WordPress, accanto al campo URL.
+     I dieci blocchi qui sotto (modalita' di lavoro, crawl, simulazione,
+     confronto siti, ricerca, esportazioni, registri, changelog) finivano
+     quindi DENTRO la card, fra il campo URL e i pulsanti. Con il changelog da
+     solo alto oltre 19.000 px, "Collega WordPress" e "Disconnetti" venivano
+     spinti fuori schermo: la pagina sembrava semplicemente non avere alcun
+     modo di collegare il sito.
+     Si manifestava solo aprendo l'app direttamente sulla schermata
+     Impostazioni (cioe' ricaricando la pagina mentre si e' li'): in
+     quell'ordine la griglia esterna e' gia' stata rimossa quando questo codice
+     gira. Da qui la sua apparente casualita'. */
+  const settingsGrid = ogosSettingsFieldHost3111();
   if (settingsGrid) {
     const modeWrap = document.createElement('div'); modeWrap.className = 'field wide';
     modeWrap.innerHTML = `<label for="ogosIntegrationMode">Modalità di lavoro</label><div class="panel" style="padding:18px;box-shadow:none">
@@ -3860,7 +3917,7 @@ const saveProjectFormV161=saveProjectForm;saveProjectForm=function(event){if(!wi
 const initV160 = init;
 init = function(){state=normalizeState(state);hardenStateV161();state.tasks=reconcileOpenTasksWithHistory(state.tasks||[]);initV160();bindKanbanCarouselV162();const board=$('#kanban');if(board&&!board.dataset.approvalBound){board.dataset.approvalBound='1';board.addEventListener('click',event=>{const button=event.target.closest('.approve-task');if(!button)return;event.preventDefault();approveTaskV164(Number(button.dataset.id))})}const approve=$('#approveAllBtn');if(approve)approve.onclick=()=>{let count=0;state.tasks.forEach(task=>{if(taskIsCompleted(task)||task.status!=='Da approvare')return;const applied=(state.repairs||[]).some(repair=>String(repair.taskId)===String(task.id)&&!repair.undone);recordTaskStatus(task,applied?'Completata':'Da fare');task.approved=true;if(!applied)delete task.partialApply;count++});save(true);renderKanban();renderShell();if(typeof renderVerify==='function')renderVerify();toast(count?`${count} attività approvate`:'Nessuna attività nuova da approvare')};if(window.OGOS_EMBEDDED){const connect=$('#wpBtn'),disconnect=$('#wpDisconnectBtn'),url=$('#wpUrl'),selector=$('#projectSelect');if(connect){connect.disabled=true;connect.textContent='Connesso automaticamente'}if(disconnect)disconnect.hidden=true;if(url){url.value=window.OGOS_EMBEDDED.siteUrl;url.readOnly=true}if(selector)selector.disabled=true}save(true);setTimeout(syncHistoryV161,0)};
 
-function init(){const hadConnectorToken=restoreConnectorToken();hydrateIcons();applyTheme(state.settings.theme);document.addEventListener('click',e=>{const v=e.target.closest('[data-view]');if(v)go(v.dataset.view);if(e.target.closest('[data-close]'))closeModal();const apply=e.target.closest('.apply-repair'),prepare=e.target.closest('.prepare-repair');if(apply)applyRepair(Number(apply.dataset.id));if(prepare)prepareRepair(Number(prepare.dataset.id))});$('#nextBtn').onclick=()=>go($('#nextBtn').dataset.target);$('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');$('#themeBtn').onclick=cycleTheme;$('#exportBtn').onclick=exportData;$('#runAllBtn').onclick=()=>runAudit();$('#auditTools').onclick=e=>{const b=e.target.closest('.audit-tool');if(b)openAuditCategory(Number(b.dataset.audit))};$('#addTaskBtn').onclick=()=>openModal('task');$('#approveAllBtn').onclick=()=>{state.tasks.forEach(t=>{if(!t.approved){t.approved=true;t.status='Da fare'}});save();renderKanban();renderShell();toast('Attività suggerite approvate')};$('#kanban').onchange=e=>{if(e.target.matches('.task-status')){const t=state.tasks.find(x=>x.id===Number(e.target.dataset.id));recordTaskStatus(t,e.target.value);t.approved=t.status!=='Da approvare';if(t.status!=='Completata')delete t.partialApply;save();renderKanban();renderShell();toast('Stato aggiornato')}};$('#kanban').onclick=e=>{const edit=e.target.closest('.edit-task'),show=e.target.closest('.show-pages'),repair=e.target.closest('.repair-task'),undo=e.target.closest('.undo-repair'),id=Number((edit||show||repair||undo)?.dataset.id),task=state.tasks.find(x=>x.id===id);if(edit||show)openModal('task',task);if(repair)openRepair(task);if(undo)undoRepair(id)};$('#pageSearch').oninput=renderPages;$('#pageFilter').onchange=renderPages;$('#autoMatchBtn').onclick=autoMatch;$('#addPageBtn').onclick=()=>openModal('page');$('#pagesBody').onclick=e=>{const edit=e.target.closest('.edit-page'),del=e.target.closest('.delete-page');if(edit)openModal('page',state.pages.find(x=>x.id===Number(edit.dataset.id)));if(del&&confirm('Eliminare questa pagina dall’inventario locale?')){state.pages=state.pages.filter(x=>x.id!==Number(del.dataset.id));save();renderPages();toast('Pagina rimossa')}};$('#addClusterBtn').onclick=()=>openModal('cluster');$('#mapGrid').onclick=e=>{if(e.target.closest('.edit-cluster'))toast('Vista cluster pronta per il prossimo livello di dettaglio')};$('#chooseFileBtn').onclick=()=>$('#fileInput').click();$('#fileInput').onchange=e=>e.target.files[0]&&importFile(e.target.files[0]);const dz=$('#dropZone');['dragenter','dragover'].forEach(x=>dz.addEventListener(x,e=>{e.preventDefault();dz.classList.add('drag')}));['dragleave','drop'].forEach(x=>dz.addEventListener(x,e=>{e.preventDefault();dz.classList.remove('drag')}));dz.addEventListener('drop',e=>e.dataTransfer.files[0]&&importFile(e.dataTransfer.files[0]));$('#themeSelect').onchange=e=>applyTheme(e.target.value);$('#importBackupBtn').onclick=()=>$('#fileInput').click();$('#closeModal').onclick=closeModal;$('#modalBackdrop').onclick=e=>{if(e.target===$('#modalBackdrop'))closeModal()};$('#modalForm').onsubmit=submitModal;document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',()=>{if(state.settings.theme==='system')applyTheme('system')});$('#projectSelect').onchange=e=>switchProject(e.target.value);$('#newAnalysisBtn').onclick=startNewAnalysis;$('#resetBtn').onclick=()=>{if(confirm(`Azzerare l’analisi di ${state.project.domain}? Gli altri siti non verranno modificati.`)){clearCurrentAnalysis();renderView('settings');toast('Analisi del sito azzerata')}};$('#autosave').onchange=e=>{state.settings.autosave=e.target.value;save(true);toast('Preferenza aggiornata')};$('#createPlanBtn').onclick=createOperationalPlan;$('.issue-grid').onclick=e=>{const card=e.target.closest('[data-issue-target]');if(card)openAuditResult(card.dataset.issueTarget)};$('#taskFilter').onchange=()=>{state.ui.issueScope='all';renderKanban()};$('#gptBulkBtn').onclick=()=>exportGPTSites();$('#kanban').addEventListener('change',e=>{if(!e.target.matches('.task-status')||e.target.value!=='Verificata')return;const task=state.tasks.find(t=>t.id===Number(e.target.dataset.id));if(task?.status==='Verificata')return;e.stopImmediatePropagation();e.preventDefault();e.target.value=task?.status||'Completata';toast('Usa “Verifica ora”: lo stato Verificata richiede un controllo reale','error')},true);$('#verifyList').onclick=e=>{const button=e.target.closest('.verify-one');if(button)verifyTask(Number(button.dataset.id))};$('#verifyAllBtn').onclick=verifyAllTasks;$('#projectForm').onsubmit=saveProjectForm;$('#semanticProjectBtn').onclick=autoFillProjectFromDomain;$('#domain').addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();autoFillProjectFromDomain()}});$('#wpBtn').onclick=testWordPress;$('#wpDisconnectBtn').onclick=disconnectWordPress;renderView(state.ui.view||'dashboard');if(hadConnectorToken)verifyRestoredConnector()}
+function init(){const hadConnectorToken=restoreConnectorToken();hydrateIcons();applyTheme(state.settings.theme);document.addEventListener('click',e=>{const v=e.target.closest('[data-view]');if(v)go(v.dataset.view);if(e.target.closest('[data-close]'))closeModal();const apply=e.target.closest('.apply-repair'),prepare=e.target.closest('.prepare-repair');if(apply)applyRepair(Number(apply.dataset.id));if(prepare)prepareRepair(Number(prepare.dataset.id))});$('#nextBtn').onclick=()=>go($('#nextBtn').dataset.target);$('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');$('#themeBtn').onclick=cycleTheme;$('#exportBtn').onclick=exportData;$('#runAllBtn').onclick=()=>runAudit();$('#auditTools').onclick=e=>{const b=e.target.closest('.audit-tool');if(b)openAuditCategory(Number(b.dataset.audit))};$('#addTaskBtn').onclick=()=>openModal('task');$('#approveAllBtn').onclick=()=>{state.tasks.forEach(t=>{if(!t.approved){t.approved=true;t.status='Da fare'}});save();renderKanban();renderShell();toast('Attività suggerite approvate')};$('#kanban').onchange=e=>{if(e.target.matches('.task-status')){const t=state.tasks.find(x=>x.id===Number(e.target.dataset.id));recordTaskStatus(t,e.target.value);t.approved=t.status!=='Da approvare';if(t.status!=='Completata')delete t.partialApply;save();renderKanban();renderShell();toast('Stato aggiornato')}};$('#kanban').onclick=e=>{const edit=e.target.closest('.edit-task'),show=e.target.closest('.show-pages'),repair=e.target.closest('.repair-task'),undo=e.target.closest('.undo-repair'),id=Number((edit||show||repair||undo)?.dataset.id),task=state.tasks.find(x=>x.id===id);if(edit||show)openModal('task',task);if(repair)openRepair(task);if(undo)undoRepair(id)};$('#pageSearch').oninput=renderPages;$('#pageFilter').onchange=renderPages;$('#autoMatchBtn').onclick=autoMatch;$('#addPageBtn').onclick=()=>openModal('page');$('#pagesBody').onclick=e=>{const edit=e.target.closest('.edit-page'),del=e.target.closest('.delete-page');if(edit)openModal('page',state.pages.find(x=>x.id===Number(edit.dataset.id)));if(del&&confirm('Eliminare questa pagina dall’inventario locale?')){state.pages=state.pages.filter(x=>x.id!==Number(del.dataset.id));save();renderPages();toast('Pagina rimossa')}};$('#addClusterBtn').onclick=()=>openModal('cluster');$('#mapGrid').onclick=e=>{if(e.target.closest('.edit-cluster'))toast('Vista cluster pronta per il prossimo livello di dettaglio')};$('#chooseFileBtn').onclick=()=>$('#fileInput').click();$('#fileInput').onchange=e=>e.target.files[0]&&importFile(e.target.files[0]);const dz=$('#dropZone');['dragenter','dragover'].forEach(x=>dz.addEventListener(x,e=>{e.preventDefault();dz.classList.add('drag')}));['dragleave','drop'].forEach(x=>dz.addEventListener(x,e=>{e.preventDefault();dz.classList.remove('drag')}));dz.addEventListener('drop',e=>e.dataTransfer.files[0]&&importFile(e.dataTransfer.files[0]));$('#themeSelect').onchange=e=>applyTheme(e.target.value);$('#importBackupBtn').onclick=()=>$('#fileInput').click();$('#closeModal').onclick=closeModal;$('#modalBackdrop').onclick=e=>{if(e.target===$('#modalBackdrop'))closeModal()};$('#modalForm').onsubmit=submitModal;document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',()=>{if(state.settings.theme==='system')applyTheme('system')});$('#projectSelect').onchange=e=>switchProject(e.target.value);$('#newAnalysisBtn').onclick=startNewAnalysis;$('#resetBtn').onclick=()=>{if(confirm(`Azzerare l’analisi di ${state.project.domain}? Gli altri siti non verranno modificati.`)){clearCurrentAnalysis();renderView('settings');toast('Analisi del sito azzerata')}};$('#autosave').onchange=e=>{state.settings.autosave=e.target.value;save(true);toast('Preferenza aggiornata')};$('#createPlanBtn').onclick=createOperationalPlan;$('.issue-grid').onclick=e=>{const card=e.target.closest('[data-issue-target]');if(card)openAuditResult(card.dataset.issueTarget)};$('#taskFilter').onchange=()=>{state.ui.issueScope='all';renderKanban()};$('#gptBulkBtn').onclick=()=>exportGPTSites();$('#kanban').addEventListener('change',e=>{if(!e.target.matches('.task-status')||e.target.value!=='Verificata')return;const task=state.tasks.find(t=>t.id===Number(e.target.dataset.id));if(task?.status==='Verificata')return;e.stopImmediatePropagation();e.preventDefault();e.target.value=task?.status||'Completata';toast('Usa “Verifica ora”: lo stato Verificata richiede un controllo reale','error')},true);$('#verifyList').onclick=e=>{const button=e.target.closest('.verify-one');if(button)verifyTask(Number(button.dataset.id))};$('#verifyAllBtn').onclick=verifyAllTasks;$('#projectForm').onsubmit=saveProjectForm;$('#semanticProjectBtn').onclick=autoFillProjectFromDomain;$('#domain').addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();autoFillProjectFromDomain()}});/* 3.11.1: i due pulsanti possono non essere ancora nel DOM (markup piu' vecchio, o card ricostruita a runtime). Prima un null qui interrompeva init() PRIMA di renderView(): la prima schermata non veniva nemmeno disegnata. ogosEnsureWpConnectionControls3100() riassegna comunque questi handler a ogni render della vista Impostazioni. */const wpConnectBtnInit=$('#wpBtn');if(wpConnectBtnInit)wpConnectBtnInit.onclick=testWordPress;const wpDisconnectBtnInit=$('#wpDisconnectBtn');if(wpDisconnectBtnInit)wpDisconnectBtnInit.onclick=disconnectWordPress;renderView(state.ui.view||'dashboard');if(hadConnectorToken)verifyRestoredConnector()}
 /* #endregion module:task-history-wordpress-runtime */
 
 /* #region module:seo-operational-workflows */
@@ -10709,9 +10766,53 @@ setTimeout(()=>{ogosUpdateNetworkUi310();ogosSampleHeap310('startup');if(typeof 
 /* ==========================================================================
    v3.10.0 — FIX FINALE CONNESSIONE WORDPRESS SEMPRE VISIBILE
    ========================================================================== */
+/* 3.11.1 — La card di connessione si ricostruisce da sola.
+
+   Fino alla 3.11.0 questa funzione usciva subito se #wpStatus o #wpUrl non
+   erano nel DOM: presupponeva cioe' che il markup della card ci fosse gia'.
+   Ma e' proprio quando quel markup manca che serve — ed e' successo: una
+   pagina Impostazioni senza pulsante "Collega WordPress", senza "Disconnetti"
+   e senza campo per il codice monouso, quindi senza alcun modo di collegare
+   il sito. Ora, invece di arrendersi, ricrea i pezzi mancanti: la card e' un
+   percorso critico e deve esistere in ogni caso. */
+function ogosEnsureWpConnectionCard3111(){
+  const root=$('#view-settings');
+  if(!root)return null;
+  let status=$('#wpStatus');
+  let panel=status?status.parentElement:null;
+  if(!panel){
+    /* Nessuna card: la costruiamo dentro il gruppo Connessioni, o in coda alla
+       vista se anche quello manca. */
+    const host=root.querySelector('details[data-group="connections"] > .ogos-settings-group-content')
+      ||root.querySelector('.panel.form-panel .form-grid')||root;
+    const field=document.createElement('div');
+    field.className='field wide';
+    field.innerHTML='<label>Connettore WordPress</label><div class="panel" style="padding:18px;box-shadow:none">'
+      +'<div id="wpStatus" class="safe-note warn-note">Non collegato</div>'
+      +'<div class="form-grid"><div class="field wide"><label for="wpUrl">URL WordPress</label>'
+      +'<input id="wpUrl" type="url" placeholder="https://esempio.it">'
+      +'<small class="help">Inserisci l’indirizzo HTTPS del sito, senza /wp-admin. La password admin viene inserita soltanto nella schermata di login WordPress e non passa mai attraverso Organic Growth OS.</small>'
+      +'</div></div></div>';
+    host.prepend(field);
+    status=field.querySelector('#wpStatus');
+    panel=status.parentElement;
+  }
+  if(!$('#wpUrl')){
+    const grid=document.createElement('div');
+    grid.className='form-grid';
+    grid.innerHTML='<div class="field wide"><label for="wpUrl">URL WordPress</label>'
+      +'<input id="wpUrl" type="url" placeholder="https://esempio.it">'
+      +'<small class="help">Inserisci l’indirizzo HTTPS del sito, senza /wp-admin.</small></div>';
+    status.after(grid);
+  }
+  const input=$('#wpUrl');
+  if(input&&!input.value)input.value=state.wordpress?.url||(state.project?.domain?`https://${state.project.domain}`:'');
+  return status;
+}
+
 function ogosEnsureWpConnectionControls3100(){
   const root=$('#view-settings');
-  const status=$('#wpStatus');
+  const status=ogosEnsureWpConnectionCard3111();
   const input=$('#wpUrl');
   if(!root||!status||!input)return false;
 
@@ -10728,6 +10829,23 @@ function ogosEnsureWpConnectionControls3100(){
 
   const panel=status.parentElement;
   if(panel)panel.classList.add('ogos-wp-primary-card3100');
+
+  /* Protezione (3.11.1): la card deve contenere SOLO i controlli di
+     connessione. Se un blocco estraneo finisce nella griglia accanto al campo
+     URL — e' successo con il changelog, alto 19.000 px, che spingeva i
+     pulsanti fuori schermo — lo rimettiamo fuori, subito dopo la card, invece
+     di lasciare che renda inutilizzabile l'unico percorso per collegare
+     WordPress. */
+  const urlGridGuard=input.closest('.form-grid');
+  if(urlGridGuard&&panel&&urlGridGuard.parentElement===panel){
+    const urlFieldGuard=input.closest('.field');
+    [...urlGridGuard.children].forEach(child=>{
+      if(child===urlFieldGuard)return;
+      const host=wpField.parentElement;
+      if(host)host.insertBefore(child,wpField.nextSibling);
+      if(typeof ogosLoggerV371!=='undefined')ogosLoggerV371.warn('ui','wp-card-evict',{moved:child.id||child.className||child.tagName});
+    });
+  }
 
   let button=$('#wpBtn'),disconnect=$('#wpDisconnectBtn');
   if(!button){button=document.createElement('button');button.type='button';button.id='wpBtn';button.className='btn primary';}
@@ -10822,10 +10940,20 @@ async function testWordPress(){
   }
 }
 
+/* 3.11.1: il ripristino della card gira in un finally. Se un passaggio
+   precedente del render solleva un errore (un controllo assente, un'estensione
+   che tocca il DOM), la pagina resta comunque collegabile invece di fermarsi a
+   meta'; l'errore viene propagato dopo, cosi' non lo nascondiamo. */
 const ogosRenderSettingsWpVisible3100Base=renderSettings;
-renderSettings=function(){const result=ogosRenderSettingsWpVisible3100Base.apply(this,arguments);ogosEnsureWpConnectionControls3100();return result;};
+renderSettings=function(){
+  try{return ogosRenderSettingsWpVisible3100Base.apply(this,arguments);}
+  finally{try{ogosEnsureWpConnectionControls3100();}catch(error){if(typeof ogosLoggerV371!=='undefined')ogosLoggerV371.warn('wordpress','connection-card',{message:error?.message||String(error)});}}
+};
 const ogosRenderViewWpVisible3100Base=renderView;
-renderView=function(view){const result=ogosRenderViewWpVisible3100Base.apply(this,arguments);if(view==='settings')ogosEnsureWpConnectionControls3100();return result;};
+renderView=function(view){
+  try{return ogosRenderViewWpVisible3100Base.apply(this,arguments);}
+  finally{if(view==='settings'){try{ogosEnsureWpConnectionControls3100();}catch(error){if(typeof ogosLoggerV371!=='undefined')ogosLoggerV371.warn('wordpress','connection-card',{message:error?.message||String(error)});}}}
+};
 
 
 function ogosOpenWordPressConnection3100({start=false}={}){
@@ -10938,7 +11066,7 @@ window.OGOSCommands=Object.freeze({...OGOSCommands,
 /* #endregion module:wordpress-connection */
 /* #region module:bootstrap */
 
-window.OGOS_WP_FIX_BUILD="3.11.0-wp-cors-origin-fix";
+window.OGOS_WP_FIX_BUILD="3.11.1-wp-connection-selfheal";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
