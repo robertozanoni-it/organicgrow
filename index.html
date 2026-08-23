@@ -174,7 +174,7 @@ main{padding:calc(var(--top) + 24px) 24px 50px}.view{max-width:1320px}.page-head
 <div class="modal-backdrop" id="modalBackdrop" role="presentation"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1"><div class="modal-head"><div><h2 id="modalTitle">Nuova attività</h2><p class="help" id="modalHelp"></p></div><button class="icon-btn" id="closeModal" aria-label="Chiudi"><svg data-icon="x"></svg></button></div><form id="modalForm"></form></div></div>
 <div class="toast-wrap" id="toasts" aria-live="polite"></div>
 <script>
-window.__OGOS_BUILD_MANIFEST__={"schemaVersion":1,"modules":[{"id":"core-state-ui","file":"00-core-state-ui.js","responsibility":"Bootstrap, stato normalizzato, persistenza di base e shell UI.","dependsOn":[],"publicApi":["normalizeState","save","renderView","toast"]},{"id":"audit-data-connectors","file":"10-audit-data-connectors.js","responsibility":"Audit, importazioni, Search Console e connettori dati.","dependsOn":["core-state-ui"],"publicApi":["renderAudit","runAudit","downloadGlobalReport"]},{"id":"indexing-and-crawl","file":"20-indexing-and-crawl.js","responsibility":"Registro URL, sitemap, classificazione e viste di indicizzazione.","dependsOn":["audit-data-connectors"],"publicApi":["renderIndexing","runIndexingAnalysis","idxClassify"]},{"id":"operational-seo-reports","file":"21-operational-seo-reports.js","responsibility":"Report pagina per pagina, internal linking e azioni SEO granulari.","dependsOn":["indexing-and-crawl"],"publicApi":["internalLinkProposals","auditCategoryContent","showKeywordProposal"]},{"id":"task-history-wordpress-runtime","file":"22-task-history-wordpress-runtime.js","responsibility":"Storico attività, deduplicazione operativa e bootstrap WordPress/crawl.","dependsOn":["operational-seo-reports"],"publicApi":["taskIsCompleted","pendingOperationalItem","recordTaskStatus"]},{"id":"seo-operational-workflows","file":"30-seo-and-operational-workflows.js","responsibility":"Task SEO, approvazione, applicazione e flussi operativi.","dependsOn":["task-history-wordpress-runtime"],"publicApi":["renderKanban","taskCard","applyPluginTaskSingle"]},{"id":"platform-performance","file":"40-platform-performance.js","responsibility":"Persistenza differita, REST, concorrenza e ottimizzazioni di rendering.","dependsOn":["seo-operational-workflows"],"publicApi":["ogosFlushRegistry","ogosScheduleDataSaveV351"]},{"id":"seo-copy-foundation","file":"50-seo-copy-foundation.js","responsibility":"Normalizzazione editoriale, intenzione, copy di base e topical map.","dependsOn":["platform-performance"],"publicApi":["ogosNeedEvidenceV341","ogosSeoCopyFromPage"]},{"id":"seo-quality-engine","file":"51-seo-quality-engine.js","responsibility":"Ruoli distinti di Title/H1/meta e scoring qualitativo.","dependsOn":["seo-copy-foundation"],"publicApi":["ogosQualitaCopyV343","ogosSeoCopyFromPage"]},{"id":"seo-reconciliation-ui","file":"52-seo-reconciliation-ui.js","responsibility":"Riconciliazione problemi aperti, conteggi e interfaccia delle proposte.","dependsOn":["seo-quality-engine"],"publicApi":["ogosRiconciliaProblemiApertiV343","ogosConteggioProblemiApertiV344"]},{"id":"seo-reliability-import","file":"53-seo-reliability-import.js","responsibility":"Affidabilità delle prove, importazioni e varianti editoriali.","dependsOn":["seo-reconciliation-ui"],"publicApi":["ogosDataCompletamentoV345","ogosHandleImportFilesV345"]},{"id":"crawl-quality-runtime","file":"54-crawl-quality-runtime.js","responsibility":"Crawl riprendibile, metriche, guardie finali e qualità multisettore.","dependsOn":["seo-reliability-import"],"publicApi":["ogosRunResumableCrawlV347","onPageCandidateRowsV1616"]},{"id":"fast-ui-caches","file":"60-fast-ui-and-caches.js","responsibility":"Cache limitate, rendering selettivo e navigazione rapida.","dependsOn":["crawl-quality-runtime"],"publicApi":["ogosInvalidatePerformanceCachesV352"]},{"id":"workflow-safety","file":"70-workflow-safety.js","responsibility":"Batch WordPress, rollback, idempotenza e protezione delle operazioni.","dependsOn":["fast-ui-caches"],"publicApi":["ogosRunExclusiveV3613","applyPluginTaskSingle"]},{"id":"current-features","file":"80-current-features.js","responsibility":"Selezione multipla, archivio, lingua italiana e analisi azionabile.","dependsOn":["workflow-safety"],"publicApi":["cannibalizationFromGsc","ogosOpenInvolvedPagesV3618"]},{"id":"inventory-repository","file":"85-indexeddb-inventory-repository.js","responsibility":"Persistenza ibrida degli inventari grandi in IndexedDB con fallback sicuro.","dependsOn":["current-features"],"publicApi":["OGOSInventoryRepository","ogosHydrateInventoryV380"]},{"id":"foundation-diagnostics","file":"90-foundation-diagnostics.js","responsibility":"Registro runtime, logger limitato, health check e bootstrap osservabile.","dependsOn":["inventory-repository"],"publicApi":["OGOSRuntime","ogosRunHealthCheckV371"]}]};
+window.__OGOS_BUILD_MANIFEST__={"schemaVersion":1,"modules":[{"id":"core-state-ui","file":"00-core-state-ui.js","responsibility":"Bootstrap, stato normalizzato, persistenza di base e shell UI.","dependsOn":[],"publicApi":["normalizeState","save","renderView","toast"]},{"id":"audit-data-connectors","file":"10-audit-data-connectors.js","responsibility":"Audit, importazioni, Search Console e connettori dati.","dependsOn":["core-state-ui"],"publicApi":["renderAudit","runAudit","downloadGlobalReport"]},{"id":"indexing-and-crawl","file":"20-indexing-and-crawl.js","responsibility":"Registro URL, sitemap, classificazione e viste di indicizzazione.","dependsOn":["audit-data-connectors"],"publicApi":["renderIndexing","runIndexingAnalysis","idxClassify"]},{"id":"operational-seo-reports","file":"21-operational-seo-reports.js","responsibility":"Report pagina per pagina, internal linking e azioni SEO granulari.","dependsOn":["indexing-and-crawl"],"publicApi":["internalLinkProposals","auditCategoryContent","showKeywordProposal"]},{"id":"task-history-wordpress-runtime","file":"22-task-history-wordpress-runtime.js","responsibility":"Storico attività, deduplicazione operativa e bootstrap WordPress/crawl.","dependsOn":["operational-seo-reports"],"publicApi":["taskIsCompleted","pendingOperationalItem","recordTaskStatus"]},{"id":"seo-operational-workflows","file":"30-seo-and-operational-workflows.js","responsibility":"Task SEO, approvazione, applicazione e flussi operativi.","dependsOn":["task-history-wordpress-runtime"],"publicApi":["renderKanban","taskCard","applyPluginTaskSingle"]},{"id":"platform-performance","file":"40-platform-performance.js","responsibility":"Persistenza differita, REST, concorrenza e ottimizzazioni di rendering.","dependsOn":["seo-operational-workflows"],"publicApi":["ogosFlushRegistry","ogosScheduleDataSaveV351"]},{"id":"seo-copy-foundation","file":"50-seo-copy-foundation.js","responsibility":"Normalizzazione editoriale, intenzione, copy di base e topical map.","dependsOn":["platform-performance"],"publicApi":["ogosNeedEvidenceV341","ogosSeoCopyFromPage"]},{"id":"seo-quality-engine","file":"51-seo-quality-engine.js","responsibility":"Ruoli distinti di Title/H1/meta e scoring qualitativo.","dependsOn":["seo-copy-foundation"],"publicApi":["ogosQualitaCopyV343","ogosSeoCopyFromPage"]},{"id":"seo-reconciliation-ui","file":"52-seo-reconciliation-ui.js","responsibility":"Riconciliazione problemi aperti, conteggi e interfaccia delle proposte.","dependsOn":["seo-quality-engine"],"publicApi":["ogosRiconciliaProblemiApertiV343","ogosConteggioProblemiApertiV344"]},{"id":"seo-reliability-import","file":"53-seo-reliability-import.js","responsibility":"Affidabilità delle prove, importazioni e varianti editoriali.","dependsOn":["seo-reconciliation-ui"],"publicApi":["ogosDataCompletamentoV345","ogosHandleImportFilesV345"]},{"id":"crawl-quality-runtime","file":"54-crawl-quality-runtime.js","responsibility":"Crawl riprendibile, metriche, guardie finali e qualità multisettore.","dependsOn":["seo-reliability-import"],"publicApi":["ogosRunResumableCrawlV347","onPageCandidateRowsV1616"]},{"id":"fast-ui-caches","file":"60-fast-ui-and-caches.js","responsibility":"Cache limitate, rendering selettivo e navigazione rapida.","dependsOn":["crawl-quality-runtime"],"publicApi":["ogosInvalidatePerformanceCachesV352"]},{"id":"workflow-safety","file":"70-workflow-safety.js","responsibility":"Batch WordPress, rollback, idempotenza e protezione delle operazioni.","dependsOn":["fast-ui-caches"],"publicApi":["ogosRunExclusiveV3613","applyPluginTaskSingle"]},{"id":"current-features","file":"80-current-features.js","responsibility":"Selezione multipla, archivio, lingua italiana e analisi azionabile.","dependsOn":["workflow-safety"],"publicApi":["cannibalizationFromGsc","ogosOpenInvolvedPagesV3618"]},{"id":"inventory-repository","file":"85-indexeddb-inventory-repository.js","responsibility":"Persistenza ibrida degli inventari grandi in IndexedDB con fallback sicuro.","dependsOn":["current-features"],"publicApi":["OGOSInventoryRepository","ogosHydrateInventoryV380"]},{"id":"foundation-diagnostics","file":"90-foundation-diagnostics.js","responsibility":"Registro runtime, logger limitato, health check e bootstrap osservabile.","dependsOn":["inventory-repository"],"publicApi":["OGOSRuntime","ogosRunHealthCheckV371"]},{"id":"platform-hardening","file":"95-platform-hardening.js","responsibility":"Compatibilità browser, coordinamento multi-tab, offline, performance budget, facade operative e self-test.","dependsOn":["foundation-diagnostics"],"publicApi":["OGOSHardening","OGOSOperationManager","OGOSRepositories","OGOSServices","OGOSCommands"]}]};
 
 /* #region module:core-state-ui */
 (()=>{'use strict';
@@ -203,7 +203,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.9.12',OGOS_SCHEMA_VERSION=1;let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
+const APP_VERSION='3.10.0',OGOS_SCHEMA_VERSION=1;let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
 function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.schemaVersion=OGOS_SCHEMA_VERSION;value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 /* Il registro viene letto prima dell'inizializzazione dell'interfaccia. Se il
@@ -880,6 +880,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.10.0', date: '2026-08-23', notes: 'Hardening della piattaforma standalone: Operation Manager centralizzato, facade Repository/Services/Commands, coordinamento multi-tab con BroadcastChannel e fallback storage, stato online/offline, diagnostica compatibilita browser, PerformanceObserver con budget, campionamento memoria quando disponibile e self-test/fuzz non distruttivi. Il layer non sostituisce i workflow SEO esistenti ma li osserva e fornisce contratti piu stabili per gli sviluppi futuri.', compatibility: 'Compatibile con backup 3.x e con il repository IndexedDB esistente. Le API browser non disponibili degradano in modo esplicito senza bloccare il core.' },
   { version: '3.9.12', date: '2026-08-23', notes: 'Audit end-to-end esteso e cambio progetto IndexedDB atomico. I progetti con inventario esteso vengono ora idratati prima del primo render della dashboard, evitando stati intermedi con pages vuoto e riducendo il rischio di salvataggi o rendering prematuri. Verificati inoltre 126 scenari runtime, recovery da storage corrotto, concorrenza del repository, deduplicazione import/sync, cicli ripetuti di modali e navigazione, transizioni stato e failure path.', compatibility: 'Compatibile con backup 3.x e con il repository IndexedDB esistente. Nessuna modifica allo schema dati.' },
   { version: '3.9.11', date: '2026-08-23', notes: 'Serializzato il flush IndexedDB: timer, cambio progetto, pagehide e idratazione non possono più avviare scritture concorrenti. L’idratazione attende anche un flush già partito, non soltanto le righe ancora presenti nella coda. Le nuove scritture arrivate durante un flush vengono conservate e pianificate per il ciclo successivo.', compatibility: 'Correzione di concorrenza senza modifiche al formato dati.' },
   { version: '3.9.10', date: '2026-08-23', notes: 'Chiuso un race condition del repository IndexedDB: tornando rapidamente a un progetto grande mentre la sua revisione era ancora nella coda differita, il marker poteva risultare più recente del record IndexedDB e lasciare temporaneamente l’inventario vuoto. L’idratazione ora completa prima la scrittura pendente della stessa revisione e legge solo dopo uno stato coerente.', compatibility: 'Aggiornamento raccomandato per progetti oltre 10.000 URL e per chi cambia spesso sito dal selettore.' },
@@ -10661,6 +10662,140 @@ switchProject=function(value){
     renderShell();renderProjectSelector();return false;
   });
 };
+
+
+/* ========================================================================== 
+   v3.10.0 — platform hardening: operazioni, multi-tab, offline, performance
+   ========================================================================== */
+const OGOS_FEATURE_DEFAULTS_310=Object.freeze({
+  broadcastSync:true,networkAwareness:true,performanceObserver:true,selfTests:true,
+  memorySampling:true,operationManager:true,compatibilityDiagnostics:true
+});
+const OGOSFeatureFlags=Object.freeze({...OGOS_FEATURE_DEFAULTS_310,...(window.OGOS_FEATURE_FLAGS||{})});
+window.OGOSFeatureFlags=OGOSFeatureFlags;
+
+const ogosPerf310={renders:[],longTasks:[],resources:[],heap:[],startedAt:Date.now(),budget:{renderMs:180,longTaskMs:50,heapGrowthMb:32}};
+function ogosPerfPush310(key,value,limit=120){const list=ogosPerf310[key];if(!Array.isArray(list))return;list.push(value);if(list.length>limit)list.splice(0,list.length-limit);}
+function ogosSampleHeap310(label='sample'){
+  if(!OGOSFeatureFlags.memorySampling||!performance?.memory)return null;
+  const row={at:Date.now(),label,used:performance.memory.usedJSHeapSize,total:performance.memory.totalJSHeapSize};ogosPerfPush310('heap',row,60);return row;
+}
+if(OGOSFeatureFlags.performanceObserver&&typeof PerformanceObserver!=='undefined'){
+  try{const po=new PerformanceObserver(list=>list.getEntries().forEach(e=>{if(e.duration>=ogosPerf310.budget.longTaskMs)ogosPerfPush310('longTasks',{name:e.name,start:e.startTime,duration:e.duration});}));po.observe({entryTypes:['longtask']});}catch{}
+  try{const poRes=new PerformanceObserver(list=>list.getEntries().forEach(e=>{if(e.duration>1000)ogosPerfPush310('resources',{name:e.name,duration:e.duration,initiatorType:e.initiatorType});}));poRes.observe({entryTypes:['resource']});}catch{}
+}
+const ogosRenderView310Base=renderView;
+renderView=function(view){const start=performance.now();const result=ogosRenderView310Base.apply(this,arguments);const duration=performance.now()-start;ogosPerfPush310('renders',{view,duration,at:Date.now()});if(duration>ogosPerf310.budget.renderMs&&typeof ogosLoggerV371!=='undefined')ogosLoggerV371.warn('performance','slow-render',{view,duration:Math.round(duration)});return result;};
+
+const OGOSOperationManager=(()=>{
+  const active=new Map(),history=[];
+  const finish=row=>{history.push(row);if(history.length>100)history.splice(0,history.length-100);};
+  async function run(key,fn,{timeoutMs=0,replace=false,meta={}}={}){
+    key=String(key||'operation');
+    if(active.has(key)){
+      if(!replace)throw Object.assign(new Error(`Operazione gia in corso: ${key}`),{code:'OGOS_OPERATION_BUSY'});
+      try{active.get(key).controller.abort('replaced');}catch{}
+    }
+    const controller=new AbortController(),startedAt=Date.now(),row={key,startedAt,meta,status:'running'};active.set(key,{controller,row});
+    let timer=null;
+    if(timeoutMs>0)timer=setTimeout(()=>controller.abort('timeout'),timeoutMs);
+    try{
+      const work=Promise.resolve().then(()=>fn({signal:controller.signal,key}));
+      const aborted=new Promise((_,reject)=>{controller.signal.addEventListener('abort',()=>reject(Object.assign(new Error(controller.signal.reason==='timeout'?`Timeout operazione: ${key}`:`Operazione annullata: ${key}`),{name:'AbortError',code:controller.signal.reason==='timeout'?'OGOS_OPERATION_TIMEOUT':'OGOS_OPERATION_ABORTED'})),{once:true});});
+      const value=await Promise.race([work,aborted]);row.status='completed';row.finishedAt=Date.now();row.duration=row.finishedAt-startedAt;finish({...row});return value;
+    }
+    catch(error){row.status=controller.signal.aborted?'aborted':'failed';row.error=error?.message||String(error);row.finishedAt=Date.now();row.duration=row.finishedAt-startedAt;finish({...row});throw error;}
+    finally{if(timer)clearTimeout(timer);if(active.get(key)?.controller===controller)active.delete(key);}
+  }
+  return Object.freeze({run,abort:key=>{const a=active.get(String(key));if(!a)return false;a.controller.abort('manual');return true;},isActive:key=>active.has(String(key)),active:()=>[...active.values()].map(x=>({...x.row})),history:()=>history.slice(-50)});
+})();
+window.OGOSOperationManager=OGOSOperationManager;
+
+const OGOSRepositories=Object.freeze({
+  project:Object.freeze({
+    current:()=>state,
+    key:()=>projectStorageKey(state.project),
+    registry:()=>projectRegistry(),
+    save:(force=true)=>save(force),
+    switch:value=>switchProject(value)
+  }),
+  inventory:Object.freeze({
+    status:()=>typeof OGOSInventoryRepository!=='undefined'?OGOSInventoryRepository.status():{engine:'memory',status:'unavailable',count:(state.pages||[]).length},
+    hydrate:()=>typeof ogosHydrateInventoryV380==='function'?ogosHydrateInventoryV380(state):Promise.resolve(true),
+    get:key=>typeof OGOSInventoryRepository!=='undefined'?OGOSInventoryRepository.get(key):Promise.resolve(null),
+    put:(key,pages,revision)=>typeof OGOSInventoryRepository!=='undefined'?OGOSInventoryRepository.put(key,pages,revision):Promise.resolve(false)
+  })
+});
+const ogosWpRequest310Base=wpRequest;
+wpRequest=async function(path,options={}){if(OGOSFeatureFlags.networkAwareness&&navigator.onLine===false)throw Object.assign(new Error('Connessione assente: questa operazione WordPress richiede internet. I dati locali restano disponibili.'),{status:0,code:'OGOS_OFFLINE'});return ogosWpRequest310Base.apply(this,arguments);};
+
+const OGOSServices=Object.freeze({
+  wordpress:Object.freeze({request:(path,options)=>wpRequest(path,options),connected:()=>!!state.wordpress?.connected,capabilities:()=>[...(state.wordpress?.capabilities||[])]}),
+  network:Object.freeze({online:()=>navigator.onLine!==false})
+});
+const OGOSCommands=Object.freeze({
+  applyTask:id=>applyPluginTaskSingle(Number(id)),verifyTask:id=>verifyTask(Number(id)),rollbackTask:id=>undoRepair(Number(id)),
+  crawl:()=>runWordPressCrawl(),scanWordPress:()=>scanWordPressCurrent(),importSearchConsole:files=>importSearchConsoleCSV(files)
+});
+window.OGOSRepositories=OGOSRepositories;window.OGOSServices=OGOSServices;window.OGOSCommands=OGOSCommands;
+
+let ogosNetworkOnline310=navigator.onLine!==false;
+function ogosNetworkStatus310(){return {online:ogosNetworkOnline310,checkedAt:new Date().toISOString()};}
+function ogosEnsureNetworkBadge310(){
+  const host=$('.top-actions');if(!host)return null;let badge=$('#ogosNetworkBadge310');if(!badge){badge=document.createElement('span');badge.id='ogosNetworkBadge310';badge.className='tag';badge.setAttribute('role','status');badge.setAttribute('aria-live','polite');host.prepend(badge);}return badge;
+}
+function ogosUpdateNetworkUi310(){
+  const badge=ogosEnsureNetworkBadge310();if(badge){badge.textContent=ogosNetworkOnline310?'Online':'Offline';badge.title=ogosNetworkOnline310?'Connessione disponibile':'Modalita offline: le funzioni locali restano disponibili';badge.className=`tag ${ogosNetworkOnline310?'':'high'}`;}
+  if(!ogosNetworkOnline310){['#wpBtn','#wpSyncBtn','#wpAuditBtn','#ogosCrawlBtn','#ogosRedirectsBtn','#ogosDiagBtn'].forEach(sel=>{const b=$(sel);if(b){b.disabled=true;b.dataset.ogosOfflineDisabled='1';b.title='Richiede una connessione di rete';}});}
+  else if($('#view-settings')?.classList.contains('active')){try{renderSettings();}catch{}}
+}
+if(OGOSFeatureFlags.networkAwareness){window.addEventListener('online',()=>{ogosNetworkOnline310=true;ogosUpdateNetworkUi310();toast('Connessione ripristinata');});window.addEventListener('offline',()=>{ogosNetworkOnline310=false;ogosUpdateNetworkUi310();toast('Sei offline: le funzioni locali restano disponibili','error');});}
+
+let ogosBroadcast310=null,ogosExternalChange310=null;const ogosBroadcastSeen310=new Map();
+function ogosBroadcastMessage310(type,payload={}){const message={id:`msg_${Date.now()}_${Math.random().toString(36).slice(2)}`,type,payload,writer:typeof ogosWriterIdV3612!=='undefined'?ogosWriterIdV3612:'tab',at:Date.now()};try{ogosBroadcast310?.postMessage(message);}catch{}try{localStorage.setItem('__ogos_broadcast_310',JSON.stringify(message));localStorage.removeItem('__ogos_broadcast_310');}catch{}}
+function ogosReceiveBroadcast310(message){if(!message||message.writer===(typeof ogosWriterIdV3612!=='undefined'?ogosWriterIdV3612:'tab'))return;if(message.id){if(ogosBroadcastSeen310.has(message.id))return;ogosBroadcastSeen310.set(message.id,Date.now());if(ogosBroadcastSeen310.size>100){const oldest=[...ogosBroadcastSeen310.entries()].sort((a,b)=>a[1]-b[1]).slice(0,30);oldest.forEach(([id])=>ogosBroadcastSeen310.delete(id));}}const key=message.payload?.projectKey;if(key&&key===projectStorageKey(state.project)){ogosExternalChange310={...message};if(typeof ogosLoggerV371!=='undefined')ogosLoggerV371.warn('multitab','external-change',{type:message.type,projectKey:key});toast('Questo progetto e stato aggiornato in un’altra scheda. Prima di modificare, ricarica o cambia progetto.','error');}}
+if(OGOSFeatureFlags.broadcastSync){
+  if(typeof BroadcastChannel!=='undefined'){try{ogosBroadcast310=new BroadcastChannel('organic-growth-os-sync-v1');ogosBroadcast310.onmessage=e=>ogosReceiveBroadcast310(e.data);}catch{}}
+  window.addEventListener('storage',e=>{if(e.key==='__ogos_broadcast_310'&&e.newValue)try{ogosReceiveBroadcast310(JSON.parse(e.newValue));}catch{}});
+}
+const ogosSave310Base=save;
+save=function(force=false){const result=ogosSave310Base.apply(this,arguments);if(result!==false&&OGOSFeatureFlags.broadcastSync)ogosBroadcastMessage310('project-saved',{projectKey:projectStorageKey(state.project),revision:projectRegistry()?._revision||0});return result;};
+const ogosSwitchProject310Base=switchProject;
+switchProject=function(value){const result=ogosSwitchProject310Base.apply(this,arguments);Promise.resolve(result).then(ok=>{if(ok!==false&&value&&value!=='__new__')ogosBroadcastMessage310('project-switched',{projectKey:String(value)});}).catch(()=>{});return result;};
+
+function ogosCompatibility310(){
+  const features={indexedDB:typeof indexedDB!=='undefined',broadcastChannel:typeof BroadcastChannel!=='undefined',decompressionStream:typeof DecompressionStream!=='undefined',cryptoSubtle:!!crypto?.subtle,randomUUID:typeof crypto?.randomUUID==='function',abortController:typeof AbortController!=='undefined',performanceObserver:typeof PerformanceObserver!=='undefined',clipboard:!!navigator.clipboard,requestIdleCallback:typeof requestIdleCallback==='function',onlineApi:'onLine' in navigator};
+  const critical=['indexedDB','abortController'].filter(k=>!features[k]);return {features,critical,limited:Object.keys(features).filter(k=>!features[k]&&!critical.includes(k))};
+}
+function ogosSelfTests310({fuzz=80}={}){
+  const tests=[];const add=(name,fn)=>{try{const detail=fn();tests.push({name,status:detail===false?'FAIL':'PASS',detail:detail===true||detail==null?'':String(detail)});}catch(error){tests.push({name,status:'FAIL',detail:error.message||String(error)});}};
+  add('Route principali',()=>['dashboard','start','audit','fix','verify','pages','indexing','keyword-proposal','map','import','settings'].every(id=>!!document.getElementById(`view-${id}`)));
+  add('ID DOM univoci',()=>{const ids=[...document.querySelectorAll('[id]')].map(n=>n.id);return ids.length===new Set(ids).size;});
+  add('Stati task validi',()=>{const allowed=new Set(['Da approvare','Da fare','In corso','Completata','Verificata','Superata','Risolta']);return (state.tasks||[]).every(t=>allowed.has(t.status));});
+  add('Completati esclusi dagli aperti',()=>!(state.tasks||[]).some(t=>taskIsCompleted(t)&&ogosDashboardIssues().some(i=>i.type==='task'&&String(i.id)===String(t.id))));
+  add('Dominio progetto normalizzato',()=>!state.project?.domain||normalizeProjectDomain(state.project.domain)===state.project.domain);
+  add('Repository inventario disponibile',()=>typeof OGOSInventoryRepository!=='undefined');
+  add('Token WordPress non persistibile',()=>{const p=safePersistedState();return !p.wordpress?.token&&!p.wordpress?.secret&&p.wordpress?.connected===false;});
+  add('Facade operative disponibili',()=>!!window.OGOSRepositories&&!!window.OGOSServices&&!!window.OGOSCommands&&!!window.OGOSOperationManager);
+  if(OGOSFeatureFlags.selfTests){
+    add(`Fuzz normalizeState x${fuzz}`,()=>{for(let i=0;i<fuzz;i++){const weird=i%5===0?null:i%5===1?{}:i%5===2?{tasks:[null,{id:i,status:'Da fare'}],pages:[null,{id:i,url:'/x'}]}:i%5===3?{settings:null,project:{domain:'EXAMPLE.COM'}}:{tasks:'bad',pages:'bad'};const n=normalizeState(weird);if(!n||!Array.isArray(n.tasks)||!Array.isArray(n.pages))return false;}return true;});
+  }
+  return {status:tests.some(t=>t.status==='FAIL')?'FAIL':'PASS',checkedAt:new Date().toISOString(),tests};
+}
+function ogosPerformanceReport310(){
+  const renders=ogosPerf310.renders.slice(-100),slow=renders.filter(r=>r.duration>ogosPerf310.budget.renderMs),long=ogosPerf310.longTasks.slice(-50),heap=ogosPerf310.heap.slice(-20);let heapGrowth=null;if(heap.length>1)heapGrowth=(heap.at(-1).used-heap[0].used)/1048576;
+  return {budget:{...ogosPerf310.budget},renderCount:renders.length,slowRenders:slow,longTasks:long,heapGrowthMb:heapGrowth,heapSupported:!!performance?.memory};
+}
+function ogosHardeningHealth310(){const compatibility=ogosCompatibility310(),self=ogosSelfTests310(),performanceReport=ogosPerformanceReport310();return {status:compatibility.critical.length||self.status==='FAIL'?'FAIL':performanceReport.slowRenders.length?'WARNING':'PASS',compatibility,selfTests:self,performance:performanceReport,network:ogosNetworkStatus310(),multiTab:{broadcast:!!ogosBroadcast310,externalChange:ogosExternalChange310},operations:OGOSOperationManager.active()};}
+function ogosOpenHardeningDiagnostics310(){const report=ogosHardeningHealth310(),c=report.compatibility.features,p=report.performance;openActionDrawer('Hardening piattaforma',`Esito ${report.status} · app ${APP_VERSION}`,`<div class="safe-note ${report.status==='PASS'?'':'warn-note'}"><b>${esc(report.status)}</b> · ${report.selfTests.tests.filter(t=>t.status==='PASS').length}/${report.selfTests.tests.length} self-test superati</div><h3>Compatibilita browser</h3><div class="data-list">${Object.entries(c).map(([k,v])=>`<div class="drawer-task"><b>${v?'PASS':'LIMITATO'} · ${esc(k)}</b></div>`).join('')}</div><h3>Performance</h3><div class="drawer-task"><b>${p.slowRenders.length} render oltre ${p.budget.renderMs} ms</b><small>${p.longTasks.length} long task registrati · heap ${p.heapSupported?(p.heapGrowthMb==null?'in raccolta':`${p.heapGrowthMb.toFixed(1)} MB`):'non esposto dal browser'}</small></div><h3>Self-test</h3><div class="data-list">${report.selfTests.tests.map(t=>`<div class="drawer-task"><b>${esc(t.status)} · ${esc(t.name)}</b><small>${esc(t.detail||'')}</small></div>`).join('')}</div>`);}
+
+const ogosRenderSettings310Base=renderSettings;
+renderSettings=function(){const result=ogosRenderSettings310Base.apply(this,arguments);const root=$('#view-settings');if(root&&!$('#ogosHardening310')){const panel=document.createElement('section');panel.className='panel';panel.id='ogosHardening310';panel.style.marginTop='16px';panel.innerHTML='<div class="panel-head"><div><h2>Compatibilita e hardening</h2><p>Controlla browser, multi-tab, rete, performance e invarianti applicative.</p></div><button type="button" class="btn" id="ogosHardeningBtn310">Esegui controllo avanzato</button></div>';root.append(panel);$('#ogosHardeningBtn310').onclick=ogosOpenHardeningDiagnostics310;}ogosUpdateNetworkUi310();return result;};
+
+const OGOSHardening=Object.freeze({version:APP_VERSION,features:OGOSFeatureFlags,compatibility:ogosCompatibility310,health:ogosHardeningHealth310,selfTest:ogosSelfTests310,performance:ogosPerformanceReport310,network:ogosNetworkStatus310,sampleHeap:ogosSampleHeap310,operationManager:OGOSOperationManager});
+window.OGOSHardening=OGOSHardening;
+window.addEventListener('beforeunload',()=>{try{ogosBroadcast310?.close();}catch{}});
+setTimeout(()=>{ogosUpdateNetworkUi310();ogosSampleHeap310('startup');if(typeof ogosLoggerV371!=='undefined')ogosLoggerV371.info('hardening','ready',{version:APP_VERSION,compatibility:ogosCompatibility310()});},0);
 
 
 init();
