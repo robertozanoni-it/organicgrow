@@ -10798,6 +10798,102 @@ window.addEventListener('beforeunload',()=>{try{ogosBroadcast310?.close();}catch
 setTimeout(()=>{ogosUpdateNetworkUi310();ogosSampleHeap310('startup');if(typeof ogosLoggerV371!=='undefined')ogosLoggerV371.info('hardening','ready',{version:APP_VERSION,compatibility:ogosCompatibility310()});},0);
 
 
+
+/* ==========================================================================\n   v3.10.0 — FIX FINALE CONNESSIONE WORDPRESS SEMPRE VISIBILE\n   ========================================================================== */
+function ogosEnsureWpConnectionControls3100(){
+  const status=$('#wpStatus');
+  if(!status)return;
+  const wpField=status.closest('.field');
+  if(wpField){wpField.hidden=false;wpField.removeAttribute('hidden');wpField.style.display='grid';}
+  const group=$('#view-settings details[data-group="connections"]');
+  if(group)group.open=true;
+
+  let button=$('#wpBtn');
+  let disconnect=$('#wpDisconnectBtn');
+  if(!button){
+    button=document.createElement('button');button.type='button';button.id='wpBtn';button.className='btn primary';button.textContent='Collega WordPress';
+  }
+  if(!disconnect){
+    disconnect=document.createElement('button');disconnect.type='button';disconnect.id='wpDisconnectBtn';disconnect.className='btn';disconnect.textContent='Disconnetti';
+  }
+  let actions=$('#ogosWpConnectionActions3100');
+  if(!actions){
+    actions=document.createElement('div');actions.id='ogosWpConnectionActions3100';actions.className='form-actions';
+    actions.style.cssText='display:flex!important;visibility:visible!important;opacity:1!important;justify-content:flex-start;gap:10px;flex-wrap:wrap;margin-top:12px';
+    const urlGrid=$('#wpUrl')?.closest('.form-grid');
+    if(urlGrid)urlGrid.after(actions);else status.after(actions);
+  }
+  if(button.parentElement!==actions)actions.append(button);
+  if(disconnect.parentElement!==actions)actions.append(disconnect);
+  button.hidden=false;button.style.display='inline-flex';button.style.visibility='visible';button.style.opacity='1';
+  disconnect.hidden=false;disconnect.style.display='inline-flex';disconnect.style.visibility='visible';disconnect.style.opacity='1';
+  button.textContent=state.wordpress?.connected?'Ricollega WordPress':'Collega WordPress';
+  button.onclick=testWordPress;
+  disconnect.onclick=disconnectWordPress;
+  disconnect.disabled=!state.wordpress?.connected&&!wpSecret;
+
+  // Il collegamento deve poter essere avviato anche se la modalità operativa è ancora "Solo dati locali".
+  const mode=$('#ogosIntegrationMode');
+  if(mode && !mode.dataset.ogosWpConnectBound3100){
+    mode.dataset.ogosWpConnectBound3100='1';
+  }
+
+  let helper=$('#ogosWpDirectConnectHelp3100');
+  if(!helper){
+    helper=document.createElement('small');helper.id='ogosWpDirectConnectHelp3100';helper.className='help';
+    helper.style.display='block';helper.style.marginTop='6px';
+    actions.after(helper);
+  }
+  helper.textContent=state.wordpress?.connected
+    ? 'WordPress collegato. Puoi cambiare la modalità di lavoro separatamente: la connessione resta disponibile.'
+    : 'Puoi collegare WordPress anche lasciando temporaneamente “Solo dati locali”. Dopo il collegamento l’app abilita automaticamente la modalità WordPress quando il connettore è compatibile.';
+}
+
+// Pairing robusto: la chiusura del popup non viene più trasformata in un falso errore.
+testWordPress=async function(){
+  const button=$('#wpBtn'),input=$('#wpUrl'),raw=input?.value.trim()||'';
+  if(!button||!input)return;
+  if(!raw){toast('Inserisci l’URL WordPress','error');input.focus();return;}
+  let base;try{base=normalizeWpBase(raw)}catch{toast('URL WordPress non valido o non sicuro','error');return;}
+  const stateCode=(crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/[^a-zA-Z0-9_-]/g,'');
+  state.wordpress.url=base;wpPendingState=stateCode;state.wordpress.lastError=null;save(true);
+  const origin=location.origin&&location.origin!=='null'?location.origin:'null';
+  const authUrl=`${base}/wp-admin/admin.php?page=organic-growth-os-auth&ogos_authorize=1&ogos_state=${encodeURIComponent(stateCode)}&ogos_origin=${encodeURIComponent(origin)}`;
+  button.disabled=true;button.textContent='Attendo WordPress…';
+  let popup=null;
+  try{
+    popup=window.open(authUrl,'ogos_wordpress_auth','width=680,height=760,resizable=yes,scrollbars=yes');
+    if(!popup)throw new Error('Il browser ha bloccato la finestra di login. Consenti i popup per questa pagina.');
+    const result=await new Promise((resolve,reject)=>{
+      const expected=new URL(base).origin;let settled=false;
+      const cleanup=()=>{clearTimeout(timer);clearInterval(closed);window.removeEventListener('message',onMessage)};
+      const finish=value=>{if(settled)return;settled=true;cleanup();resolve(value)};
+      wpPairingFinishV160=()=>finish({manual:true});
+      const timer=setTimeout(()=>{cleanup();wpPairingFinishV160=null;reject(new Error('Autorizzazione non completata entro 10 minuti. Se WordPress mostra un codice, incollalo nel campo “Codice di collegamento”.'))},600000);
+      const closed=setInterval(()=>{if(popup.closed)finish({manual:true,popupClosed:true})},500);
+      const onMessage=ev=>{const d=ev.data;if(ev.origin!==expected||!d||d.type!=='ogos-auth-code'||d.state!==stateCode)return;finish(d)};
+      window.addEventListener('message',onMessage);
+    });
+    if(result?.code){await exchangeWordPressPairCode(result.code,stateCode);return;}
+    // Nessun falso errore: mostriamo il fallback manuale e teniamo valido lo state corrente.
+    state.wordpress.lastError=null;save(true);renderSettings();
+    const details=$('#wpPairCode')?.closest('details');if(details)details.open=true;
+    const pair=$('#wpPairCode');pair?.focus();
+    toast('Se hai autorizzato WordPress, copia il codice monouso mostrato nella finestra e incollalo qui.','ok');
+  }catch(error){
+    state.wordpress.lastError=error.message||'Errore di collegamento';save(true);renderSettings();toast(`Collegamento non riuscito: ${state.wordpress.lastError}`,'error');
+  }finally{
+    wpPairingFinishV160=null;
+    const current=$('#wpBtn');if(current){current.disabled=false;current.textContent=state.wordpress?.connected?'Ricollega WordPress':'Collega WordPress';}
+    ogosEnsureWpConnectionControls3100();
+  }
+};
+
+const ogosRenderSettingsWpVisible3100Base=renderSettings;
+renderSettings=function(){const result=ogosRenderSettingsWpVisible3100Base.apply(this,arguments);ogosEnsureWpConnectionControls3100();return result;};
+const ogosRenderViewWpVisible3100Base=renderView;
+renderView=function(view){const result=ogosRenderViewWpVisible3100Base.apply(this,arguments);if(view==='settings')ogosEnsureWpConnectionControls3100();return result;};
+
 init();
 })();
 </script>
