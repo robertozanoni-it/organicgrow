@@ -245,8 +245,8 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.12.18',OGOS_SCHEMA_VERSION=1;
-const BUILD_ID='3.12.18-20260824-architectural-audit',BUILD_TIMESTAMP='2026-08-24T16:30:00+01:00';
+const APP_VERSION='3.12.20',OGOS_SCHEMA_VERSION=1;
+const BUILD_ID='3.12.20-20260824-cors-crawl-post',BUILD_TIMESTAMP='2026-08-24T17:21:00+01:00';
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -980,6 +980,8 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.12.20', date: '2026-08-24', notes: 'Corretto il blocco CORS del crawl osservato su hosting che accettano il preflight ma rifiutano la risposta GET reale. Il connettore applica ora gli header CORS in tre livelli (inizio richiesta, WP_REST_Response e fase di serve) e /crawl/current accetta anche POST. L’app usa POST per il crawl con fallback GET solo per connettori precedenti e, dopo una scrittura riuscita, sostituisce lo stato ambiguo “Solo verifica manuale” con “Riprova verifica pubblica”.', compatibility: 'Installa insieme app e connettore 3.12.20. Dopo l’aggiornamento non riapplicare i link già scritti: usa Riprova verifica pubblica.' },
+  { version: '3.12.19', date: '2026-08-24', notes: 'Quando la scrittura WordPress è riuscita e manca soltanto la prova pubblica, la task mostra “Riprova verifica pubblica” e non riapre l’apply. Il comando esegue esclusivamente crawl + verifica storage, preservando modifica e rollback.', compatibility: 'Installa insieme app e connettore 3.12.19.' },
   { version: '3.12.18', date: '2026-08-24', notes: 'Audit architetturale completo: aggiunti BUILD_ID e BUILD_TIMESTAMP alla diagnostica e ripristinata l’API pubblica del crawl dichiarata dal manifest. Nessun wrapper storico è stato rimosso senza prova runtime di non raggiungibilità.', compatibility: 'Installa insieme app e connettore 3.12.18.' },
   { version: '3.12.17', date: '2026-08-24', notes: 'Il bulk WordPress rispetta ora le firme delle sole righe selezionate; le righe escluse restano nel task per il retry e non vengono nascoste da uno stato Completata. Batch ridotti a 5 righe e anteprime monouso valide 60 minuti.', compatibility: 'Installa insieme app e connettore 3.12.17.' },
   { version: '3.12.16', date: '2026-08-24', notes: 'La cannibalizzazione accetta soltanto incroci Search Console query‑pagina importati negli ultimi 7 giorni. Query Unicode/spazi equivalenti vengono unite; una pagina con impressioni Google recenti non viene esclusa da un vecchio stato locale “Non indicizzata”.', compatibility: 'Installa insieme app e connettore 3.12.16.' },
@@ -12523,11 +12525,104 @@ applyPluginTaskSingle = async function() {
   finally { ogosAmbitoRigheV354 = null; ogosAmbitoCorrezione = null; ogosMantieniAmbito = false; }
 };
 
+function ogosOnlyPublicProofPendingV31219(task){const reasons=normalizedPartialReasons(task),hasRepair=(state.repairs||[]).some(repair=>String(repair.taskId)===String(task?.id)&&repair.remote&&!repair.undone),publicState=['pending','failed'].includes(String(task?.publicVerification?.status||'')),onlyPublic=!reasons.length||reasons.every(reason=>String(reason.code||'').startsWith('ogos_public_')||String(reason.operation||'')==='public_verification');return!!task&&hasRepair&&publicState&&onlyPublic;}
+const ogosTaskCardV31219Base=taskCard;
+taskCard=function(task){let html=ogosTaskCardV31219Base(task);if(!ogosOnlyPublicProofPendingV31219(task))return html;return html.replace('class="task-auto repair-task"','class="task-auto ogos-retry-public-proof"').replace('Riprova modifiche non applicate →','Riprova verifica pubblica →');};
+document.addEventListener('click',async event=>{const button=event.target.closest?.('.ogos-retry-public-proof');if(!button)return;event.preventDefault();event.stopImmediatePropagation();const id=Number(button.dataset.id),original=button.textContent;button.disabled=true;button.textContent='Verifica pubblica in corso…';try{await verifyTask(id,{silent:false});}finally{if(button.isConnected){button.disabled=false;button.textContent=original;}}},true);
+
+
+/* ==========================================================================
+   v3.12.20 — CORS crawl robusto + trasporto POST di lettura
+   ========================================================================== */
+/* Alcuni hosting/WAF accettano OPTIONS e le POST del connettore ma tolgono o
+   sostituiscono gli header CORS sulla GET lunga di /crawl/current. Il crawl e'
+   una lettura idempotente: dalla 3.12.20 usiamo quindi POST con parametri JSON,
+   che percorre lo stesso canale gia' funzionante di preview/apply. Il
+   connettore 3.12.20 accetta entrambi i metodi; il fallback GET resta soltanto
+   per compatibilita' diagnostica con una versione precedente. */
+const ogosWpRequestV31220Base = wpRequest;
+wpRequest = async function(path, options = {}) {
+  const value = String(path || '');
+  const match = value.match(/^\/wp-json\/organic-growth-os\/v1\/crawl\/current(?:\?(.*))?$/);
+  const method = String(options.method || 'GET').toUpperCase();
+  if (!match || method !== 'GET') return ogosWpRequestV31220Base.apply(this, arguments);
+
+  const params = Object.fromEntries(new URLSearchParams(match[1] || ''));
+  const postOptions = {
+    ...options,
+    method: 'POST',
+    headers: { ...(options.headers || {}), 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+    timeoutMs: Math.max(60000, Number(options.timeoutMs) || 0)
+  };
+  let lastError = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await ogosWpRequestV31220Base('/wp-json/organic-growth-os/v1/crawl/current', postOptions);
+    } catch (error) {
+      lastError = error;
+      const status = Number(error?.status) || 0;
+      /* Un connettore precedente non registra POST sulla rotta: in quel solo
+         caso torniamo alla GET storica e lasciamo emergere il suo esito. */
+      if (status === 404 || status === 405) return ogosWpRequestV31220Base(path, options);
+      const temporary = !status || status === 408 || status === 429 || status >= 500;
+      if (!temporary || attempt === 2) {
+        if (!status && /failed to fetch|network|cors/i.test(String(error?.message || ''))) {
+          error.message = 'Crawl WordPress bloccato dal browser (CORS/rete) anche sul trasporto POST. Verifica il connettore 3.12.20 e le intestazioni della risposta reale.';
+        }
+        throw error;
+      }
+      await new Promise(resolve => setTimeout(resolve, attempt === 0 ? 500 : 1200));
+    }
+  }
+  throw lastError;
+};
+
+function ogosRefreshPendingPublicProofUiV31220(task) {
+  if (!task || typeof ogosOnlyPublicProofPendingV31219 !== 'function' || !ogosOnlyPublicProofPendingV31219(task)) return;
+  const form = $('#modalForm');
+  if (!form || form.dataset.type !== 'wordpress-plugin') return;
+  const resultBox = form.querySelector('#pluginPreviewResult, #keywordProposalResult');
+  if (resultBox) resultBox.innerHTML = '<div class="safe-note warn-note"><b>Scrittura WordPress gia\' registrata.</b> Manca soltanto la conferma dell\'HTML pubblico. Non applicare di nuovo il link: riprova esclusivamente il crawl e la verifica storage.</div>';
+  const apply = form.querySelector('.apply-plugin-task-single, .ogos-retry-public-proof');
+  if (apply) {
+    apply.classList.remove('apply-plugin-task-single');
+    apply.classList.add('ogos-retry-public-proof');
+    apply.disabled = false;
+    apply.textContent = 'Riprova verifica pubblica';
+  }
+  const note = form.querySelector('.safe-note.warn-note');
+  if (note && !/Scrittura WordPress gia/.test(note.textContent || '')) note.textContent = 'La scrittura e\' gia\' registrata in WordPress. Questa fase ripete soltanto la verifica pubblica e non duplica la modifica.';
+}
+
+const ogosApplyPluginTaskV31220Base = applyPluginTaskSingle;
+applyPluginTaskSingle = async function(id, triggerButton = null) {
+  const result = await ogosApplyPluginTaskV31220Base.apply(this, arguments);
+  const task = (state.tasks || []).find(item => String(item.id) === String(id));
+  ogosRefreshPendingPublicProofUiV31220(task);
+  return result;
+};
+
+/* Rende robusta anche la card: se esiste gia' una scrittura remota e resta
+   soltanto la prova pubblica, la CTA non puo' piu' riaprire preview/apply. */
+const ogosTaskCardV31220Base = taskCard;
+taskCard = function(task) {
+  let html = ogosTaskCardV31220Base.apply(this, arguments);
+  if (typeof ogosOnlyPublicProofPendingV31219 !== 'function' || !ogosOnlyPublicProofPendingV31219(task)) return html;
+  if (/class="task-auto ogos-retry-public-proof"/.test(html)) return html;
+  const retry = `<button class="task-auto ogos-retry-public-proof" data-id="${task.id}">Riprova verifica pubblica →</button>`;
+  if (/<button class="task-auto repair-task"[^>]*>.*?<\/button>/.test(html)) {
+    return html.replace(/<button class="task-auto repair-task"[^>]*>.*?<\/button>/, retry);
+  }
+  if (/<div class="task-foot">/.test(html)) return html.replace('<div class="task-foot">', retry + '<div class="task-foot">');
+  return html + retry;
+};
+
 /* API pubblica stabile dichiarata dal manifest. */
 function ogosRunResumableCrawlV347(){return runWordPressCrawl.apply(this,arguments);}
 window.OGOS_BUILD_INFO=Object.freeze({version:APP_VERSION,buildId:BUILD_ID,buildTimestamp:BUILD_TIMESTAMP});
 
-window.OGOS_WP_FIX_BUILD="3.12.18-architectural-audit";
+window.OGOS_WP_FIX_BUILD="3.12.20-cors-crawl-post";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
