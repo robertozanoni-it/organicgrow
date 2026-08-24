@@ -245,7 +245,8 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.12.11',OGOS_SCHEMA_VERSION=1;
+const APP_VERSION='3.12.18',OGOS_SCHEMA_VERSION=1;
+const BUILD_ID='3.12.18-20260824-architectural-audit',BUILD_TIMESTAMP='2026-08-24T16:30:00+01:00';
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -979,6 +980,13 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.12.18', date: '2026-08-24', notes: 'Audit architetturale completo: aggiunti BUILD_ID e BUILD_TIMESTAMP alla diagnostica e ripristinata l’API pubblica del crawl dichiarata dal manifest. Nessun wrapper storico è stato rimosso senza prova runtime di non raggiungibilità.', compatibility: 'Installa insieme app e connettore 3.12.18.' },
+  { version: '3.12.17', date: '2026-08-24', notes: 'Il bulk WordPress rispetta ora le firme delle sole righe selezionate; le righe escluse restano nel task per il retry e non vengono nascoste da uno stato Completata. Batch ridotti a 5 righe e anteprime monouso valide 60 minuti.', compatibility: 'Installa insieme app e connettore 3.12.17.' },
+  { version: '3.12.16', date: '2026-08-24', notes: 'La cannibalizzazione accetta soltanto incroci Search Console query‑pagina importati negli ultimi 7 giorni. Query Unicode/spazi equivalenti vengono unite; una pagina con impressioni Google recenti non viene esclusa da un vecchio stato locale “Non indicizzata”.', compatibility: 'Installa insieme app e connettore 3.12.16.' },
+  { version: '3.12.15', date: '2026-08-24', notes: 'Le task internal_link verificano che la destinazione suggerita sia ancora pubblicata e che l’anchor contenga testo utilizzabile. Dopo la scrittura, storage WordPress e HTML pubblico devono entrambi contenere la coppia esatta destinazione + anchor.', compatibility: 'Installa insieme app e connettore 3.12.15.' },
+  { version: '3.12.14', date: '2026-08-24', notes: 'Dopo ogni apply reale l’app avvia automaticamente il crawl pubblico, confronta vecchio e nuovo link e verifica lo storage WordPress. Il task diventa Verificata soltanto quando HTML pubblico e dati salvati coincidono.', compatibility: 'Installa insieme app e connettore 3.12.14.' },
+  { version: '3.12.13', date: '2026-08-24', notes: 'Il crawl interattivo usa lotti da quattro URL e un timeout dedicato di 60 secondi, compatibile con i controlli sitewide del primo lotto. Riduce i “Failed to fetch” causati da batch server più lunghi del timeout client.', compatibility: 'Installa insieme app e connettore 3.12.13.' },
+  { version: '3.12.12', date: '2026-08-24', notes: 'Le sostituzioni vengono applicate a tutti i proprietari globali esatti, ciascuno con snapshot e rollback. Le letture REST di crawl, audit, sitemap e diagnostica ritentano gli errori di rete temporanei senza ripetere mutazioni.', compatibility: 'Installa insieme app e connettore 3.12.12.' },
   { version: '3.12.11', date: '2026-08-24', notes: 'Menu e template globali invalidano ora anche cache di dominio, cache del menu e cache Elementor dopo scrittura, fallimento ripristinato e rollback. Evita che il database sia corretto mentre il sito pubblico continua a mostrare il vecchio link.', compatibility: 'Installa insieme app e connettore 3.12.11.' },
   { version: '3.12.10', date: '2026-08-24', notes: 'Le task replace_link supportano anche le voci dei menu WordPress: proprietario univoco, scrittura riletta, snapshot, verifica e rollback. I proprietari multipli o i task che mescolano una modifica globale con altri campi restano bloccati per sicurezza.', compatibility: 'Installa insieme app e connettore 3.12.10.' },
   { version: '3.12.9', date: '2026-08-24', notes: 'Audit completo dei nove tipi di task automatici. La ricerca dei template Elementor riconosce anche URL con slash escaped nel JSON; redirect, inserimenti e sostituzioni con payload incompleto vengono bloccati già nel pre-check; H1 Elementor e gerarchie non modificabili non sono più dichiarati automatici.', compatibility: 'Installa insieme app e connettore 3.12.9.' },
@@ -1358,7 +1366,7 @@ async function runWordPressCrawl() {
   try {
     const byUrl = {}; let sitewide = null; let page = 1; let totalPages = 1; let total = 0;
     do {
-      const data = await wpRequest(`/wp-json/organic-growth-os/v1/crawl/current?per_page=6&page=${page}`);
+      const data = await wpRequest(`/wp-json/organic-growth-os/v1/crawl/current?per_page=4&page=${page}`);
       (data.items || []).forEach(item => { byUrl[comparableUrl(item.path || item.url)] = item; });
       if (data.sitewide) sitewide = data.sitewide;
       totalPages = Number(data.total_pages) || 1; total = Number(data.total) || (data.items || []).length; page++;
@@ -8110,7 +8118,7 @@ runWordPressCrawl=async function() {
   try {
     const byId={},byUrl={},seen=new Set();let sitewide=null,afterId=0,total=null,hasMore=true,guard=0,emptyBatches=0;
     while(hasMore) {
-      const data=await wpRequest(`/wp-json/organic-growth-os/v1/crawl/current?per_page=10&after_id=${afterId}`),items=Array.isArray(data?.items)?data.items:[];
+      const data=await wpRequest(`/wp-json/organic-growth-os/v1/crawl/current?per_page=4&after_id=${afterId}`),items=Array.isArray(data?.items)?data.items:[];
       total=Number(data?.total)||0;if(total>10000)throw new Error(`Sito troppo grande per il crawl interattivo (${total} URL): usa una scansione server-side`);
       items.forEach(item=>{const key=item.id!=null?`id:${item.id}`:`url:${comparableUrl(item.path||item.url)}`;seen.add(key);if(item.id!=null)byId[String(item.id)]=item;byUrl[comparableUrl(item.path||item.url)]=item;});
       if(data.sitewide)sitewide=data.sitewide;
@@ -9434,7 +9442,7 @@ onPageAuditContentV1510=function(){const blocked=ogosOnPageCandidatePagesV366().
    v3.6.11 — flusso WordPress rapido, fattibilità per campo e batch sicuri
    ========================================================================== */
 
-const OGOS_APPLY_BATCH_V3611=15;
+const OGOS_APPLY_BATCH_V3611=5;
 function ogosPageForUrlV3611(url){return(state.pages||[]).find(page=>comparableUrl(page.url)===comparableUrl(url));}
 function ogosRetryMapV3611(task){const map=new Map(),reasons=normalizedPartialReasons(task);if(!task?.partialApply||!reasons.length)return map;reasons.forEach(reason=>{const url=comparableUrl(reason.url),operation=String(reason.operation||'').trim();if(!url)return;if(!map.has(url))map.set(url,new Set());if(operation)map.get(url).add(operation);});return map;}
 function ogosKeepRetryChangesV3611(item,retry){if(!retry.size)return item;const key=comparableUrl(item.url),allowed=retry.get(key);if(!allowed)return null;const copy=clone(item),changes={...(copy.changes||{})};if(allowed.size)Object.keys(changes).forEach(operation=>{if(!allowed.has(operation))delete changes[operation];});copy.changes=changes;return Object.keys(changes).length?copy:null;}
@@ -9522,7 +9530,7 @@ const ogosOpenModalV3612Base=openModal;
 openModal=function(type,data){const result=ogosOpenModalV3612Base.apply(this,arguments);if(type!=='task')return result;const form=$('#modalForm'),title=form?.querySelector('[name="seoTitle"]'),typeSelect=form?.querySelector('[name="operationType"]');const seoOption=typeSelect?.querySelector('option[value="seo"]');if(seoOption)seoOption.textContent='Title, H1 e meta description';if(title&&!form.querySelector('[name="h1"]')){const field=document.createElement('div');field.className='field';field.dataset.operationGroup='seo';field.innerHTML=`<label>H1 finale</label><input name="h1" maxlength="95" value="${esc(data?.operation?.h1||'')}"><small class="help">Viene applicato solo se il pre-check trova una sorgente H1 realmente modificabile.</small>`;title.closest('.field')?.after(field);ogosLabelFormControlsV355(form);field.hidden=!typeSelect||typeSelect.value!=='seo';if(typeSelect){const previous=typeSelect.onchange;typeSelect.onchange=event=>{previous?.call(typeSelect,event);field.hidden=typeSelect.value!=='seo';};}}return result;};
 const ogosPluginTaskPayloadV3612Base=pluginTaskPayload;
 function ogosChangeIdV3612(item){const text=`${comparableUrl(item?.url)}|${JSON.stringify(item?.changes||{})}`;let hash=2166136261;for(let index=0;index<text.length;index++){hash^=text.charCodeAt(index);hash=Math.imul(hash,16777619);}return`chg_${(hash>>>0).toString(16)}`;}
-pluginTaskPayload=function(task){const payload=ogosPluginTaskPayloadV3612Base(task),h1=String(task?.operation?.h1||'').trim();if(h1&&payload.affected.length===1)payload.affected[0].changes={...(payload.affected[0].changes||{}),post_title:h1};const reasons=normalizedPartialReasons(task),exact=new Set(reasons.map(reason=>String(reason.changeId||'')).filter(Boolean)),fallback=new Set(reasons.filter(reason=>!reason.changeId).map(reason=>`${comparableUrl(reason.url)}|${reason.operation||'*'}`)),seen=new Set();payload.affected=payload.affected.map(item=>{const copy=clone(item);copy.ogos_change_id=ogosChangeIdV3612(copy);return copy;}).filter(item=>{const key=comparableUrl(item.url),allowed=!task?.partialApply||!reasons.length||exact.has(item.ogos_change_id)||fallback.has(`${key}|*`)||Object.keys(item.changes||{}).some(operation=>fallback.has(`${key}|${operation}`));return allowed&&!seen.has(item.ogos_change_id)&&seen.add(item.ogos_change_id);});return payload;};
+pluginTaskPayload=function(task){const payload=ogosPluginTaskPayloadV3612Base(task),h1=String(task?.operation?.h1||'').trim();if(h1&&payload.affected.length===1)payload.affected[0].changes={...(payload.affected[0].changes||{}),post_title:h1};const reasons=normalizedPartialReasons(task),exact=new Set(reasons.map(reason=>String(reason.changeId||'')).filter(Boolean)),fallback=new Set(reasons.filter(reason=>!reason.changeId).map(reason=>`${comparableUrl(reason.url)}|${reason.operation||'*'}`)),seen=new Set();payload.affected=payload.affected.map(item=>{const copy=clone(item);copy.ogos_change_id=ogosChangeIdV3612(copy);return copy;}).filter(item=>{const key=comparableUrl(item.url),allowed=!task?.partialApply||!reasons.length||exact.has(item.ogos_change_id)||fallback.has(`${key}|*`)||Object.keys(item.changes||{}).some(operation=>fallback.has(`${key}|${operation}`)),inScope=!ogosAmbitoRigheV354||ogosAmbitoRigheV354.has(ogosChiaveRigaV354(item,task));return allowed&&inScope&&!seen.has(item.ogos_change_id)&&seen.add(item.ogos_change_id);});return payload;};
 function ogosUnsafeMultiValueV3612(task){const count=(task?.affected||[]).length,operation=task?.operation||{};if(count<=1)return'';const fields=[];if(operation.seoTitle)fields.push('Title SEO');if(operation.h1)fields.push('H1');if(operation.metaDescription)fields.push('Meta description');if(operation.canonical)fields.push('Canonical');if(operation.type==='redirect'&&operation.redirect?.to)fields.push('Redirect');return fields.length?`${fields.join(', ')}: il task contiene ${count} URL ma un solo valore globale. Crea una proposta distinta per ogni pagina.`:'';}
 
 /* Snapshot locale minimo: consente al rollback di riallineare subito l'app
@@ -10035,10 +10043,11 @@ function ogosActionableKeywordRowsV3618(){
    che contengono nello stesso record query e pagina. Le esportazioni con le
    due tabelle separate non consentono di dimostrare la competizione. */
 cannibalizationFromGsc=function(){
+  if(!ogosDataRecenteV354(state.gsc?.importedAt))return[];
   const raw=Array.isArray(state.gsc?.rows)?state.gsc.rows:[],groups=new Map(),pageByUrl=new Map((state.pages||[]).map(page=>[comparableUrl(page.url),page]));
   raw.forEach(row=>{
-    const query=String(row?.query??row?.keys?.[0]??'').trim().toLocaleLowerCase('it'),url=String(row?.url??row?.page??row?.path??row?.keys?.[1]??'').trim();if(!query||!url)return;
-    const page=pageByUrl.get(comparableUrl(url));if(!page||ogosPaginaTecnica(page)||ogosSourceRedirectedV356(url)||['noindex','Esclusa','Redirect','Non indicizzata'].includes(page.status))return;
+    const query=String(row?.query??row?.keys?.[0]??'').normalize('NFKC').replace(/\s+/g,' ').trim().toLocaleLowerCase('it'),url=String(row?.url??row?.page??row?.path??row?.keys?.[1]??'').trim();if(!query||!url)return;
+    const page=pageByUrl.get(comparableUrl(url));if(!page||ogosPaginaTecnica(page)||ogosSourceRedirectedV356(url)||['noindex','Esclusa','Redirect'].includes(page.status))return;
     const clicks=Math.max(0,Number(row.clicks)||0),impressions=Math.max(0,Number(row.impressions)||0),key=query;
     if(!groups.has(key))groups.set(key,new Map());const urls=groups.get(key),identity=comparableUrl(url),current=urls.get(identity)||{url,clicks:0,impressions:0};current.clicks+=clicks;current.impressions+=impressions;urls.set(identity,current);
   });
@@ -10062,7 +10071,7 @@ const ogosAuditContentV3618Base=auditCategoryContent;
 auditCategoryContent=function(index){
   if(index===4){const rows=ogosActionableKeywordRowsV3618();return rows.length?`<p><b>${rows.length}</b> interventi on-page realmente necessari.</p><div class="table-wrap"><table><thead><tr><th>Pagina</th><th>Keyword</th><th>Intento</th><th>Intervento</th><th>Azione</th></tr></thead><tbody>${rows.map(({proposal:r,sourceIndex,plan})=>`<tr><td>${operationalPageLink(r.url)}</td><td><b>${esc(r.keyword)}</b></td><td>${esc(r.intent)}</td><td>${esc(Object.keys(plan.changes).map(field=>field==='post_title'?'H1':field==='meta_description'?'Meta description':'Title SEO').join(', '))}</td><td><button type="button" class="btn ogos-keyword-detail" data-proposal-index="${sourceIndex}" data-url="${esc(r.url)}" data-keyword="${esc(r.keyword)}" data-intent="${esc(r.intent)}" data-source="${esc(r.source||'Proposta verificata')}">Confronta attuale e proposta →</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="safe-note">Nessun intervento on-page necessario: le pagine già coerenti non vengono elencate.</p>';
   }
-  if(index===5){const rows=cannibalizationProposals(),hasDirect=(state.gsc?.rows||[]).some(row=>(row?.query??row?.keys?.[0])&&(row?.url??row?.page??row?.path??row?.keys?.[1]));return rows.length?`<p class="help">Sono mostrati solo gruppi confermati da dati Search Console query‑pagina, con almeno due URL e segnale sufficiente.</p><div class="table-wrap"><table><thead><tr><th>Query</th><th>Pagina primaria</th><th>Concorrenti reali</th><th>Prova</th><th>Azione</th></tr></thead><tbody>${rows.map((row,index)=>`<tr><td><b>${esc(row.query)}</b></td><td>${operationalPageLink(row.primary)}</td><td>${row.secondary.map(url=>operationalPageLink(url)).join('<br>')}</td><td>${row.totalClicks} clic · ${row.totalImpressions} impressioni</td><td><button type="button" class="btn ogos-open-cannibal-pages" data-index="${index}">Vedi pagine coinvolte →</button></td></tr>`).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>La decisione resta editoriale: nessun redirect automatico.</small><button type="button" class="btn primary" id="ogosCreateCannibalBulk">Crea piano (${rows.length}) →</button></div>`:`<p class="safe-note">Nessuna cannibalizzazione confermata.</p><p class="help">${hasDirect?'I dati query‑pagina non mostrano due URL realmente in competizione con un segnale sufficiente.':'L’esportazione contiene query e pagine in tabelle separate: non è attendibile dedurre cannibalizzazioni. Importa il rapporto Search Console con dimensioni Query + Pagina o usa il collegamento API.'}</p>`;
+  if(index===5){const rows=cannibalizationProposals(),hasDirect=(state.gsc?.rows||[]).some(row=>(row?.query??row?.keys?.[0])&&(row?.url??row?.page??row?.path??row?.keys?.[1])),fresh=ogosDataRecenteV354(state.gsc?.importedAt);return rows.length?`<p class="help">Sono mostrati solo gruppi confermati da dati Search Console query‑pagina importati negli ultimi ${DATA_FRESH_DAYS} giorni, con almeno due URL e segnale sufficiente.</p><div class="table-wrap"><table><thead><tr><th>Query</th><th>Pagina primaria</th><th>Concorrenti reali</th><th>Prova</th><th>Azione</th></tr></thead><tbody>${rows.map((row,index)=>`<tr><td><b>${esc(row.query)}</b></td><td>${operationalPageLink(row.primary)}</td><td>${row.secondary.map(url=>operationalPageLink(url)).join('<br>')}</td><td>${row.totalClicks} clic · ${row.totalImpressions} impressioni</td><td><button type="button" class="btn ogos-open-cannibal-pages" data-index="${index}">Vedi pagine coinvolte →</button></td></tr>`).join('')}</tbody></table></div><div class="audit-bulk-bar"><small>La decisione resta editoriale: nessun redirect automatico.</small><button type="button" class="btn primary" id="ogosCreateCannibalBulk">Crea piano (${rows.length}) →</button></div>`:`<p class="safe-note">Nessuna cannibalizzazione confermata.</p><p class="help">${!fresh&&state.gsc?.importedAt?`I dati Search Console sono più vecchi di ${DATA_FRESH_DAYS} giorni: importa un rapporto query‑pagina aggiornato prima della verifica.`:hasDirect?'I dati query‑pagina non mostrano due URL realmente in competizione con un segnale sufficiente.':'L’esportazione contiene query e pagine in tabelle separate: non è attendibile dedurre cannibalizzazioni. Importa il rapporto Search Console con dimensioni Query + Pagina o usa il collegamento API.'}</p>`;
   }
   return ogosAuditContentV3618Base(index);
 };
@@ -10304,7 +10313,7 @@ importFile=async function(file){
   }catch(error){toast(`Backup non valido: ${error.message}`,'error');ogosLoggerV371.warn('backup','invalid-json',{message:error.message});return{ok:false,error:error.message};}
   return ogosImportFileV371Base(file);
 };
-const OGOSRuntime=Object.freeze({version:APP_VERSION,schemaVersion:OGOS_SCHEMA_VERSION,modules:contractsForDiagnosticsV371,logger:ogosLoggerV371,healthCheck:ogosRunHealthCheckV371});
+const OGOSRuntime=Object.freeze({version:APP_VERSION,buildId:BUILD_ID,buildTimestamp:BUILD_TIMESTAMP,schemaVersion:OGOS_SCHEMA_VERSION,modules:contractsForDiagnosticsV371,logger:ogosLoggerV371,healthCheck:ogosRunHealthCheckV371});
 window.OGOSRuntime=OGOSRuntime;
 ogosLoggerV371.info('bootstrap','ready',{version:APP_VERSION,schemaVersion:OGOS_SCHEMA_VERSION,modules:ogosModuleRegistryV371.size});
 /* #endregion module:foundation-diagnostics */
@@ -12421,6 +12430,38 @@ function ogosConnectorVersionMatchesV3129() {
   const pluginVersion = String(state.wordpress?.pluginVersion || '').trim();
   return !pluginVersion || pluginVersion === APP_VERSION;
 }
+
+/* Le letture REST sono idempotenti: un errore di rete momentaneo non deve
+   interrompere un crawl di molte pagine. Nessun retry viene applicato alle
+   mutazioni; /tasks/apply conserva la propria idempotenza dedicata. */
+const ogosWpRequestV31212Base = wpRequest;
+wpRequest = async function(path, options = {}) {
+  const method = String(options.method || 'GET').toUpperCase();
+  const retryableRead = method === 'GET' && [
+    '/wp-json/organic-growth-os/v1/status',
+    '/wp-json/organic-growth-os/v1/audit/current',
+    '/wp-json/organic-growth-os/v1/crawl/current',
+    '/wp-json/organic-growth-os/v1/sitemap/discover',
+    '/wp-json/organic-growth-os/v1/redirects/audit',
+    '/wp-json/organic-growth-os/v1/diagnostics'
+  ].some(prefix => String(path).startsWith(prefix));
+  if (!retryableRead) return ogosWpRequestV31212Base.apply(this, arguments);
+  const readOptions = String(path).startsWith('/wp-json/organic-growth-os/v1/crawl/current')
+    ? { ...options, timeoutMs: Number(options.timeoutMs) || 60000 }
+    : options;
+  let lastError = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try { return await ogosWpRequestV31212Base(path, readOptions); }
+    catch (error) {
+      lastError = error;
+      const status = Number(error?.status) || 0;
+      const temporary = !status || status === 408 || status === 429 || status >= 500;
+      if (!temporary || attempt === 2) throw error;
+      await new Promise(resolve => setTimeout(resolve, attempt === 0 ? 500 : 1200));
+    }
+  }
+  throw lastError;
+};
 const ogosOpenPluginRepairV3129Base = openPluginRepair;
 openPluginRepair = function(task) {
   if (!ogosConnectorVersionMatchesV3129()) {
@@ -12439,7 +12480,54 @@ applyPluginTaskSingle = function() {
   return ogosApplyPluginTaskV3129Base.apply(this, arguments);
 };
 
-window.OGOS_WP_FIX_BUILD="3.12.11-global-cache-transaction";
+/* Una scrittura WordPress non è il risultato finale: subito dopo l'apply
+   rileggiamo l'HTML pubblico e poi lo storage. Solo entrambe le prove possono
+   portare il task a Verificata. */
+const ogosApplyPluginTaskV31214Base = applyPluginTaskSingle;
+applyPluginTaskSingle = async function(id, triggerButton = null) {
+  const task = (state.tasks || []).find(item => String(item.id) === String(id));
+  const repairCountBefore = (state.repairs || []).filter(repair => String(repair.taskId) === String(id) && repair.remote && !repair.undone).length;
+  const result = await ogosApplyPluginTaskV31214Base.apply(this, arguments);
+  if (!task || !state.wordpress?.connected || !state.wordpress?.capabilities?.includes('crawl')) return result;
+  const repairCountAfter = (state.repairs || []).filter(repair => String(repair.taskId) === String(id) && repair.remote && !repair.undone).length;
+  const hasPendingPublicProof = (task.affected || []).some(item => {
+    const page = ogosPageForUrlV3611(item?.url);
+    return page?.pendingRemoteVerification && String(page.pendingRemoteVerification.taskId) === String(id);
+  });
+  if (repairCountAfter <= repairCountBefore && !hasPendingPublicProof) return result;
+  toast('Scrittura WordPress confermata: verifico ora il link nell’HTML pubblico…');
+  const crawled = await runWordPressCrawl();
+  if (!crawled) {
+    task.publicVerification = { ...(task.publicVerification || {}), status: 'pending', reason: 'automatic-public-crawl-failed', checkedAt: new Date().toISOString() };
+    if (task.status === 'Verificata') recordTaskStatus(task, 'Completata');
+    save(true); renderShell(); renderKanban(); renderVerify();
+    toast('La scrittura è registrata in WordPress, ma il crawl pubblico non ha risposto: il task non viene dichiarato verificato.', 'error');
+    return result;
+  }
+  const verified = await verifyTask(id, { silent: true, publicCrawlAttempted: true });
+  if (verified) toast('Correzione reale verificata: storage WordPress e HTML pubblico coincidono.');
+  else toast('Scrittura eseguita, ma la verifica pubblica/storage non coincide: il task resta aperto con il dettaglio.', 'error');
+  return result;
+};
+
+const ogosApplyPluginTaskScopeV31217Base = applyPluginTaskSingle;
+applyPluginTaskSingle = async function() {
+  const id=arguments[0],task=(state.tasks||[]).find(item=>String(item.id)===String(id)),scope=ogosAmbitoRigheV354;
+  let excluded=[];
+  if(task&&scope){const saved=ogosAmbitoRigheV354;ogosAmbitoRigheV354=null;const all=pluginTaskPayload(task).affected;ogosAmbitoRigheV354=saved;const selected=new Set(pluginTaskPayload(task).affected.map(item=>item.ogos_change_id||ogosChangeIdV3612(item)));excluded=all.filter(item=>!selected.has(item.ogos_change_id||ogosChangeIdV3612(item)));}
+  try {
+    const result=await ogosApplyPluginTaskScopeV31217Base.apply(this, arguments);
+    if(task&&excluded.length){const kept=normalizedPartialReasons(task),added=[];excluded.forEach(item=>Object.keys(item.changes||{}).forEach(operation=>{const one={...item,changes:{[operation]:item.changes[operation]}};added.push({url:item.url,operation,code:'ogos_not_selected',reason:'Riga non selezionata: resta disponibile per la prossima applicazione.',changeId:ogosChangeIdV3612(one),partial:false});}));const merged=new Map([...kept,...added].map(reason=>[String(reason.changeId||`${comparableUrl(reason.url)}|${reason.operation}`),reason]));recordTaskStatus(task,'In corso');task.approved=true;task.partialApply={skippedCount:merged.size,reasons:[...merged.values()],at:new Date().toISOString()};save(true);renderShell();renderKanban();renderVerify();}
+    return result;
+  }
+  finally { ogosAmbitoRigheV354 = null; ogosAmbitoCorrezione = null; ogosMantieniAmbito = false; }
+};
+
+/* API pubblica stabile dichiarata dal manifest. */
+function ogosRunResumableCrawlV347(){return runWordPressCrawl.apply(this,arguments);}
+window.OGOS_BUILD_INFO=Object.freeze({version:APP_VERSION,buildId:BUILD_ID,buildTimestamp:BUILD_TIMESTAMP});
+
+window.OGOS_WP_FIX_BUILD="3.12.18-architectural-audit";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
