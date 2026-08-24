@@ -245,8 +245,8 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.13.2',OGOS_SCHEMA_VERSION=1;
-const BUILD_ID='3.13.2-20260824-source-aware-link-owner',BUILD_TIMESTAMP='2026-08-24T19:05:00+01:00';
+const APP_VERSION='3.13.4',OGOS_SCHEMA_VERSION=1;
+const BUILD_ID='3.13.4-20260825-runtime-regression-hardening',BUILD_TIMESTAMP='2026-08-25T00:13:12+01:00';
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -980,6 +980,8 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.13.4', date: '2026-08-25', notes: 'Audit di regressione dopo la 3.13.3. Corretto il confronto della pagina sorgente per i permalink dinamici: query anti-cache (_ogos_refresh) e tracking non impediscono più la verifica; le risposte AJAX usano il referrer same-site; i permalink WordPress semplici (?p= / ?page_id=) restano distinti e una richiesta senza pagina sorgente non può attivare per errore una regola della homepage. Indicizzazione: URL con slash/forma assoluta e permalink semplici vengono normalizzati senza collisioni, gli aggregati Search Console usano la stessa identità URL, il registro elimina URL non più presenti, una sitemap troncata non produce false assenze, e punteggio/storico non trattano più “Da verificare” come errore SEO. I vecchi task di indicizzazione vengono riconciliati con l’ultima scansione (chiusi se restano soltanto stati informativi, ridotti alle sole URL ancora azionabili) e il piano operativo non li ricrea. I problemi tecnici restano separati dallo stato Google, il form pagina conserva “Da verificare” senza trasformarlo in “Indicizzata” al salvataggio e le URL con problemi tecnici confermati non vengono proposte come destinazioni per nuovi link interni.', compatibility: 'Installa insieme app e connettore 3.13.4. Le regole permalink create con 3.13.3 restano compatibili; il crawl anti-cache, AJAX e i permalink semplici sono coperti dai test di regressione.' },
+  { version: '3.13.3', date: '2026-08-24', notes: 'Due correzioni operative. Internal linking: quando il vecchio href nell’HTML è generato dinamicamente dal permalink di un contenuto (archivio, Query Loop, elenco articoli), il connettore può creare una regola locale e reversibile che riscrive quel permalink soltanto sulla pagina sorgente; preview, apply, crawl pubblico, verifica storage e rollback restano obbligatori. Indicizzazione: il numero in “Cose da fare” deriva ora dal registro Indicizzazione realmente ricalcolato e conta solo problemi tecnici azionabili; gli stati informativi “da verificare”/“stato non disponibile” non restano come falsi task dopo un’analisi. Dashboard e sidebar vengono riallineate subito al termine della scansione.', compatibility: 'Installa insieme app e connettore 3.13.3. Riapri il task /yoga-blog: il caso dinamico viene riesaminato; dopo una nuova analisi Indicizzazione il conteggio Cose da fare si aggiorna immediatamente.' },
   { version: '3.13.2', date: '2026-08-24', notes: 'Il resolver dei link è ora source-aware: non propone più come “template globali” normali articoli Elementor che contengono casualmente lo stesso href. Ogni preview invia al connettore le occorrenze realmente osservate sulla pagina sorgente (anchor, contesto e numero di occorrenza); il server usa queste prove per filtrare template/menu e dà priorità al contenuto della pagina che spiega tutte le occorrenze pubbliche. Se nessun proprietario statico è coerente, il caso viene classificato come link renderizzato dinamicamente da archivio/query loop/widget e nessun componente viene scelto a caso. I pochi candidati residui mostrano confidenza e motivo della corrispondenza.', compatibility: 'Installa insieme app e connettore 3.13.2. Riapri il task: la lista dei 15 articoli della 3.13.1 viene ricalcolata e non viene riutilizzata.' },
   { version: '3.13.1', date: '2026-08-24', notes: 'Corretto il loop dei task link provenienti dalle versioni precedenti: quando un crawl pubblico valido dimostra che una vecchia scrittura WordPress non ha prodotto la correzione richiesta, il task non resta più bloccato su “Riprova verifica pubblica”. Mostra “Risolvi nuovamente”, ripristina prima in sicurezza la vecchia operazione tramite il rollback già registrato e, solo dopo un rollback confermato, riapre il nuovo resolver del proprietario reale introdotto in 3.13.0. Il vecchio operation_id resta nello storico come operazione superata; se il rollback fallisce, la nuova scrittura viene bloccata per evitare stati sovrapposti.', compatibility: 'Installa insieme app e connettore 3.13.1. I task già bloccati vengono riconosciuti automaticamente: non serve ricrearli né azzerare il progetto.' },
   { version: '3.13.0', date: '2026-08-24', notes: 'Internal linking WordPress rifondato sul proprietario reale del link. Il connettore distingue contenuto pagina, Elementor pagina, template Elementor globale, template/block WordPress, menu custom e normali voci menu collegate a Pagine/Articoli. Se esistono più proprietari esatti non modifica tutto alla cieca: li mostra e richiede una scelta. Aggiunta diagnostica non distruttiva AUTH → CORS → OWNER RESOLUTION → PREVIEW → PUBLIC CRAWL, con APPLY/STORAGE/VERIFY marcati esplicitamente come non eseguiti fino all’approvazione.', compatibility: 'Installa insieme app e connettore 3.13.0. Per i task link già aperti riapri la scheda: il nuovo pre-check ricalcola il proprietario reale.' },
@@ -2249,7 +2251,13 @@ function idxNormalize(raw) {
   const projectHost = normalizeProjectDomain(state.project.domain);
   const urlHost = normalizeProjectDomain(abs.hostname);
   if (projectHost && urlHost !== projectHost) return { ok: false, reason: `dominio esterno (${abs.hostname})`, raw };
-  const path = abs.pathname.replace(/\/$/, '') || '/';
+  const pathname = abs.pathname.replace(/\/$/, '') || '/';
+  /* Come comparableUrl(), conserviamo soltanto le query che identificano
+     davvero un contenuto WordPress. Senza questo, installazioni con permalink
+     semplici (/?p=123, /?page_id=...) collassavano tutte sulla home. */
+  const identity = new URLSearchParams();
+  ['p','page_id','attachment_id'].forEach(key=>{const value=abs.searchParams.get(key);if(value!==null&&/^\d+$/.test(value))identity.set(key,value)});
+  const query=identity.toString(), path=`${pathname}${query?`?${query}`:''}`;
   return { ok: true, path, hadQuery: !!abs.search, hadFragment: !!abs.hash };
 }
 
@@ -2269,6 +2277,18 @@ function idxAddSource(path, source, extra) {
 function mergeUrlRegistry() {
   idxEnsureState(state);
   state.indexing.exclusions = [];
+  const registry = state.indexing.urls || (state.indexing.urls = {});
+  /* Prima di riaggiungere le fonti correnti, rimuoviamo le associazioni
+     derivate dal ciclo precedente. Senza questa riconciliazione una URL
+     eliminata da pagine/sitemap/GSC rimaneva per sempre nel registro e
+     poteva continuare a comparire in Cose da fare. Cronologia e stato della
+     URL vengono conservati finché esiste almeno una fonte corrente. */
+  Object.values(registry).forEach(r => {
+    r.sources = [];
+    delete r.pageId;
+    r.inSitemap = null;
+    r.sitemapLastmod = null;
+  });
   const exclude = (raw, source, reason) => state.indexing.exclusions.push({ raw, source, reason });
   (state.pages || []).forEach(p => {
     const n = idxNormalize(p.url);
@@ -2280,12 +2300,10 @@ function mergeUrlRegistry() {
     if (!n.ok) { exclude(u.loc || u.path, 'sitemap', n.reason); return; }
     idxAddSource(n.path, 'sitemap', { inSitemap: true, sitemapLastmod: u.lastmod || null });
   });
-  // Preferiamo il vero incrocio pagina↔query se disponibile; altrimenti le URL reali di Pagine.csv
-  // (l'esportazione ZIP standard di Search Console non fornisce l'incrocio, solo le due tabelle separate).
   const gscUrlSource = (state.gsc && state.gsc.rows && state.gsc.rows.length) ? state.gsc.rows : ((state.gsc && state.gsc.pages) || []);
   gscUrlSource.forEach(r => {
-    const n = idxNormalize(r.url);
-    if (!n.ok) { exclude(r.url, 'search-console', n.reason); return; }
+    const n = idxNormalize(r.path || r.url);
+    if (!n.ok) { exclude(r.path || r.url, 'search-console', n.reason); return; }
     idxAddSource(n.path, 'search-console');
   });
   (state.indexing.manualUrls || []).forEach(raw => {
@@ -2293,23 +2311,21 @@ function mergeUrlRegistry() {
     if (!n.ok) { exclude(raw, 'manuale', n.reason); return; }
     idxAddSource(n.path, 'manuale');
   });
-  // inSitemap è a tre stati: null = non ancora verificato, true/false = verificato da una lettura
-  // reale. La PRESENZA (true) è sempre un segnale valido non appena una URL viene trovata in una
-  // sotto-sitemap letta con successo, anche se altre sotto-sitemap sono fallite nello stesso ciclo.
-  // L'ASSENZA (false) invece può essere dichiarata "confermata" solo se la lettura è stata
-  // COMPLETA (nessun errore): se anche una sola sotto-sitemap non è stata letta, una URL "non
-  // trovata" potrebbe semplicemente essere in quella parte mancante, quindi resta "non verificata"
-  // invece di essere presentata come assenza accertata.
+  /* Elimina dal registro operativo solo URL che non appartengono più ad
+     alcuna fonte corrente. Gli snapshot delle scansioni passate restano in
+     state.indexing.scans e quindi la cronologia non viene persa. */
+  Object.keys(registry).forEach(path => {
+    const r = registry[path];
+    if (!Array.isArray(r?.sources) || !r.sources.length) delete registry[path];
+  });
   const sm = state.indexing.sitemap;
   const realSitemapRead = sm && Array.isArray(sm.sitemapsRead) && sm.sitemapsRead.length > 0;
-  const sitemapReadComplete = realSitemapRead && (!sm.errors || sm.errors.length === 0);
+  const sitemapReadComplete = realSitemapRead && !sm.truncated && (!sm.errors || sm.errors.length === 0);
   if (realSitemapRead) {
     const inLast = new Set((sm.urls || []).map(u => { const n = idxNormalize(u.loc || u.path); return n.ok ? n.path : null; }).filter(Boolean));
-    Object.values(state.indexing.urls).forEach(r => {
+    Object.values(registry).forEach(r => {
       if (inLast.has(r.url)) r.inSitemap = true;
       else if (sitemapReadComplete) r.inSitemap = false;
-      // altrimenti (lettura parziale, URL non trovata nella parte letta): lascia inSitemap
-      // invariato, non dedurre un'assenza che la lettura incompleta non può garantire.
     });
   }
 }
@@ -2330,18 +2346,16 @@ async function fetchSitemapDiscovery() {
 
 // ---- Segnale storico Search Console: solo dal CSV già importato altrove nell'app (#7, #17) ----
 function idxGscAggregate(path) {
-  // BUG corretto: stesso mismatch raw/normalizzato di gscImpressionsForUrls()
-  // — r.url nel formato CSV combinato è il valore raw (spesso URL assoluto),
-  // mentre `path` qui è sempre un percorso normalizzato. Confrontando solo
-  // r.url, per questo formato di importazione le righe non combaciavano mai
-  // e si perdeva l'attribuzione delle query specifiche per pagina, pur
-  // ricadendo (correttamente) sul fallback aggregato di Pagine.csv per i
-  // totali di impressioni/clic.
-  const rows = (state.gsc && state.gsc.rows || []).filter(r => r.path === path || r.url === path);
-  if (rows.length) return { rows: rows.length, impressions: Math.round(rows.reduce((a, r) => a + (r.impressions || 0), 0)), clicks: Math.round(rows.reduce((a, r) => a + (r.clicks || 0), 0)), queries: rows.map(r => r.query) };
+  // Tutte le fonti GSC vengono confrontate con la stessa identità URL del
+  // registro Indicizzazione: assoluta/relativa e slash finale non devono
+  // cambiare l'abbinamento della pagina.
+  const wanted = comparableUrl(path);
+  const same = value => !!wanted && comparableUrl(value || '') === wanted;
+  const rows = (state.gsc && state.gsc.rows || []).filter(r => same(r.path) || same(r.url));
+  if (rows.length) return { rows: rows.length, impressions: Math.round(rows.reduce((a, r) => a + (r.impressions || 0), 0)), clicks: Math.round(rows.reduce((a, r) => a + (r.clicks || 0), 0)), queries: rows.map(r => r.query).filter(Boolean) };
   // Formato ZIP standard: nessun incrocio pagina↔query, ma Pagine.csv dà comunque impressioni/clic
   // REALI per questa URL (non stimati). Nessuna query specifica può essere attribuita con certezza.
-  const match = ((state.gsc && state.gsc.pages) || []).find(p => p.path === path || p.url === path);
+  const match = ((state.gsc && state.gsc.pages) || []).find(p => same(p.path) || same(p.url));
   if (!match) return null;
   return { rows: 0, impressions: Math.round(match.impressions || 0), clicks: Math.round(match.clicks || 0), queries: [] };
 }
@@ -2364,7 +2378,7 @@ function idxHasInternalLinkData() { return (state.pages || []).some(p => p.live 
 // ---- Classificazione stato: solo segnali realmente disponibili (#6, #7, #16, #17) ----
 function idxClassify(path) {
   const r = idxRecord(path);
-  const pageMatch = (state.pages || []).find(p => p.url === path);
+  const pageMatch = (state.pages || []).find(p => comparableUrl(p.url) === comparableUrl(path));
   const tech = pageMatch && pageMatch.crawl ? pageMatch.crawl : null;
   const gscAgg = idxGscAggregate(path);
   const gscImported = idxGscImported();
@@ -3939,7 +3953,7 @@ const exchangeWordPressPairCodeV160 = exchangeWordPressPairCode;
 exchangeWordPressPairCode = async function(code,stateValue){const ok=await exchangeWordPressPairCodeV160(code,stateValue);if(ok&&wpPairingFinishV160){wpPairingFinishV160();wpPairingFinishV160=null}return ok};
 syncWordPress = async function() { const button=$('#wpSyncBtn');if(button){button.disabled=true;button.textContent='Sincronizzazione…'}try{const {items}=await wpCurrentAuditCollection();let added=0,updated=0;items.forEach(item=>{const path=comparableUrl(item.path||item.url);if(!path)return;const current=(state.pages||[]).find(p=>String(p.wpId)===String(item.id))||(state.pages||[]).find(p=>comparableUrl(p.url)===path);const values={url:path,wpId:item.id,wpType:item.type,wpBuilder:item.builder||'',wpStatus:'publish',wpTitle:item.title||'',status:item.indexed===false?'Non indicizzata':'Da verificare',canonical:item.canonical&&comparableUrl(item.canonical)===path?'Corretta':'Da verificare'};if(current){Object.assign(current,values);updated++}else{state.pages.push({id:Date.now()+Math.random(),keyword:'',intent:'Da definire',...values});added++}});state.wordpress.lastSync=new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(new Date());save(true);renderShell();renderPages();toast(`WordPress sincronizzato: ${added} nuove, ${updated} aggiornate su ${items.length}`)}catch(e){toast(`Sincronizzazione non riuscita: ${e.message}`,'error')}finally{if(button){button.disabled=false;button.textContent='Sincronizza pagine e articoli'}} };
 disconnectWordPress = async function(){if(window.OGOS_EMBEDDED){toast('La connessione è integrata nel plugin e usa la sessione WordPress corrente.');return}if(wpSecret&&state.wordpress.url){try{const{response,data}=await ogosFetchJsonV1617(`${wpBase()}/wp-json/organic-growth-os/v1/auth/revoke`,{method:'POST',headers:{Accept:'application/json','X-OGOS-Token':wpSecret},mode:'cors',cache:'no-store'},20000);if(!response.ok||data.revoked!==true)throw new Error(data.message||`WordPress ha risposto ${response.status}`)}catch(e){toast(`Token non revocato: ${e.message}. La connessione locale resta attiva.`, 'error');return}}wpSecret='';wpPendingState='';state.wordpress={url:state.wordpress.url||'',username:'',connected:false,userName:'',userId:null,lastError:null,lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],tokenExpiresAt:null,authMethod:null};save(true);renderSettings();toast('Connettore WordPress disconnesso e token revocato')};
-runWordPressCrawl = async function(){const el=$('#ogosCrawlResult'),btn=$('#ogosCrawlBtn');if(!state.wordpress.connected||!wpSecret){toast('Collega WordPress prima di eseguire il crawl','error');return false}if(!state.wordpress.capabilities.includes('crawl')){toast('Il connettore non espone il crawl reale','error');return false}if(btn){btn.disabled=true;btn.textContent='Crawl in corso…'}try{const byId={},byUrl={};let sitewide=null,page=1,totalPages=1,total=0;do{const data=await wpRequest(`/wp-json/organic-growth-os/v1/crawl/current?per_page=10&page=${page}`);(data.items||[]).forEach(item=>{if(item.id!=null)byId[String(item.id)]=item;byUrl[comparableUrl(item.path||item.url)]=item});if(data.sitewide)sitewide=data.sitewide;totalPages=Number(data.total_pages)||1;total=Number(data.total)||0;if(totalPages>1000)throw new Error(`Sito troppo grande per il crawl interattivo (${total} URL): usa una scansione server-side`);page++}while(page<=totalPages);let matched=0;state.pages.forEach(p=>{const c=(p.wpId!=null&&byId[String(p.wpId)])||byUrl[comparableUrl(p.url)];if(!c)return;matched++;p.crawl={httpStatus:c.http_status,redirectHops:c.redirect_hops,h1Count:c.h1_count,h1Text:c.h1_text||'',titleText:c.title_text||'',headings:Array.isArray(c.headings_text)?c.headings_text:[],contentExcerpt:c.content_excerpt||'',robotsMeta:[c.robots_meta,c.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!c.robots_blocked,soft404:!!c.soft_404,canonicalHtml:c.canonical_html,hreflang:c.hreflang,imagesTotal:c.images_total,imagesMissingAlt:c.images_missing_alt,imagesAltEmptyReview:c.images_alt_empty_review||0,checkedAt:new Date().toISOString()};if(Array.isArray(c.internal_links)){p.live=p.live&&typeof p.live==='object'?p.live:{};const saved=Array.isArray(p.live.internalLinkDetails)?p.live.internalLinkDetails:[];const rendered=Array.isArray(c.internal_link_details)?c.internal_link_details:[];p.live.internalLinks=c.internal_links.slice();p.live.internalLinkDetails=rendered.map(detail=>saved.find(old=>comparableUrl(old?.href)===comparableUrl(detail?.href)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase())||detail);p.live.internalLinkSource='rendered-html';p.live.internalLinkObservedAt=new Date().toISOString()}});state.crawlSitewide=sitewide;save(true);renderShell();renderPages();renderAudit();if(el)el.innerHTML=crawlResultHtml(sitewide,matched,total);toast(`Crawl reale completato: ${matched} pagine analizzate, contenuto e link renderizzati acquisiti`);return true}catch(e){toast(`Crawl non riuscito: ${e.message}`,'error');if(el)el.innerHTML=`<p class="empty">Crawl non riuscito: ${esc(e.message)}</p>`;return false}finally{if(btn){btn.disabled=false;btn.textContent='Esegui crawl reale (status, robots, sitemap, H1, contenuto e link…)'}}};
+runWordPressCrawl = async function(){const el=$('#ogosCrawlResult'),btn=$('#ogosCrawlBtn');if(!state.wordpress.connected||!wpSecret){toast('Collega WordPress prima di eseguire il crawl','error');return false}if(!state.wordpress.capabilities.includes('crawl')){toast('Il connettore non espone il crawl reale','error');return false}if(btn){btn.disabled=true;btn.textContent='Crawl in corso…'}try{const byId={},byUrl={};let sitewide=null,page=1,totalPages=1,total=0;do{const data=await wpRequest(`/wp-json/organic-growth-os/v1/crawl/current?per_page=10&page=${page}`);(data.items||[]).forEach(item=>{if(item.id!=null)byId[String(item.id)]=item;byUrl[comparableUrl(item.path||item.url)]=item});if(data.sitewide)sitewide=data.sitewide;totalPages=Number(data.total_pages)||1;total=Number(data.total)||0;if(totalPages>1000)throw new Error(`Sito troppo grande per il crawl interattivo (${total} URL): usa una scansione server-side`);page++}while(page<=totalPages);let matched=0;state.pages.forEach(p=>{const c=(p.wpId!=null&&byId[String(p.wpId)])||byUrl[comparableUrl(p.url)];if(!c)return;matched++;p.crawl={httpStatus:c.http_status,redirectHops:c.redirect_hops,h1Count:c.h1_count,h1Text:c.h1_text||'',titleText:c.title_text||'',headings:Array.isArray(c.headings_text)?c.headings_text:[],contentExcerpt:c.content_excerpt||'',robotsMeta:[c.robots_meta,c.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!c.robots_blocked,soft404:!!c.soft_404,canonicalHtml:c.canonical_html,hreflang:c.hreflang,imagesTotal:c.images_total,imagesMissingAlt:c.images_missing_alt,imagesAltEmptyReview:c.images_alt_empty_review||0,checkedAt:new Date().toISOString()};if(Array.isArray(c.internal_links)){p.live=p.live&&typeof p.live==='object'?p.live:{};const saved=Array.isArray(p.live.internalLinkDetails)?p.live.internalLinkDetails:[];const rendered=Array.isArray(c.internal_link_details)?c.internal_link_details:[];p.live.internalLinks=c.internal_links.slice();p.live.internalLinkDetails=rendered.map(detail=>{const old=saved.find(old=>comparableUrl(old?.href)===comparableUrl(detail?.href)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase()&&(!old?.occurrence||!detail?.occurrence||Number(old.occurrence)===Number(detail.occurrence)));return old?{...old,...detail,editable:old.editable??detail.editable,builder:old.builder||detail.builder}:detail});p.live.internalLinkSource='rendered-html';p.live.internalLinkObservedAt=new Date().toISOString()}});state.crawlSitewide=sitewide;save(true);renderShell();renderPages();renderAudit();if(el)el.innerHTML=crawlResultHtml(sitewide,matched,total);toast(`Crawl reale completato: ${matched} pagine analizzate, contenuto e link renderizzati acquisiti`);return true}catch(e){toast(`Crawl non riuscito: ${e.message}`,'error');if(el)el.innerHTML=`<p class="empty">Crawl non riuscito: ${esc(e.message)}</p>`;return false}finally{if(btn){btn.disabled=false;btn.textContent='Esegui crawl reale (status, robots, sitemap, H1, contenuto e link…)'}}};
 runBulkIndexingVerification = async function(button){if(state.audit.running||state.indexing?.currentScan?.running){toast('Una verifica è già in corso','error');return}if(button){button.disabled=true;button.textContent='Verifica bulk in corso…'}closeActionDrawer();closeModal();go('indexing');try{const can=state.wordpress.connected&&wpSecret&&state.wordpress.capabilities.includes('crawl');if(can&&!(await runWordPressCrawl()))throw new Error('il crawl WordPress non è stato completato');await runIndexingAnalysis('all');toast(can?'Verifica bulk completata con dati tecnici aggiornati; lo stato attuale in Google richiede una fonte Google dedicata.':'Verifica completata sui dati disponibili.')}catch(e){toast(`Verifica bulk non completata: ${e.message}`,'error')}finally{if(button){button.disabled=false;button.textContent='Verifica sitemap e indicizzazione in bulk →'}}};
 renderKanban = function(){const statuses=['Da approvare','Da fare','In corso','Completata'],filter=$('#taskFilter').value,scope=state.ui.issueScope||'all',bulk=$('#gptBulkBtn');if(bulk){const count=gptEligibleTasks().length;bulk.hidden=state.integration.mode!=='gptsites';bulk.textContent=`Esporta ${count} approvate per GPTSites`;bulk.disabled=!count}$('#kanban').innerHTML=statuses.map(status=>{const items=(state.tasks||[]).filter(t=>(status==='Completata'?taskIsCompleted(t):t.status===status)&&(filter==='all'||t.priority===filter)&&(scope!=='critical'||isCriticalTask(t))&&(scope!=='high'||(t.priority==='Alta'&&!isCriticalTask(t))));return`<section class="column"><div class="column-head"><span>${status}</span><span class="count">${items.length}</span></div>${items.map(taskCard).join('')||'<div class="empty" style="padding:25px 8px">Nessuna attività</div>'}</section>`}).join('')};
 const KANBAN_SLIDES_V162=['Da approvare','Da fare','In corso','Completata'];
@@ -8135,7 +8149,7 @@ runWordPressCrawl=async function() {
       if(++guard>10000)throw new Error('Crawl interrotto: troppe richieste consecutive');
     }
     const observedAt=new Date().toISOString();let matched=0;
-    (state.pages||[]).forEach(page=>{const crawl=(page.wpId!=null&&byId[String(page.wpId)])||byUrl[comparableUrl(page.url)];if(!crawl)return;matched++;page.crawl={httpStatus:crawl.http_status,redirectHops:crawl.redirect_hops,finalUrl:crawl.final_url||'',redirectChain:Array.isArray(crawl.redirect_chain)?crawl.redirect_chain:[],h1Count:crawl.h1_count,h1Text:crawl.h1_text||'',titleText:crawl.title_text||'',metaDescriptionText:crawl.meta_description_html||'',renderedText:crawl.rendered_text||'',renderedHtml:crawl.rendered_html===true,headings:Array.isArray(crawl.headings_text)?crawl.headings_text:[],contentExcerpt:crawl.content_excerpt||'',robotsMeta:[crawl.robots_meta,crawl.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!crawl.robots_blocked,soft404:!!crawl.soft_404,canonicalHtml:crawl.canonical_html,hreflang:crawl.hreflang,imagesTotal:crawl.images_total,imagesMissingAlt:crawl.images_missing_alt,imagesAltEmptyReview:crawl.images_alt_empty_review||0,checkedAt:observedAt};page.live=page.live&&typeof page.live==='object'?page.live:{};if(crawl.rendered_html===true&&Array.isArray(crawl.internal_links)){const saved=Array.isArray(page.live.internalLinkDetails)?page.live.internalLinkDetails:[],rendered=Array.isArray(crawl.internal_link_details)?crawl.internal_link_details:[];page.live.internalLinks=crawl.internal_links.slice();page.live.internalLinkDetails=rendered.map(detail=>saved.find(old=>comparableUrl(old?.href)===comparableUrl(detail?.href)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase())||detail);page.live.internalLinkSource='rendered-html';page.live.internalLinkObservedAt=observedAt;}else{page.live.internalLinks=[];page.live.internalLinkDetails=[];page.live.internalLinkSource='unavailable';page.live.internalLinkObservedAt=observedAt;}});
+    (state.pages||[]).forEach(page=>{const crawl=(page.wpId!=null&&byId[String(page.wpId)])||byUrl[comparableUrl(page.url)];if(!crawl)return;matched++;page.crawl={httpStatus:crawl.http_status,redirectHops:crawl.redirect_hops,finalUrl:crawl.final_url||'',redirectChain:Array.isArray(crawl.redirect_chain)?crawl.redirect_chain:[],h1Count:crawl.h1_count,h1Text:crawl.h1_text||'',titleText:crawl.title_text||'',metaDescriptionText:crawl.meta_description_html||'',renderedText:crawl.rendered_text||'',renderedHtml:crawl.rendered_html===true,headings:Array.isArray(crawl.headings_text)?crawl.headings_text:[],contentExcerpt:crawl.content_excerpt||'',robotsMeta:[crawl.robots_meta,crawl.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!crawl.robots_blocked,soft404:!!crawl.soft_404,canonicalHtml:crawl.canonical_html,hreflang:crawl.hreflang,imagesTotal:crawl.images_total,imagesMissingAlt:crawl.images_missing_alt,imagesAltEmptyReview:crawl.images_alt_empty_review||0,checkedAt:observedAt};page.live=page.live&&typeof page.live==='object'?page.live:{};if(crawl.rendered_html===true&&Array.isArray(crawl.internal_links)){const saved=Array.isArray(page.live.internalLinkDetails)?page.live.internalLinkDetails:[],rendered=Array.isArray(crawl.internal_link_details)?crawl.internal_link_details:[];page.live.internalLinks=crawl.internal_links.slice();page.live.internalLinkDetails=rendered.map(detail=>{const old=saved.find(old=>comparableUrl(old?.href)===comparableUrl(detail?.href)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase()&&(!old?.occurrence||!detail?.occurrence||Number(old.occurrence)===Number(detail.occurrence)));return old?{...old,...detail,editable:old.editable??detail.editable,builder:old.builder||detail.builder}:detail});page.live.internalLinkSource='rendered-html';page.live.internalLinkObservedAt=observedAt;}else{page.live.internalLinks=[];page.live.internalLinkDetails=[];page.live.internalLinkSource='unavailable';page.live.internalLinkObservedAt=observedAt;}});
     state.crawlSitewide=sitewide;state.crawlCoverage={domain:normalizeProjectDomain(state.project?.domain),total,received:seen.size,matched,inventory:(state.pages||[]).length,observedAt};
     save(true);renderShell();renderPages();renderAudit();const reconciliation=ogosRiconciliaProblemiApertiV343();if(reconciliation.changed){renderKanban();renderVerify();}
     if(el)el.innerHTML=crawlResultHtml(sitewide,matched,total);toast(`Crawl reale completato: ${matched} di ${total} pagine abbinate`);return true;
@@ -13127,11 +13141,282 @@ ogosPipelineHtml3130 = function(data) {
   return html;
 };
 
+
+/* ==========================================================================
+   v3.13.3 — permalink dinamici verificabili + riconciliazione indicizzazione
+   ========================================================================== */
+
+/* Una scansione Indicizzazione già eseguita deve sostituire i vecchi metadati
+   state.pages per i conteggi operativi. “Da verificare” e
+   “stato-non-disponibile” sono stati informativi: non sono una correzione da
+   eseguire e quindi non devono rimanere in “Cose da fare”. */
+function ogosIndexingSnapshot3133(){
+  const records=Object.values(state.indexing?.urls||{});
+  const analyzed=!!state.indexing?.lastScanAt && records.some(r=>r?.lastCheckedAt);
+  if(!analyzed)return null;
+  const actionable=records.filter(r=>Array.isArray(IDX_PROBLEM_STATUSES)&&IDX_PROBLEM_STATUSES.includes(r?.status));
+  const pending=records.filter(r=>['da-verificare','stato-non-disponibile'].includes(String(r?.status||'')));
+  const indexed=records.filter(r=>r?.status==='indicizzata');
+  return {records,actionable,pending,indexed};
+}
+
+const ogosAuditCategoryCountV3133Base=auditCategoryCount;
+auditCategoryCount=function(index){
+  if(index!==1)return ogosAuditCategoryCountV3133Base.apply(this,arguments);
+  const snapshot=ogosIndexingSnapshot3133();
+  return snapshot?snapshot.actionable.length:ogosAuditCategoryCountV3133Base(index);
+};
+
+const ogosAuditCategoryContentV3133Base=auditCategoryContent;
+auditCategoryContent=function(index){
+  if(index!==1)return ogosAuditCategoryContentV3133Base.apply(this,arguments);
+  const snapshot=ogosIndexingSnapshot3133();
+  if(!snapshot)return ogosAuditCategoryContentV3133Base(index);
+  const rows=snapshot.actionable;
+  return `<p><b>${snapshot.indexed.length}</b> confermate come indicizzate dai segnali disponibili · <b>${rows.length}</b> problemi tecnici azionabili · <b>${snapshot.pending.length}</b> stati informativi ancora da verificare.</p>`
+    +(rows.length?`<div class="table-wrap"><table><thead><tr><th>Pagina</th><th>Stato</th><th>Motivo</th></tr></thead><tbody>${rows.slice(0,40).map(r=>`<tr><td>${operationalPageLink(r.url)}</td><td><span class="tag high">${esc(IDX_STATUS_LABELS?.[r.status]||r.status)}</span></td><td>${esc(r.statusReason||'Problema tecnico rilevato')}</td></tr>`).join('')}</tbody></table></div>`:'<p class="safe-note">L’ultima analisi non contiene problemi tecnici da correggere.</p>')
+    +(snapshot.pending.length?`<p class="help">${snapshot.pending.length} URL restano “da verificare” o con “stato non disponibile”: sono informazioni mancanti, non task di correzione, quindi non vengono più conteggiate in Cose da fare.</p>`:'');
+};
+
+if(typeof ogosDashboardAuditKeysV349==='function'){
+  const ogosDashboardAuditKeysV3133Base=ogosDashboardAuditKeysV349;
+  ogosDashboardAuditKeysV349=function(index){
+    if(index!==1)return ogosDashboardAuditKeysV3133Base.apply(this,arguments);
+    const snapshot=ogosIndexingSnapshot3133();
+    if(!snapshot)return ogosDashboardAuditKeysV3133Base(index);
+    return new Set(snapshot.actionable.map(r=>`indexing|${comparableUrl(r.url)}`));
+  };
+}
+
+/* Mantiene coerente anche la tabella Pagine per gli stati che possiamo
+   sostenere senza inventare lo stato Google. */
+function ogosSyncPageIndexing3133(){
+  const snapshot=ogosIndexingSnapshot3133(); if(!snapshot)return;
+  const byUrl=new Map(snapshot.records.map(r=>[comparableUrl(r.url),r]));
+  (state.pages||[]).forEach(page=>{
+    const r=byUrl.get(comparableUrl(page.url)); if(!r)return;
+    /* Lo stato tecnico non equivale allo stato corrente nell'indice Google.
+       Conserviamo quindi il dettaglio separatamente e usiamo “Indicizzata”
+       solo quando esiste il segnale GSC previsto dal classificatore. */
+    page.indexingAnalysisStatus=String(r.status||'da-verificare');
+    page.indexingAnalysisCheckedAt=r.lastCheckedAt||null;
+    page.indexingStatusReason=r.statusReason||'';
+    if(r.status==='indicizzata') page.status='Indicizzata';
+    else page.status='Da verificare';
+  });
+}
+
+function ogosIndexingPlanRows3134(){
+  const snapshot=ogosIndexingSnapshot3133();
+  if(snapshot){
+    return snapshot.actionable.map(r=>{
+      const page=(state.pages||[]).find(p=>comparableUrl(p.url)===comparableUrl(r.url));
+      return {
+        url:page?.url||r.url,
+        issue:`Problema tecnico di indicizzazione: ${IDX_STATUS_LABELS?.[r.status]||r.status}`,
+        fix:typeof idxSuggestedAction==='function'?idxSuggestedAction(r.status):(r.statusReason||'Verifica il problema tecnico rilevato.'),
+        indexingStatus:r.status
+      };
+    });
+  }
+  /* Prima della prima analisi, “Da verificare” significa solo dato mancante:
+     non trasformarlo in un task. Conserviamo soltanto stati esplicitamente
+     dichiarati Non indicizzata da una fonte precedente. */
+  return (state.pages||[]).filter(p=>p.status==='Non indicizzata').map(p=>({url:p.url,issue:'Stato di indicizzazione non confermato',fix:'Verifica stato tecnico e fonte Google'}));
+}
+
+function ogosGeneratedIndexingTask3134(task){
+  const type=String(task?.operation?.type||'').toLowerCase(),title=String(task?.title||'').toLowerCase();
+  return type==='indexing_review'||title==='verifica pagine non indicizzate';
+}
+function ogosReconcileIndexingTasks3134(){
+  const snapshot=ogosIndexingSnapshot3133(); if(!snapshot)return false;
+  const actionable=new Map(snapshot.actionable.map(r=>[comparableUrl(r.url),r]));
+  let changed=false;
+  (state.tasks||[]).forEach(task=>{
+    if(taskIsCompleted(task)||!ogosGeneratedIndexingTask3134(task))return;
+    const before=Array.isArray(task.affected)?task.affected:[],kept=before.filter(item=>actionable.has(comparableUrl(item?.url))).map(item=>{const r=actionable.get(comparableUrl(item?.url));return {...item,issue:`Problema tecnico di indicizzazione: ${IDX_STATUS_LABELS?.[r?.status]||r?.status||'da verificare'}`,fix:typeof idxSuggestedAction==='function'?idxSuggestedAction(r?.status):(r?.statusReason||item.fix||'Verifica il problema tecnico rilevato.'),indexingStatus:r?.status||item.indexingStatus};});
+    if(!kept.length){
+      recordTaskStatus(task,'Superata');
+      task.autoResolved=true;task.reconciledAt=new Date().toISOString();task.completedAt=task.reconciledAt;task.reconciliationSource='indexing-analysis';
+      task.resolutionReason='L’ultima analisi di indicizzazione non rileva più problemi tecnici azionabili nelle URL del task.';
+      task.evidence={status:'confirmed',source:'indexing-analysis',observedAt:state.indexing?.lastScanAt||task.reconciledAt};
+      delete task.partialApply;changed=true;return;
+    }
+    if(JSON.stringify(kept)!==JSON.stringify(before)){
+      task.affected=kept;task.detail=`${kept.length} ${kept.length===1?'pagina con problema tecnico di indicizzazione':'pagine con problemi tecnici di indicizzazione'}`;changed=true;
+    }
+  });
+  return changed;
+}
+
+/* Il piano operativo usa lo stesso contratto di Cose da fare: dopo una
+   scansione crea task di indicizzazione solo per problemi tecnici azionabili,
+   mai per “Da verificare” / “stato non disponibile”. */
+createOperationalPlan=function(){
+  if(!(state.pages||[]).length){toast('Prima acquisisci dati attuali','error');go('settings');return}
+  const indexingRows=ogosIndexingPlanRows3134(),candidates=[
+    ['Verifica pagine non indicizzate','Alta',indexingRows,{type:'indexing_review'}],
+    ['Verifica canonical','Alta',(state.pages||[]).filter(p=>p.canonical!=='Corretta').map(p=>({url:p.url,issue:'Canonical da verificare',fix:'Controlla la canonical renderizzata'})),{type:'canonical'}],
+    ['Abbina pagine e keyword','Media',(state.pages||[]).filter(p=>!p.keyword).map(p=>({url:p.url,issue:'Keyword principale non assegnata',fix:'Abbina keyword e intento'})),{type:'keyword_mapping'}]
+  ];
+  let created=0;candidates.forEach(([title,priority,rows,operation])=>{if(rows.length&&upsertOperationalTask(title,`${rows.length} pagine da controllare`,priority,rows,operation,false))created++});
+  toast(created?`Piano aggiornato: ${created} gruppi nuovi o aggiornati`:'Nessuna nuova attività da creare');go('fix');
+};
+
+const ogosRunIndexingAnalysisV3133Base=runIndexingAnalysis;
+runIndexingAnalysis=async function(){
+  const result=await ogosRunIndexingAnalysisV3133Base.apply(this,arguments);
+  if(result){
+    ogosSyncPageIndexing3133();
+    ogosReconcileIndexingTasks3134();
+    save(true);
+    if(typeof renderAudit==='function')renderAudit();
+    if(typeof renderDashboardQuickAccess==='function')renderDashboardQuickAccess();
+    if(typeof renderShell==='function')renderShell();
+  }
+  return result;
+};
+
+/* Il server 3.13.3 può risolvere un owner “dynamic_permalink”: l’href non vive
+   nel template ma nasce da get_permalink() di un contenuto mostrato in un
+   archivio/Query Loop. È una modifica reversibile e limitata alla pagina
+   sorgente, quindi la normale preview può applicarla senza chiedere di
+   scegliere un template inesistente. */
+const ogosOwnerKindLabelV3133Base=ogosOwnerKindLabel3130;
+ogosOwnerKindLabel3130=function(kind=''){
+  if(kind==='dynamic_permalink')return 'Permalink dinamico (archivio / Query Loop)';
+  return ogosOwnerKindLabelV3133Base.apply(this,arguments);
+};
+
+const ogosDynamicOwnerHtmlV3133Base=ogosDynamicOwnerHtml3132;
+ogosDynamicOwnerHtml3132=function(task,reason){
+  const resolution=reason?.ownerResolution||reason?.owner_resolution||{};
+  if(resolution?.dynamic_candidate){
+    const c=resolution.dynamic_candidate;
+    return `<div class="safe-note warn-note"><b>Generatore dinamico identificato.</b><br>Il vecchio href è prodotto dal permalink di <b>${esc(c.title||('contenuto #'+(c.id||'')))}</b> sulla pagina <code>${esc(reason?.url||task?.affected?.[0]?.url||'')}</code>. Riapri il task e premi “Approva e applica”: il connettore 3.13.4 userà una regola reversibile limitata a questa pagina, senza modificare il template o lo slug del contenuto.</div>${ogosSourceEvidenceHtml3132(reason?.sourceEvidence||reason?.source_evidence||{})}`;
+  }
+  return ogosDynamicOwnerHtmlV3133Base.apply(this,arguments);
+};
+
+
+/* 3.13.4 — una pagina con stato “Da verificare” apriva il vecchio form
+   manuale con “Indicizzata” selezionata di default, perché il select esponeva
+   solo Indicizzata/Non indicizzata. Bastava cambiare una keyword e salvare per
+   inventare un falso stato Google. Il form ora conserva “Da verificare” e lo
+   usa anche come default prudente per le nuove pagine manuali. */
+const ogosOpenModalIndexingV3134Base=openModal;
+openModal=function(type,data){
+  const result=ogosOpenModalIndexingV3134Base.apply(this,arguments);
+  if(type==='page'){
+    const select=$('#modalForm select[name="status"]');
+    if(select){
+      if(![...select.options].some(o=>o.value==='Da verificare'||o.textContent==='Da verificare'))select.add(new Option('Da verificare','Da verificare'));
+      const wanted=['Indicizzata','Non indicizzata','Da verificare'].includes(data?.status)?data.status:'Da verificare';
+      select.value=wanted;
+    }
+  }
+  return result;
+};
+
+/* 3.13.4 — il vecchio allineamento pagina/indicizzazione equiparava
+   problemi tecnici (404/noindex/robots) a “Non indicizzata”. Dopo la
+   separazione tra stato tecnico e stato Google questo reintroduceva il falso
+   stato ogni volta che si apriva Pagine e keyword. Manteniamo quindi lo stato
+   Google prudente e salviamo il problema tecnico nei campi dedicati. */
+ogosAllineaStatoPagine=function(){
+  const registro=(state.indexing&&state.indexing.urls)||{};let cambiate=0;
+  (state.pages||[]).forEach(p=>{
+    if(!p||!p.url)return;
+    if((!p.intent||p.intent==='Da definire')&&p.keyword){const intento=ogosIntentoDaKeyword(p.keyword);if(intento&&p.intent!==intento){p.intent=intento;cambiate++;}}
+    const normalized=typeof idxNormalize==='function'?idxNormalize(p.url):null;
+    const rec=(normalized?.ok&&registro[normalized.path])||registro[comparableUrl(p.url)]||registro[p.url];
+    if(!rec||!rec.status)return;
+    const nextStatus=rec.status==='indicizzata'?'Indicizzata':'Da verificare';
+    if(p.status!==nextStatus){p.status=nextStatus;cambiate++;}
+    p.statusSource=rec.status==='indicizzata'?'registro indicizzazione':'analisi tecnica separata dallo stato Google';
+    p.indexingAnalysisStatus=String(rec.status||'da-verificare');
+    p.indexingAnalysisCheckedAt=rec.lastCheckedAt||null;
+    p.indexingStatusReason=rec.statusReason||'';
+  });
+  if(cambiate)save(true);return cambiate;
+};
+
+/* Una pagina con un problema tecnico di indicizzazione confermato non deve
+   diventare una destinazione suggerita per i nuovi link interni solo perché il
+   suo stato Google viene correttamente lasciato “Da verificare”. */
+const ogosOrphanEligibleV3134Base=ogosOrphanEligibleV341;
+ogosOrphanEligibleV341=function(page,target){
+  if(!ogosOrphanEligibleV3134Base.apply(this,arguments))return false;
+  if(!target)return true;
+  const normalized=typeof idxNormalize==='function'?idxNormalize(page?.url||''):null;
+  const record=normalized?.ok?state.indexing?.urls?.[normalized.path]:null;
+  const technical=String(record?.status||page?.indexingAnalysisStatus||'');
+  return !(Array.isArray(IDX_PROBLEM_STATUSES)&&IDX_PROBLEM_STATUSES.includes(technical));
+};
+
+/* 3.13.4 — anche punteggio e cronologia devono usare lo stesso contratto
+   dell'Indicizzazione: gli stati informativi non sono errori SEO. */
+const ogosComputeSeoScoreV3134Base=computeSeoScore;
+computeSeoScore=function(){
+  const result=ogosComputeSeoScoreV3134Base.apply(this,arguments);
+  const snapshot=ogosIndexingSnapshot3133();
+  if(!snapshot||!result?.hasData)return result;
+  const legacyLabels=new Set(['pagine non indicizzate','pagine con indicizzazione da verificare']);
+  const legacyRows=(result.breakdown||[]).filter(row=>legacyLabels.has(row.label));
+  const removedImpact=legacyRows.reduce((sum,row)=>sum+(Number(row.impact)||0),0);
+  /* Non contare due volte un problema di indicizzazione già rappresentato da
+     un task aperto: la score engine usa già le chiavi operative dei task. */
+  const represented=new Set();
+  if(typeof ogosDashboardTaskKeysV349==='function'){
+    (state.tasks||[]).filter(task=>!taskIsCompleted(task)).forEach(task=>ogosDashboardTaskKeysV349(task).forEach(key=>represented.add(key)));
+  }
+  const unrepresented=snapshot.actionable.filter(r=>!represented.has(`indexing|${comparableUrl(r.url)}`));
+  const techImpact=Math.min(30,Math.round(unrepresented.length*SCORE_WEIGHTS.notIndexed*10)/10);
+  result.score=Math.max(0,Math.min(100,Math.round(result.score+removedImpact-techImpact)));
+  result.breakdown=(result.breakdown||[]).filter(row=>!legacyLabels.has(row.label));
+  if(unrepresented.length)result.breakdown.push({label:'problemi tecnici di indicizzazione',impact:techImpact,count:unrepresented.length,weight:SCORE_WEIGHTS.notIndexed});
+  result.breakdown.sort((a,b)=>b.impact-a.impact);
+  result.uniqueIssues=result.breakdown.reduce((sum,row)=>sum+(Number(row.count)||0),0);
+  return result;
+};
+
+const ogosIssueSignatureV3134Base=issueSignature;
+issueSignature=function(pages){
+  const sig=ogosIssueSignatureV3134Base.apply(this,arguments),snapshot=ogosIndexingSnapshot3133();
+  if(!snapshot)return sig;
+  Object.keys(sig).forEach(url=>{
+    sig[url]=(sig[url]||[]).filter(code=>!['non-indicizzata','indicizzazione-da-verificare'].includes(code));
+    if(!sig[url].length)delete sig[url];
+  });
+  snapshot.actionable.forEach(r=>{
+    const url=comparableUrl(r.url),page=(pages||[]).find(p=>comparableUrl(p.url)===url),key=page?.url||r.url;
+    sig[key]=Array.isArray(sig[key])?sig[key]:[];
+    const code=`indicizzazione-${r.status}`;
+    if(!sig[key].includes(code))sig[key].push(code);
+  });
+  return sig;
+};
+
+/* All'upgrade riallinea subito un'analisi Indicizzazione già presente e chiude
+   gli eventuali vecchi task informativi creati dalle versioni precedenti. */
+const ogosInitV3134Base=init;
+init=function(){
+  const hasIndexingSnapshot=!!ogosIndexingSnapshot3133();
+  if(hasIndexingSnapshot){ogosSyncPageIndexing3133();ogosReconcileIndexingTasks3134();}
+  const result=ogosInitV3134Base.apply(this,arguments);
+  if(hasIndexingSnapshot)save(true);
+  return result;
+};
+
+window.OGOS_WP_FIX_BUILD="3.13.4-runtime-regression-hardening";
+
+
 /* API pubblica stabile dichiarata dal manifest. */
 function ogosRunResumableCrawlV347(){return runWordPressCrawl.apply(this,arguments);}
 window.OGOS_BUILD_INFO=Object.freeze({version:APP_VERSION,buildId:BUILD_ID,buildTimestamp:BUILD_TIMESTAMP});
 
-window.OGOS_WP_FIX_BUILD="3.13.2-source-aware-link-owner";
+
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
