@@ -245,7 +245,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.12.3',OGOS_SCHEMA_VERSION=1;
+const APP_VERSION='3.12.4',OGOS_SCHEMA_VERSION=1;
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -979,6 +979,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.12.4', date: '2026-08-24', notes: 'Corretto il falso problema H1 che restava visibile dopo una modifica manuale. “Analizza tutto” e “Scansiona dati SEO attuali” eseguono ora automaticamente anche il crawl dell’HTML pubblico quando WordPress è collegato. I conteggi H1 provenienti da un crawl precedente vengono invalidati appena arriva un nuovo audit non renderizzato e non possono più alimentare report, task o punteggio SEO. Un task H1 aperto viene chiuso automaticamente quando il nuovo crawl conferma esattamente un H1. Il crawler forza una risposta aggiornata con intestazioni no-cache e una chiave univoca, mentre il connettore svuota le cache pubbliche note dopo le modifiche strutturali.', compatibility: 'Installa insieme app e connettore 3.12.4. Dopo l’aggiornamento premi “Analizza tutto”: il crawl pubblico viene eseguito nello stesso flusso e rimuove automaticamente la vecchia segnalazione se la pagina mostra un solo H1.' },
   { version: '3.12.3', date: '2026-08-24', notes: 'Audit di regressione completo sul flusso WordPress. Le richieste di applicazione sono ora idempotenti: se la rete perde la risposta dopo una scrittura, il connettore restituisce lo stesso esito senza ripetere la modifica. Una pagina viene confermata soltanto quando un crawl successivo acquisisce HTML valido e dimostra il risultato specifico (H1 unico, link e anchor presenti, vecchio link assente, Title/H1/Meta/Canonical renderizzati). Le pagine non restituite dal crawl perdono i vecchi link osservati e non possono contaminare la diagnosi delle orfane. Le scritture di post_content ed Elementor sono transazionali: se la rilettura non coincide, viene tentato e verificato il ripristino immediato. I vecchi task verificati dal solo storage vengono riaperti come completati ma da confermare. Un task in attesa del crawl non nasconde più la stessa anomalia dal report. “Crawl e verifica ora” esegue automaticamente l’acquisizione pubblica e poi il controllo storage; la verifica multipla condivide un solo crawl.', compatibility: 'Installa insieme app e connettore 3.12.3. Usa “Crawl e verifica ora”: solo la combinazione verifica storage + HTML pubblico porta lo stato a Verificata.' },
   { version: '3.12.2', date: '2026-08-24', notes: 'Risolto il falso esito “già corretto” nelle attività automatiche. L’app e il connettore ora condividono il numero delle operazioni realmente applicabili: se c’è una modifica valida, viene inviata a WordPress; se WordPress non conferma la scrittura, l’attività resta aperta con un errore esplicito. Le correzioni di link interni e H1 multipli non aggiornano più localmente i dati del crawl come se fossero pubblicati: dopo la scrittura richiedono una nuova scansione reale per confermare il risultato reso dal sito. Le attività contrassegnate in precedenza come “Verificata” dal solo pre-check vengono riaperte automaticamente, così possono essere applicate o riesaminate. La diagnosi delle pagine orfane considera ora solo HTML realmente acquisito e non si blocca per record tecnici/noindex esclusi dal grafo.', compatibility: 'Installa anche il connettore 3.12.2. Dopo l’aggiornamento esegui un crawl reale per confermare il contenuto pubblicato; nessuna attività viene più dichiarata corretta senza risposta effettiva di WordPress.' },
   { version: '3.12.1', date: '2026-08-24', notes: 'Corretto il flusso degli H1 multipli: i task creati dall’audit contengono ora la modifica strutturata da inviare a WordPress e i task già presenti vengono aggiornati automaticamente. Se il tema stampa già l’H1 del titolo, il connettore può trasformare in H2 l’H1 aggiuntivo nel contenuto o in Elementor; se gli H1 extra appartengono a un template globale, blocca la scrittura e spiega dove intervenire. Ogni proposta di link interno può ora essere aperta singolarmente per la correzione, mentre i builder non supportati passano da un controllo di fattibilità senza modifiche alla cieca. Le URL senza un crawl HTML completo non vengono più mostrate come pagine orfane: restano solo da verificare e non generano task.', compatibility: 'Per la correzione automatica degli H1 installa anche il connettore 3.12.1. I task esistenti vengono migrati alla prima apertura.' },
@@ -12132,7 +12133,201 @@ init = function() {
   return result;
 };
 
-window.OGOS_WP_FIX_BUILD="3.12.3-public-verification";
+/* ==========================================================================
+   v3.12.4 — le analisi non riutilizzano conteggi H1 obsoleti
+   ========================================================================== */
+
+function ogosH1ObservationCurrentV3124(page) {
+  const crawl = page?.crawl, observedAt = String(state.crawlCoverage?.observedAt || ''), count = Number(crawl?.h1Count);
+  return !!observedAt && crawl?.checkedAt === observedAt && crawl?.renderedHtml === true && crawl?.h1Stale !== true && Number.isInteger(count);
+}
+
+function ogosMultipleH1CurrentV3124(page) {
+  return ogosH1ObservationCurrentV3124(page) && Number(page.crawl.h1Count) > 1;
+}
+
+function ogosDiscardStaleH1V3124() {
+  let changed = 0;
+  (state.pages || []).forEach(page => {
+    const crawl = page?.crawl;
+    if (!crawl || !Object.prototype.hasOwnProperty.call(crawl, 'h1Count') || crawl.h1Count == null || ogosH1ObservationCurrentV3124(page)) return;
+    crawl.h1Count = null;
+    crawl.h1Stale = true;
+    changed++;
+  });
+  if (changed) {
+    ogosOnPageRowsCacheV366 = null;
+    if (typeof ogosInvalidatePerformanceCachesV352 === 'function') ogosInvalidatePerformanceCachesV352();
+  }
+  return changed;
+}
+
+/* audit/current legge lo storage editoriale, non l'HTML pubblico. Prima del
+   merge eliminiamo il vecchio conteggio renderizzato: conservarlo era la
+   causa diretta del falso “2 H1 rilevati” dopo una correzione manuale. */
+const ogosApplyCurrentAuditV3124Base = applyCurrentAudit;
+applyCurrentAudit = function(items, source, observedAt) {
+  if (source === 'wordpress-live') {
+    (state.pages || []).forEach(page => {
+      if (!page?.crawl) return;
+      page.crawl.h1Count = null;
+      page.crawl.h1Stale = true;
+    });
+    ogosOnPageRowsCacheV366 = null;
+  }
+  const result = ogosApplyCurrentAuditV3124Base.apply(this, arguments);
+  if (source === 'wordpress-live') {
+    state.audit = state.audit && typeof state.audit === 'object' ? state.audit : {};
+    state.audit.publicHtmlVerified = false;
+    state.audit.publicHtmlObservedAt = null;
+    ogosDiscardStaleH1V3124();
+    save(true); renderShell(); renderAudit(); renderKanban();
+  }
+  return result;
+};
+
+/* Anche cache e badge on-page usano soltanto un conteggio proveniente
+   dall'ultima copertura HTML completa, mai un numero ereditato. */
+const ogosOnPageCandidatePagesV3124Base = ogosOnPageCandidatePagesV366;
+ogosOnPageCandidatePagesV366 = function() {
+  if (ogosDiscardStaleH1V3124()) ogosScheduleDataSaveV351();
+  return ogosOnPageCandidatePagesV3124Base.apply(this, arguments);
+};
+
+const ogosStatoCampoV3124Base = ogosStatoCampoV343;
+ogosStatoCampoV343 = function(page, field, target, item) {
+  if (field === 'heading_hierarchy') {
+    const known = ogosH1ObservationCurrentV3124(page), count = Number(page?.crawl?.h1Count);
+    return { known, resolved: known && count === 1, reason: 'il crawl pubblico corrente mostra esattamente un H1' };
+  }
+  return ogosStatoCampoV3124Base.apply(this, arguments);
+};
+
+const ogosStatoProblemaSempliceV3124Base = ogosStatoProblemaSempliceV343;
+ogosStatoProblemaSempliceV343 = function(page, item, task) {
+  const issue = `${task?.title || ''} ${item?.issue || ''}`.toLowerCase();
+  if (/h1/.test(issue) && /multip|rilevat|pi[uù] di un|riduci a uno/.test(issue)) {
+    const known = ogosH1ObservationCurrentV3124(page), count = Number(page?.crawl?.h1Count);
+    return { known, resolved: known && count === 1, reason: 'esattamente un H1 rilevato nel crawl pubblico corrente' };
+  }
+  return ogosStatoProblemaSempliceV3124Base.apply(this, arguments);
+};
+
+/* Il punteggio non deve penalizzare un conteggio nullo/scaduto come se fosse
+   un H1 mancante. Rettifichiamo soltanto la voce H1 prodotta dal motore. */
+const ogosComputeSeoScoreV3124Base = computeSeoScore;
+computeSeoScore = function() {
+  ogosDiscardStaleH1V3124();
+  const result = ogosComputeSeoScoreV3124Base.apply(this, arguments), rows = result?.breakdown || [];
+  const group = rows.find(row => row.label === 'pagine con H1 assente o multiplo');
+  const count = (state.pages || []).filter(page => ogosH1ObservationCurrentV3124(page) && Number(page.crawl.h1Count) !== 1).length;
+  if (group) {
+    const previousImpact = Number(group.impact) || 0, nextImpact = Math.min(15, Math.round(count * SCORE_WEIGHTS.h1 * 10) / 10);
+    result.score = result.score == null ? result.score : Math.max(0, Math.min(100, Math.round((result.score + previousImpact - nextImpact) * 10) / 10));
+    if (count) { group.count = count; group.impact = nextImpact; }
+    else result.breakdown = rows.filter(row => row !== group);
+  }
+  return result;
+};
+
+/* Un crawl riuscito diventa la sola prova H1 corrente e riconcilia anche le
+   attività corrette manualmente fuori dall'app. */
+const ogosRunWordPressCrawlV3124Base = runWordPressCrawl;
+runWordPressCrawl = async function() {
+  const result = await ogosRunWordPressCrawlV3124Base.apply(this, arguments);
+  if (result === false) return result;
+  const observedAt = String(state.crawlCoverage?.observedAt || '');
+  state.audit = state.audit && typeof state.audit === 'object' ? state.audit : {};
+  state.audit.publicHtmlVerified = !!observedAt;
+  state.audit.publicHtmlObservedAt = observedAt || null;
+  (state.tasks || []).forEach(task => {
+    if (!ogosIsH1TaskV3121(task) || task.status !== 'Verificata') return;
+    const pages = (task.affected || []).map(item => ogosPaginaCorrenteV343(item.url)).filter(Boolean);
+    if (!pages.length || !pages.every(page => ogosH1ObservationCurrentV3124(page) && Number(page.crawl.h1Count) === 1)) return;
+    task.publicVerification = { status: 'passed', observedAt, operations: ['heading_hierarchy'] };
+    const remote = (state.repairs || []).some(repair => String(repair.taskId) === String(task.id) && repair.remote && !repair.undone);
+    if (task.autoResolved && !remote) task.evidence = { status: 'confirmed', source: 'public-crawl', observedAt };
+  });
+  ogosOnPageRowsCacheV366 = null;
+  save(true); renderShell(); renderAudit(); renderKanban(); renderVerify();
+  return true;
+};
+
+/* “Scansiona dati SEO attuali” completa automaticamente la lettura storage
+   con il crawl pubblico. Il riferimento dell'array pagine cambia soltanto
+   se applyCurrentAudit ha davvero concluso la scansione. */
+const ogosScanWordPressCurrentV3124Base = scanWordPressCurrent;
+scanWordPressCurrent = async function() {
+  const beforePages = state.pages, result = await ogosScanWordPressCurrentV3124Base.apply(this, arguments);
+  const refreshed = state.pages !== beforePages && state.audit?.source === 'wordpress-live';
+  if (!refreshed) return result === false ? false : false;
+  if (!(state.wordpress?.connected && wpSecret && state.wordpress?.capabilities?.includes('crawl'))) {
+    toast('Dati WordPress aggiornati; il conteggio H1 resta sospeso perché il connettore non espone il crawl pubblico.', 'error');
+    return true;
+  }
+  const button = $('#wpAuditBtn');
+  if (button) { button.disabled = true; button.textContent = 'Controllo HTML pubblico…'; }
+  toast('Dati WordPress aggiornati: controllo ora l’HTML pubblico per eliminare segnalazioni superate.');
+  const crawled = await runWordPressCrawl();
+  if (button) { button.disabled = false; button.textContent = 'Scansiona dati SEO attuali'; }
+  if (!crawled) toast('Lo storage è aggiornato, ma il crawl pubblico non è terminato: i conteggi H1 precedenti non vengono riutilizzati.', 'error');
+  return !!crawled;
+};
+
+/* “Analizza tutto” non è più un semplice ricalcolo dei vecchi dati quando
+   WordPress è collegato: acquisisce prima una fotografia pubblica nuova. */
+const ogosRunAuditV3124Base = runAudit;
+let ogosRunAuditRefreshV3124 = false;
+runAudit = async function(single) {
+  if (ogosRunAuditRefreshV3124 || state.audit?.running) return false;
+  const canCrawl = state.wordpress?.connected && wpSecret && state.wordpress?.capabilities?.includes('crawl');
+  if (!canCrawl) return ogosRunAuditV3124Base.apply(this, arguments);
+  ogosRunAuditRefreshV3124 = true;
+  const button = single != null ? $$('.audit-tool')[single] : $('#runAllBtn'), old = button?.innerHTML || '';
+  if (button) { button.disabled = true; button.setAttribute('aria-busy', 'true'); button.textContent = 'Aggiornamento sito…'; }
+  try {
+    toast('Aggiorno prima il crawl pubblico, poi ricalcolo tutti i problemi.');
+    if (!(await runWordPressCrawl())) {
+      toast('Analisi interrotta: non uso i vecchi conteggi H1 perché il crawl pubblico non è stato completato.', 'error');
+      return false;
+    }
+  } finally {
+    ogosRunAuditRefreshV3124 = false;
+    if (button?.isConnected) { button.disabled = false; button.removeAttribute('aria-busy'); button.innerHTML = old; }
+  }
+  return ogosRunAuditV3124Base.apply(this, arguments);
+};
+
+/* Migrazione una tantum: se la 3.12.3 aveva eseguito un controllo locale
+   dopo il crawl, il numero H1 memorizzato non è più trattato come attuale. */
+function ogosMigrateStaleH1V3124() {
+  state.ui = state.ui && typeof state.ui === 'object' ? state.ui : {};
+  if (state.ui.h1FreshnessMigration === '3.12.4') return 0;
+  state.ui.h1FreshnessMigration = '3.12.4';
+  const localAt = Date.parse(state.audit?.localCheckedAt || '');
+  let changed = 0;
+  (state.pages || []).forEach(page => {
+    const checkedAt = Date.parse(page?.crawl?.checkedAt || '');
+    if (!page?.crawl || page.crawl.h1Count == null || !(Number.isFinite(localAt) && Number.isFinite(checkedAt) && localAt > checkedAt)) return;
+    page.crawl.h1Count = null;
+    page.crawl.h1Stale = true;
+    changed++;
+  });
+  changed += ogosDiscardStaleH1V3124();
+  state.appVersion = APP_VERSION;
+  return changed;
+}
+
+const ogosInitV3124Base = init;
+init = function() {
+  const result = ogosInitV3124Base.apply(this, arguments), discarded = ogosMigrateStaleH1V3124();
+  save(true); renderShell(); renderAudit();
+  if ($('#view-fix')?.classList.contains('active')) renderKanban();
+  if (discarded) toast(`${discarded} ${discarded === 1 ? 'conteggio H1 obsoleto è stato rimosso' : 'conteggi H1 obsoleti sono stati rimossi'}. “Analizza tutto” li aggiorna dal sito pubblico.`);
+  return result;
+};
+
+window.OGOS_WP_FIX_BUILD="3.12.4-fresh-h1-analysis";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
