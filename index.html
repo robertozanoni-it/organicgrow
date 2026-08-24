@@ -245,8 +245,8 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.13.0',OGOS_SCHEMA_VERSION=1;
-const BUILD_ID='3.13.0-20260824-link-owner-resolver-diagnostics',BUILD_TIMESTAMP='2026-08-24T17:41:00+01:00';
+const APP_VERSION='3.13.1',OGOS_SCHEMA_VERSION=1;
+const BUILD_ID='3.13.1-20260824-public-failure-reapply',BUILD_TIMESTAMP='2026-08-24T18:45:00+01:00';
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -980,6 +980,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.13.1', date: '2026-08-24', notes: 'Corretto il loop dei task link provenienti dalle versioni precedenti: quando un crawl pubblico valido dimostra che una vecchia scrittura WordPress non ha prodotto la correzione richiesta, il task non resta più bloccato su “Riprova verifica pubblica”. Mostra “Risolvi nuovamente”, ripristina prima in sicurezza la vecchia operazione tramite il rollback già registrato e, solo dopo un rollback confermato, riapre il nuovo resolver del proprietario reale introdotto in 3.13.0. Il vecchio operation_id resta nello storico come operazione superata; se il rollback fallisce, la nuova scrittura viene bloccata per evitare stati sovrapposti.', compatibility: 'Installa insieme app e connettore 3.13.1. I task già bloccati vengono riconosciuti automaticamente: non serve ricrearli né azzerare il progetto.' },
   { version: '3.13.0', date: '2026-08-24', notes: 'Internal linking WordPress rifondato sul proprietario reale del link. Il connettore distingue contenuto pagina, Elementor pagina, template Elementor globale, template/block WordPress, menu custom e normali voci menu collegate a Pagine/Articoli. Se esistono più proprietari esatti non modifica tutto alla cieca: li mostra e richiede una scelta. Aggiunta diagnostica non distruttiva AUTH → CORS → OWNER RESOLUTION → PREVIEW → PUBLIC CRAWL, con APPLY/STORAGE/VERIFY marcati esplicitamente come non eseguiti fino all’approvazione.', compatibility: 'Installa insieme app e connettore 3.13.0. Per i task link già aperti riapri la scheda: il nuovo pre-check ricalcola il proprietario reale.' },
   { version: '3.12.21', date: '2026-08-24', notes: 'Corretto il falso fallimento del crawl quando post-apply e verifica richiedono lo stesso controllo: i chiamanti condividono ora un unico crawl in corso invece di respingersi. Se una scrittura WordPress è già registrata e la stessa URL/operazione è soltanto in attesa di prova pubblica, eventuali vecchi motivi manuali del retry vengono riconciliati e la UI mostra esclusivamente “Riprova verifica pubblica”, senza riaprire preview/apply.', compatibility: 'Installa insieme app e connettore 3.12.21. Le vere modifiche globali non individuabili restano manuali; una modifica già scritta non viene duplicata.' },
   { version: '3.12.20', date: '2026-08-24', notes: 'Corretto il blocco CORS del crawl osservato su hosting che accettano il preflight ma rifiutano la risposta GET reale. Il connettore applica ora gli header CORS in tre livelli (inizio richiesta, WP_REST_Response e fase di serve) e /crawl/current accetta anche POST. L’app usa POST per il crawl con fallback GET solo per connettori precedenti e, dopo una scrittura riuscita, sostituisce lo stato ambiguo “Solo verifica manuale” con “Riprova verifica pubblica”.', compatibility: 'Installa insieme app e connettore 3.12.20. Dopo l’aggiornamento non riapplicare i link già scritti: usa Riprova verifica pubblica.' },
@@ -12852,11 +12853,188 @@ renderSettings = function() {
   return result;
 };
 
+
+
+/* ========================================================================== 
+   v3.13.1 — uscita verificabile dal loop “scrittura registrata ma non pubblicata”
+   ========================================================================== */
+/* Una publicVerification "failed" non significa sempre che la vecchia scrittura
+   sia inefficace: se il crawl non ha acquisito HTML valido serve ancora soltanto
+   riprovare il crawl. Diventa invece una prova conclusiva quando il crawl ha
+   letto la pagina e dichiara che il vecchio link è ancora presente, la nuova
+   destinazione non compare oppure il link richiesto non è presente. */
+function ogosConclusiveLinkPublicFailureV3131(task) {
+  if (!task || String(task.publicVerification?.status || '') !== 'failed') return false;
+  const failures = Array.isArray(task.publicVerification?.failures) ? task.publicVerification.failures : [];
+  const linkFailures = failures.filter(f => ['replace_link','internal_link'].includes(String(f?.operation || '')));
+  if (!linkFailures.length) return false;
+  return linkFailures.every(f => {
+    const reason = String(f?.reason || '');
+    if (!reason) return false;
+    if (/non ha acquisito HTML pubblico valido|crawl pubblico non (?:è|e) disponibile|non ha acquisito la pagina/i.test(reason)) return false;
+    return /vecchio link compare ancora|nuova destinazione non compare|link con destinazione.*non compare/i.test(reason);
+  });
+}
+
+function ogosActiveRemoteRepairsV3131(task) {
+  return (state.repairs || []).filter(repair =>
+    String(repair.taskId) === String(task?.id) && repair.remote && !repair.undone && !repair.superseded
+  );
+}
+
+function ogosNeedsReapplyV3131(task) {
+  return !!task && ogosConclusiveLinkPublicFailureV3131(task) && ogosActiveRemoteRepairsV3131(task).length > 0;
+}
+
+function ogosPublicFailureDetailV3131(task) {
+  const failures = Array.isArray(task?.publicVerification?.failures) ? task.publicVerification.failures : [];
+  return failures.filter(f => ['replace_link','internal_link'].includes(String(f?.operation || '')))
+    .map(f => `${f.url ? `${f.url}: ` : ''}${f.reason || 'correzione non confermata'}`)
+    .join(' · ');
+}
+
+function ogosClearPendingProofV3131(task) {
+  (state.pages || []).forEach(page => {
+    if (String(page?.pendingRemoteVerification?.taskId ?? '') !== String(task?.id ?? '')) return;
+    page.lastRemoteVerification = {
+      taskId: task.id,
+      status: 'superseded',
+      observedAt: task.publicVerification?.observedAt || new Date().toISOString(),
+      reasons: clone(task.publicVerification?.failures || []),
+      changes: clone(page.pendingRemoteVerification?.changes || {})
+    };
+    delete page.pendingRemoteVerification;
+    delete page.liveDataStale;
+  });
+}
+
+/* Prima di riprovare una correzione conclusivamente fallita sul sito pubblico,
+   torniamo alla baseline della vecchia operation_id. Non sovrapponiamo mai una
+   seconda scrittura a una precedente non ripristinata. */
+async function ogosPrepareReapplyV3131(task, button = null) {
+  if (!ogosNeedsReapplyV3131(task)) return true;
+  const repairs = ogosActiveRemoteRepairsV3131(task).slice().reverse();
+  const previousVerification = clone(task.publicVerification || {});
+  let restored = 0;
+  try {
+    for (const repair of repairs) {
+      if (!repair.operationId || !repair.rollbackToken) throw new Error('La vecchia operazione non conserva un rollback valido.');
+      if (button) button.textContent = `Ripristino vecchia operazione ${restored + 1}/${repairs.length}…`;
+      const result = await wpRequest('/wp-json/organic-growth-os/v1/tasks/rollback', {
+        method: 'POST',
+        body: JSON.stringify({ operation_id: repair.operationId, rollback_token: repair.rollbackToken })
+      });
+      repair.undone = true;
+      repair.superseded = true;
+      repair.supersededAt = new Date().toISOString();
+      repair.supersededReason = 'public-crawl-confirmed-ineffective';
+      repair.supersededPublicVerification = previousVerification;
+      repair.supersededRollback = result && typeof result === 'object' ? clone(result) : { restored: true };
+      restored++;
+      save(true);
+    }
+  } catch (error) {
+    recordTaskStatus(task, 'In corso');
+    task.approved = true;
+    task.reapplyBlocked = {
+      at: new Date().toISOString(),
+      reason: error.message || String(error),
+      restored,
+      total: repairs.length
+    };
+    save(true); renderShell(); renderKanban(); renderVerify();
+    toast(`Nuova applicazione bloccata: il vecchio rollback non è stato completato (${restored}/${repairs.length}). ${error.message}`, 'error');
+    return false;
+  }
+
+  ogosClearPendingProofV3131(task);
+  task.reapplyHistory = Array.isArray(task.reapplyHistory) ? task.reapplyHistory : [];
+  task.reapplyHistory.push({
+    at: new Date().toISOString(),
+    reason: 'public-crawl-confirmed-ineffective',
+    restoredOperations: restored,
+    previousVerification
+  });
+  task.reapplyHistory = task.reapplyHistory.slice(-20);
+  task.publicVerification = {
+    status: 'superseded',
+    reason: 'previous-write-rolled-back-for-owner-resolution',
+    checkedAt: new Date().toISOString(),
+    previous: previousVerification
+  };
+  delete task.partialApply;
+  delete task.reapplyBlocked;
+  if (task.evidence && String(task.evidence.source || '').startsWith('wordpress-')) delete task.evidence;
+  recordTaskStatus(task, 'In corso');
+  task.approved = true;
+  save(true); renderShell(); renderKanban(); renderVerify();
+  toast(`Vecchia operazione ripristinata (${restored}/${repairs.length}). Ora ricalcolo il proprietario reale del link.`);
+  return true;
+}
+
+/* La card non invita più a ripetere inutilmente lo stesso crawl quando il crawl
+   appena riuscito ha già dimostrato che la vecchia scrittura non è efficace. */
+const ogosTaskCardV3131Base = taskCard;
+taskCard = function(task) {
+  let html = ogosTaskCardV3131Base.apply(this, arguments);
+  if (!ogosNeedsReapplyV3131(task)) return html;
+  html = html
+    .replace('class="task-auto ogos-retry-public-proof"', 'class="task-auto ogos-reapply-after-public-failure3131"')
+    .replace('class="task-auto repair-task"', 'class="task-auto ogos-reapply-after-public-failure3131"')
+    .replace('Riprova verifica pubblica →', 'Risolvi nuovamente →')
+    .replace('Riprova modifiche non applicate →', 'Risolvi nuovamente →');
+  return html;
+};
+
+/* Anche aprendo la scheda direttamente, lo stato conclusivo prevale sul vecchio
+   wrapper 3.12.21: niente nuovo crawl identico, ma rollback sicuro + resolver. */
+const ogosOpenPluginRepairV3131Base = openPluginRepair;
+openPluginRepair = function(task) {
+  if (!ogosNeedsReapplyV3131(task)) return ogosOpenPluginRepairV3131Base.apply(this, arguments);
+  const form = $('#modalForm');
+  $('.modal')?.classList.add('task-detail-modal');
+  $('#modalTitle').textContent = 'Correzione non pubblicata';
+  $('#modalHelp').textContent = task.title;
+  const detail = ogosPublicFailureDetailV3131(task);
+  form.innerHTML = `<div class="safe-note warn-note"><b>Il crawl ha confermato che la vecchia correzione non è efficace sul sito pubblico.</b><br>${esc(detail || 'Il risultato richiesto non compare nell’HTML pubblico.')}</div>${affectedTable(pluginTaskPayload(task).affected)}<div class="safe-note"><b>Procedura sicura:</b> prima ripristino la vecchia operation_id usando il rollback già registrato; solo se il ripristino riesce riapro il resolver 3.13.x per individuare il proprietario reale del link. Non sovrappongo una seconda scrittura alla precedente.</div><div id="pluginPreviewResult"></div><div class="repair-actions"><button type="button" class="btn" data-close>Chiudi</button><button type="button" class="btn primary ogos-reapply-after-public-failure3131" data-id="${task.id}">Risolvi nuovamente</button></div>`;
+  form.dataset.type = 'wordpress-plugin-reapply';
+  $('#modalBackdrop').classList.add('open');
+  return true;
+};
+
+/* Il nuovo comando ha una classe propria, quindi non può essere intercettato dal
+   vecchio listener “Riprova verifica pubblica”. Dopo il rollback riapre il normale
+   flusso di preview/apply; lì il resolver 3.13.0 può trovare menu/template/pagina. */
+document.addEventListener('click', async event => {
+  const button = event.target.closest?.('.ogos-reapply-after-public-failure3131');
+  if (!button) return;
+  event.preventDefault(); event.stopImmediatePropagation();
+  const task = (state.tasks || []).find(item => String(item.id) === String(button.dataset.id));
+  if (!task) return;
+  const original = button.textContent;
+  button.disabled = true;
+  try {
+    if (!await ogosPrepareReapplyV3131(task, button)) return;
+    button.textContent = 'Ricalcolo proprietario…';
+    /* Usa il wrapper 3.12.21 già presente: poiché i vecchi repair sono ora undone
+       e publicVerification non è più pending/failed, esso delega al normale
+       openPluginRepair, mantenendo tutte le protezioni di preview. */
+    ogosOpenPluginRepairV3131Base(task);
+  } finally {
+    if (button.isConnected) { button.disabled = false; button.textContent = original; }
+  }
+}, true);
+
+/* Se un task arriva già in questo stato da 3.13.0, il solo caricamento della
+   3.13.1 non modifica WordPress: cambia soltanto la CTA. Il rollback avviene
+   esclusivamente dopo il click esplicito “Risolvi nuovamente”. */
+
+
 /* API pubblica stabile dichiarata dal manifest. */
 function ogosRunResumableCrawlV347(){return runWordPressCrawl.apply(this,arguments);}
 window.OGOS_BUILD_INFO=Object.freeze({version:APP_VERSION,buildId:BUILD_ID,buildTimestamp:BUILD_TIMESTAMP});
 
-window.OGOS_WP_FIX_BUILD="3.13.0-link-owner-resolver-diagnostics";
+window.OGOS_WP_FIX_BUILD="3.13.1-public-failure-reapply";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
