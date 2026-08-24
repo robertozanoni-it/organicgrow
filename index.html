@@ -245,7 +245,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.12.7',OGOS_SCHEMA_VERSION=1;
+const APP_VERSION='3.12.11',OGOS_SCHEMA_VERSION=1;
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -263,7 +263,7 @@ function ogosAppOrigin3101(){
   }catch{}
   return 'null';
 }let state=normalizeState(load()),wpSecret='',wpPendingState='';const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
-function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.schemaVersion=OGOS_SCHEMA_VERSION;value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,running:false,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{})};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
+function normalizeState(value){value=value&&typeof value==='object'?value:clone(seed);value.schemaVersion=OGOS_SCHEMA_VERSION;value.repairs=Array.isArray(value.repairs)?value.repairs.filter(r=>r&&typeof r==='object'):[];value.settings=value.settings&&typeof value.settings==='object'?value.settings:clone(seed.settings);value.project=value.project&&typeof value.project==='object'?value.project:clone(seed.project);value.imports=Array.isArray(value.imports)?value.imports:[];value.project.dataOrigin=value.project.dataOrigin||(value.imports.some(i=>i?.name==='Dati demo iniziali')?'demo':'legacy');value.integration={mode:'local',...(value.integration&&typeof value.integration==='object'?value.integration:{})};value.wordpress={url:'',username:'',connected:false,userName:'',lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],...(value.wordpress&&typeof value.wordpress==='object'?value.wordpress:{}),connected:false,pluginDetected:false,pluginVersion:'',capabilities:[]};delete value.wordpress.pendingState;value.gptsites={projectName:'',projectUrl:'',lastPackage:null,lastResult:null,version:null,packages:[],...(value.gptsites&&typeof value.gptsites==='object'?value.gptsites:{})};value.gptsites.packages=Array.isArray(value.gptsites.packages)?value.gptsites.packages.filter(Boolean):[];value.audit={last:null,source:null,liveVerified:false,observedAt:null,...(value.audit&&typeof value.audit==='object'?value.audit:{}),running:false};value.pages=Array.isArray(value.pages)?value.pages.filter(p=>p&&typeof p==='object'):[];value.tasks=(Array.isArray(value.tasks)?value.tasks:[]).filter(t=>t&&typeof t==='object').map((t,index)=>{const oldId=t.id??`legacy-${Date.now()}-${index}`,id=Number.isFinite(Number(oldId))?Number(oldId):Date.now()+index+Math.random(),d=TASK_DETAILS[oldId]||{},repair=[...value.repairs].reverse().find(r=>String(r.taskId)===String(oldId)&&!r.undone),gptPkg=value.gptsites.packages.find(p=>p?.id===t.gptSitesResult?.packageId),gptVerified=!!t.gptSitesResult?.verified&&!!gptPkg?.usedAt&&Array.isArray(gptPkg.taskIds)&&gptPkg.taskIds.map(String).includes(String(oldId)),verified=gptVerified||!!repair?.verification?.all_verified,evidence=t.evidence&&typeof t.evidence==='object'?t.evidence:{status:'unverified',source:'legacy-or-demo',observedAt:null},reasons=Array.isArray(t.partialApply?.reasons)?t.partialApply.reasons:(t.partialApply?.reasons&&typeof t.partialApply.reasons==='object'?Object.values(t.partialApply.reasons):[]);if(repair)repair.taskId=id;return {...t,id,status:t.status==='Verificata'&&!verified?'Completata':(t.status||'Da approvare'),gptSitesResult:t.gptSitesResult&&t.gptSitesResult.verified&&!gptVerified?{...t.gptSitesResult,verified:false}:t.gptSitesResult,evidence,partialApply:t.partialApply?{...t.partialApply,reasons:reasons.filter(r=>r&&typeof r==='object')}:t.partialApply,affected:Array.isArray(t.affected)&&t.affected.length?t.affected.filter(a=>a&&typeof a==='object'):clone(d.affected||[]),autoPossible:t.autoPossible??!!d.auto}});return value}
 function clone(v){return JSON.parse(JSON.stringify(v))}
 /* Il registro viene letto prima dell'inizializzazione dell'interfaccia. Se il
    JSON e' corrotto non va mai sostituito silenziosamente con i dati demo. */
@@ -979,6 +979,10 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.12.11', date: '2026-08-24', notes: 'Menu e template globali invalidano ora anche cache di dominio, cache del menu e cache Elementor dopo scrittura, fallimento ripristinato e rollback. Evita che il database sia corretto mentre il sito pubblico continua a mostrare il vecchio link.', compatibility: 'Installa insieme app e connettore 3.12.11.' },
+  { version: '3.12.10', date: '2026-08-24', notes: 'Le task replace_link supportano anche le voci dei menu WordPress: proprietario univoco, scrittura riletta, snapshot, verifica e rollback. I proprietari multipli o i task che mescolano una modifica globale con altri campi restano bloccati per sicurezza.', compatibility: 'Installa insieme app e connettore 3.12.10.' },
+  { version: '3.12.9', date: '2026-08-24', notes: 'Audit completo dei nove tipi di task automatici. La ricerca dei template Elementor riconosce anche URL con slash escaped nel JSON; redirect, inserimenti e sostituzioni con payload incompleto vengono bloccati già nel pre-check; H1 Elementor e gerarchie non modificabili non sono più dichiarati automatici.', compatibility: 'Installa insieme app e connettore 3.12.9.' },
+  { version: '3.12.8', date: '2026-08-24', notes: 'Le sostituzioni cercano ora il proprietario esatto nei template Elementor globali e lo modificano automaticamente quando è univoco, conservando snapshot e rollback. Recuperati inoltre i lock di indicizzazione rimasti attivi dopo un reload.', compatibility: 'Installa insieme app e connettore 3.12.8.' },
   { version: '3.12.7', date: '2026-08-24', notes: 'Il pre-check distingue i link realmente presenti nel contenuto modificabile da quelli prodotti da template globali, menu, header/footer o popup. Corretto anche il pulsante di applicazione reale che restava bloccato dopo un errore.', compatibility: 'Installa insieme app e connettore 3.12.7.' },
   { version: '3.12.6', date: '2026-08-24', notes: 'La finestra WordPress non promette più una scrittura quando la modalità simulazione è attiva: mostra chiaramente “Simula soltanto” e offre l’azione esplicita “Disattiva simulazione e applica”.', compatibility: 'Installa insieme app e connettore 3.12.6.' },
   { version: '3.12.5', date: '2026-08-24', notes: 'Retry WordPress limitati agli errori temporanei; fallback persistente e con scadenza per le risposte idempotenti; dettagli completi nei rollback incompleti.', compatibility: 'Installa insieme app e connettore 3.12.5.' },
@@ -11626,7 +11630,9 @@ init = function() {
 
 function ogosOperationKeysV3122(changes) {
   const source = changes && typeof changes === 'object' ? changes : {};
+  const supported = new Set(['title', 'post_title', 'meta_description', 'canonical', 'intro_text', 'redirect', 'internal_link', 'replace_link', 'heading_hierarchy']);
   return Object.keys(source).filter(key => {
+    if (!supported.has(key)) return false;
     const value = source[key];
     if (key === 'heading_hierarchy') return !!value;
     if (key === 'redirect' || key === 'internal_link' || key === 'replace_link') return !!value && typeof value === 'object';
@@ -12383,7 +12389,57 @@ document.addEventListener('click', async event => {
   }
 }, true);
 
-window.OGOS_WP_FIX_BUILD="3.12.7-editability-precheck";
+/* 3.12.8: un'operazione asincrona non può sopravvivere al reload della app.
+   Se il flag persistito dice ancora running all'avvio, è necessariamente
+   orfano e deve diventare una scansione interrotta/riprendibile. */
+function ogosRecoverOrphanIndexingScanV3128() {
+  const scan = state.indexing?.currentScan;
+  if (!scan?.running) return false;
+  scan.running = false;
+  scan.interrupted = true;
+  scan.error = 'La verifica precedente è stata interrotta dalla chiusura o dal ricaricamento della pagina. Puoi riavviarla.';
+  scan.recoveredAt = new Date().toISOString();
+  return true;
+}
+
+const ogosInitV3128Base = init;
+init = function() {
+  const recovered = ogosRecoverOrphanIndexingScanV3128();
+  const result = ogosInitV3128Base.apply(this, arguments);
+  if (recovered) {
+    save(true);
+    renderIndexing();
+    toast('Verifica di indicizzazione precedente sbloccata: ora puoi riavviarla.', 'error');
+  }
+  return result;
+};
+
+/* App standalone e connettore devono condividere lo stesso contratto task.
+   Eseguire una app vecchia contro un connettore nuovo (o viceversa) produce
+   anteprime, capability e stati UI incoerenti: blocchiamo prima della scrittura. */
+function ogosConnectorVersionMatchesV3129() {
+  const pluginVersion = String(state.wordpress?.pluginVersion || '').trim();
+  return !pluginVersion || pluginVersion === APP_VERSION;
+}
+const ogosOpenPluginRepairV3129Base = openPluginRepair;
+openPluginRepair = function(task) {
+  if (!ogosConnectorVersionMatchesV3129()) {
+    toast(`Versioni non allineate: app ${APP_VERSION}, connettore ${state.wordpress?.pluginVersion || 'non rilevato'}. Installa e apri la stessa versione prima di applicare task automatici.`, 'error');
+    go('settings');
+    return false;
+  }
+  return ogosOpenPluginRepairV3129Base.apply(this, arguments);
+};
+const ogosApplyPluginTaskV3129Base = applyPluginTaskSingle;
+applyPluginTaskSingle = function() {
+  if (!ogosConnectorVersionMatchesV3129()) {
+    toast(`Applicazione bloccata: app ${APP_VERSION} e connettore ${state.wordpress?.pluginVersion || 'non rilevato'} non coincidono.`, 'error');
+    return Promise.resolve(false);
+  }
+  return ogosApplyPluginTaskV3129Base.apply(this, arguments);
+};
+
+window.OGOS_WP_FIX_BUILD="3.12.11-global-cache-transaction";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
