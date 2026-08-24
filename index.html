@@ -245,8 +245,8 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.12.20',OGOS_SCHEMA_VERSION=1;
-const BUILD_ID='3.12.20-20260824-cors-crawl-post',BUILD_TIMESTAMP='2026-08-24T17:21:00+01:00';
+const APP_VERSION='3.13.0',OGOS_SCHEMA_VERSION=1;
+const BUILD_ID='3.13.0-20260824-link-owner-resolver-diagnostics',BUILD_TIMESTAMP='2026-08-24T17:41:00+01:00';
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -980,6 +980,8 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.13.0', date: '2026-08-24', notes: 'Internal linking WordPress rifondato sul proprietario reale del link. Il connettore distingue contenuto pagina, Elementor pagina, template Elementor globale, template/block WordPress, menu custom e normali voci menu collegate a Pagine/Articoli. Se esistono più proprietari esatti non modifica tutto alla cieca: li mostra e richiede una scelta. Aggiunta diagnostica non distruttiva AUTH → CORS → OWNER RESOLUTION → PREVIEW → PUBLIC CRAWL, con APPLY/STORAGE/VERIFY marcati esplicitamente come non eseguiti fino all’approvazione.', compatibility: 'Installa insieme app e connettore 3.13.0. Per i task link già aperti riapri la scheda: il nuovo pre-check ricalcola il proprietario reale.' },
+  { version: '3.12.21', date: '2026-08-24', notes: 'Corretto il falso fallimento del crawl quando post-apply e verifica richiedono lo stesso controllo: i chiamanti condividono ora un unico crawl in corso invece di respingersi. Se una scrittura WordPress è già registrata e la stessa URL/operazione è soltanto in attesa di prova pubblica, eventuali vecchi motivi manuali del retry vengono riconciliati e la UI mostra esclusivamente “Riprova verifica pubblica”, senza riaprire preview/apply.', compatibility: 'Installa insieme app e connettore 3.12.21. Le vere modifiche globali non individuabili restano manuali; una modifica già scritta non viene duplicata.' },
   { version: '3.12.20', date: '2026-08-24', notes: 'Corretto il blocco CORS del crawl osservato su hosting che accettano il preflight ma rifiutano la risposta GET reale. Il connettore applica ora gli header CORS in tre livelli (inizio richiesta, WP_REST_Response e fase di serve) e /crawl/current accetta anche POST. L’app usa POST per il crawl con fallback GET solo per connettori precedenti e, dopo una scrittura riuscita, sostituisce lo stato ambiguo “Solo verifica manuale” con “Riprova verifica pubblica”.', compatibility: 'Installa insieme app e connettore 3.12.20. Dopo l’aggiornamento non riapplicare i link già scritti: usa Riprova verifica pubblica.' },
   { version: '3.12.19', date: '2026-08-24', notes: 'Quando la scrittura WordPress è riuscita e manca soltanto la prova pubblica, la task mostra “Riprova verifica pubblica” e non riapre l’apply. Il comando esegue esclusivamente crawl + verifica storage, preservando modifica e rollback.', compatibility: 'Installa insieme app e connettore 3.12.19.' },
   { version: '3.12.18', date: '2026-08-24', notes: 'Audit architetturale completo: aggiunti BUILD_ID e BUILD_TIMESTAMP alla diagnostica e ripristinata l’API pubblica del crawl dichiarata dal manifest. Nessun wrapper storico è stato rimosso senza prova runtime di non raggiungibilità.', compatibility: 'Installa insieme app e connettore 3.12.18.' },
@@ -12618,11 +12620,243 @@ taskCard = function(task) {
   return html + retry;
 };
 
+
+/* ==========================================================================
+   v3.12.21 — crawl single-flight + stato “solo prova pubblica” affidabile
+   ========================================================================== */
+/* Due punti del flusso possono richiedere lo stesso crawl quasi nello stesso
+   istante (post-apply e verifica esplicita). Il vecchio lock globale respingeva
+   la seconda richiesta con "è già in corso un crawl WordPress" e restituiva
+   false; il chiamante interpretava quel false come "crawl non ha risposto",
+   anche se il primo crawl stava lavorando regolarmente. Da ora tutti i
+   richiedenti condividono la stessa Promise del crawl in corso. */
+let ogosSharedCrawlPromiseV31221 = null;
+const ogosRunWordPressCrawlV31221Base = runWordPressCrawl;
+runWordPressCrawl = function() {
+  if (ogosSharedCrawlPromiseV31221) return ogosSharedCrawlPromiseV31221;
+  const self = this, args = arguments;
+  let shared;
+  shared = Promise.resolve()
+    .then(() => ogosRunWordPressCrawlV31221Base.apply(self, args))
+    .finally(() => {
+      if (ogosSharedCrawlPromiseV31221 === shared) ogosSharedCrawlPromiseV31221 = null;
+    });
+  ogosSharedCrawlPromiseV31221 = shared;
+  return shared;
+};
+
+/* La verifica pubblica ha bisogno di avviare un crawl mentre possiede già il
+   lock "verifica". Inoltre, se l'utente chiede la verifica mentre il crawl
+   post-apply è già partito, deve aspettare quel crawl invece di ricevere un
+   falso errore di concorrenza. Manteniamo esclusivi tutti gli altri incroci. */
+const ogosRunExclusiveV31221Base = ogosRunExclusiveV3613;
+ogosRunExclusiveV3613 = async function(label, callback, fallback = false) {
+  const busy = ogosBusyMessageV3613();
+  if (label === 'un crawl WordPress' && busy === 'la verifica di un’attività') {
+    return callback();
+  }
+  if (label === 'la verifica di un’attività' && busy === 'un crawl WordPress' && ogosSharedCrawlPromiseV31221) {
+    await ogosSharedCrawlPromiseV31221;
+    return ogosRunExclusiveV31221Base(label, callback, fallback);
+  }
+  return ogosRunExclusiveV31221Base(label, callback, fallback);
+};
+
+/* Se WordPress ha già scritto una modifica e la pagina conserva
+   pendingRemoteVerification per la stessa URL/operazione, un vecchio motivo
+   "manuale" prodotto da un retry non può riaprire preview/apply. In quel caso
+   manca soltanto la prova pubblica: si riusa il crawl e poi la verifica
+   storage, senza duplicare la scrittura. Le vere righe manuali diverse dalla
+   modifica già registrata restano invece aperte. */
+function ogosPendingProofKeysV31221(task) {
+  const keys = new Set();
+  (task?.affected || []).forEach(item => {
+    const page = ogosPageForUrlV3611(item?.url);
+    const pending = page?.pendingRemoteVerification;
+    if (!pending || String(pending.taskId ?? '') !== String(task?.id ?? '')) return;
+    const changes = pending.changes && typeof pending.changes === 'object' ? pending.changes : item?.changes || {};
+    ogosOperationKeysV3122(changes).forEach(operation => keys.add(`${comparableUrl(item.url)}|${operation}`));
+  });
+  return keys;
+}
+function ogosReasonBelongsToPendingProofV31221(reason, keys) {
+  const code = String(reason?.code || ''), operation = String(reason?.operation || '');
+  if (code.startsWith('ogos_public_') || operation === 'public_verification') return true;
+  const key = `${comparableUrl(reason?.url)}|${operation}`;
+  return !!operation && keys.has(key);
+}
+function ogosOnlyPublicProofPendingV31221(task) {
+  if (!task) return false;
+  const repairs = (state.repairs || []).filter(repair => String(repair.taskId) === String(task.id) && repair.remote && !repair.undone);
+  const keys = ogosPendingProofKeysV31221(task);
+  const publicPending = ['pending','failed'].includes(String(task.publicVerification?.status || '')) || keys.size > 0;
+  if (!repairs.length || !publicPending) return false;
+  const reasons = normalizedPartialReasons(task);
+  return reasons.every(reason => ogosReasonBelongsToPendingProofV31221(reason, keys));
+}
+ogosOnlyPublicProofPendingV31219 = ogosOnlyPublicProofPendingV31221;
+
+function ogosReconcilePendingProofV31221(task) {
+  if (!task || !ogosOnlyPublicProofPendingV31221(task)) return false;
+  const keys = ogosPendingProofKeysV31221(task), reasons = normalizedPartialReasons(task);
+  const keep = reasons.filter(reason => !ogosReasonBelongsToPendingProofV31221(reason, keys));
+  if (keep.length) task.partialApply = { ...(task.partialApply || {}), skippedCount: keep.length, reasons: keep };
+  else delete task.partialApply;
+  task.publicVerification = { ...(task.publicVerification || {}), status: task.publicVerification?.status === 'failed' ? 'failed' : 'pending' };
+  return true;
+}
+
+/* Anche se una vecchia UI conserva il bottone "Approva e applica", il comando
+   viene intercettato prima del preview: con una scrittura remota già
+   registrata esegue soltanto crawl + verify. */
+const ogosApplyPluginTaskV31221Base = applyPluginTaskSingle;
+applyPluginTaskSingle = async function(id, triggerButton = null) {
+  const task = (state.tasks || []).find(item => String(item.id) === String(id));
+  if (task && ogosReconcilePendingProofV31221(task)) {
+    save(true); renderShell(); renderKanban(); renderVerify();
+    if (triggerButton) {
+      triggerButton.disabled = true;
+      triggerButton.textContent = 'Verifica pubblica in corso…';
+    }
+    try {
+      return await verifyTask(id, { silent: false });
+    } finally {
+      if (triggerButton?.isConnected) {
+        triggerButton.disabled = false;
+        triggerButton.textContent = 'Riprova verifica pubblica';
+      }
+    }
+  }
+  return ogosApplyPluginTaskV31221Base.apply(this, arguments);
+};
+
+/* Apertura del task coerente con lo stato: niente più modale che dichiara
+   "Solo verifica manuale" quando la stessa modifica è già registrata in
+   WordPress ed è in attesa del crawl pubblico. */
+const ogosOpenPluginRepairV31221Base = openPluginRepair;
+openPluginRepair = function(task) {
+  if (!ogosReconcilePendingProofV31221(task)) return ogosOpenPluginRepairV31221Base.apply(this, arguments);
+  const form = $('#modalForm');
+  $('.modal')?.classList.add('task-detail-modal');
+  $('#modalTitle').textContent = 'Verifica modifica WordPress';
+  $('#modalHelp').textContent = task.title;
+  form.innerHTML = `<div class="safe-note warn-note"><b>Scrittura già registrata in WordPress.</b><br>Manca soltanto la conferma nell’HTML pubblico e nello storage. Non viene eseguita una seconda scrittura.</div>${affectedTable(pluginTaskPayload(task).affected)}<div id="pluginPreviewResult"></div><div class="repair-actions"><button type="button" class="btn" data-close>Chiudi</button><button type="button" class="btn primary ogos-retry-public-proof" data-id="${task.id}">Riprova verifica pubblica</button></div>`;
+  form.dataset.type = 'wordpress-plugin';
+  $('#modalBackdrop').classList.add('open');
+  save(true);
+  return true;
+};
+
+/* Pulisce alla prima apertura i motivi manuali residui generati durante il
+   vecchio retry, ma solo quando coincidono esattamente con una modifica remota
+   ancora in attesa di prova pubblica. */
+const ogosInitV31221Base = init;
+init = function() {
+  let changed = false;
+  (state.tasks || []).forEach(task => { if (ogosReconcilePendingProofV31221(task)) changed = true; });
+  const result = ogosInitV31221Base.apply(this, arguments);
+  if (changed) { save(true); renderShell(); if (state.ui?.view === 'fix') renderKanban(); if (state.ui?.view === 'verify') renderVerify(); }
+  return result;
+};
+
+
+
+
+/* ==========================================================================
+   v3.13.0 — resolver proprietario link + diagnostica catena WordPress
+   ========================================================================== */
+const ogosFailureV3130Base = ogosFailureV3611;
+ogosFailureV3611 = function(row, fallback) {
+  const out = ogosFailureV3130Base.apply(this, arguments);
+  if (Array.isArray(row?.owner_candidates)) out.ownerCandidates = clone(row.owner_candidates);
+  return out;
+};
+
+function ogosOwnerKindLabel3130(kind='') {
+  return ({post_content:'Contenuto pagina',elementor_page:'Pagina Elementor',elementor_global:'Template/elemento Elementor',global_content:'Template/blocco WordPress',menu_custom:'Menu · link personalizzato',menu_object:'Menu · pagina/articolo'})[kind] || kind || 'Componente WordPress';
+}
+function ogosOwnerCandidatesHtml3130(task, reason) {
+  const owners = Array.isArray(reason?.ownerCandidates) ? reason.ownerCandidates : [];
+  if (!owners.length) return '';
+  return `<div class="safe-note warn-note"><b>Il link ha ${owners.length} proprietari possibili.</b><br>Scegli dove correggerlo: nessuna modifica viene eseguita finché non selezioni il componente esatto.</div><div class="verify-list">${owners.map(owner=>`<article class="panel verify-item"><div class="verify-icon">${icon(owner.kind?.startsWith('menu_')?'link':'network')}</div><div><h3>${esc(owner.label||ogosOwnerKindLabel3130(owner.kind))}</h3><p>${esc(ogosOwnerKindLabel3130(owner.kind))}${owner.post_type?` · ${esc(owner.post_type)}`:''}${owner.current_url?` · ${esc(owner.current_url)}`:''}</p></div><button type="button" class="btn primary ogos-choose-link-owner3130" data-task-id="${task.id}" data-url="${esc(reason.url||'')}" data-owner-id="${Number(owner.id)||0}" data-owner-kind="${esc(owner.kind||'')}">Usa questo</button></article>`).join('')}</div>`;
+}
+
+const ogosApplyPluginTaskV3130Base = applyPluginTaskSingle;
+applyPluginTaskSingle = async function(id, triggerButton=null) {
+  const result = await ogosApplyPluginTaskV3130Base.apply(this, arguments);
+  const task = (state.tasks||[]).find(t=>String(t.id)===String(id));
+  if (!task) return result;
+  const reason = normalizedPartialReasons(task).find(r=>String(r.code||'')==='ogos_multiple_link_owners' && Array.isArray(r.ownerCandidates) && r.ownerCandidates.length);
+  if (reason) {
+    const button = triggerButton || ogosVisibleEl('.apply-plugin-task-single');
+    const host = button?.closest?.('#modalForm, #view-keyword-proposal, #actionDrawer') || document;
+    const box = host.querySelector?.('#pluginPreviewResult, #keywordProposalResult');
+    if (box) box.innerHTML = ogosOwnerCandidatesHtml3130(task, reason);
+    if (button) { button.disabled = true; button.textContent = 'Scegli il proprietario del link'; }
+  }
+  return result;
+};
+
+document.addEventListener('click', async event => {
+  const choose = event.target.closest?.('.ogos-choose-link-owner3130');
+  if (!choose) return;
+  event.preventDefault(); event.stopImmediatePropagation();
+  const task = (state.tasks||[]).find(t=>String(t.id)===String(choose.dataset.taskId));
+  if (!task) return;
+  const url = comparableUrl(choose.dataset.url||'');
+  const row = (task.affected||[]).find(item=>comparableUrl(item?.url)===url && item?.changes?.replace_link);
+  if (!row) { toast('La riga del link non è più disponibile: riapri il task.','error'); return; }
+  row.changes.replace_link = {...row.changes.replace_link, owner:{id:Number(choose.dataset.ownerId), kind:String(choose.dataset.ownerKind||'')}};
+  delete task.partialApply;
+  recordTaskStatus(task,'In corso'); task.approved=true; save(true); renderKanban();
+  const applyButton = ogosVisibleEl('.apply-plugin-task-single');
+  if (applyButton) { applyButton.disabled=false; applyButton.textContent='Verifica e applica al proprietario scelto'; }
+  toast('Proprietario selezionato: rieseguo il pre-check senza modificare altri componenti.');
+  await applyPluginTaskSingle(task.id, applyButton);
+}, true);
+
+function ogosPipelineStatus3130(status) {
+  return status==='pass'?'✓':status==='fail'?'✕':status==='warn'?'!':'–';
+}
+function ogosPipelineHtml3130(data) {
+  const steps = Array.isArray(data?.steps)?data.steps:[];
+  const owners = Array.isArray(data?.owners)?data.owners:[];
+  return `<div class="verify-list">${steps.map(step=>`<article class="panel verify-item"><div class="verify-icon">${esc(ogosPipelineStatus3130(step.status))}</div><div><h3>${esc(step.label||step.key)}</h3><p>${esc(step.detail||'')}</p></div><span class="tag ${step.status==='fail'?'high':step.status==='warn'?'medium':''}">${esc(step.status||'')}</span></article>`).join('')}</div>${owners.length?`<h3 style="margin-top:16px">Proprietari link rilevati</h3>${owners.map(row=>`<div class="safe-note"><b>${esc(row.url)}</b><br>${(row.owners||[]).map(owner=>esc(owner.label||ogosOwnerKindLabel3130(owner.kind))).join('<br>')||'Nessuno'}</div>`).join('')}`:''}`;
+}
+async function ogosRunApplyDiagnostics3130(task=null) {
+  if (!state.wordpress?.connected || !wpSecret) { toast('Collega WordPress prima di eseguire la diagnostica.','error'); return; }
+  task = task || (state.tasks||[]).find(t=>!taskIsCompleted(t) && (t.affected||[]).some(a=>a?.changes?.replace_link)) || (state.tasks||[]).find(t=>!taskIsCompleted(t));
+  if (!task) { toast('Nessuna attività aperta da diagnosticare.','error'); return; }
+  const form=$('#modalForm'); $('.modal')?.classList.add('audit-wide-modal'); $('#modalTitle').textContent='Diagnostica applicazione WordPress'; $('#modalHelp').textContent=task.title;
+  form.innerHTML='<p class="empty">Controllo AUTH → CORS → OWNER RESOLUTION → PREVIEW → PUBLIC CRAWL…</p>';
+  form.dataset.type='ogos-diagnostics-3130'; $('#modalBackdrop').classList.add('open');
+  try {
+    const data=await wpRequest('/wp-json/organic-growth-os/v1/diagnostics/apply-pipeline',{method:'POST',body:JSON.stringify({task:pluginTaskPayload(task)}),timeoutMs:45000});
+    form.innerHTML=`${ogosPipelineHtml3130(data)}<div class="safe-note warn-note"><b>Nessuna scrittura è stata eseguita.</b> APPLY, STORAGE e VERIFY vengono eseguiti soltanto dopo la tua approvazione nel task reale.</div><div class="repair-actions"><button type="button" class="btn" data-close>Chiudi</button><button type="button" class="btn primary" id="ogosDiagOpenTask3130">Apri attività →</button></div>`;
+    $('#ogosDiagOpenTask3130').onclick=()=>{closeModal();go('fix');state.ui.selectedTaskId=task.id;renderKanban();};
+  } catch(error) {
+    form.innerHTML=`<div class="safe-note warn-note"><b>Diagnostica non riuscita.</b><br>${esc(error.message||String(error))}</div><div class="repair-actions"><button type="button" class="btn" data-close>Chiudi</button></div>`;
+  }
+}
+
+const ogosRenderSettingsV3130Base = renderSettings;
+renderSettings = function() {
+  const result = ogosRenderSettingsV3130Base.apply(this, arguments);
+  const diag = $('#ogosDiagnostics');
+  if (diag && !$('#ogosApplyPipelineBtn3130')) {
+    const actions = document.createElement('div'); actions.className='repair-actions'; actions.style.justifyContent='flex-start'; actions.style.marginTop='10px';
+    actions.innerHTML='<button type="button" class="btn primary" id="ogosApplyPipelineBtn3130">Diagnostica applicazione WordPress</button><small class="help" style="align-self:center">Non scrive nulla: identifica proprietario del link, preview e crawl pubblico.</small>';
+    diag.before(actions);
+    $('#ogosApplyPipelineBtn3130').onclick=()=>ogosRunApplyDiagnostics3130();
+  }
+  return result;
+};
+
 /* API pubblica stabile dichiarata dal manifest. */
 function ogosRunResumableCrawlV347(){return runWordPressCrawl.apply(this,arguments);}
 window.OGOS_BUILD_INFO=Object.freeze({version:APP_VERSION,buildId:BUILD_ID,buildTimestamp:BUILD_TIMESTAMP});
 
-window.OGOS_WP_FIX_BUILD="3.12.20-cors-crawl-post";
+window.OGOS_WP_FIX_BUILD="3.13.0-link-owner-resolver-diagnostics";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
