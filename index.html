@@ -245,7 +245,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.12.1',OGOS_SCHEMA_VERSION=1;
+const APP_VERSION='3.12.3',OGOS_SCHEMA_VERSION=1;
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -979,6 +979,8 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.12.3', date: '2026-08-24', notes: 'Audit di regressione completo sul flusso WordPress. Le richieste di applicazione sono ora idempotenti: se la rete perde la risposta dopo una scrittura, il connettore restituisce lo stesso esito senza ripetere la modifica. Una pagina viene confermata soltanto quando un crawl successivo acquisisce HTML valido e dimostra il risultato specifico (H1 unico, link e anchor presenti, vecchio link assente, Title/H1/Meta/Canonical renderizzati). Le pagine non restituite dal crawl perdono i vecchi link osservati e non possono contaminare la diagnosi delle orfane. Le scritture di post_content ed Elementor sono transazionali: se la rilettura non coincide, viene tentato e verificato il ripristino immediato. I vecchi task verificati dal solo storage vengono riaperti come completati ma da confermare. Un task in attesa del crawl non nasconde più la stessa anomalia dal report. “Crawl e verifica ora” esegue automaticamente l’acquisizione pubblica e poi il controllo storage; la verifica multipla condivide un solo crawl.', compatibility: 'Installa insieme app e connettore 3.12.3. Usa “Crawl e verifica ora”: solo la combinazione verifica storage + HTML pubblico porta lo stato a Verificata.' },
+  { version: '3.12.2', date: '2026-08-24', notes: 'Risolto il falso esito “già corretto” nelle attività automatiche. L’app e il connettore ora condividono il numero delle operazioni realmente applicabili: se c’è una modifica valida, viene inviata a WordPress; se WordPress non conferma la scrittura, l’attività resta aperta con un errore esplicito. Le correzioni di link interni e H1 multipli non aggiornano più localmente i dati del crawl come se fossero pubblicati: dopo la scrittura richiedono una nuova scansione reale per confermare il risultato reso dal sito. Le attività contrassegnate in precedenza come “Verificata” dal solo pre-check vengono riaperte automaticamente, così possono essere applicate o riesaminate. La diagnosi delle pagine orfane considera ora solo HTML realmente acquisito e non si blocca per record tecnici/noindex esclusi dal grafo.', compatibility: 'Installa anche il connettore 3.12.2. Dopo l’aggiornamento esegui un crawl reale per confermare il contenuto pubblicato; nessuna attività viene più dichiarata corretta senza risposta effettiva di WordPress.' },
   { version: '3.12.1', date: '2026-08-24', notes: 'Corretto il flusso degli H1 multipli: i task creati dall’audit contengono ora la modifica strutturata da inviare a WordPress e i task già presenti vengono aggiornati automaticamente. Se il tema stampa già l’H1 del titolo, il connettore può trasformare in H2 l’H1 aggiuntivo nel contenuto o in Elementor; se gli H1 extra appartengono a un template globale, blocca la scrittura e spiega dove intervenire. Ogni proposta di link interno può ora essere aperta singolarmente per la correzione, mentre i builder non supportati passano da un controllo di fattibilità senza modifiche alla cieca. Le URL senza un crawl HTML completo non vengono più mostrate come pagine orfane: restano solo da verificare e non generano task.', compatibility: 'Per la correzione automatica degli H1 installa anche il connettore 3.12.1. I task esistenti vengono migrati alla prima apertura.' },
   { version: '3.12.0', date: '2026-08-24', notes: 'L’app si chiama ora RZ Organic Growth OS: rinominate le etichette visibili dell’app e del plugin. Slug, namespace REST e nomi delle opzioni restano invariati, quindi l’installazione esistente conserva token e impostazioni. Nuova correzione automatica degli H1 multipli. Finora l’app sapeva soltanto segnalarli: il task nasceva senza alcuna capability associata e restava per sempre “Richiede intervento manuale”. Il connettore sa ora ridurli a uno — mantiene il primo H1 in ordine di documento e porta gli altri a H2 — sia nei widget Heading di Elementor (dove il livello è il campo header_size) sia nei tag <h1> del contenuto classico, conservando attributi e testo. Gli altri page builder restano esclusi, come per ogni modifica al contenuto che non possiamo leggere in modo strutturato. La correzione passa da anteprima, snapshot e ripristino come tutte le altre, e la verifica ricontrolla il numero reale di H1, non solo l’impronta del contenuto. La diagnostica del collegamento include ora il controllo decisivo: una richiesta reale alla rotta di scambio con un codice non valido. È l’unica rotta esente dall’allowlist CORS, quindi risponde anche prima di qualunque collegamento: se la risposta è leggibile, preflight, CORS e rotte REST funzionano davvero; se fallisce a livello di rete, il blocco è fra il browser e WordPress (firewall applicativo, CDN, regole sulle OPTIONS).', compatibility: 'La correzione degli H1 multipli richiede il connettore 3.12.0: con una versione precedente il task resta manuale, senza errori. Nessuna modifica ai dati salvati.' },
   { version: '3.11.5', date: '2026-08-24', notes: 'Corretti due difetti trovati mettendo in piedi un WordPress di prova reale, con il codice vero del connettore e due origini distinte: i test precedenti simulavano le risposte dentro il browser e quindi non applicavano mai il CORS. (1) Un codice di collegamento generato dalla bacheca non porta con sé alcuna origine, e l’origine dell’app non veniva quindi mai registrata nell’allowlist CORS: lo scambio riusciva, l’app si dichiarava collegata e da quel momento ogni chiamata REST veniva bloccata dal browser, senza alcun errore che lo spiegasse. Ora l’origine viene dedotta dall’header Origin della richiesta di scambio, che è impostato dal browser e appartiene per definizione all’app che sta riscattando il codice. (2) Il messaggio con le istruzioni di recupero — indirizzo da aprire a mano, codice dalla bacheca — veniva scritto e subito sovrascritto dal ripristino della card con il neutro “Premi Collega WordPress”: spariva esattamente nel momento in cui serviva. Corretto inoltre lo scambio del codice, che usava l’indirizzo memorizzato invece di quello scritto nel campo: con un codice manuale poteva finire al sito del progetto precedente.', compatibility: 'Richiede il connettore 3.11.5 per la registrazione dell’origine sui codici generati dalla bacheca. Nessuna modifica ai dati salvati.' },
@@ -8110,7 +8112,7 @@ runWordPressCrawl=async function() {
       if(++guard>10000)throw new Error('Crawl interrotto: troppe richieste consecutive');
     }
     const observedAt=new Date().toISOString();let matched=0;
-    (state.pages||[]).forEach(page=>{const crawl=(page.wpId!=null&&byId[String(page.wpId)])||byUrl[comparableUrl(page.url)];if(!crawl)return;matched++;page.crawl={httpStatus:crawl.http_status,redirectHops:crawl.redirect_hops,finalUrl:crawl.final_url||'',redirectChain:Array.isArray(crawl.redirect_chain)?crawl.redirect_chain:[],h1Count:crawl.h1_count,h1Text:crawl.h1_text||'',titleText:crawl.title_text||'',headings:Array.isArray(crawl.headings_text)?crawl.headings_text:[],contentExcerpt:crawl.content_excerpt||'',robotsMeta:[crawl.robots_meta,crawl.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!crawl.robots_blocked,soft404:!!crawl.soft_404,canonicalHtml:crawl.canonical_html,hreflang:crawl.hreflang,imagesTotal:crawl.images_total,imagesMissingAlt:crawl.images_missing_alt,imagesAltEmptyReview:crawl.images_alt_empty_review||0,checkedAt:observedAt};if(Array.isArray(crawl.internal_links)){page.live=page.live&&typeof page.live==='object'?page.live:{};const saved=Array.isArray(page.live.internalLinkDetails)?page.live.internalLinkDetails:[],rendered=Array.isArray(crawl.internal_link_details)?crawl.internal_link_details:[];page.live.internalLinks=crawl.internal_links.slice();page.live.internalLinkDetails=rendered.map(detail=>saved.find(old=>comparableUrl(old?.href)===comparableUrl(detail?.href)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase())||detail);page.live.internalLinkSource='rendered-html';page.live.internalLinkObservedAt=observedAt;}});
+    (state.pages||[]).forEach(page=>{const crawl=(page.wpId!=null&&byId[String(page.wpId)])||byUrl[comparableUrl(page.url)];if(!crawl)return;matched++;page.crawl={httpStatus:crawl.http_status,redirectHops:crawl.redirect_hops,finalUrl:crawl.final_url||'',redirectChain:Array.isArray(crawl.redirect_chain)?crawl.redirect_chain:[],h1Count:crawl.h1_count,h1Text:crawl.h1_text||'',titleText:crawl.title_text||'',metaDescriptionText:crawl.meta_description_html||'',renderedText:crawl.rendered_text||'',renderedHtml:crawl.rendered_html===true,headings:Array.isArray(crawl.headings_text)?crawl.headings_text:[],contentExcerpt:crawl.content_excerpt||'',robotsMeta:[crawl.robots_meta,crawl.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!crawl.robots_blocked,soft404:!!crawl.soft_404,canonicalHtml:crawl.canonical_html,hreflang:crawl.hreflang,imagesTotal:crawl.images_total,imagesMissingAlt:crawl.images_missing_alt,imagesAltEmptyReview:crawl.images_alt_empty_review||0,checkedAt:observedAt};page.live=page.live&&typeof page.live==='object'?page.live:{};if(crawl.rendered_html===true&&Array.isArray(crawl.internal_links)){const saved=Array.isArray(page.live.internalLinkDetails)?page.live.internalLinkDetails:[],rendered=Array.isArray(crawl.internal_link_details)?crawl.internal_link_details:[];page.live.internalLinks=crawl.internal_links.slice();page.live.internalLinkDetails=rendered.map(detail=>saved.find(old=>comparableUrl(old?.href)===comparableUrl(detail?.href)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase())||detail);page.live.internalLinkSource='rendered-html';page.live.internalLinkObservedAt=observedAt;}else{page.live.internalLinks=[];page.live.internalLinkDetails=[];page.live.internalLinkSource='unavailable';page.live.internalLinkObservedAt=observedAt;}});
     state.crawlSitewide=sitewide;state.crawlCoverage={domain:normalizeProjectDomain(state.project?.domain),total,received:seen.size,matched,inventory:(state.pages||[]).length,observedAt};
     save(true);renderShell();renderPages();renderAudit();const reconciliation=ogosRiconciliaProblemiApertiV343();if(reconciliation.changed){renderKanban();renderVerify();}
     if(el)el.innerHTML=crawlResultHtml(sitewide,matched,total);toast(`Crawl reale completato: ${matched} di ${total} pagine abbinate`);return true;
@@ -8613,9 +8615,14 @@ init=function(){ogosInitV353Base();const reconciliation=ogosRiconciliaProblemiAp
    entrata: finche' non vengono importate, le candidate restano non confermate. */
 ogosCoperturaOrfaniV346=function(graph){
   const coverage=state.crawlCoverage||{},domain=normalizeProjectDomain(state.project?.domain),eligible=graph.pages||[],inventory=eligible.length,rawTotal=Number(coverage.total)||0,received=Number(coverage.received)||0,matched=eligible.filter(page=>page.live?.internalLinkSource==='rendered-html').length;
-  const exactInventory=rawTotal>0&&inventory===rawTotal&&Number(coverage.inventory||0)===rawTotal&&Number(coverage.matched||0)===rawTotal;
+  /* Il crawler può includere record tecnici/noindex che il grafo esclude:
+     non devono bloccare per sempre la diagnosi degli orfani. Pretendiamo
+     però che tutti i contenuti pubblicati restituiti dal crawler abbiano un
+     record nell'inventario e che ogni pagina eleggibile sia stata letta da
+     HTML realmente analizzabile. */
+  const inventoryCoversCrawl=rawTotal>0&&Number(coverage.inventory||0)>=rawTotal&&Number(coverage.matched||0)>=rawTotal;
   const crawlFinished=coverage.domain===domain&&received>=rawTotal;
-  return{complete:!!(inventory&&matched===inventory&&graph.rendered===inventory&&exactInventory&&crawlFinished),total:inventory,matched,inventory,rawTotal,received,sitemapCount:Number(state.indexing?.sitemap?.urlCount)||0,sitemapComplete:!state.indexing?.sitemap?.truncated,exactInventory};
+  return{complete:!!(inventory&&matched===inventory&&graph.rendered===inventory&&inventoryCoversCrawl&&crawlFinished),total:inventory,matched,inventory,rawTotal,received,sitemapCount:Number(state.indexing?.sitemap?.urlCount)||0,sitemapComplete:!state.indexing?.sitemap?.truncated,exactInventory:inventoryCoversCrawl};
 };
 
 /* L'assenza di un link e' probatoria soltanto nell'HTML renderizzato della
@@ -9425,7 +9432,7 @@ function ogosKeepRetryChangesV3611(item,retry){if(!retry.size)return item;const 
 
 pluginTaskPayload=function(task){const name=String(task?.title||'').toLowerCase(),operation=task?.operation||{},retry=ogosRetryMapV3611(task),affected=(task?.affected||[]).map(item=>{const copy=clone(item),page=ogosPageForUrlV3611(item.url),proposal=page?seoProposalForPage(page):null;copy.changes={...(copy.changes||{})};if(operation.seoTitle)copy.changes.title=operation.seoTitle;if(operation.metaDescription)copy.changes.meta_description=operation.metaDescription;if(operation.canonical)copy.changes.canonical=operation.canonical;if(operation.type==='redirect'&&operation.redirect)copy.changes.redirect={from:operation.redirect.from,to:operation.redirect.to,code:operation.redirect.code};if(operation.type==='internal_link'&&operation.internalLink)copy.changes.internal_link={target:operation.internalLink.target,anchor:operation.internalLink.anchor,position:operation.internalLink.position};if(!copy.changes.title&&name.includes('title')&&proposal)copy.changes.title=proposal.title;if(!copy.changes.meta_description&&name.includes('meta description')&&proposal)copy.changes.meta_description=proposal.meta;return ogosKeepRetryChangesV3611(copy,retry);}).filter(Boolean);return{id:task.id,title:task.title,detail:task.detail,affected};};
 
-function ogosCapabilityForOperationV3611(operation){return({title:'seo_title',post_title:'primary_heading',meta_description:'meta_description',canonical:'canonical',redirect:'redirects',internal_link:'internal_links',replace_link:'internal_links',intro_text:'internal_links'})[operation]||'';}
+function ogosCapabilityForOperationV3611(operation){return({title:'seo_title',post_title:'primary_heading',meta_description:'meta_description',canonical:'canonical',redirect:'redirects',internal_link:'internal_links',replace_link:'internal_links',intro_text:'internal_links',heading_hierarchy:'heading_hierarchy'})[operation]||'';}
 requiredCapabilities=function(task){const capabilities=[];pluginTaskPayload(task).affected.forEach(item=>Object.keys(item.changes||{}).forEach(operation=>{const capability=ogosCapabilityForOperationV3611(operation);if(capability)capabilities.push(capability);}));return[...new Set(capabilities)];};
 
 function ogosChunksV3611(items,size=OGOS_APPLY_BATCH_V3611){const chunks=[];for(let index=0;index<items.length;index+=size)chunks.push(items.slice(index,index+size));return chunks;}
@@ -9436,8 +9443,8 @@ function ogosSyncAppliedRowsV3611(rows,changedUrls){const changed=new Set((chang
 applyPluginTaskSingle=async function(id,triggerButton=null){const task=state.tasks.find(item=>String(item.id)===String(id)),button=triggerButton||ogosVisibleEl('.apply-plugin-task-single');if(!task||!button)return;const host=button.closest?.('#modalForm, #view-keyword-proposal, #actionDrawer')||document,resultBox=host.querySelector?.('#pluginPreviewResult, #keywordProposalResult')||null,original=button.textContent,payload=pluginTaskPayload(task);if(!payload.affected.length){toast('Nessuna modifica irrisolta da applicare','error');button.textContent='Niente da applicare';return;}const offenders=[];payload.affected.forEach(item=>{const changes=item.changes||{};if(changes.canonical&&!isSameSiteUrlClient(changes.canonical))offenders.push(`${item.url} → canonical esterna`);if(changes.redirect?.to&&!isSameSiteUrlClient(changes.redirect.to))offenders.push(`${item.url} → redirect esterno`);if(changes.internal_link?.target&&!isSameSiteUrlClient(changes.internal_link.target))offenders.push(`${item.url} → link interno esterno`);if(changes.replace_link?.to&&!isSameSiteUrlClient(changes.replace_link.to))offenders.push(`${item.url} → sostituzione esterna`);});if(offenders.length){toast(`Bloccato prima dell'invio: ${offenders.slice(0,2).join('; ')}`,'error');return;}button.disabled=true;const batches=ogosChunksV3611(payload.affected),previews=[],unresolved=[],satisfied=[];let planned=0;try{for(let index=0;index<batches.length;index++){button.textContent=`Verifica ${index+1}/${batches.length}…`;ogosProgressV3611(resultBox,'Controllo di fattibilità',index,batches.length);const batchTask={...payload,affected:batches[index]},preview=await wpRequest('/wp-json/organic-growth-os/v1/tasks/preview',{method:'POST',body:JSON.stringify({task:batchTask})});previews.push({task:batchTask,preview});planned+=Number(preview.planned_operations)||0;unresolved.push(...(preview.unresolved||[]));satisfied.push(...(preview.satisfied||[]));}ogosProgressV3611(resultBox,'Controllo completato',batches.length,batches.length,`${planned} automatiche · ${satisfied.length} già corrette · ${unresolved.length} manuali`);}catch(error){toast(`Verifica WordPress non riuscita: ${error.message}`,'error');button.disabled=false;button.textContent=original;return;}
 if(!planned){if(unresolved.length){recordTaskStatus(task,'In corso');task.approved=true;task.partialApply={skippedCount:unresolved.length,reasons:unresolved.map(row=>ogosFailureV3611(row)),at:new Date().toISOString()};save(true);renderKanban();renderShell();toast(`Solo verifica manuale: ${unresolved[0].reason}`,'error');button.disabled=false;button.textContent='Solo verifica manuale';return;}recordTaskStatus(task,'Verificata');task.approved=true;task.evidence={status:'confirmed',source:'wordpress-preflight',observedAt:new Date().toISOString()};delete task.partialApply;save(true);renderKanban();renderShell();renderVerify();button.textContent='✓ Già corretto';toast(`${satisfied.length} operazioni già corrette: nessuna scrittura necessaria.`);return;}
 if(isSimulationMode()){toast('Simulazione attiva: controllo completato senza scrivere su WordPress.','ok');button.disabled=false;button.textContent=original;return;}
-const changed=[],notNeeded=[],failures=[];let stopped=false;for(let index=0;index<previews.length;index++){const current=previews[index];if(!current.preview.can_apply)continue;button.textContent=`Applica ${index+1}/${previews.length}…`;ogosProgressV3611(resultBox,'Applicazione WordPress',index,previews.length);try{const result=await wpRequest('/wp-json/organic-growth-os/v1/tasks/apply',{method:'POST',body:JSON.stringify({task:current.task,preview_token:current.preview.preview_token}),timeoutMs:30000}),batchChanged=Array.isArray(result.changed_urls)?result.changed_urls:[];changed.push(...batchChanged);notNeeded.push(...(Array.isArray(result.not_needed_urls)?result.not_needed_urls:[]));failures.push(...(Array.isArray(result.failures)?result.failures:[]));if(batchChanged.length){if(!result.operation_id||!result.rollback_token)throw new Error('WordPress ha modificato il sito senza restituire un punto di ripristino valido');state.repairs.push({taskId:id,date:new Date().toISOString(),remote:true,operationId:result.operation_id,rollbackToken:result.rollback_token,changedUrls:batchChanged,undone:false,batch:index+1,batchCount:previews.length});ogosSyncAppliedRowsV3611(current.task.affected,batchChanged);save(true);}}catch(error){failures.push(...(error.failures?.length?error.failures:[{url:current.task.affected[0]?.url||'',operation:'',code:error.code||'',reason:error.message}]));previews.slice(index+1).forEach(pending=>pending.task.affected.forEach(row=>failures.push({url:row.url,operation:'',code:'ogos_batch_stopped',reason:'Non eseguita perché un blocco precedente non è riuscito.'})));stopped=true;break;}}
-const changedSet=new Set(changed.map(comparableUrl)),skipped=[...unresolved,...failures].map(row=>({...ogosFailureV3611(row),partial:changedSet.has(comparableUrl(row.url))}));task.approved=true;delete task.pluginPreview;if(skipped.length){recordTaskStatus(task,'In corso');task.partialApply={skippedCount:skipped.length,reasons:skipped,at:new Date().toISOString()};}else if(changed.length){recordTaskStatus(task,'Completata');delete task.partialApply;}else{recordTaskStatus(task,'Verificata');task.evidence={status:'confirmed',source:'wordpress-live-check',observedAt:new Date().toISOString()};delete task.partialApply;}save(true);renderKanban();renderShell();renderVerify();ogosProgressV3611(resultBox,stopped?'Applicazione interrotta':'Applicazione completata',previews.length,previews.length,`${changed.length} aggiornate · ${notNeeded.length+satisfied.length} già corrette · ${skipped.length} da verificare`);button.disabled=false;button.textContent=skipped.length?'Riprova solo le modifiche non applicate':'✓ Applicazione completata';toast(skipped.length?`${changed.length} pagine aggiornate; ${skipped.length} operazioni restano da verificare. ${skipped[0].reason}`:`${changed.length} pagine aggiornate correttamente`,skipped.length?'error':'ok');};
+const changed=[],notNeeded=[],failures=[];let stopped=false;for(let index=0;index<previews.length;index++){const current=previews[index];if(!current.preview.can_apply)continue;button.textContent=`Applica ${index+1}/${previews.length}…`;ogosProgressV3611(resultBox,'Applicazione WordPress',index,previews.length);try{const result=await wpRequest('/wp-json/organic-growth-os/v1/tasks/apply',{method:'POST',body:JSON.stringify({task:current.task,preview_token:current.preview.preview_token}),timeoutMs:30000}),batchChanged=Array.isArray(result.changed_urls)?result.changed_urls:[],batchNotNeeded=Array.isArray(result.not_needed_urls)?result.not_needed_urls:[];changed.push(...batchChanged);notNeeded.push(...batchNotNeeded);if(batchNotNeeded.length&&typeof ogosMarkRowsForPublicVerificationV3123==='function')ogosMarkRowsForPublicVerificationV3123(current.task.affected,batchNotNeeded,id);failures.push(...(Array.isArray(result.failures)?result.failures:[]));if(batchChanged.length){if(!result.operation_id||!result.rollback_token)throw new Error('WordPress ha modificato il sito senza restituire un punto di ripristino valido');state.repairs.push({taskId:id,date:new Date().toISOString(),remote:true,operationId:result.operation_id,rollbackToken:result.rollback_token,changedUrls:batchChanged,undone:false,batch:index+1,batchCount:previews.length});ogosSyncAppliedRowsV3611(current.task.affected,batchChanged);save(true);}}catch(error){failures.push(...(error.failures?.length?error.failures:[{url:current.task.affected[0]?.url||'',operation:'',code:error.code||'',reason:error.message}]));previews.slice(index+1).forEach(pending=>pending.task.affected.forEach(row=>failures.push({url:row.url,operation:'',code:'ogos_batch_stopped',reason:'Non eseguita perché un blocco precedente non è riuscito.'})));stopped=true;break;}}
+const changedSet=new Set(changed.map(comparableUrl)),skipped=[...unresolved,...failures].map(row=>({...ogosFailureV3611(row),partial:changedSet.has(comparableUrl(row.url))}));task.approved=true;delete task.pluginPreview;if(skipped.length){recordTaskStatus(task,'In corso');task.partialApply={skippedCount:skipped.length,reasons:skipped,at:new Date().toISOString()};}else if(changed.length){recordTaskStatus(task,'Completata');delete task.partialApply;}else{recordTaskStatus(task,'Completata');task.evidence={status:'pending-public-crawl',source:'wordpress-storage-check',observedAt:new Date().toISOString()};delete task.partialApply;}save(true);renderKanban();renderShell();renderVerify();ogosProgressV3611(resultBox,stopped?'Applicazione interrotta':'Applicazione completata',previews.length,previews.length,`${changed.length} aggiornate · ${notNeeded.length+satisfied.length} presenti nello storage · ${skipped.length} da verificare`);button.disabled=false;button.textContent=skipped.length?'Riprova solo le modifiche non applicate':'✓ Scrittura controllata';toast(skipped.length?`${changed.length} pagine aggiornate; ${skipped.length} operazioni restano da verificare. ${skipped[0].reason}`:`Controllo WordPress completato. Esegui il crawl reale per confermare l’HTML pubblico.`,skipped.length?'error':'ok');};
 
 const ogosVerifyTaskV3611Base=verifyTask;
 verifyTask=async function(id,{silent=false}={}){const task=state.tasks.find(item=>String(item.id)===String(id));if(!task||task.status==='Verificata')return true;const repairs=(state.repairs||[]).filter(repair=>String(repair.taskId)===String(id)&&!repair.undone);if(!repairs.some(repair=>repair.remote))return ogosVerifyTaskV3611Base(id,{silent});try{if(!state.wordpress.connected||!state.wordpress.pluginDetected||!state.wordpress.capabilities.includes('verify'))throw new Error('Ricollega WordPress con una versione che supporti la verifica');for(const repair of repairs.filter(item=>item.remote)){const result=await wpRequest('/wp-json/organic-growth-os/v1/tasks/verify',{method:'POST',body:JSON.stringify({operation_id:repair.operationId})});repair.verification={date:new Date().toISOString(),...result};if(!result.all_verified)throw new Error((result.results||[]).flatMap(row=>row.problems||[]).join(', ')||`Il blocco ${repair.batch||''} non corrisponde più al piano`);}recordTaskStatus(task,'Verificata');task.evidence={status:'confirmed',source:'wordpress-verify',observedAt:new Date().toISOString()};save(true);renderVerify();renderKanban();renderShell();if(!silent)toast(`${repairs.length} blocchi verificati sul sito`);return true;}catch(error){recordTaskStatus(task,'In corso');save(true);renderVerify();renderKanban();renderShell();if(!silent)toast(`Verifica non riuscita: ${error.message}`,'error');return false;}};
@@ -9513,8 +9520,8 @@ function ogosUnsafeMultiValueV3612(task){const count=(task?.affected||[]).length
    senza inventare h1Count o confondere H1 Elementor e titolo WordPress. */
 function ogosLocalPageSnapshotV3612(page){return{url:page.url,live:Object.prototype.hasOwnProperty.call(page,'live')?clone(page.live):null,crawl:Object.prototype.hasOwnProperty.call(page,'crawl')?clone(page.crawl):null,wpTitle:page.wpTitle,canonical:page.canonical};}
 function ogosRestoreLocalSnapshotV3612(repair){
-  if(!Array.isArray(repair.localSnapshot)||!repair.localSnapshot.length){(repair.changedUrls||[]).forEach(url=>{const page=ogosPageForUrlV3611(url);if(!page)return;page.liveDataStale=true;if(page.crawl)page.crawl.checkedAt=null;});state.audit.liveVerified=false;return false;}
-  repair.localSnapshot.forEach(snapshot=>{const page=ogosPageForUrlV3611(snapshot.url);if(!page)return;if(snapshot.live===null)delete page.live;else page.live=clone(snapshot.live);if(snapshot.crawl===null)delete page.crawl;else page.crawl=clone(snapshot.crawl);if(snapshot.wpTitle===undefined)delete page.wpTitle;else page.wpTitle=snapshot.wpTitle;if(snapshot.canonical===undefined)delete page.canonical;else page.canonical=snapshot.canonical;delete page.liveDataStale;});return true;
+  if(!Array.isArray(repair.localSnapshot)||!repair.localSnapshot.length){(repair.changedUrls||[]).forEach(url=>{const page=ogosPageForUrlV3611(url);if(!page)return;page.liveDataStale=true;if(page.crawl)page.crawl.checkedAt=null;if(String(page.pendingRemoteVerification?.taskId||'')===String(repair.taskId||''))delete page.pendingRemoteVerification;if(String(page.lastRemoteVerification?.taskId||'')===String(repair.taskId||''))delete page.lastRemoteVerification;});state.audit.liveVerified=false;return false;}
+  repair.localSnapshot.forEach(snapshot=>{const page=ogosPageForUrlV3611(snapshot.url);if(!page)return;if(snapshot.live===null)delete page.live;else page.live=clone(snapshot.live);if(snapshot.crawl===null)delete page.crawl;else page.crawl=clone(snapshot.crawl);if(snapshot.wpTitle===undefined)delete page.wpTitle;else page.wpTitle=snapshot.wpTitle;if(snapshot.canonical===undefined)delete page.canonical;else page.canonical=snapshot.canonical;delete page.liveDataStale;if(String(page.pendingRemoteVerification?.taskId||'')===String(repair.taskId||''))delete page.pendingRemoteVerification;if(String(page.lastRemoteVerification?.taskId||'')===String(repair.taskId||''))delete page.lastRemoteVerification;});return true;
 }
 ogosSyncAppliedRowsV3611=function(rows,changedUrls){
   const changed=new Set((changedUrls||[]).map(comparableUrl)),snapshots=[];(rows||[]).forEach(item=>{if(!changed.has(comparableUrl(item.url)))return;const page=ogosPageForUrlV3611(item.url);if(!page)return;snapshots.push(ogosLocalPageSnapshotV3612(page));page.live=page.live&&typeof page.live==='object'?page.live:{};page.live.internalLinks=Array.isArray(page.live.internalLinks)?page.live.internalLinks.slice():[];const changes=item.changes||{};if(changes.title){page.live.seoTitle=changes.title;page.crawl=page.crawl&&typeof page.crawl==='object'?page.crawl:{};page.crawl.titleText=changes.title;}if(changes.meta_description)page.live.metaDescription=changes.meta_description;if(changes.post_title){page.crawl=page.crawl&&typeof page.crawl==='object'?page.crawl:{};page.crawl.h1Text=changes.post_title;if(!Number.isFinite(Number(page.crawl.h1Count))||Number(page.crawl.h1Count)<1)page.crawl.h1Count=1;}if(changes.canonical){page.live.canonical=changes.canonical;if(page.crawl&&typeof page.crawl==='object')page.crawl.canonicalHtml=changes.canonical;page.canonical='Corretta';}if(changes.internal_link?.target&&!page.live.internalLinks.some(href=>comparableUrl(href)===comparableUrl(changes.internal_link.target)))page.live.internalLinks.push(changes.internal_link.target);if(changes.replace_link?.to){page.live.internalLinks=page.live.internalLinks.filter(href=>comparableUrl(href)!==comparableUrl(changes.replace_link.from));if(!page.live.internalLinks.some(href=>comparableUrl(href)===comparableUrl(changes.replace_link.to)))page.live.internalLinks.push(changes.replace_link.to);}});
@@ -9531,7 +9538,7 @@ const ogosWpRequestV3612Base=wpRequest;
 function ogosAnnotateRowsV3612(rows,affected){const queues=new Map();(affected||[]).forEach(item=>Object.keys(item.changes||{}).forEach(operation=>{const key=`${comparableUrl(item.url)}|${operation}`;if(!queues.has(key))queues.set(key,[]);queues.get(key).push(item.ogos_change_id||ogosChangeIdV3612(item));}));return(rows||[]).map(row=>{const key=`${comparableUrl(row.url)}|${row.operation||row.field||row.key||''}`,queue=queues.get(key)||[];return{...row,changeId:row.changeId||queue.shift()||''};});}
 const ogosFailureV3612Base=ogosFailureV3611;
 ogosFailureV3611=function(row,fallback){return{...ogosFailureV3612Base(row,fallback),changeId:String(row?.changeId||row?.ogos_change_id||'')};};
-wpRequest=async function(path,options={}){let parsed={};try{parsed=JSON.parse(options.body||'{}');}catch{}if(path==='/wp-json/organic-growth-os/v1/tasks/preview'){const result=await ogosWpRequestV3612Base(path,options),affected=parsed.task?.affected||[];result.unresolved=ogosAnnotateRowsV3612(result.unresolved,affected);result.satisfied=ogosAnnotateRowsV3612(result.satisfied,affected);return result;}if(path!=='/wp-json/organic-growth-os/v1/tasks/apply')return ogosWpRequestV3612Base(path,options);parsed.request_id=parsed.request_id||`req_${Date.now()}_${Array.from(crypto.getRandomValues(new Uint32Array(2))).map(value=>value.toString(16)).join('')}`;const request={...options,body:JSON.stringify(parsed)};let error=null;for(let attempt=0;attempt<4;attempt++){try{const result=await ogosWpRequestV3612Base(path,{...request,timeoutMs:attempt?12000:(Number(options.timeoutMs)||30000)});result.failures=ogosAnnotateRowsV3612(result.failures,parsed.task?.affected||[]);return result;}catch(caught){error=caught;if(Array.isArray(caught.failures))caught.failures=ogosAnnotateRowsV3612(caught.failures,parsed.task?.affected||[]);const retryable=!caught.status||caught.status>=500||caught.status===408||caught.status===409&&caught.code==='ogos_apply_in_progress';if(!retryable)throw caught;if(attempt<3)await new Promise(resolve=>setTimeout(resolve,600+attempt*700));}}throw error;};
+wpRequest=async function(path,options={}){let parsed={};try{parsed=JSON.parse(options.body||'{}');}catch{}if(path==='/wp-json/organic-growth-os/v1/tasks/preview'){const result=await ogosWpRequestV3612Base(path,options),affected=parsed.task?.affected||[];result.unresolved=ogosAnnotateRowsV3612(result.unresolved,affected);result.satisfied=ogosAnnotateRowsV3612(result.satisfied,affected);return result;}if(path!=='/wp-json/organic-growth-os/v1/tasks/apply')return ogosWpRequestV3612Base(path,options);parsed.request_id=parsed.request_id||`req_${Date.now()}_${Array.from(crypto.getRandomValues(new Uint32Array(2))).map(value=>value.toString(16)).join('')}`;const request={...options,body:JSON.stringify(parsed)};let error=null,maxAttempts=10;for(let attempt=0;attempt<maxAttempts;attempt++){try{const result=await ogosWpRequestV3612Base(path,{...request,timeoutMs:attempt?12000:(Number(options.timeoutMs)||30000)});result.failures=ogosAnnotateRowsV3612(result.failures,parsed.task?.affected||[]);return result;}catch(caught){error=caught;if(Array.isArray(caught.failures))caught.failures=ogosAnnotateRowsV3612(caught.failures,parsed.task?.affected||[]);const inProgress=caught.status===409&&caught.code==='ogos_apply_in_progress',retryable=!caught.status||caught.status>=500||caught.status===408||inProgress;if(!retryable)throw caught;if(attempt<maxAttempts-1){const delay=inProgress?Math.min(8000,1500+attempt*900):600+attempt*700;await new Promise(resolve=>setTimeout(resolve,delay));}}}throw error;};
 
 const ogosApplyPluginTaskV3612Base=applyPluginTaskSingle;
 let ogosApplyNoticeV3612=null;
@@ -11608,7 +11615,524 @@ init = function() {
   return result;
 };
 
-window.OGOS_WP_FIX_BUILD="3.12.1-rz-h1-link-orphan";
+/* ==========================================================================
+   v3.12.2 — applicazione realmente confermata, nessun falso “già corretto”
+   ========================================================================== */
+
+function ogosOperationKeysV3122(changes) {
+  const source = changes && typeof changes === 'object' ? changes : {};
+  return Object.keys(source).filter(key => {
+    const value = source[key];
+    if (key === 'heading_hierarchy') return !!value;
+    if (key === 'redirect' || key === 'internal_link' || key === 'replace_link') return !!value && typeof value === 'object';
+    return value != null && String(value).trim() !== '';
+  });
+}
+
+function ogosExpectedOperationsV3122(affected) {
+  return (affected || []).reduce((total, item) => total + ogosOperationKeysV3122(item?.changes).length, 0);
+}
+
+/* Compatibilità con connettori precedenti: se un'anteprima valida non espone
+   il conteggio, lo ricaviamo dal piano inviato. Non la scambiamo mai per una
+   pagina già corretta. */
+const ogosWpRequestV3122Base = wpRequest;
+wpRequest = async function(path, options = {}) {
+  const result = await ogosWpRequestV3122Base(path, options);
+  let payload = {};
+  try { payload = JSON.parse(options.body || '{}'); } catch {}
+  const affected = Array.isArray(payload?.task?.affected) ? payload.task.affected : [];
+
+  if (path === '/wp-json/organic-growth-os/v1/tasks/preview') {
+    result.unresolved = Array.isArray(result?.unresolved) ? result.unresolved : [];
+    result.satisfied = Array.isArray(result?.satisfied) ? result.satisfied : [];
+    const expected = ogosExpectedOperationsV3122(affected);
+    const declared = Number(result?.planned_operations);
+    if (result?.can_apply && expected > 0 && (!Number.isFinite(declared) || declared <= 0)) {
+      result.planned_operations = expected;
+      result.ogos_preview_contract_missing = true;
+    } else if (!Number.isFinite(declared) || declared < 0) {
+      result.planned_operations = 0;
+    }
+    if (!Number.isFinite(Number(result?.satisfied_operations))) result.satisfied_operations = result.satisfied.length;
+    if (!result?.can_apply && expected > 0) {
+      /* Un “già corretto” dichiarato dalla sola anteprima non è una prova
+         sufficiente: senza una scrittura confermata o un crawl successivo
+         non chiudiamo il task. Questo evita che un connettore incompleto
+         trasformi il silenzio in un falso successo. */
+      if (result.satisfied.length) {
+        affected.forEach(item => ogosOperationKeysV3122(item?.changes).forEach(operation => {
+          result.unresolved.push({
+            url: item?.url || '',
+            operation,
+            code: 'ogos_preflight_not_confirmation',
+            reason: 'La sola anteprima non conferma che il contenuto pubblicato sia già corretto. Esegui un crawl reale o riprova dopo l’aggiornamento del connettore.'
+          });
+        }));
+        result.satisfied = [];
+        result.satisfied_operations = 0;
+      } else if (!result.unresolved.length) {
+        affected.forEach(item => ogosOperationKeysV3122(item?.changes).forEach(operation => {
+          result.unresolved.push({
+            url: item?.url || '',
+            operation,
+            code: 'ogos_preview_incomplete',
+            reason: 'Il connettore non ha confermato che questa modifica sia applicabile: il task resta aperto.'
+          });
+        }));
+      }
+      result.manual_operations = result.unresolved.length;
+    }
+  }
+
+  if (path === '/wp-json/organic-growth-os/v1/tasks/apply') {
+    const changed = Array.isArray(result?.changed_urls) ? result.changed_urls : [];
+    const noChangeConfirmed = result?.complete === true && Array.isArray(result?.not_needed_urls) && result.not_needed_urls.length > 0;
+    if (!changed.length && !noChangeConfirmed && !(Array.isArray(result?.failures) && result.failures.length)) {
+      result.failures = [{
+        url: affected[0]?.url || '',
+        operation: 'confirmation',
+        code: 'ogos_unconfirmed_apply',
+        reason: 'WordPress non ha confermato una modifica salvata né un esito già presente verificato. Il task resta aperto.'
+      }];
+    }
+  }
+  return result;
+};
+
+/* Lo stato locale non può sostituire il crawl HTML pubblico: in passato
+   inventava il nuovo link e impostava H1=1, facendo sparire un problema anche
+   quando il tema o la cache continuavano a renderizzarlo. Conserviamo invece
+   il punto di rollback e richiediamo un nuovo crawl prima di dichiarare il
+   risultato verificato. */
+ogosSyncAppliedRowsV3611 = function(rows, changedUrls) {
+  const changed = new Set((changedUrls || []).map(comparableUrl));
+  const snapshots = [];
+  const repair = [...(state.repairs || [])].reverse().find(item => item.remote && !item.undone && !item.localSnapshot && (item.changedUrls || []).some(url => changed.has(comparableUrl(url))));
+  const appliedAt = new Date().toISOString();
+  (rows || []).forEach(item => {
+    if (!changed.has(comparableUrl(item?.url))) return;
+    const page = ogosPageForUrlV3611(item.url);
+    if (!page) return;
+    snapshots.push(ogosLocalPageSnapshotV3612(page));
+    page.liveDataStale = true;
+    const previousPending = page.pendingRemoteVerification && String(page.pendingRemoteVerification.taskId ?? '') === String(repair?.taskId ?? '') ? page.pendingRemoteVerification : null;
+    const pendingChanges = { ...(previousPending?.changes || {}), ...clone(item.changes || {}) };
+    page.pendingRemoteVerification = {
+      at: appliedAt,
+      taskId: repair?.taskId ?? null,
+      operations: [...new Set([...(previousPending?.operations || []), ...ogosOperationKeysV3122(pendingChanges)])],
+      changes: pendingChanges,
+      status: 'pending'
+    };
+    if (page.crawl && typeof page.crawl === 'object') page.crawl.checkedAt = null;
+  });
+  if (repair) repair.localSnapshot = snapshots;
+  if (snapshots.length) {
+    state.audit = state.audit && typeof state.audit === 'object' ? state.audit : {};
+    state.audit.liveVerified = false;
+    ogosOnPageRowsCacheV366 = null;
+    if (typeof ogosInvalidatePerformanceCachesV352 === 'function') ogosInvalidatePerformanceCachesV352();
+  }
+};
+
+const ogosRunWordPressCrawlV3122Base = runWordPressCrawl;
+
+function ogosPublicTextV3123(value) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  return (typeof text.normalize === 'function' ? text.normalize('NFKC') : text).toLocaleLowerCase('it');
+}
+
+function ogosPublicOperationKeysV3123(changes) {
+  const publicOperations = new Set(['title', 'post_title', 'meta_description', 'canonical', 'intro_text', 'internal_link', 'replace_link', 'heading_hierarchy']);
+  return ogosOperationKeysV3122(changes).filter(operation => publicOperations.has(operation));
+}
+
+function ogosMarkRowsForPublicVerificationV3123(rows, urls, taskId) {
+  const wanted = new Set((urls || []).map(comparableUrl)), at = new Date().toISOString();
+  (rows || []).forEach(item => {
+    if (!wanted.has(comparableUrl(item?.url))) return;
+    const page = ogosPageForUrlV3611(item.url);
+    if (!page) return;
+    const previous = page.pendingRemoteVerification && String(page.pendingRemoteVerification.taskId ?? '') === String(taskId ?? '') ? page.pendingRemoteVerification : null;
+    const changes = { ...(previous?.changes || {}), ...clone(item.changes || {}) };
+    page.pendingRemoteVerification = { at, taskId, operations: [...new Set([...(previous?.operations || []), ...ogosOperationKeysV3122(changes)])], changes, status: 'pending' };
+    page.liveDataStale = true;
+    if (page.crawl && typeof page.crawl === 'object') page.crawl.checkedAt = null;
+  });
+}
+
+function ogosRenderedLinkPresentV3123(page, target, anchor = '') {
+  const wanted = comparableUrl(target), wantedAnchor = ogosPublicTextV3123(anchor);
+  if (!wanted) return false;
+  const details = Array.isArray(page?.live?.internalLinkDetails) ? page.live.internalLinkDetails : [];
+  const matches = details.filter(detail => comparableUrl(detail?.href || detail?.raw_href) === wanted);
+  if (wantedAnchor) return matches.some(detail => ogosPublicTextV3123(detail?.anchor) === wantedAnchor);
+  return matches.length > 0 || (page?.live?.internalLinks || []).some(href => comparableUrl(href) === wanted);
+}
+
+function ogosCheckRenderedChangesV3123(page, changes, observedAt) {
+  const failures = [], operations = ogosPublicOperationKeysV3123(changes);
+  const currentHtml = !!observedAt && page?.crawl?.checkedAt === observedAt && page?.crawl?.renderedHtml === true && page?.live?.internalLinkSource === 'rendered-html' && page?.live?.internalLinkObservedAt === observedAt;
+  const fail = (operation, reason) => failures.push({ operation, reason, code: 'ogos_public_crawl_unconfirmed' });
+  if (operations.length && !currentHtml) {
+    operations.forEach(operation => fail(operation, 'Il crawl corrente non ha acquisito HTML pubblico valido per questa pagina.'));
+    return { ok: false, operations, failures };
+  }
+  if (changes.heading_hierarchy && Number(page?.crawl?.h1Count) !== 1) fail('heading_hierarchy', `Il sito pubblicato mostra ancora ${Number.isFinite(Number(page?.crawl?.h1Count)) ? Number(page.crawl.h1Count) : 'un numero non verificabile di'} H1.`);
+  if (changes.post_title && ogosPublicTextV3123(page?.crawl?.h1Text) !== ogosPublicTextV3123(changes.post_title)) fail('post_title', 'L’H1 renderizzato non coincide con quello richiesto.');
+  if (changes.title && ogosPublicTextV3123(page?.crawl?.titleText) !== ogosPublicTextV3123(changes.title)) fail('title', 'Il Title renderizzato non coincide con quello richiesto.');
+  if (changes.meta_description && ogosPublicTextV3123(page?.crawl?.metaDescriptionText) !== ogosPublicTextV3123(changes.meta_description)) fail('meta_description', 'La meta description renderizzata non coincide con quella richiesta.');
+  if (changes.canonical && comparableUrl(page?.crawl?.canonicalHtml) !== comparableUrl(changes.canonical)) fail('canonical', 'La canonical renderizzata non coincide con quella richiesta.');
+  if (changes.intro_text && !ogosPublicTextV3123(page?.crawl?.renderedText || page?.crawl?.contentExcerpt).includes(ogosPublicTextV3123(changes.intro_text))) fail('intro_text', 'La frase introduttiva non compare nel contenuto pubblico acquisito.');
+  if (changes.internal_link && !ogosRenderedLinkPresentV3123(page, changes.internal_link.target, changes.internal_link.anchor)) fail('internal_link', 'Il link con destinazione e anchor richieste non compare nell’HTML pubblico.');
+  if (changes.replace_link) {
+    const from = comparableUrl(changes.replace_link.from), links = [...(page?.live?.internalLinks || []), ...(page?.live?.internalLinkDetails || []).flatMap(detail => [detail?.href, detail?.raw_href])];
+    if (from && links.some(href => comparableUrl(href) === from)) fail('replace_link', 'Il vecchio link compare ancora nell’HTML pubblico.');
+    if (!ogosRenderedLinkPresentV3123(page, changes.replace_link.to, changes.replace_link.anchor || '')) fail('replace_link', 'La nuova destinazione non compare nell’HTML pubblico.');
+  }
+  return { ok: failures.length === 0, operations, failures };
+}
+
+function ogosPendingContextV3123(page) {
+  const pending = page?.pendingRemoteVerification;
+  if (!pending) return null;
+  let taskId = pending.taskId;
+  if (taskId == null) {
+    const repair = [...(state.repairs || [])].reverse().find(item => item.remote && !item.undone && (item.changedUrls || []).some(url => comparableUrl(url) === comparableUrl(page.url)));
+    taskId = repair?.taskId ?? null;
+  }
+  let changes = pending.changes && typeof pending.changes === 'object' ? pending.changes : null;
+  if (!changes || !Object.keys(changes).length) {
+    const task = (state.tasks || []).find(item => String(item.id) === String(taskId));
+    const row = (task?.affected || []).find(item => comparableUrl(item?.url) === comparableUrl(page.url));
+    changes = clone(row?.changes || {});
+  }
+  return { ...pending, taskId, changes: changes || {} };
+}
+
+function ogosCurrentPublicProofV3123(page, taskId, required, newestRepairAt) {
+  const proof = page?.lastRemoteVerification;
+  const observed = Date.parse(proof?.observedAt || ''), repaired = Date.parse(newestRepairAt || '');
+  const operations = new Set(proof?.operations || []);
+  return !!proof && proof.status === 'passed' && String(proof.taskId) === String(taskId) && Number.isFinite(observed) && (!Number.isFinite(repaired) || observed >= repaired) && required.every(operation => operations.has(operation));
+}
+
+ogosCoperturaOrfaniV346 = function(graph) {
+  const coverage = state.crawlCoverage || {}, domain = normalizeProjectDomain(state.project?.domain), observedAt = String(coverage.observedAt || ''), eligible = graph.pages || [];
+  const matched = eligible.filter(page => page?.crawl?.checkedAt === observedAt && page?.crawl?.renderedHtml === true && page?.live?.internalLinkSource === 'rendered-html' && page?.live?.internalLinkObservedAt === observedAt).length;
+  const rawTotal = Number(coverage.total) || 0, received = Number(coverage.received) || 0, inventoryMatched = Number(coverage.matched) || 0;
+  const crawlFinished = coverage.domain === domain && rawTotal > 0 && received >= rawTotal;
+  const inventoryCoversCrawl = rawTotal > 0 && inventoryMatched >= rawTotal;
+  return { complete: !!(eligible.length && matched === eligible.length && crawlFinished && inventoryCoversCrawl), total: eligible.length, matched, inventory: eligible.length, rawTotal, received, sitemapCount: Number(state.indexing?.sitemap?.urlCount) || 0, sitemapComplete: !state.indexing?.sitemap?.truncated, exactInventory: inventoryCoversCrawl };
+};
+
+runWordPressCrawl = async function() {
+  const result = await ogosRunWordPressCrawlV3122Base.apply(this, arguments);
+  if (result === false) return result;
+  const observedAt = String(state.crawlCoverage?.observedAt || ''), taskResults = new Map();
+  let passedPages = 0, failedPages = 0;
+  (state.pages || []).forEach(page => {
+    const current = !!observedAt && page?.crawl?.checkedAt === observedAt;
+    if (!current) {
+      page.live = page.live && typeof page.live === 'object' ? page.live : {};
+      page.live.internalLinks = [];
+      page.live.internalLinkDetails = [];
+      page.live.internalLinkSource = 'unavailable';
+      page.live.internalLinkObservedAt = observedAt;
+      if (page.crawl && typeof page.crawl === 'object') {
+        page.crawl.checkedAt = null;
+        page.crawl.renderedHtml = false;
+        page.crawl.stale = true;
+        page.crawl.h1Count = null;
+        page.crawl.h1Text = '';
+        page.crawl.titleText = '';
+        page.crawl.metaDescriptionText = '';
+        page.crawl.renderedText = '';
+        page.crawl.contentExcerpt = '';
+        page.crawl.headings = [];
+        page.crawl.canonicalHtml = null;
+      }
+    } else if (page.crawl && typeof page.crawl === 'object') {
+      delete page.crawl.stale;
+    }
+
+    const pending = ogosPendingContextV3123(page);
+    if (!pending) return;
+    const check = ogosCheckRenderedChangesV3123(page, pending.changes, observedAt), key = String(pending.taskId ?? '');
+    const summary = taskResults.get(key) || { taskId: pending.taskId, failures: [], passed: 0, operations: new Set() };
+    check.operations.forEach(operation => summary.operations.add(operation));
+    if (check.ok) {
+      page.lastRemoteVerification = { taskId: pending.taskId, status: 'passed', observedAt, operations: check.operations, changes: clone(pending.changes) };
+      delete page.pendingRemoteVerification;
+      delete page.liveDataStale;
+      summary.passed++;
+      passedPages++;
+    } else {
+      page.pendingRemoteVerification = { ...pending, status: 'failed', checkedAt: observedAt, reasons: check.failures };
+      page.liveDataStale = true;
+      check.failures.forEach(failure => summary.failures.push({ url: page.url, ...failure }));
+      failedPages++;
+    }
+    taskResults.set(key, summary);
+  });
+
+  state.crawlCoverage.renderedMatched = (state.pages || []).filter(page => page?.crawl?.checkedAt === observedAt && page?.crawl?.renderedHtml === true).length;
+  taskResults.forEach(summary => {
+    if (summary.taskId == null) return;
+    const task = (state.tasks || []).find(item => String(item.id) === String(summary.taskId));
+    if (!task) return;
+    const nonPublic = normalizedPartialReasons(task).filter(reason => !String(reason.code || '').startsWith('ogos_public_'));
+    if (summary.failures.length) {
+      recordTaskStatus(task, 'In corso');
+      task.approved = true;
+      task.partialApply = { skippedCount: nonPublic.length + summary.failures.length, reasons: [...nonPublic, ...summary.failures], at: new Date().toISOString() };
+      task.publicVerification = { status: 'failed', observedAt, failures: summary.failures };
+    } else {
+      task.publicVerification = { status: 'passed', observedAt, operations: [...summary.operations] };
+      if (!nonPublic.length) {
+        if (task.status === 'Verificata' && task.evidence?.source !== 'wordpress-verify+public-crawl') delete task.evidence;
+        if (task.status === 'In corso' || task.status === 'Verificata') recordTaskStatus(task, 'Completata');
+        delete task.partialApply;
+      }
+    }
+  });
+  save(true); renderShell(); renderAudit(); renderKanban(); renderVerify();
+  if (failedPages) toast(`${failedPages} ${failedPages === 1 ? 'pagina non è stata confermata' : 'pagine non sono state confermate'} dal crawl pubblico: le attività restano aperte.`, 'error');
+  else if (passedPages) toast(`${passedPages} ${passedPages === 1 ? 'pagina confermata' : 'pagine confermate'} nell’HTML pubblico. Ora la verifica finale può controllare anche lo stato salvato in WordPress.`);
+  return result;
+};
+
+function ogosTaskPublicRequirementsV3123(task, urls) {
+  const wanted = new Set((urls || []).map(comparableUrl)), requirements = new Map();
+  (task?.affected || []).forEach(item => {
+    const url = comparableUrl(item?.url);
+    if (!url || (wanted.size && !wanted.has(url))) return;
+    const operations = ogosPublicOperationKeysV3123(item?.changes || {});
+    if (!operations.length) return;
+    const current = requirements.get(url) || new Set();
+    operations.forEach(operation => current.add(operation));
+    requirements.set(url, current);
+  });
+  return requirements;
+}
+
+const ogosVerifyTaskV3123Base = verifyTask;
+verifyTask = async function(id, { silent = false, publicCrawlAttempted = false } = {}) {
+  const task = (state.tasks || []).find(item => String(item.id) === String(id));
+  if (!task) return false;
+  if (task.evidence?.source === 'wordpress-verify+public-crawl' || task.evidence?.source === 'wordpress-storage-check+public-crawl') return true;
+  const repairs = (state.repairs || []).filter(repair => String(repair.taskId) === String(id) && repair.remote && !repair.undone);
+  const urls = repairs.length ? [...new Set(repairs.flatMap(repair => repair.changedUrls || []))] : [...new Set((task.affected || []).map(item => item?.url).filter(Boolean))];
+  const requirements = ogosTaskPublicRequirementsV3123(task, urls), missing = [];
+  const declaredOperations = new Set((task.affected || []).flatMap(item => ogosOperationKeysV3122(item?.changes || {})));
+  if (repairs.length && !requirements.size && !declaredOperations.has('redirect')) {
+    if (task.status === 'Verificata') recordTaskStatus(task, 'Completata');
+    task.publicVerification = { status: 'pending', reason: 'missing-operation-contract', checkedAt: new Date().toISOString() };
+    delete task.evidence;
+    save(true); renderShell(); renderKanban(); renderVerify();
+    if (!silent) toast('Verifica bloccata: il task applicato non conserva più il dettaglio delle operazioni da confrontare con il sito pubblico.', 'error');
+    return false;
+  }
+  requirements.forEach((operations, url) => {
+    const page = ogosPageForUrlV3611(url), newest = repairs.filter(repair => (repair.changedUrls || []).some(changed => comparableUrl(changed) === url)).map(repair => repair.date).filter(Boolean).sort().at(-1) || task.evidence?.observedAt || '';
+    if (!page || !ogosCurrentPublicProofV3123(page, task.id, [...operations], newest)) missing.push({ url, operations: [...operations] });
+  });
+  if (missing.length) {
+    if (!silent && !publicCrawlAttempted && state.wordpress?.connected && state.wordpress?.capabilities?.includes('crawl')) {
+      toast('Avvio il crawl pubblico per confermare automaticamente la correzione…');
+      if (await runWordPressCrawl()) return verifyTask(id, { silent: false, publicCrawlAttempted: true });
+    }
+    if (task.status === 'Verificata') { recordTaskStatus(task, 'Completata'); delete task.evidence; }
+    task.publicVerification = { ...(task.publicVerification || {}), status: task.publicVerification?.status === 'failed' ? 'failed' : 'pending', missing, checkedAt: new Date().toISOString() };
+    save(true); renderShell(); renderKanban(); renderVerify();
+    if (!silent) toast(task.publicVerification.status === 'failed' ? 'Verifica non completata: il crawl pubblico non ha confermato la correzione; consulta il dettaglio del task.' : 'Verifica non completata: il crawl pubblico non è disponibile o non ha acquisito la pagina.', 'error');
+    return false;
+  }
+  if (requirements.size && !repairs.length) {
+    recordTaskStatus(task, 'Verificata');
+    task.evidence = { status: 'confirmed', source: 'wordpress-storage-check+public-crawl', observedAt: task.publicVerification?.observedAt || new Date().toISOString() };
+    delete task.partialApply;
+    save(true); renderShell(); renderKanban(); renderVerify();
+    if (!silent) toast('Verifica completata sul contenuto pubblico.');
+    return true;
+  }
+  const verified = await ogosVerifyTaskV3123Base(id, { silent });
+  const storageScoped = repairs.filter(repair => repair.remote).every(repair => repair.verification?.verification_scope === 'wordpress-storage');
+  if (verified && repairs.length && !storageScoped) {
+    recordTaskStatus(task, 'Completata');
+    task.evidence = { status: 'pending-storage-contract', source: 'public-crawl', observedAt: task.publicVerification?.observedAt || new Date().toISOString() };
+    save(true); renderShell(); renderKanban(); renderVerify();
+    if (!silent) toast('Verifica bloccata: aggiorna il connettore alla 3.12.3 per distinguere il controllo dello storage dall’HTML pubblico.', 'error');
+    return false;
+  }
+  if (verified && requirements.size) {
+    task.evidence = { status: 'confirmed', source: 'wordpress-verify+public-crawl', observedAt: task.publicVerification?.observedAt || new Date().toISOString() };
+    task.publicVerification = { ...(task.publicVerification || {}), status: 'passed', storageVerifiedAt: new Date().toISOString() };
+    save(true); renderShell(); renderKanban(); renderVerify();
+  }
+  return verified;
+};
+
+function ogosMigratePublicVerificationV3123() {
+  let reopened = 0;
+  (state.tasks || []).forEach(task => {
+    const repairs = (state.repairs || []).filter(repair => String(repair.taskId) === String(task.id) && repair.remote && !repair.undone), urls = repairs.length ? [...new Set(repairs.flatMap(repair => repair.changedUrls || []))] : [...new Set((task.affected || []).map(item => item?.url).filter(Boolean))];
+    const source = String(task?.evidence?.source || ''), wordpressClaim = source.startsWith('wordpress-') || repairs.length > 0;
+    if (task?.status !== 'Verificata' || !wordpressClaim || source.includes('+public-crawl') || source === 'wordpress-preflight') return;
+    const requirements = ogosTaskPublicRequirementsV3123(task, urls);
+    if (!requirements.size) return;
+    recordTaskStatus(task, 'Completata');
+    task.evidence = { status: 'pending-public-crawl', source: 'wordpress-storage-check', observedAt: task.evidence?.observedAt || new Date().toISOString() };
+    ogosMarkRowsForPublicVerificationV3123(task.affected || [], urls, task.id);
+    task.publicVerification = { status: 'pending', migratedAt: new Date().toISOString() };
+    reopened++;
+  });
+  return reopened;
+}
+
+function ogosReopenFalsePreflightTasksV3122() {
+  let reopened = 0;
+  (state.tasks || []).forEach(task => {
+    const oldPreflight = task?.status === 'Verificata' && task?.evidence?.source === 'wordpress-preflight';
+    const remoteWrite = (state.repairs || []).some(repair => String(repair.taskId) === String(task?.id) && repair.remote && !repair.undone);
+    if (!oldPreflight || remoteWrite) return;
+    recordTaskStatus(task, 'Da fare');
+    task.approved = true;
+    task.partialApply = {
+      skippedCount: 1,
+      reasons: [{
+        url: task.affected?.[0]?.url || '',
+        operation: 'preflight',
+        code: 'ogos_false_preflight_v3121',
+        reason: 'Riaperta: la precedente indicazione “già corretto” non era supportata da una conferma del connettore. Riprova con la versione 3.12.3 e conferma con un crawl reale.'
+      }],
+      at: new Date().toISOString()
+    };
+    delete task.evidence;
+    reopened++;
+  });
+  return reopened;
+}
+
+/* Un task WordPress "Completata" indica soltanto che la scrittura o il
+   controllo storage sono terminati. Finché il crawl pubblico non passa, non
+   deve nascondere dal report la stessa anomalia che stiamo ancora verificando. */
+const ogosCompletedOperationalChangeKeysV3123Base = completedOperationalChangeKeys;
+completedOperationalChangeKeys = function(tasks = state.tasks || []) {
+  const keys = ogosCompletedOperationalChangeKeysV3123Base(tasks);
+  (tasks || []).forEach(task => {
+    const source = String(task?.evidence?.source || '');
+    const remote = (state.repairs || []).some(repair => String(repair.taskId) === String(task?.id) && repair.remote && !repair.undone);
+    const usesPublicContract = remote || source.startsWith('wordpress-') || !!task?.publicVerification;
+    const publicPassed = task?.publicVerification?.status === 'passed' || source.includes('+public-crawl');
+    if (!usesPublicContract || publicPassed) return;
+    (task.affected || []).forEach(item => operationalChangeKeys(item, task).forEach(key => keys.delete(key)));
+  });
+  return keys;
+};
+
+function ogosTaskUsesPublicContractV3123(task) {
+  const source = String(task?.evidence?.source || '');
+  const remote = (state.repairs || []).some(repair => String(repair.taskId) === String(task?.id) && repair.remote && !repair.undone);
+  return remote || source.startsWith('wordpress-') || !!task?.publicVerification;
+}
+
+const ogosProgressV3123Base = ogosProgressV3611;
+ogosProgressV3611 = function(resultBox, label, current, total, detail = '') {
+  const honestDetail = String(detail || '').replace(/(\d+) già corrette/g, '$1 da confermare nel sito pubblico');
+  return ogosProgressV3123Base(resultBox, label, current, total, honestDetail);
+};
+
+const ogosTaskCardV3123Base = taskCard;
+taskCard = function(task) {
+  let html = ogosTaskCardV3123Base(task);
+  const publicPassed = task?.publicVerification?.status === 'passed' || String(task?.evidence?.source || '').includes('+public-crawl');
+  if (ogosTaskUsesPublicContractV3123(task) && !publicPassed) {
+    html = html.replace('✓ Correzione applicata · Annulla', 'Scrittura eseguita · HTML pubblico da confermare · Annulla');
+  }
+  return html;
+};
+
+const ogosRenderVerifyV3123Base = renderVerify;
+renderVerify = function() {
+  const result = ogosRenderVerifyV3123Base.apply(this, arguments);
+  $$('#verifyList .verify-one').forEach(button => {
+    const task = (state.tasks || []).find(item => String(item.id) === String(button.dataset.id));
+    if (!task || !ogosTaskUsesPublicContractV3123(task)) return;
+    const passed = task.publicVerification?.status === 'passed' || String(task.evidence?.source || '').includes('+public-crawl');
+    const copy = button.closest('.verify-item')?.querySelector('p');
+    if (copy) copy.textContent = passed
+      ? 'HTML pubblico confermato; manca il controllo finale dello storage WordPress.'
+      : 'Operazione registrata nello storage; “Crawl e verifica ora” acquisisce l’HTML pubblico prima della conferma.';
+    if (!passed) button.textContent = 'Crawl e verifica ora';
+  });
+  return result;
+};
+
+const ogosVerifyAllTasksV3123Base = verifyAllTasks;
+verifyAllTasks = async function() {
+  const pending = ogosOperationalTasksV355().filter(task => task.status === 'Completata');
+  const needsCrawl = pending.some(task => ogosTaskUsesPublicContractV3123(task) && task.publicVerification?.status !== 'passed' && !String(task.evidence?.source || '').includes('+public-crawl'));
+  if (needsCrawl && state.wordpress?.connected && state.wordpress?.capabilities?.includes('crawl')) {
+    const button = $('#verifyAllBtn');
+    if (button) { button.disabled = true; button.textContent = 'Crawl pubblico in corso…'; }
+    toast('Avvio un solo crawl pubblico prima di verificare tutte le attività WordPress…');
+    if (!(await runWordPressCrawl())) {
+      renderVerify();
+      toast('Verifica multipla interrotta: il crawl pubblico non è stato completato.', 'error');
+      return false;
+    }
+    renderVerify();
+  }
+  return ogosVerifyAllTasksV3123Base.apply(this, arguments);
+};
+
+const ogosApplyPluginTaskV3122Base = applyPluginTaskSingle;
+applyPluginTaskSingle = async function(id, triggerButton = null) {
+  const task = (state.tasks || []).find(item => String(item.id) === String(id));
+  const payload = task ? pluginTaskPayload(task) : null;
+  if (!task || !ogosExpectedOperationsV3122(payload?.affected || [])) {
+    if (task) {
+      recordTaskStatus(task, 'In corso');
+      task.approved = true;
+      task.partialApply = {
+        skippedCount: 1,
+        reasons: [{ url: task.affected?.[0]?.url || '', operation: 'payload', code: 'ogos_empty_change_payload', reason: 'Il task non contiene una modifica strutturata da inviare a WordPress. Non viene dichiarato corretto.' }],
+        at: new Date().toISOString()
+      };
+      save(true); renderKanban(); renderShell();
+    }
+    toast('Nessuna correzione è stata inviata: il task resta aperto finché non contiene una modifica verificabile.', 'error');
+    return false;
+  }
+  return ogosApplyPluginTaskV3122Base.apply(this, arguments);
+};
+
+const ogosInitV3122Base = init;
+init = function() {
+  const result = ogosInitV3122Base.apply(this, arguments);
+  const reopened = ogosReopenFalsePreflightTasksV3122();
+  if (reopened) {
+    save(true); renderShell();
+    if ($('#view-fix')?.classList.contains('active')) renderKanban();
+    if ($('#view-verify')?.classList.contains('active')) renderVerify();
+    toast(`${reopened} ${reopened === 1 ? 'attività è stata riaperta' : 'attività sono state riaperte'}: il precedente “già corretto” non era una conferma valida.`);
+  }
+  return result;
+};
+
+const ogosInitV3123Base = init;
+init = function() {
+  const result = ogosInitV3123Base.apply(this, arguments), reopened = ogosMigratePublicVerificationV3123();
+  if (reopened) {
+    save(true); renderShell(); renderKanban(); renderVerify();
+    toast(`${reopened} ${reopened === 1 ? 'attività richiede' : 'attività richiedono'} un crawl pubblico prima della conferma finale.`);
+  }
+  return result;
+};
+
+window.OGOS_WP_FIX_BUILD="3.12.3-public-verification";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
