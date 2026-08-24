@@ -245,8 +245,8 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.13.1',OGOS_SCHEMA_VERSION=1;
-const BUILD_ID='3.13.1-20260824-public-failure-reapply',BUILD_TIMESTAMP='2026-08-24T18:45:00+01:00';
+const APP_VERSION='3.13.2',OGOS_SCHEMA_VERSION=1;
+const BUILD_ID='3.13.2-20260824-source-aware-link-owner',BUILD_TIMESTAMP='2026-08-24T19:05:00+01:00';
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -980,6 +980,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.13.2', date: '2026-08-24', notes: 'Il resolver dei link è ora source-aware: non propone più come “template globali” normali articoli Elementor che contengono casualmente lo stesso href. Ogni preview invia al connettore le occorrenze realmente osservate sulla pagina sorgente (anchor, contesto e numero di occorrenza); il server usa queste prove per filtrare template/menu e dà priorità al contenuto della pagina che spiega tutte le occorrenze pubbliche. Se nessun proprietario statico è coerente, il caso viene classificato come link renderizzato dinamicamente da archivio/query loop/widget e nessun componente viene scelto a caso. I pochi candidati residui mostrano confidenza e motivo della corrispondenza.', compatibility: 'Installa insieme app e connettore 3.13.2. Riapri il task: la lista dei 15 articoli della 3.13.1 viene ricalcolata e non viene riutilizzata.' },
   { version: '3.13.1', date: '2026-08-24', notes: 'Corretto il loop dei task link provenienti dalle versioni precedenti: quando un crawl pubblico valido dimostra che una vecchia scrittura WordPress non ha prodotto la correzione richiesta, il task non resta più bloccato su “Riprova verifica pubblica”. Mostra “Risolvi nuovamente”, ripristina prima in sicurezza la vecchia operazione tramite il rollback già registrato e, solo dopo un rollback confermato, riapre il nuovo resolver del proprietario reale introdotto in 3.13.0. Il vecchio operation_id resta nello storico come operazione superata; se il rollback fallisce, la nuova scrittura viene bloccata per evitare stati sovrapposti.', compatibility: 'Installa insieme app e connettore 3.13.1. I task già bloccati vengono riconosciuti automaticamente: non serve ricrearli né azzerare il progetto.' },
   { version: '3.13.0', date: '2026-08-24', notes: 'Internal linking WordPress rifondato sul proprietario reale del link. Il connettore distingue contenuto pagina, Elementor pagina, template Elementor globale, template/block WordPress, menu custom e normali voci menu collegate a Pagine/Articoli. Se esistono più proprietari esatti non modifica tutto alla cieca: li mostra e richiede una scelta. Aggiunta diagnostica non distruttiva AUTH → CORS → OWNER RESOLUTION → PREVIEW → PUBLIC CRAWL, con APPLY/STORAGE/VERIFY marcati esplicitamente come non eseguiti fino all’approvazione.', compatibility: 'Installa insieme app e connettore 3.13.0. Per i task link già aperti riapri la scheda: il nuovo pre-check ricalcola il proprietario reale.' },
   { version: '3.12.21', date: '2026-08-24', notes: 'Corretto il falso fallimento del crawl quando post-apply e verifica richiedono lo stesso controllo: i chiamanti condividono ora un unico crawl in corso invece di respingersi. Se una scrittura WordPress è già registrata e la stessa URL/operazione è soltanto in attesa di prova pubblica, eventuali vecchi motivi manuali del retry vengono riconciliati e la UI mostra esclusivamente “Riprova verifica pubblica”, senza riaprire preview/apply.', compatibility: 'Installa insieme app e connettore 3.12.21. Le vere modifiche globali non individuabili restano manuali; una modifica già scritta non viene duplicata.' },
@@ -13030,11 +13031,107 @@ document.addEventListener('click', async event => {
    esclusivamente dopo il click esplicito “Risolvi nuovamente”. */
 
 
+
+
+/* ========================================================================== 
+   v3.13.2 — resolver source-aware: anchor/contesto della pagina sorgente
+   ========================================================================== */
+/* Il task raggruppa più occorrenze dello stesso href su una pagina. Prima della
+   preview alleghiamo le prove dell'ULTIMO crawl renderizzato senza inserirle in
+   `changes`, così non alterano la firma/idempotenza della modifica. */
+const ogosPluginTaskPayloadV3132Base = pluginTaskPayload;
+pluginTaskPayload = function(task) {
+  const payload = ogosPluginTaskPayloadV3132Base.apply(this, arguments);
+  (payload.affected || []).forEach(item => {
+    const replace = item?.changes?.replace_link;
+    if (!replace?.from) return;
+    const page = typeof ogosPageForUrlV3611 === 'function' ? ogosPageForUrlV3611(item.url) : (state.pages||[]).find(p=>comparableUrl(p.url)===comparableUrl(item.url));
+    const from = comparableUrl(replace.from);
+    const details = (Array.isArray(page?.live?.internalLinkDetails) ? page.live.internalLinkDetails : [])
+      .filter(detail => comparableUrl(detail?.href || detail?.raw_href) === from)
+      .slice(0, 20)
+      .map(detail => ({
+        anchor: String(detail?.anchor || '').trim(),
+        context: String(detail?.context || '').trim().slice(0, 320),
+        occurrence: Number(detail?.occurrence) || null,
+        raw_href: String(detail?.raw_href || detail?.href || '')
+      }));
+    if (!details.length && (item.anchor || item.context)) {
+      details.push({anchor:String(item.anchor||''),context:String(item.context||'').slice(0,320),occurrence:Number(item.occurrence)||null,raw_href:String(replace.from||'')});
+    }
+    item.source_evidence = {
+      source_url: item.url,
+      observed_at: page?.live?.internalLinkObservedAt || page?.crawl?.checkedAt || state.audit?.observedAt || null,
+      occurrence_count: Math.max(Number(item.occurrenceCount)||0, details.length),
+      occurrences: details
+    };
+  });
+  return payload;
+};
+
+/* Conserva nel task locale anche l'evidenza restituita dal server quando una
+   preview viene classificata manuale/dinamica. */
+const ogosFailureV3132Base = ogosFailureV3611;
+ogosFailureV3611 = function(row, fallback) {
+  const out = ogosFailureV3132Base.apply(this, arguments);
+  if (row?.source_evidence && typeof row.source_evidence === 'object') out.sourceEvidence = clone(row.source_evidence);
+  if (row?.owner_resolution && typeof row.owner_resolution === 'object') out.ownerResolution = clone(row.owner_resolution);
+  return out;
+};
+
+function ogosSourceEvidenceHtml3132(evidence) {
+  const occurrences = Array.isArray(evidence?.occurrences) ? evidence.occurrences : [];
+  if (!occurrences.length) return '<small class="help">Il crawl non ha fornito anchor/contesto per questa occorrenza.</small>';
+  return `<div class="affected-table" style="margin-top:10px"><div class="affected-row head"><span>Occorrenza pubblica</span><span>Anchor</span><span>Contesto</span></div>${occurrences.slice(0,6).map((o,i)=>`<div class="affected-row"><span>${Number(o.occurrence)||i+1}</span><b>${esc(o.anchor||'—')}</b><span>${esc(o.context||'—')}</span></div>`).join('')}</div>`;
+}
+
+/* Sostituisce la lista generica 3.13.0: qui compaiono soltanto candidati che il
+   connettore ha già filtrato contro la pagina sorgente, con motivo e confidenza. */
+ogosOwnerCandidatesHtml3130 = function(task, reason) {
+  const owners = Array.isArray(reason?.ownerCandidates) ? reason.ownerCandidates : [];
+  if (!owners.length) return '';
+  const evidence = reason?.sourceEvidence || reason?.source_evidence || {};
+  return `<div class="safe-note warn-note"><b>${owners.length} ${owners.length===1?'componente confermato':'componenti confermati'} sulla pagina sorgente.</b><br>Non sono più risultati globali basati sul solo href: anchor e contesto del crawl sono stati confrontati prima di mostrare questa lista.</div>${ogosSourceEvidenceHtml3132(evidence)}<div class="verify-list" style="margin-top:12px">${owners.map(owner=>`<article class="panel verify-item"><div class="verify-icon">${icon(owner.kind?.startsWith('menu_')?'link':'network')}</div><div><h3>${esc(owner.label||ogosOwnerKindLabel3130(owner.kind))}</h3><p>${esc(ogosOwnerKindLabel3130(owner.kind))}${owner.post_type?` · ${esc(owner.post_type)}`:''}<br><b>Confidenza ${Number(owner.confidence)||0}%</b>${owner.match_reason?` · ${esc(owner.match_reason)}`:''}</p></div><button type="button" class="btn primary ogos-choose-link-owner3130" data-task-id="${task.id}" data-url="${esc(reason.url||'')}" data-owner-id="${Number(owner.id)||0}" data-owner-kind="${esc(owner.kind||'')}">Usa questo</button></article>`).join('')}</div>`;
+};
+
+function ogosDynamicOwnerHtml3132(task, reason) {
+  const evidence = reason?.sourceEvidence || reason?.source_evidence || {};
+  const source = reason?.url || task?.affected?.[0]?.url || '';
+  return `<div class="safe-note warn-note"><b>Nessun proprietario statico confermato: non devi scegliere nulla.</b><br>Il vecchio link è presente nell’HTML di <code>${esc(source)}</code>, ma non è stato trovato nel contenuto della pagina né in un template/menu compatibile con la stessa anchor e lo stesso contesto. Il caso è quindi probabilmente generato dinamicamente da un archivio, Query Loop, elenco articoli o widget.</div>${ogosSourceEvidenceHtml3132(evidence)}<div class="safe-note"><b>Cosa evita la 3.13.2:</b> non propone più gli altri articoli del sito soltanto perché contengono lo stesso href. Nessuna scrittura viene eseguita finché il generatore dinamico non è identificato in modo verificabile.</div>`;
+}
+
+/* Dopo il normale preflight, trasforma il vecchio “Solo verifica manuale” in una
+   diagnosi leggibile quando il server ha riconosciuto un owner dinamico. */
+const ogosApplyPluginTaskV3132Base = applyPluginTaskSingle;
+applyPluginTaskSingle = async function(id, triggerButton=null) {
+  const result = await ogosApplyPluginTaskV3132Base.apply(this, arguments);
+  const task = (state.tasks||[]).find(t=>String(t.id)===String(id));
+  if (!task) return result;
+  const reason = normalizedPartialReasons(task).find(r=>String(r.code||'')==='ogos_dynamic_rendered_link_owner');
+  if (!reason) return result;
+  const button = triggerButton || ogosVisibleEl('.apply-plugin-task-single');
+  const host = button?.closest?.('#modalForm, #view-keyword-proposal, #actionDrawer') || document;
+  const box = host.querySelector?.('#pluginPreviewResult, #keywordProposalResult');
+  if (box) box.innerHTML = ogosDynamicOwnerHtml3132(task, reason);
+  if (button) { button.disabled = true; button.textContent = 'Generatore dinamico da identificare'; }
+  return result;
+};
+
+/* Anche nel pannello diagnostico mostriamo il perché della selezione. */
+const ogosPipelineHtmlV3132Base = ogosPipelineHtml3130;
+ogosPipelineHtml3130 = function(data) {
+  let html = ogosPipelineHtmlV3132Base.apply(this, arguments);
+  const rows = Array.isArray(data?.owners) ? data.owners : [];
+  const evidence = rows.find(r=>r?.source_evidence)?.source_evidence;
+  if (evidence) html += `<h3 style="margin-top:16px">Evidenza pagina sorgente</h3>${ogosSourceEvidenceHtml3132(evidence)}`;
+  return html;
+};
+
 /* API pubblica stabile dichiarata dal manifest. */
 function ogosRunResumableCrawlV347(){return runWordPressCrawl.apply(this,arguments);}
 window.OGOS_BUILD_INFO=Object.freeze({version:APP_VERSION,buildId:BUILD_ID,buildTimestamp:BUILD_TIMESTAMP});
 
-window.OGOS_WP_FIX_BUILD="3.13.1-public-failure-reapply";
+window.OGOS_WP_FIX_BUILD="3.13.2-source-aware-link-owner";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
