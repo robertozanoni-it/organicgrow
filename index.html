@@ -245,7 +245,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.12.5',OGOS_SCHEMA_VERSION=1;
+const APP_VERSION='3.12.6',OGOS_SCHEMA_VERSION=1;
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -979,6 +979,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.12.6', date: '2026-08-24', notes: 'La finestra WordPress non promette più una scrittura quando la modalità simulazione è attiva: mostra chiaramente “Simula soltanto” e offre l’azione esplicita “Disattiva simulazione e applica”.', compatibility: 'Installa insieme app e connettore 3.12.6.' },
   { version: '3.12.5', date: '2026-08-24', notes: 'Retry WordPress limitati agli errori temporanei; fallback persistente e con scadenza per le risposte idempotenti; dettagli completi nei rollback incompleti.', compatibility: 'Installa insieme app e connettore 3.12.5.' },
   { version: '3.12.5', date: '2026-08-24', notes: 'Resi selettivi i retry delle correzioni WordPress: gli errori applicativi permanenti terminano subito, mentre restano recuperabili timeout, rete, rate limit e gateway temporanei. Il connettore conserva la risposta idempotente anche quando la cache transient non è disponibile e restituisce i dettagli strutturati dei rollback incompleti.', compatibility: 'Installa insieme app e connettore 3.12.5.' },
   { version: '3.12.4', date: '2026-08-24', notes: 'Corretto il falso problema H1 che restava visibile dopo una modifica manuale. “Analizza tutto” e “Scansiona dati SEO attuali” eseguono ora automaticamente anche il crawl dell’HTML pubblico quando WordPress è collegato. I conteggi H1 provenienti da un crawl precedente vengono invalidati appena arriva un nuovo audit non renderizzato e non possono più alimentare report, task o punteggio SEO. Un task H1 aperto viene chiuso automaticamente quando il nuovo crawl conferma esattamente un H1. Il crawler forza una risposta aggiornata con intestazioni no-cache e una chiave univoca, mentre il connettore svuota le cache pubbliche note dopo le modifiche strutturali.', compatibility: 'Installa insieme app e connettore 3.12.4. Dopo l’aggiornamento premi “Analizza tutto”: il crawl pubblico viene eseguito nello stesso flusso e rimuove automaticamente la vecchia segnalazione se la pagina mostra un solo H1.' },
@@ -12329,7 +12330,54 @@ init = function() {
   return result;
 };
 
-window.OGOS_WP_FIX_BUILD="3.12.4-fresh-h1-analysis";
+/* 3.12.6: una simulazione non deve essere presentata come applicazione reale.
+   L'utente puo' conservare il pre-check sicuro oppure scegliere esplicitamente
+   di disattivare la simulazione e proseguire con la stessa anteprima. */
+const ogosOpenPluginRepairV3126Base = openPluginRepair;
+openPluginRepair = function(task) {
+  const result = ogosOpenPluginRepairV3126Base.apply(this, arguments);
+  if (!isSimulationMode()) return result;
+  const form = $('#modalForm');
+  if (!form || form.dataset.type !== 'wordpress-plugin') return result;
+  const note = form.querySelector('.safe-note');
+  if (note) {
+    note.classList.add('warn-note');
+    note.innerHTML = '<b>Modalità simulazione attiva.</b> “Simula soltanto” esegue il controllo senza scrivere. Per creare o aggiornare davvero il link usa “Disattiva simulazione e applica”.';
+  }
+  const apply = form.querySelector('.apply-plugin-task-single');
+  if (apply) apply.textContent = 'Simula soltanto';
+  const actions = form.querySelector('.repair-actions');
+  if (actions && !actions.querySelector('.ogos-disable-simulation-apply')) {
+    const realApply = document.createElement('button');
+    realApply.type = 'button';
+    realApply.className = 'btn primary ogos-disable-simulation-apply';
+    realApply.dataset.id = String(task.id);
+    realApply.textContent = 'Disattiva simulazione e applica';
+    actions.appendChild(realApply);
+  }
+  return result;
+};
+
+document.addEventListener('click', event => {
+  const button = event.target.closest?.('.ogos-disable-simulation-apply');
+  if (!button) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  state.ui = state.ui && typeof state.ui === 'object' ? state.ui : {};
+  state.ui.simulationMode = false;
+  if (!save(true)) {
+    toast('Impossibile salvare la disattivazione della simulazione: nessuna modifica è stata inviata.', 'error');
+    return;
+  }
+  const form = button.closest('#modalForm');
+  const apply = form?.querySelector('.apply-plugin-task-single');
+  button.disabled = true;
+  button.textContent = 'Applicazione reale in corso…';
+  toast('Simulazione disattivata: invio ora la modifica reale a WordPress.');
+  applyPluginTaskSingle(Number(button.dataset.id), apply || button);
+}, true);
+
+window.OGOS_WP_FIX_BUILD="3.12.6-real-link-apply";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
