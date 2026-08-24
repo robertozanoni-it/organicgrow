@@ -245,7 +245,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.12.0',OGOS_SCHEMA_VERSION=1;
+const APP_VERSION='3.12.1',OGOS_SCHEMA_VERSION=1;
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -979,6 +979,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.12.1', date: '2026-08-24', notes: 'Corretto il flusso degli H1 multipli: i task creati dall’audit contengono ora la modifica strutturata da inviare a WordPress e i task già presenti vengono aggiornati automaticamente. Se il tema stampa già l’H1 del titolo, il connettore può trasformare in H2 l’H1 aggiuntivo nel contenuto o in Elementor; se gli H1 extra appartengono a un template globale, blocca la scrittura e spiega dove intervenire. Ogni proposta di link interno può ora essere aperta singolarmente per la correzione, mentre i builder non supportati passano da un controllo di fattibilità senza modifiche alla cieca. Le URL senza un crawl HTML completo non vengono più mostrate come pagine orfane: restano solo da verificare e non generano task.', compatibility: 'Per la correzione automatica degli H1 installa anche il connettore 3.12.1. I task esistenti vengono migrati alla prima apertura.' },
   { version: '3.12.0', date: '2026-08-24', notes: 'L’app si chiama ora RZ Organic Growth OS: rinominate le etichette visibili dell’app e del plugin. Slug, namespace REST e nomi delle opzioni restano invariati, quindi l’installazione esistente conserva token e impostazioni. Nuova correzione automatica degli H1 multipli. Finora l’app sapeva soltanto segnalarli: il task nasceva senza alcuna capability associata e restava per sempre “Richiede intervento manuale”. Il connettore sa ora ridurli a uno — mantiene il primo H1 in ordine di documento e porta gli altri a H2 — sia nei widget Heading di Elementor (dove il livello è il campo header_size) sia nei tag <h1> del contenuto classico, conservando attributi e testo. Gli altri page builder restano esclusi, come per ogni modifica al contenuto che non possiamo leggere in modo strutturato. La correzione passa da anteprima, snapshot e ripristino come tutte le altre, e la verifica ricontrolla il numero reale di H1, non solo l’impronta del contenuto. La diagnostica del collegamento include ora il controllo decisivo: una richiesta reale alla rotta di scambio con un codice non valido. È l’unica rotta esente dall’allowlist CORS, quindi risponde anche prima di qualunque collegamento: se la risposta è leggibile, preflight, CORS e rotte REST funzionano davvero; se fallisce a livello di rete, il blocco è fra il browser e WordPress (firewall applicativo, CDN, regole sulle OPTIONS).', compatibility: 'La correzione degli H1 multipli richiede il connettore 3.12.0: con una versione precedente il task resta manuale, senza errori. Nessuna modifica ai dati salvati.' },
   { version: '3.11.5', date: '2026-08-24', notes: 'Corretti due difetti trovati mettendo in piedi un WordPress di prova reale, con il codice vero del connettore e due origini distinte: i test precedenti simulavano le risposte dentro il browser e quindi non applicavano mai il CORS. (1) Un codice di collegamento generato dalla bacheca non porta con sé alcuna origine, e l’origine dell’app non veniva quindi mai registrata nell’allowlist CORS: lo scambio riusciva, l’app si dichiarava collegata e da quel momento ogni chiamata REST veniva bloccata dal browser, senza alcun errore che lo spiegasse. Ora l’origine viene dedotta dall’header Origin della richiesta di scambio, che è impostato dal browser e appartiene per definizione all’app che sta riscattando il codice. (2) Il messaggio con le istruzioni di recupero — indirizzo da aprire a mano, codice dalla bacheca — veniva scritto e subito sovrascritto dal ripristino della card con il neutro “Premi Collega WordPress”: spariva esattamente nel momento in cui serviva. Corretto inoltre lo scambio del codice, che usava l’indirizzo memorizzato invece di quello scritto nel campo: con un codice manuale poteva finire al sito del progetto precedente.', compatibility: 'Richiede il connettore 3.11.5 per la registrazione dell’origine sui codici generati dalla bacheca. Nessuna modifica ai dati salvati.' },
   { version: '3.11.4', date: '2026-08-24', notes: 'Corretta una regressione introdotta dalla 3.11.2 che impediva del tutto il collegamento. La verifica preliminare del connettore, aggiunta per dare messaggi più chiari, girava PRIMA di aprire la finestra di autorizzazione: window.open() eseguita dopo un await perde l’attivazione utente del click e il browser la blocca come popup non richiesto. Nessuna finestra, nessuna pagina di autorizzazione, nessun codice — il controllo pensato per chiarire le cose le aveva peggiorate. La finestra viene ora aperta subito al click e indirizzata dopo la verifica. Se i popup sono comunque bloccati l’app non si limita più a segnalarlo: apre la sezione del codice monouso, ci mette il cursore e spiega come generarlo dalla bacheca. Corretto anche l’indirizzo diretto della schermata di autorizzazione mostrato in bacheca: non avendo uno state, rispondeva sempre “Richiesta di collegamento non valida o incompleta”. Ora quella schermata, aperta senza state da un amministratore autenticato, propone l’autorizzazione manuale e produce il codice. Nuovo pulsante “Diagnostica collegamento” nella card WordPress: verifica indirizzo, origine dichiarata, popup, raggiungibilità delle REST API, presenza del connettore, token e stato, e produce un report copiabile.', compatibility: 'Richiede il connettore 3.11.4 per la schermata di autorizzazione manuale. Nessuna modifica ai dati salvati.' },
@@ -3418,7 +3419,7 @@ function sourceTextFragment(row) {
 function showBrokenLinkDetail(index) {
   const row = detectBrokenLinksReport()[index]; if (!row) return;
   const modal = $('.modal'); modal?.classList.add('task-detail-modal'); $('#modalTitle').textContent = 'Posizione esatta del link'; $('#modalHelp').textContent = row.anchor || row.brokenUrl;
-  $('#modalForm').innerHTML = `<div class="table-wrap"><table><tbody><tr><th>Pagina sorgente</th><td>${operationalPageLink(row.source)}</td></tr><tr><th>Anchor rilevata</th><td><b>${esc(row.anchor || 'Non disponibile')}</b>${row.occurrence ? ` · occorrenza ${row.occurrence}` : ''}</td></tr><tr><th>Testo attorno al link</th><td>${highlightedLinkContext(row)}</td></tr><tr><th>Origine</th><td>${row.editable === false ? 'Link generato da builder, blocco o template: apri il componente indicato dal contesto.' : 'Contenuto modificabile direttamente nella pagina.'}</td></tr><tr><th>Destinazione rotta</th><td>${operationalPageLink(row.brokenUrl)}</td></tr><tr><th>Destinazione proposta</th><td>${row.suggested ? operationalPageLink(row.suggested) : 'Nessuna proposta affidabile'}</td></tr></tbody></table></div><div class="repair-actions"><button type="button" class="btn" data-close>Chiudi</button>${sourceTextFragment(row) ? `<a class="btn" href="${esc(sourceTextFragment(row))}" target="_blank" rel="noopener">Apri nel punto del testo ↗</a>` : ''}${row.suggested && row.editable !== false ? `<button type="button" class="btn primary ogos-create-broken-one" data-index="${index}">Crea correzione per questo link →</button>` : ''}</div>`;
+  $('#modalForm').innerHTML = `<div class="table-wrap"><table><tbody><tr><th>Pagina sorgente</th><td>${operationalPageLink(row.source)}</td></tr><tr><th>Anchor rilevata</th><td><b>${esc(row.anchor || 'Non disponibile')}</b>${row.occurrence ? ` · occorrenza ${row.occurrence}` : ''}</td></tr><tr><th>Testo attorno al link</th><td>${highlightedLinkContext(row)}</td></tr><tr><th>Origine</th><td>${row.editable === false ? 'Link generato da builder, blocco o template: apri il componente indicato dal contesto.' : 'Contenuto modificabile direttamente nella pagina.'}</td></tr><tr><th>Destinazione rotta</th><td>${operationalPageLink(row.brokenUrl)}</td></tr><tr><th>Destinazione proposta</th><td>${row.suggested ? operationalPageLink(row.suggested) : 'Nessuna proposta affidabile'}</td></tr></tbody></table></div><div class="repair-actions"><button type="button" class="btn" data-close>Chiudi</button>${sourceTextFragment(row) ? `<a class="btn" href="${esc(sourceTextFragment(row))}" target="_blank" rel="noopener">Apri nel punto del testo ↗</a>` : ''}${row.suggested ? `<button type="button" class="btn primary ogos-create-broken-one" data-index="${index}">${row.editable === false ? 'Verifica e correggi questo link →' : 'Crea correzione per questo link →'}</button>` : ''}</div>`;
   $('#modalBackdrop').classList.add('open');
 }
 function internalLinkAuditContentV140() {
@@ -11387,7 +11388,227 @@ window.OGOSCommands=Object.freeze({...OGOSCommands,
 /* #endregion module:wordpress-connection */
 /* #region module:bootstrap */
 
-window.OGOS_WP_FIX_BUILD="3.12.0-rz-h1-hierarchy";
+/* ==========================================================================
+   v3.12.1 — H1 applicabili, singoli link correggibili, orfani prudenti
+   ========================================================================== */
+
+function ogosIsH1TaskV3121(task) {
+  return !!task && (
+    String(task.operation?.fieldSignature || '') === 'h1_count' ||
+    String(task.operation?.type || '') === 'heading_hierarchy' ||
+    /^Riduci a uno gli H1\b/i.test(String(task.title || ''))
+  );
+}
+
+function ogosH1HierarchyChangeV3121(item) {
+  const page = (state.pages || []).find(row => comparableUrl(row?.url) === comparableUrl(item?.url));
+  const current = item?.changes?.heading_hierarchy;
+  const currentData = current && typeof current === 'object' ? current : {};
+  const observed = Math.max(
+    2,
+    Number(page?.crawl?.h1Count) || Number(currentData.observed_h1_count) || 0
+  );
+  return {
+    ...currentData,
+    observed_h1_count: observed,
+    primary_h1: String(page?.crawl?.h1Text || currentData.primary_h1 || '').slice(0, 300)
+  };
+}
+
+function ogosNormalizeH1TaskV3121(task) {
+  if (!ogosIsH1TaskV3121(task)) return false;
+  let changed = false;
+  const operation = { ...(task.operation || {}), type: 'heading_hierarchy', fieldSignature: 'h1_count' };
+  if (JSON.stringify(task.operation || {}) !== JSON.stringify(operation)) {
+    task.operation = operation;
+    changed = true;
+  }
+  if (task.autoPossible !== true) {
+    task.autoPossible = true;
+    changed = true;
+  }
+  const detail = 'Correzione automatica con anteprima: viene mantenuto un solo H1 nella pagina pubblicata. Il connettore modifica soltanto il contenuto WordPress o Elementor; se gli H1 extra appartengono a un template globale, blocca la scrittura e indica il motivo.';
+  if (task.detail !== detail) {
+    task.detail = detail;
+    changed = true;
+  }
+  const affected = (task.affected || []).map(item => {
+    const changes = { ...(item?.changes || {}) };
+    const hierarchy = ogosH1HierarchyChangeV3121(item);
+    if (JSON.stringify(changes.heading_hierarchy) !== JSON.stringify(hierarchy)) {
+      changes.heading_hierarchy = hierarchy;
+      changed = true;
+    }
+    const issue = item?.issue || (hierarchy.observed_h1_count + ' H1 rilevati');
+    const fix = 'Mantieni l’H1 principale e trasforma automaticamente gli altri H1 in H2, quando sono presenti nel contenuto modificabile.';
+    if (item?.issue !== issue || item?.fix !== fix) changed = true;
+    return { ...item, issue: issue, fix: fix, changes: changes };
+  });
+  if (JSON.stringify(task.affected || []) !== JSON.stringify(affected)) {
+    task.affected = affected;
+    changed = true;
+  }
+  return changed;
+}
+
+const ogosCreaTaskCampoV3121Base = ogosCreaTaskCampo;
+ogosCreaTaskCampo = function(rows, field) {
+  const task = ogosCreaTaskCampoV3121Base.apply(this, arguments);
+  if (field === 'h1_count' && task) ogosNormalizeH1TaskV3121(task);
+  return task;
+};
+
+/* L'ultimo wrapper del payload 3.12.0 ricostruiva il task e perdeva
+   heading_hierarchy. Normalizziamo PRIMA di calcolare change_id e retry. */
+const ogosPluginTaskPayloadV3121Base = pluginTaskPayload;
+pluginTaskPayload = function(task) {
+  if (ogosIsH1TaskV3121(task)) ogosNormalizeH1TaskV3121(task);
+  return ogosPluginTaskPayloadV3121Base(task);
+};
+
+function ogosTaskChangesHtmlV3121(item) {
+  const changes = item?.changes || {}, rows = [];
+  if (changes.title) rows.push('<span><b>Title:</b> ' + esc(changes.title) + '</span>');
+  if (changes.post_title) rows.push('<span><b>H1:</b> ' + esc(changes.post_title) + '</span>');
+  if (changes.meta_description) rows.push('<span><b>Meta:</b> ' + esc(changes.meta_description) + '</span>');
+  if (changes.canonical) rows.push('<span><b>Canonical:</b> ' + operationalPageLink(changes.canonical) + '</span>');
+  if (changes.heading_hierarchy) {
+    const observed = Number(changes.heading_hierarchy.observed_h1_count) || 0;
+    rows.push('<span><b>Gerarchia H1:</b> ' + (observed ? observed + ' H1 rilevati; ' : '') + 'mantiene quello principale e porta gli altri a H2.</span>');
+  }
+  if (changes.internal_link) rows.push('<span><b>Link:</b> “' + esc(changes.internal_link.anchor) + '” → ' + operationalPageLink(changes.internal_link.target) + '</span>');
+  if (changes.replace_link) rows.push('<span><b>Sostituzione:</b> ' + operationalPageLink(changes.replace_link.from) + ' → ' + operationalPageLink(changes.replace_link.to) + '</span>');
+  if (changes.redirect) rows.push('<span><b>Redirect ' + esc(changes.redirect.code || 301) + ':</b> ' + operationalPageLink(changes.redirect.from) + ' → ' + operationalPageLink(changes.redirect.to) + '</span>');
+  return rows.length ? '<div class="task-change-list">' + rows.join('') + '</div>' : '<span class="help">Nessuna modifica automatica strutturata: seguire l’azione proposta.</span>';
+}
+const ogosTaskChangesHtmlV3121Base = taskChangesHtml;
+taskChangesHtml = function(item) {
+  return item?.changes?.heading_hierarchy ? ogosTaskChangesHtmlV3121(item) : ogosTaskChangesHtmlV3121Base(item);
+};
+
+const ogosSyncAppliedRowsV3121Base = ogosSyncAppliedRowsV3611;
+ogosSyncAppliedRowsV3611 = function(rows, changedUrls) {
+  const result = ogosSyncAppliedRowsV3121Base.apply(this, arguments);
+  const changed = new Set((changedUrls || []).map(comparableUrl));
+  let refreshed = false;
+  (rows || []).forEach(item => {
+    if (!changed.has(comparableUrl(item?.url)) || !item?.changes?.heading_hierarchy) return;
+    const page = ogosPageForUrlV3611(item.url);
+    if (!page) return;
+    page.crawl = page.crawl && typeof page.crawl === 'object' ? page.crawl : {};
+    page.crawl.h1Count = 1;
+    const primary = String(item.changes.heading_hierarchy.primary_h1 || '').trim();
+    if (primary) page.crawl.h1Text = primary;
+    delete page.liveDataStale;
+    refreshed = true;
+  });
+  if (refreshed) {
+    ogosOnPageRowsCacheV366 = null;
+    if (typeof ogosInvalidatePerformanceCachesV352 === 'function') ogosInvalidatePerformanceCachesV352();
+  }
+  return result;
+};
+
+function ogosBrokenLinksHtmlV3121() {
+  const rows = detectBrokenLinksReport();
+  if (!rows.length) return '<p class="safe-note">Nessun link interno rotto rilevato.</p>';
+  const body = rows.map((row, index) => {
+    const position = row.context ? highlightedLinkContext(row) : '<span class="help">Nuova scansione richiesta</span>';
+    const action = row.suggested
+      ? '<button type="button" class="btn ogos-create-broken-one" data-index="' + index + '">' + (row.editable === false ? 'Verifica e correggi →' : 'Correggi questo link →') + '</button>'
+      : '<span class="help">Nessuna correzione sicura</span>';
+    return '<tr><td>' + operationalPageLink(row.source) + '</td><td><b>' + esc(row.anchor || 'Da rilevare') + '</b></td><td>' + position + '<br><button type="button" class="btn ogos-link-detail" data-index="' + index + '">Apri dettaglio →</button></td><td>' + operationalPageLink(row.brokenUrl) + '</td><td>' + (row.suggested ? operationalPageLink(row.suggested) : 'Nessuna proposta affidabile') + '</td><td>' + action + '</td></tr>';
+  }).join('');
+  const automatic = rows.filter(row => row.suggested && row.editable !== false);
+  return '<div class="table-wrap"><table><thead><tr><th>Sorgente</th><th>Anchor</th><th>Posizione esatta</th><th>Link rotto</th><th>Proposta</th><th>Azione</th></tr></thead><tbody>' + body + '</tbody></table></div>' + (automatic.length ? '<div class="audit-bulk-bar"><small>Il bulk include solo contenuti che il connettore può modificare senza toccare template globali.</small><button type="button" class="btn primary" id="ogosCreateBrokenBulk">Correggi tutti (' + automatic.length + ') →</button></div>' : '');
+}
+
+const ogosInternalLinkAuditV3121Base = internalLinkAuditContentV140;
+internalLinkAuditContentV140 = function() {
+  let html = ogosInternalLinkAuditV3121Base.apply(this, arguments);
+  const graph = ogosOrphanGraphV341();
+  html = html.replace(/Prepara questo link/g, 'Correggi questo link');
+  if (!graph.complete && graph.candidates?.length) {
+    html = html.replace(
+      /<h4 style="margin-top:24px">Possibili orfane da verificare \(\d+\)<\/h4>[\s\S]*?(?=<h4 style="margin-top:24px">Link interni rotti già presenti<\/h4>)/,
+      '<div class="safe-note warn-note"><b>Nessuna URL è classificata come orfana finché il crawl HTML non è completo.</b><br>Le eventuali differenze nei dati restano soltanto da verificare: non sono mostrate come orfane e non generano task o correzioni.</div>'
+    );
+  }
+  const marker = '<h4 style="margin-top:24px">Link interni rotti già presenti</h4>';
+  const markerIndex = html.indexOf(marker);
+  if (markerIndex >= 0) html = html.slice(0, markerIndex) + marker + ogosBrokenLinksHtmlV3121();
+  return html;
+};
+
+function ogosCreateSingleInternalTaskV3121(row) {
+  return upsertOperationalTask(
+    'Aggiungi link interno verso ' + row.target,
+    'Anteprima e correzione della singola proposta: il connettore inserisce un link contestuale soltanto nella pagina sorgente indicata.',
+    'Alta',
+    [{ url: row.source, issue: 'La pagina ' + row.target + ' non ha link in entrata confermati', fix: 'Inserisci “' + row.anchor + '” verso ' + row.target, changes: { internal_link: { target: row.target, anchor: row.anchor, position: 'after_first_paragraph' } } }],
+    { type: 'internal_link', individual: true },
+    true
+  );
+}
+
+function ogosCreateSingleBrokenLinkTaskV3121(row) {
+  const from = row.href || row.brokenUrl;
+  return upsertOperationalTask(
+    'Correggi link rotto ' + from + ' in ' + row.source,
+    row.editable === false ? 'Il connettore verifica prima se il builder consente una modifica sicura. Nessun template globale viene modificato alla cieca.' : 'Anteprima e correzione della singola sostituzione di link.',
+    'Alta',
+    [{ url: row.source, issue: 'Link verso ' + row.brokenUrl, fix: 'Sostituisci con ' + row.suggested, changes: { replace_link: { from: from, to: row.suggested, anchor: row.anchor || '', context: row.context || '' } } }],
+    { type: 'replace_link', individual: true },
+    true
+  );
+}
+
+document.addEventListener('click', function(event) {
+  const internal = event.target.closest?.('.ogos-create-internal-one');
+  const broken = event.target.closest?.('.ogos-create-broken-one');
+  if (!internal && !broken) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (internal) {
+    const row = internalLinkProposals()[Number(internal.dataset.index)];
+    if (!row) {
+      toast('La proposta non è più confermata: esegui un nuovo crawl prima di correggere.', 'error');
+      return;
+    }
+    ogosCreateSingleInternalTaskV3121(row);
+    return;
+  }
+  const row = detectBrokenLinksReport()[Number(broken.dataset.index)];
+  if (!row?.suggested) {
+    toast('Questa riga non ha una destinazione sicura da applicare.', 'error');
+    return;
+  }
+  ogosCreateSingleBrokenLinkTaskV3121(row);
+}, true);
+
+function ogosMigrateH1TasksV3121() {
+  let changed = false;
+  (state.tasks || []).forEach(task => {
+    if (taskIsCompleted(task)) return;
+    if (ogosNormalizeH1TaskV3121(task)) changed = true;
+  });
+  return changed;
+}
+
+const ogosInitV3121Base = init;
+init = function() {
+  const result = ogosInitV3121Base.apply(this, arguments);
+  if (ogosMigrateH1TasksV3121()) {
+    state.appVersion = APP_VERSION;
+    save(true);
+    renderShell();
+    if ($('#view-fix')?.classList.contains('active')) renderKanban();
+    if ($('#view-audit')?.classList.contains('active')) renderAudit();
+  }
+  return result;
+};
+
+window.OGOS_WP_FIX_BUILD="3.12.1-rz-h1-link-orphan";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
