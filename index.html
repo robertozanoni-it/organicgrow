@@ -245,7 +245,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.11.4',OGOS_SCHEMA_VERSION=1;
+const APP_VERSION='3.11.5',OGOS_SCHEMA_VERSION=1;
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -463,7 +463,22 @@ function wpBase(){return String(state.wordpress.url||'').replace(/\/+$/,'')}
 async function verifyRestoredConnector(){if(!wpSecret||!state.wordpress.url)return false;try{const response=await fetch(`${wpBase()}/wp-json/organic-growth-os/v1/auth/status`,{headers:{Accept:'application/json','X-OGOS-Token':wpSecret},mode:'cors',cache:'no-store'});let data={};try{data=await response.json()}catch{}if(!response.ok||data.connected!==true)throw new Error(data.message||`WordPress ha risposto ${response.status}`);state.wordpress.connected=true;state.wordpress.userName=data.user?.name||state.wordpress.userName;state.wordpress.userId=data.user?.id||state.wordpress.userId;state.wordpress.tokenExpiresAt=data.expires_at||state.wordpress.tokenExpiresAt;state.wordpress.lastError=null;state.wordpress.lastTest=new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(new Date());await detectWordPressPlugin();renderSettings();return true}catch(e){state.wordpress.connected=false;state.wordpress.pluginDetected=false;state.wordpress.capabilities=[];state.wordpress.lastError=`Token non più valido o collegamento non verificabile: ${e.message}`;wpSecret='';try{sessionStorage.removeItem(connectorSessionKey())}catch{}renderSettings();return false}}
 function storeConnectorToken(data){wpSecret=data.token;try{const url=normalizeWpBase(data.site||state.wordpress.url||'');sessionStorage.setItem(connectorSessionKey(),JSON.stringify({token:String(data.token||''),url,expiresAt:data.expires_at||null}))}catch{}}
 function normalizeWpBase(raw){const url=new URL(/^https?:\/\//i.test(raw)?raw:`https://${raw}`);if(url.protocol!=='https:'&&!['localhost','127.0.0.1'].includes(url.hostname))throw new Error('HTTPS richiesto');let path=url.pathname.replace(/\/(wp-admin|wp-json).*$/,'');path=path.replace(/\/+$/,'');url.search='';url.hash='';return url.origin+path}
-async function exchangeWordPressPairCode(code,stateValue){if(!code){toast('Inserisci il codice di collegamento mostrato da WordPress','error');return false}const base=state.wordpress.url||normalizeWpBase($('#wpUrl').value.trim());const stateCode=stateValue||wpPendingState;if(!stateCode){toast('Avvia prima “Collega WordPress” per creare una richiesta valida','error');return false}try{const{response,data}=await ogosFetchJsonV1617(`${base}/wp-json/organic-growth-os/v1/auth/exchange`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({code,state:stateCode}),mode:'cors',cache:'no-store'},30000);if(!response.ok)throw new Error(data.message||`WordPress ha risposto ${response.status}`);if(!data.token)throw new Error('WordPress non ha restituito il token del connettore');storeConnectorToken(data);state.wordpress={...state.wordpress,url:normalizeWpBase(data.site||base),connected:true,userName:data.user?.name||data.user?.login||'utente WordPress',userId:data.user?.id||null,lastError:null,lastTest:new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(new Date()),pluginDetected:true,pluginVersion:data.version||'',capabilities:Array.isArray(data.capabilities)?data.capabilities:[],tokenExpiresAt:data.expires_at||null,authMethod:'ogos-token'};wpPendingState='';
+/* BUG corretto (3.11.5): la destinazione dello scambio era
+   "state.wordpress.url || (campo URL)", cioe' il valore MEMORIZZATO vinceva su
+   quello scritto dall'utente. Nel flusso normale i due coincidono, perche'
+   testWordPress() allinea state.wordpress.url prima di aprire la finestra. Ma
+   con un codice generato a mano dalla bacheca quel passaggio non avviene mai:
+   il codice veniva quindi inviato al sito del progetto precedente (o al valore
+   di default "https://<dominio del progetto>") invece che al sito appena
+   digitato, e l'utente vedeva un opaco "Failed to fetch" con un codice
+   perfettamente valido in mano. Ora comanda il campo, che e' cio' che l'utente
+   ha davanti; lo stato memorizzato resta come ripiego. */
+async function exchangeWordPressPairCode(code,stateValue){if(!code){toast('Inserisci il codice di collegamento mostrato da WordPress','error');return false}
+  let base='';const rawUrl=$('#wpUrl')?.value.trim()||'';
+  if(rawUrl){try{base=normalizeWpBase(rawUrl)}catch{base=''}}
+  if(!base)base=state.wordpress.url||'';
+  if(!base){toast('Inserisci l’URL del sito WordPress prima di usare il codice','error');$('#wpUrl')?.focus();return false}
+  state.wordpress.url=base;const stateCode=stateValue||wpPendingState;if(!stateCode){toast('Avvia prima “Collega WordPress” per creare una richiesta valida','error');return false}try{const{response,data}=await ogosFetchJsonV1617(`${base}/wp-json/organic-growth-os/v1/auth/exchange`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({code,state:stateCode}),mode:'cors',cache:'no-store'},30000);if(!response.ok)throw new Error(data.message||`WordPress ha risposto ${response.status}`);if(!data.token)throw new Error('WordPress non ha restituito il token del connettore');storeConnectorToken(data);state.wordpress={...state.wordpress,url:normalizeWpBase(data.site||base),connected:true,userName:data.user?.name||data.user?.login||'utente WordPress',userId:data.user?.id||null,lastError:null,lastTest:new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(new Date()),pluginDetected:true,pluginVersion:data.version||'',capabilities:Array.isArray(data.capabilities)?data.capabilities:[],tokenExpiresAt:data.expires_at||null,authMethod:'ogos-token'};wpPendingState='';
     // L'exchange è già una rotta del nostro plugin: se ha risposto con un
     // token e le capabilities, il connettore è per forza presente e
     // attivo. Richiamare subito dopo detectWordPressPlugin() (un'altra
@@ -964,6 +979,7 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.11.5', date: '2026-08-24', notes: 'Corretti due difetti trovati mettendo in piedi un WordPress di prova reale, con il codice vero del connettore e due origini distinte: i test precedenti simulavano le risposte dentro il browser e quindi non applicavano mai il CORS. (1) Un codice di collegamento generato dalla bacheca non porta con sé alcuna origine, e l’origine dell’app non veniva quindi mai registrata nell’allowlist CORS: lo scambio riusciva, l’app si dichiarava collegata e da quel momento ogni chiamata REST veniva bloccata dal browser, senza alcun errore che lo spiegasse. Ora l’origine viene dedotta dall’header Origin della richiesta di scambio, che è impostato dal browser e appartiene per definizione all’app che sta riscattando il codice. (2) Il messaggio con le istruzioni di recupero — indirizzo da aprire a mano, codice dalla bacheca — veniva scritto e subito sovrascritto dal ripristino della card con il neutro “Premi Collega WordPress”: spariva esattamente nel momento in cui serviva. Corretto inoltre lo scambio del codice, che usava l’indirizzo memorizzato invece di quello scritto nel campo: con un codice manuale poteva finire al sito del progetto precedente.', compatibility: 'Richiede il connettore 3.11.5 per la registrazione dell’origine sui codici generati dalla bacheca. Nessuna modifica ai dati salvati.' },
   { version: '3.11.4', date: '2026-08-24', notes: 'Corretta una regressione introdotta dalla 3.11.2 che impediva del tutto il collegamento. La verifica preliminare del connettore, aggiunta per dare messaggi più chiari, girava PRIMA di aprire la finestra di autorizzazione: window.open() eseguita dopo un await perde l’attivazione utente del click e il browser la blocca come popup non richiesto. Nessuna finestra, nessuna pagina di autorizzazione, nessun codice — il controllo pensato per chiarire le cose le aveva peggiorate. La finestra viene ora aperta subito al click e indirizzata dopo la verifica. Se i popup sono comunque bloccati l’app non si limita più a segnalarlo: apre la sezione del codice monouso, ci mette il cursore e spiega come generarlo dalla bacheca. Corretto anche l’indirizzo diretto della schermata di autorizzazione mostrato in bacheca: non avendo uno state, rispondeva sempre “Richiesta di collegamento non valida o incompleta”. Ora quella schermata, aperta senza state da un amministratore autenticato, propone l’autorizzazione manuale e produce il codice. Nuovo pulsante “Diagnostica collegamento” nella card WordPress: verifica indirizzo, origine dichiarata, popup, raggiungibilità delle REST API, presenza del connettore, token e stato, e produce un report copiabile.', compatibility: 'Richiede il connettore 3.11.4 per la schermata di autorizzazione manuale. Nessuna modifica ai dati salvati.' },
   { version: '3.11.3', date: '2026-08-23', notes: 'Collegamento WordPress con una via d’uscita garantita, più tre correzioni. (1) La schermata di autorizzazione è ora servita anche da admin-post.php, un entry point del core: fino a ieri l’unica strada era admin.php?page=organic-growth-os-auth, una pagina di menu che su alcune installazioni non si risolve (wp-admin protetto o rinominato, cache che serve il 404 del tema) e in quel caso non restava nessuna alternativa — né pagina né codice. (2) Nella bacheca, in Connettore e sicurezza, c’è ora “Genera codice di collegamento”: crea un codice monouso valido 2 minuti da incollare nell’app, senza popup e senza dipendere da alcuna rotta admin. L’app accetta questi codici anche se “Collega WordPress” non è mai stato premuto. (3) Un modale aperto dal pannello laterale (per esempio “Posizione esatta del link” da Internal linking) finiva sotto al pannello e risultava illeggibile: era a z-index 80 contro 90. (4) La card di connessione mostrava due campi identici per lo stesso codice monouso: ne resta uno. (5) Nel plugin, aprendo l’app integrata su un sito diverso da quello dell’ultimo progetto, veniva riscritto solo il dominio: si vedeva il nome di un progetto con il dominio di un altro e, soprattutto, le pagine e le attività del sito precedente restavano caricate come se appartenessero a questo. Ora il progetto viene sostituito con uno pulito per il sito corrente.', compatibility: 'Richiede il connettore 3.11.3 per la nuova rotta di autorizzazione e per il codice generato dalla bacheca. Nessuna modifica ai dati salvati; nel plugin integrato un progetto appartenente a un altro dominio non viene più caricato.' },
   { version: '3.11.2', date: '2026-08-23', notes: 'Tre correzioni segnalate dall’uso reale. (1) Le proposte scartate continuavano a essere conteggiate fra le cose da fare: il menu annunciava “Elementi on-page — 5 controlli non ancora in attività” e il pannello, aperto, rispondeva “Nessun intervento on-page nuovo da eseguire”, senza alcun modo di far scendere quel numero. Le due misure erano diverse alla radice: il menu contava le pagine con title o meta description vuoti, il pannello le proposte effettivamente generate. Ora la categoria conta esattamente ciò che il pannello mostrerà, gli scarti inclusi, e il numero scende a ogni proposta scartata. (2) Nella tabella di revisione on-page la colonna “Pagina e focus” aveva contenuti inline senza un contenitore che li impilasse: URL, Focus, Bisogno, avviso sugli H1 multipli e i due pulsanti si sovrapponevano. La cella è ora una colonna vera, e in tutte le tabelle un <small> figlio diretto della cella va a capo. (3) “Collega WordPress” apriva subito la finestra di autorizzazione anche quando il connettore non era raggiungibile, mostrando il 404 del tema senza spiegazione. Prima di aprire la finestra l’app verifica ora l’indice REST del sito: se il plugin non è attivo, o se /wp-json/ risponde 404, lo dice con un messaggio preciso invece di aprire un popup inutile. Se la verifica non è possibile (CORS, indice REST chiuso) il collegamento procede comunque.', compatibility: 'Nessuna modifica ai dati salvati. I conteggi delle cose da fare possono cambiare al primo avvio: ora riflettono le proposte realmente disponibili.' },
@@ -10959,9 +10975,21 @@ function ogosEnsureWpConnectionControls3100(){
 
   let helper=$('#ogosWpDirectConnectHelp3100');
   if(!helper){helper=document.createElement('small');helper.id='ogosWpDirectConnectHelp3100';helper.className='help';actions.after(helper);}
-  helper.style.display='block';helper.textContent=state.wordpress?.connected
-    ? 'WordPress collegato. Scansioni, audit e correzioni supportate sono disponibili in base alle capability del connettore.'
-    : 'Premi “Collega WordPress”. Puoi farlo anche se la modalità di lavoro è ancora “Solo dati locali”.';
+  helper.style.display='block';
+  /* BUG corretto (3.11.5): questa funzione gira anche nel blocco finally di
+     testWordPress(), subito DOPO che il tentativo fallito ha scritto qui le
+     istruzioni di recupero (indirizzo da aprire a mano, codice dalla bacheca).
+     Le sovrascriveva con il messaggio neutro "Premi Collega WordPress",
+     cancellando esattamente l'unica indicazione utile nel momento in cui
+     serviva. Un messaggio marcato "persistente" resta finche' non si avvia un
+     nuovo tentativo o il collegamento non riesce. */
+  if(helper.dataset.ogosSticky3115==='1'&&!state.wordpress?.connected){/* lasciamo il messaggio di recupero */}
+  else{
+    delete helper.dataset.ogosSticky3115;
+    helper.textContent=state.wordpress?.connected
+      ? 'WordPress collegato. Scansioni, audit e correzioni supportate sono disponibili in base alle capability del connettore.'
+      : 'Premi “Collega WordPress”. Puoi farlo anche se la modalità di lavoro è ancora “Solo dati locali”.';
+  }
 
   let manual=$('#ogosWpManualPair3100');
   if(!manual){
@@ -11041,7 +11069,7 @@ async function ogosDiagnosticaCollegamento3114(){
   aggiungi(state.wordpress?.connected?'ok':'info','Stato registrato nell’app',state.wordpress?.connected?`collegato a ${state.wordpress.url}`:'non collegato');
 
   if(base){
-    aggiungi('info','Schermata di autorizzazione, da aprire a mano',`${base}/wp-admin/admin-post.php?action=ogos_pair`);
+    aggiungi('info','DA PROVARE A MANO — schermata di autorizzazione',`Apri ${base}/wp-admin/admin-post.php?action=ogos_pair in una scheda. Se mostra un 404 invece della richiesta di autorizzazione, l’area di amministrazione del sito è protetta o riscritta: usa il codice generato dalla bacheca. Il browser non può verificarlo da qui.`);
     aggiungi('info','Codice monouso dalla bacheca',`${base}/wp-admin/admin.php?page=organic-growth-os-settings → “Genera codice di collegamento”`);
   }
 
@@ -11123,6 +11151,7 @@ async function testWordPress(){
      La finestra va quindi aperta SUBITO, nello stesso task del click, su
      about:blank; la verifica gira dopo e la finestra viene poi indirizzata
      (o chiusa, se il connettore non risponde). */
+  const helperReset=$('#ogosWpDirectConnectHelp3100');if(helperReset)delete helperReset.dataset.ogosSticky3115;
   let popup=null;
   try{popup=window.open('about:blank','ogos_wordpress_auth','width=680,height=760,resizable=yes,scrollbars=yes');}catch{}
   if(popup){
@@ -11134,6 +11163,8 @@ async function testWordPress(){
     const reason='Il browser ha bloccato la finestra di WordPress. Consenti i popup per questa pagina, oppure genera il codice dalla bacheca: Organic Growth OS → Connettore e sicurezza → “Genera codice di collegamento”, e incollalo qui sotto in “Usa codice monouso”.';
     state.wordpress.lastError=reason;save(true);renderSettings();
     ogosEnsureWpConnectionControls3100();
+    const hp=$('#ogosWpDirectConnectHelp3100');
+    if(hp){hp.dataset.ogosSticky3115='1';hp.innerHTML=`Popup bloccati. Percorso alternativo, senza finestre: apri in bacheca <b>Organic Growth OS → Connettore e sicurezza</b>, premi <b>“Genera codice di collegamento”</b> e incolla qui sotto il codice.`;}
     const d=$('#ogosWpPairCodePrimary3100')?.closest('details');if(d)d.open=true;
     $('#ogosWpPairCodePrimary3100')?.focus();
     toast(reason,'error');
@@ -11194,6 +11225,7 @@ async function testWordPress(){
        aperto: e' l'unico indizio utile per capire se il plugin manca o se
        l'area di amministrazione e' protetta. */
     const helpNote=$('#ogosWpDirectConnectHelp3100');
+    if(helpNote)helpNote.dataset.ogosSticky3115='1';
     if(helpNote)helpNote.innerHTML=`Se la finestra WordPress ha mostrato un errore invece della richiesta di autorizzazione: apri a mano <b>${esc(authUrl)}</b>, oppure vai in bacheca su <b>Organic Growth OS → Connettore e sicurezza</b> e usa <b>“Genera codice di collegamento”</b>, poi incolla il codice qui sopra. Indirizzo alternativo: ${esc(authUrlLegacy)}`;
     toast('Se hai autorizzato WordPress, copia il codice monouso mostrato nella finestra e incollalo qui. Se invece hai visto un errore 404, il plugin non è raggiungibile su quell’indirizzo.','ok');
   }catch(error){
@@ -11331,7 +11363,7 @@ window.OGOSCommands=Object.freeze({...OGOSCommands,
 /* #endregion module:wordpress-connection */
 /* #region module:bootstrap */
 
-window.OGOS_WP_FIX_BUILD="3.11.4-popup-activation";
+window.OGOS_WP_FIX_BUILD="3.11.5-cors-origin-exchange";
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
