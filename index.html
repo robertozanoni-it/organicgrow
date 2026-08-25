@@ -245,8 +245,8 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.13.4',OGOS_SCHEMA_VERSION=1;
-const BUILD_ID='3.13.4-20260825-runtime-regression-hardening',BUILD_TIMESTAMP='2026-08-25T00:13:12+01:00';
+const APP_VERSION='3.14.0',OGOS_SCHEMA_VERSION=1;
+const BUILD_ID='3.14.0-20260825-public-transactional-verification',BUILD_TIMESTAMP='2026-08-25T11:49:00+01:00';
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -571,8 +571,8 @@ async function importGPTSitesResult(file){const importProject=projectStorageKey(
   task.evidence={status:result.outcome==='blocked'?'unverified':'confirmed',source:'gptsites-live-check',observedAt:new Date().toISOString()};task.gptSitesResult={packageId:pkg.id,outcome:result.outcome,applied:result.applied,verified:result.verified,changedUrls:result.changed_urls,notes:String(result.notes||'')};updated++});if(!updated)throw new Error('Nessun task valido da aggiornare');pkg.usedAt=new Date().toISOString();pkg.resultVersion=String(data.version);state.gptsites.lastResult=pkg.usedAt;state.gptsites.version=String(data.version);state.gptsites.projectUrl=data.deployment_url||state.gptsites.projectUrl;save();renderShell();renderKanban();renderSettings();toast(`Esito GPTSites importato: ${updated} task verificati`)}catch(e){toast(`Importazione GPTSites non riuscita: ${e.message}`,'error')}}
 const renderSettingsIntegrationBase=renderSettings;renderSettings=function(){renderSettingsIntegrationBase();let audit=$('#wpAuditBtn');const syncBtn=$('#wpSyncBtn');if(!audit&&syncBtn){audit=document.createElement('button');audit.type='button';audit.className='btn primary';audit.id='wpAuditBtn';audit.textContent='Scansiona dati SEO attuali';syncBtn.after(audit);audit.onclick=scanWordPressCurrent}if(audit)audit.disabled=!state.wordpress.connected||!wpSecret||!state.wordpress.pluginDetected||!state.wordpress.capabilities.includes('live_audit');const panel=$('#gptSitesPanel');if(!panel)return;const actions=$('#gptCopyBtn').parentElement;if(!$('#gptScanBtn')){const scan=document.createElement('button'),copy=document.createElement('button');scan.type=copy.type='button';scan.className='btn primary';copy.className='btn';scan.id='gptScanBtn';copy.id='gptScanCopyBtn';scan.textContent='Esporta richiesta scansione';copy.textContent='Copia prompt scansione';actions.prepend(scan,copy);scan.onclick=exportGPTSitesScan;copy.onclick=copyGPTSitesScan}if($('#gptResultBtn'))return;const input=document.createElement('input'),button=document.createElement('button');input.type='file';input.accept='.json,application/json';input.hidden=true;input.id='gptResultInput';button.type='button';button.className='btn';button.id='gptResultBtn';button.textContent='Importa esito / scansione GPTSites';actions.append(button,input);button.onclick=()=>input.click();input.onchange=e=>e.target.files[0]&&importGPTSitesResult(e.target.files[0])}
 function renderView(v){if(v==='start')renderProject();if(v==='audit')renderAudit();if(v==='fix')renderKanban();if(v==='verify')renderVerify();if(v==='pages')renderPages();if(v==='keyword-proposal')renderKeywordProposalPage();if(v==='map')renderMap();if(v==='import')renderImports();if(v==='settings')renderSettings();renderShell()}
-function contextualLinkParts(){const language=String(window.OGOS_EMBEDDED?.locale||navigator.language||'it').slice(0,2).toLowerCase(),templates={it:['Per approfondire questo argomento, scopri anche ','.'],en:['To explore this topic further, see ','.'],es:['Para profundizar en este tema, descubre también ','.'],fr:['Pour approfondir ce sujet, découvrez également ','.'],de:['Wenn du dieses Thema vertiefen möchtest, lies auch ','.']};return templates[language]||templates.en}
-function proposedCorrectionHtml(item={}){const link=item.changes?.internal_link;if(!link?.target||!link?.anchor)return esc(item.fix||'');const [before,after]=contextualLinkParts(),position=link.position==='after_first_paragraph'?'Dopo il primo paragrafo pertinente':'In fondo al contenuto';return `<div class="proposed-link-change"><span>${esc(item.fix||'Inserisci il link interno')}</span><div class="proposed-sentence"><small>Frase completa proposta</small><p>${esc(before)}<a href="${esc(link.target)}" target="_blank" rel="noopener noreferrer">${esc(link.anchor)}</a>${esc(after)}</p><div class="proposed-link-meta"><span><b>Destinazione:</b> <code>${esc(link.target)}</code></span><span><b>Posizione:</b> ${esc(position)}</span></div></div><small class="help">Se l’anchor è già presente in una frase naturale della pagina, il plugin collega quella stessa occorrenza senza duplicare il testo.</small></div>`}
+function contextualLinkParts(){const language=String(window.OGOS_EMBEDDED?.locale||navigator.language||'it').slice(0,2).toLowerCase(),templates={it:['Per approfondire questo argomento, scopri anche ','.'],en:['To explore this topic further, see ','.'],es:['Para profundizar en este tema, descubre también ','.'],fr:['Pour approfondire ce sujet, découvrez également ','.'],de:['Wenn du dieses Thema vertiefen möchtest, lies auch ','.'],pt:['Para aprofundar este tema, veja também ','.'],nl:['Lees voor meer informatie over dit onderwerp ook ','.'],pl:['Aby dowiedzieć się więcej na ten temat, zobacz także ','.'],ro:['Pentru mai multe informații despre acest subiect, vezi și ','.'],cs:['Další informace k tomuto tématu najdete také zde: ','.'],sv:['Läs mer om ämnet här: ','.'],da:['Læs mere om emnet her: ','.'],no:['Les mer om temaet her: ','.'],fi:['Lue aiheesta lisää: ','.']};return templates[language]||['','']}
+function proposedCorrectionHtml(item={}){const link=item.changes?.internal_link;if(!link?.target||!link?.anchor)return esc(item.fix||'');const [before,after]=contextualLinkParts(),position=link.position==='after_first_paragraph'?'Dopo il primo paragrafo pertinente':'In fondo al contenuto';return `<div class="proposed-link-change"><span>${esc(item.fix||'Inserisci il link interno')}</span><div class="proposed-sentence"><small>Frase completa proposta</small><p>${esc(before)}<a href="${esc(link.target)}" target="_blank" rel="noopener noreferrer">${esc(link.anchor)}</a>${esc(after)}</p><div class="proposed-link-meta"><span><b>Destinazione:</b> <code>${esc(link.target)}</code></span><span><b>Posizione:</b> ${esc(position)}</span></div></div><small class="help">Il connettore rispetta la posizione approvata e non crea duplicati se la stessa destinazione con la stessa anchor è già presente.</small></div>`}
 function affectedTable(items=[]){return `<div class="affected-table"><div class="affected-row head"><span>Pagina</span><span>Problema rilevato</span><span>Correzione proposta</span></div>${items.map(x=>`<div class="affected-row"><code>${esc(x.url)}</code><span>${esc(x.issue)}</span><span>${proposedCorrectionHtml(x)}</span></div>`).join('')}</div>`}
 function openModal(type,data){const form=$('#modalForm');$('#modalTitle').textContent=type==='task'?(data?'Modifica attività':'Nuova attività'):type==='page'?(data?'Modifica pagina':'Aggiungi pagina'):'Nuovo cluster';$('#modalHelp').textContent=type==='task'?'Definisci una singola azione concreta e verificabile.':'';if(type==='task')form.innerHTML=`<div class="form-grid"><div class="field wide"><label>Titolo</label><input name="title" required value="${esc(data?.title||'')}"></div><div class="field wide"><label>Istruzioni</label><textarea name="detail" required>${esc(data?.detail||'')}</textarea></div>${data?.affected?.length?`<div class="field wide"><label>Pagine coinvolte (${data.affected.length})</label>${affectedTable(data.affected)}<small class="help">Le URL derivano dai dati locali importati e possono essere modificate dall’inventario Pagine e keyword.</small></div>`:''}<div class="field"><label>Priorità</label><select name="priority"><option>Alta</option><option ${data?.priority==='Media'?'selected':''}>Media</option><option ${data?.priority==='Bassa'?'selected':''}>Bassa</option></select></div><div class="field"><label>Stato</label><select name="status"><option>Da approvare</option><option ${data?.status==='Da fare'?'selected':''}>Da fare</option><option ${data?.status==='In corso'?'selected':''}>In corso</option><option ${data?.status==='Completata'?'selected':''}>Completata</option></select></div></div><div class="form-actions"><button type="button" class="btn" data-close>Annulla</button><button class="btn primary">Salva attività</button></div>`;if(type==='page')form.innerHTML=`<div class="form-grid"><div class="field wide"><label>URL</label><input name="url" required value="${esc(data?.url||'/')}"></div><div class="field"><label>Keyword principale</label><input name="keyword" value="${esc(data?.keyword||'')}"></div><div class="field"><label>Intento</label><select name="intent"><option>Informazionale</option><option ${data?.intent==='Commerciale'?'selected':''}>Commerciale</option><option ${data?.intent==='Transazionale'?'selected':''}>Transazionale</option><option ${data?.intent==='Navigazionale'?'selected':''}>Navigazionale</option><option ${data?.intent==='Da definire'?'selected':''}>Da definire</option></select></div><div class="field"><label>Indicizzazione</label><select name="status"><option>Indicizzata</option><option ${data?.status==='Non indicizzata'?'selected':''}>Non indicizzata</option></select></div><div class="field"><label>Canonical</label><select name="canonical"><option>Corretta</option><option ${data?.canonical==='Da verificare'?'selected':''}>Da verificare</option></select></div></div><div class="form-actions"><button type="button" class="btn" data-close>Annulla</button><button class="btn primary">Salva pagina</button></div>`;if(type==='cluster')form.innerHTML=`<div class="form-grid"><div class="field wide"><label>Nome cluster</label><input name="name" required></div><div class="field"><label>Tipo</label><select name="type"><option>Cluster</option><option>Pillar</option></select></div><div class="field"><label>Numero contenuti</label><input name="items" type="number" min="0" value="0"></div></div><div class="form-actions"><button type="button" class="btn" data-close>Annulla</button><button class="btn primary">Crea cluster</button></div>`;form.dataset.type=type;form.dataset.id=data?.id??'';$('#modalBackdrop').classList.add('open');setTimeout(()=>form.querySelector('input')?.focus(),50)}function closeModal(){$('#modalBackdrop').classList.remove('open')}
 function taskOperationFromForm(o){const operation={type:o.operationType||'auto',seoTitle:o.seoTitle?.trim()||'',h1:o.h1?.trim()||'',metaDescription:o.metaDescription?.trim()||'',canonical:o.canonicalUrl?.trim()||'',redirect:{from:o.redirectFrom?.trim()||'',to:o.redirectTo?.trim()||'',code:Number(o.redirectCode||301)},internalLink:{target:o.linkTarget?.trim()||'',anchor:o.linkAnchor?.trim()||'',position:o.linkPosition||'end'}};['operationType','seoTitle','h1','metaDescription','canonicalUrl','redirectFrom','redirectTo','redirectCode','linkTarget','linkAnchor','linkPosition'].forEach(k=>delete o[k]);return operation}
@@ -606,16 +606,18 @@ async function undoRepair(id){const repair=[...state.repairs].reverse().find(r=>
     const undoneChangedSet=new Set((repair.changedUrls||[]).map(comparableUrl));
     (t.affected||[]).forEach(a=>{
       if(!undoneChangedSet.has(comparableUrl(a.url)))return;
-      const page=state.pages.find(p=>comparableUrl(p.url)===comparableUrl(a.url));
+      const page=ogosPageForSourceV3140(a.url);
       if(!page||!page.live||typeof page.live!=='object')return;
       page.live.internalLinks=Array.isArray(page.live.internalLinks)?page.live.internalLinks.slice():[];
       const c=a.changes||{};
       if(c.internal_link&&c.internal_link.target){
-        page.live.internalLinks=page.live.internalLinks.filter(href=>comparableUrl(href)!==comparableUrl(c.internal_link.target));
+        const targetId=ogosLinkIdentityV3139(c.internal_link.target,page.url);
+        page.live.internalLinks=page.live.internalLinks.filter(href=>!targetId||ogosLinkIdentityV3139(href,page.url)!==targetId);
       }
       if(c.replace_link&&c.replace_link.to){
-        page.live.internalLinks=page.live.internalLinks.filter(href=>comparableUrl(href)!==comparableUrl(c.replace_link.to));
-        if(c.replace_link.from&&!page.live.internalLinks.some(href=>comparableUrl(href)===comparableUrl(c.replace_link.from))){
+        const toId=ogosLinkIdentityV3139(c.replace_link.to,page.url),fromId=ogosLinkIdentityV3139(c.replace_link.from,page.url);
+        page.live.internalLinks=page.live.internalLinks.filter(href=>!toId||ogosLinkIdentityV3139(href,page.url)!==toId);
+        if(fromId&&!page.live.internalLinks.some(href=>ogosLinkIdentityV3139(href,page.url)===fromId)){
           page.live.internalLinks.push(c.replace_link.from);
         }
       }
@@ -695,7 +697,7 @@ async function applyPluginTaskSingle(id){
     if(!result.rollback_token)throw new Error('Il plugin non ha fornito il token di ripristino');
     // Conserva i rollback precedenti: i retry parziali vanno annullati in ordine inverso.
     state.repairs.push({taskId:id,date:new Date().toISOString(),remote:true,operationId:result.operation_id,rollbackToken:result.rollback_token,changedUrls:changed,undone:false});
-    const changedSet=new Set(changed.map(comparableUrl));
+    const changedSet=new Set(changed.map(ogosSourceIdentityV3140));
     // BUG corretto: dopo una scrittura riuscita sul sito, la pagina sorgente
     // nell'inventario locale (state.pages[].live.internalLinks) non veniva
     // mai aggiornata con il nuovo link appena inserito o sostituito — solo
@@ -707,29 +709,29 @@ async function applyPluginTaskSingle(id){
     // non sono più orfane" restavano visibili nell'app anche a scrittura
     // sul sito riuscita.
     payload.affected.forEach(a=>{
-      if(!changedSet.has(comparableUrl(a.url)))return;
+      if(!changedSet.has(ogosSourceIdentityV3140(a.url)))return;
       // BUG corretto: qui sotto il confronto era a.url stretto (p.url===a.url), mentre la
       // riga sopra usa gia' comparableUrl per lo stesso controllo. Un task creato a mano
       // (form "Aggiungi attivita'" con tipo Link interno) puo' avere l'URL scritto con uno
       // slash finale, con http/https o con www rispetto a come e' salvato in state.pages:
       // in quel caso la scrittura sul sito riusciva comunque, ma la sincronizzazione locale
       // qui sotto non trovava mai la pagina e restava silenziosamente saltata.
-      const page=state.pages.find(p=>comparableUrl(p.url)===comparableUrl(a.url));
+      const page=ogosPageForSourceV3140(a.url);
       if(!page)return;
       page.live=page.live&&typeof page.live==='object'?page.live:{};
       page.live.internalLinks=Array.isArray(page.live.internalLinks)?page.live.internalLinks.slice():[];
       const c=a.changes||{};
-      if(c.internal_link&&c.internal_link.target&&!page.live.internalLinks.some(href=>comparableUrl(href)===comparableUrl(c.internal_link.target))){
-        page.live.internalLinks.push(c.internal_link.target);
+      if(c.internal_link&&c.internal_link.target){
+        const targetId=ogosLinkIdentityV3139(c.internal_link.target,page.url);
+        if(targetId&&!page.live.internalLinks.some(href=>ogosLinkIdentityV3139(href,page.url)===targetId))page.live.internalLinks.push(c.internal_link.target);
       }
       if(c.replace_link&&c.replace_link.to){
-        page.live.internalLinks=page.live.internalLinks.filter(href=>comparableUrl(href)!==comparableUrl(c.replace_link.from));
-        if(!page.live.internalLinks.some(href=>comparableUrl(href)===comparableUrl(c.replace_link.to))){
-          page.live.internalLinks.push(c.replace_link.to);
-        }
+        const fromId=ogosLinkIdentityV3139(c.replace_link.from,page.url),toId=ogosLinkIdentityV3139(c.replace_link.to,page.url);
+        page.live.internalLinks=page.live.internalLinks.filter(href=>!fromId||ogosLinkIdentityV3139(href,page.url)!==fromId);
+        if(toId&&!page.live.internalLinks.some(href=>ogosLinkIdentityV3139(href,page.url)===toId))page.live.internalLinks.push(c.replace_link.to);
       }
     });
-    const skipped=[...unresolved,...failures].map(x=>({url:x.url,reason:x.reason||'Motivo non specificato',operation:x.operation||x.field||x.key||'',code:x.code||'',partial:changedSet.has(comparableUrl(x.url))}));
+    const skipped=[...unresolved,...failures].map(x=>({url:x.url,reason:x.reason||'Motivo non specificato',operation:x.operation||x.field||x.key||'',code:x.code||'',partial:changedSet.has(ogosSourceIdentityV3140(x.url))}));
     // Una volta scritto sul sito tutto cio' che era davvero applicabile, il task passa a "Completata"
     // anche se alcune righe restano fuori (pagina non risolvibile, builder non supportato, link non
     // trovato, ecc.): prima restava bloccato per sempre su "In corso" perche' lo stato dipendeva da
@@ -980,6 +982,12 @@ function saveProjectForm(e){e.preventDefault();const data=Object.fromEntries(new
 const SCAN_HISTORY_LIMIT = 15;
 const ACTIVITY_LOG_LIMIT = 300;
 const CHANGELOG = [
+  { version: '3.14.0', date: '2026-08-25', notes: 'Verifica pubblica transazionale estesa a internal link, Title SEO, meta description, canonical, H1 e testo introduttivo: una scrittura non viene più registrata come riuscita se l’HTML pubblico non mostra il risultato, e in caso di cache/CDN/builder stale l’intera riga viene ripristinata. /tasks/verify ricontrolla sia storage sia HTML pubblico. Le source URL dinamiche conservano ora anche parametri come utm_*, gclid e fbclid: vengono eliminati soltanto i parametri _ogos_* generati dal connettore, così query funzionali custom non vengono accorpate. Le verifiche di scrittura richiedono DOMDocument e falliscono chiuse anziché fidarsi del fallback regex. Rimosso il codice morto link_text_once: gli inserimenti rispettano solo le posizioni esplicitamente approvate. Ampliate le integrazioni di purge cache e corretta la source identity client-side per task con query.', compatibility: 'Installa app e connettore 3.14.0 insieme. CDN/reverse proxy esterni non invalidabili restano supportati in modalità fail-closed: se servono HTML stale, l’apply fallisce e fa rollback invece di dichiarare successo.' },
+  { version: '3.13.9', date: '2026-08-25', notes: 'Hardening completo della pipeline link. Le regole dinamiche distinguono ora path, query string e fragment e conservano evidenza di href/anchor/contesto/occorrenza; il fallback HTML blocca match multipli o ambigui invece di scegliere la prima regola. Crawler e verifica pubblica condividono lo stesso parser delle anchor, con supporto anche a href non quotati. Le sostituzioni su menu verificano e rileggono ogni meta con rollback integrale. Internal link Elementor rispetta la posizione approvata, evita widget HTML duplicati e non tratta URL media/background come link cliccabili. Il client usa una link identity separata dalla page identity per non fondere varianti con query/fragment durante evidence, grouping, verifica e sync locale. Corrette anche migrazione legacy con query multi-parametro, title fallback HTML-safe, relative/query-only href dinamici e controlli di ambiguità.', compatibility: 'Installa app e connettore 3.13.9 insieme. Le page identity restano semplificate per grafo/sitemap; le operazioni replace_link usano invece l’href completo e falliscono chiuso quando l’occorrenza non è univoca.' },
+  { version: '3.13.8', date: '2026-08-25', notes: 'Audit completo automazione link. Il gate dei builder non-Elementor è ora granulare: internal_link/intro/gerarchia restano manuali, ma replace_link può usare dynamic_rendered/dynamic_permalink anche su Divi, Beaver e SiteOrigin; aggiungere un Title/Meta alla stessa riga non altera più questa decisione. Allineata la paginazione client/server con verifica strutturale della URL e anchor di navigazione, senza nascondere link editoriali che citano genericamente “pagina N”. Corrette query string multi-parametro: gli URL vengono conservati raw nello storage e escapati solo nell’HTML. Prima di una dynamic_rendered viene riletta la pagina pubblica: se il vecchio href è già assente il task viene chiuso come già corretto o dichiarato stantio, evitando falsi successi. Il client avvia automaticamente un crawl reale prima del preflight di replace_link quando manca l’evidenza necessaria. Corretto anche il caso di archivi/tassonomie senza post_id: un owner dynamic_rendered accettato in preview viene ora realmente eseguito in apply e registrato con snapshot/rollback, invece di essere saltato dal ramo riservato ai contenuti WordPress.', compatibility: 'Installa app e connettore 3.13.8 insieme. Nuovi link su builder non supportati restano manuali; le sostituzioni di href dinamiche possono invece essere verificate e applicate senza scrivere nel builder.' },
+  { version: '3.13.7', date: '2026-08-25', notes: 'Audit finale del resolver link. Con evidenza di crawl, un href letterale nella pagina sorgente non viene più scelto solo per presenza/conteggio: anchor e contesto devono coincidere vicino a quella stessa occorrenza e la ricerca continua anche su template e generatori dinamici. Aggiunto owner dynamic_rendered per Dynamic Tag/ACF/widget non riconducibili a get_permalink(): la correzione resta limitata alla singola pagina e agisce solo sull’href HTML finale. Tutte le sostituzioni link, comprese quelle statiche/menu/template, devono ora superare una verifica HTTP pubblica immediata; se il vecchio href resta o il nuovo non compare, lo snapshot viene ripristinato e l’apply fallisce. Aggiunta inoltre una guardia server-side contro i falsi task di paginazione Successivo/Precedente.', compatibility: 'Installa app e connettore 3.13.7 insieme. I task precedenti vengono rivalutati dal nuovo resolver; nessun “aggiornato” viene accettato senza prova pubblica del link.' },
+  { version: '3.13.6', date: '2026-08-25', notes: 'La sostituzione dei permalink dinamici diventa transazionale end-to-end: dopo il salvataggio della regola il connettore svuota le cache note, legge realmente la pagina sorgente con cache-busting e accetta l\'apply soltanto se il vecchio href è scomparso e il nuovo è presente. Se la prova pubblica fallisce, ripristina subito la regola precedente invece di mostrare un falso “1 aggiornato”. Le risposte di crawl registrano inoltre marker OGOS e header cache per distinguere un problema di rendering da una cache che bypassa WordPress.', compatibility: 'Installa app e connettore 3.13.6 insieme. Le vecchie operation già fallite possono essere risolte con “Risolvi nuovamente”; una nuova apply dinamica non viene più dichiarata riuscita senza prova pubblica immediata.' },
+  { version: '3.13.5', date: '2026-08-25', notes: 'Correzione runtime dei link dinamici e dei falsi positivi di paginazione. Il connettore non si affida più soltanto ai filtri get_permalink(): se Elementor/Query Loop serve markup già renderizzato, una regola dynamic_permalink approvata viene applicata anche all’HTML finale della sola pagina sorgente e solo agli href <a> che coincidono con il vecchio percorso; storage, crawl, verifica e rollback restano invariati. L’audit Internal linking riconosce inoltre la paginazione reale (es. /yoga-blog/2/ con anchor Successivo/Precedente) e non la propone più come URL errata; i vecchi task di paginazione vengono chiusi automaticamente se non hanno una scrittura remota attiva.', compatibility: 'Installa insieme app e connettore 3.13.5. Le regole dinamiche già salvate dalla 3.13.4 vengono riutilizzate: dopo l’aggiornamento basta Riprova verifica pubblica, senza riapplicare la modifica.' },
   { version: '3.13.4', date: '2026-08-25', notes: 'Audit di regressione dopo la 3.13.3. Corretto il confronto della pagina sorgente per i permalink dinamici: query anti-cache (_ogos_refresh) e tracking non impediscono più la verifica; le risposte AJAX usano il referrer same-site; i permalink WordPress semplici (?p= / ?page_id=) restano distinti e una richiesta senza pagina sorgente non può attivare per errore una regola della homepage. Indicizzazione: URL con slash/forma assoluta e permalink semplici vengono normalizzati senza collisioni, gli aggregati Search Console usano la stessa identità URL, il registro elimina URL non più presenti, una sitemap troncata non produce false assenze, e punteggio/storico non trattano più “Da verificare” come errore SEO. I vecchi task di indicizzazione vengono riconciliati con l’ultima scansione (chiusi se restano soltanto stati informativi, ridotti alle sole URL ancora azionabili) e il piano operativo non li ricrea. I problemi tecnici restano separati dallo stato Google, il form pagina conserva “Da verificare” senza trasformarlo in “Indicizzata” al salvataggio e le URL con problemi tecnici confermati non vengono proposte come destinazioni per nuovi link interni.', compatibility: 'Installa insieme app e connettore 3.13.4. Le regole permalink create con 3.13.3 restano compatibili; il crawl anti-cache, AJAX e i permalink semplici sono coperti dai test di regressione.' },
   { version: '3.13.3', date: '2026-08-24', notes: 'Due correzioni operative. Internal linking: quando il vecchio href nell’HTML è generato dinamicamente dal permalink di un contenuto (archivio, Query Loop, elenco articoli), il connettore può creare una regola locale e reversibile che riscrive quel permalink soltanto sulla pagina sorgente; preview, apply, crawl pubblico, verifica storage e rollback restano obbligatori. Indicizzazione: il numero in “Cose da fare” deriva ora dal registro Indicizzazione realmente ricalcolato e conta solo problemi tecnici azionabili; gli stati informativi “da verificare”/“stato non disponibile” non restano come falsi task dopo un’analisi. Dashboard e sidebar vengono riallineate subito al termine della scansione.', compatibility: 'Installa insieme app e connettore 3.13.3. Riapri il task /yoga-blog: il caso dinamico viene riesaminato; dopo una nuova analisi Indicizzazione il conteggio Cose da fare si aggiorna immediatamente.' },
   { version: '3.13.2', date: '2026-08-24', notes: 'Il resolver dei link è ora source-aware: non propone più come “template globali” normali articoli Elementor che contengono casualmente lo stesso href. Ogni preview invia al connettore le occorrenze realmente osservate sulla pagina sorgente (anchor, contesto e numero di occorrenza); il server usa queste prove per filtrare template/menu e dà priorità al contenuto della pagina che spiega tutte le occorrenze pubbliche. Se nessun proprietario statico è coerente, il caso viene classificato come link renderizzato dinamicamente da archivio/query loop/widget e nessun componente viene scelto a caso. I pochi candidati residui mostrano confidenza e motivo della corrispondenza.', compatibility: 'Installa insieme app e connettore 3.13.2. Riapri il task: la lista dei 15 articoli della 3.13.1 viene ricalcolata e non viene riutilizzata.' },
@@ -3211,7 +3219,8 @@ detectBrokenLinksReport = function () {
   return detectBrokenLinksReportV121().map(row => {
     const page = state.pages.find(p => comparableUrl(p.url) === comparableUrl(row.source));
     const details = page?.live?.internalLinkDetails || [];
-    const detail = details.find(d => comparableUrl(d.href) === comparableUrl(row.href || row.brokenUrl));
+    const wanted=ogosLinkIdentityV3139(row.href||row.brokenUrl,row.source);
+    const detail = details.find(d => ogosLinkIdentityV3139(d?.href||d?.raw_href,row.source) === wanted);
     return { ...row, anchor: detail?.anchor || '', context: detail?.context || '', occurrence: detail?.occurrence || null, editable: detail?.editable !== false };
   });
 };
@@ -3303,23 +3312,20 @@ function taskFamily(task) {
   return type || String(task?.title || '').toLowerCase().replace(/\d+/g, '').replace(/\s+/g, ' ').trim();
 }
 function taskIdentity(task) {
-  // BUG corretto: per i task "internal_link" (collega una pagina orfana) e
-  // "replace_link" (correggi un link rotto), l'identita' veniva calcolata
-  // sulla pagina SORGENTE (a.url, cioe' la pagina che ospita la modifica),
-  // non sulla pagina di DESTINAZIONE (quella orfana da collegare, o la
-  // destinazione corretta del link rotto) — che e' il vero "problema" da
-  // risolvere. L'algoritmo che sceglie la pagina sorgente migliore
-  // (internalLinkProposals) puo' scegliere una pagina diversa a ogni nuova
-  // esecuzione, anche quando l'obiettivo di fondo (la stessa pagina orfana)
-  // e' identico: il task risultava quindi con un'identita' diversa a ogni
-  // rigenerazione, e upsertOperationalTask() non lo riconosceva piu' come
-  // "gia' nello storico dei completati", creandone uno nuovo da zero in
-  // "Cose da fare" per un problema gia' risolto.
-  const urls = [...new Set((task?.affected || []).map(a => {
-    const target = a?.changes?.internal_link?.target || a?.changes?.replace_link?.to;
-    return comparableUrl(target || a.url);
+  const type=String(task?.operation?.type||'').toLowerCase();
+  const keys=[...new Set((task?.affected||[]).map(item=>{
+    const changes=item?.changes||{},source=comparableUrl(item?.url||item?.source||'');
+    if(type==='replace_link'||changes.replace_link){
+      const from=ogosLinkIdentityV3139(changes.replace_link?.from||item?.href||item?.brokenUrl||'',item?.url||item?.source||'');
+      const to=ogosLinkIdentityV3139(changes.replace_link?.to||item?.suggested||'',item?.url||item?.source||'');
+      return source&&to?`replace_link|${source}|${from}|${to}`:'';
+    }
+    if(type==='internal_link'||changes.internal_link){
+      return ogosLinkIdentityV3139(changes.internal_link?.target||'',item?.url||item?.source||'');
+    }
+    return comparableUrl(item?.url||'');
   }).filter(Boolean))].sort();
-  return `${taskFamily(task)}|${urls.join('|')}`;
+  return `${taskFamily(task)}|${keys.join('|')}`;
 }
 function taskTitleKey(task) { return String(task?.title || '').toLowerCase().replace(/\s+/g, ' ').trim(); }
 const applyCurrentAuditV140 = applyCurrentAudit;
@@ -3641,16 +3647,16 @@ upsertOperationalTask = function(title, detail, priority, affected, operation, c
 /* ---- Esclude dai controlli operativi le singole modifiche link gia' completate (v1.15.9) ---- */
 function linkChangeKey(item, forcedType = '') {
   if (!item) return '';
-  const changes = item.changes || {}, type = String(forcedType || '').toLowerCase();
-  const internal = changes.internal_link;
-  if (internal?.target || type === 'internal_link') {
-    const target = comparableUrl(internal?.target || '');
-    return target ? `internal_link|${target}` : '';
+  const changes=item.changes||{},type=String(forcedType||'').toLowerCase(),sourceUrl=item.url||item.source||'';
+  const internal=changes.internal_link;
+  if(internal?.target||type==='internal_link'){
+    const target=ogosLinkIdentityV3139(internal?.target||'',sourceUrl);
+    return target?`internal_link|${target}`:'';
   }
-  const replacement = changes.replace_link;
-  if (replacement?.to || type === 'replace_link') {
-    const source = comparableUrl(item.url || ''), from = comparableUrl(replacement?.from || ''), to = comparableUrl(replacement?.to || '');
-    return source && to ? `replace_link|${source}|${from}|${to}` : '';
+  const replacement=changes.replace_link;
+  if(replacement?.to||type==='replace_link'){
+    const source=comparableUrl(sourceUrl),from=ogosLinkIdentityV3139(replacement?.from||'',sourceUrl),to=ogosLinkIdentityV3139(replacement?.to||'',sourceUrl);
+    return source&&to?`replace_link|${source}|${from}|${to}`:'';
   }
   return '';
 }
@@ -3669,12 +3675,12 @@ function completedLinkChangeKeys() {
   return keys;
 }
 function orphanProposalKey(row) {
-  const target = comparableUrl(row?.target || '');
-  return target ? `internal_link|${target}` : '';
+  const source=row?.source||row?.url||'',target=ogosLinkIdentityV3139(row?.target||'',source);
+  return target?`internal_link|${target}`:'';
 }
 function brokenProposalKey(row) {
-  const source = comparableUrl(row?.source || ''), from = comparableUrl(row?.href || row?.brokenUrl || ''), to = comparableUrl(row?.suggested || '');
-  return source && to ? `replace_link|${source}|${from}|${to}` : '';
+  const sourceUrl=row?.source||row?.url||'',source=comparableUrl(sourceUrl),from=ogosLinkIdentityV3139(row?.href||row?.brokenUrl||'',sourceUrl),to=ogosLinkIdentityV3139(row?.suggested||'',sourceUrl);
+  return source&&to?`replace_link|${source}|${from}|${to}`:'';
 }
 const internalLinkProposalsAllV159 = internalLinkProposals;
 const detectBrokenLinksReportAllV159 = detectBrokenLinksReport;
@@ -3861,7 +3867,7 @@ function failureChangeKeys(task) {
   const keys = new Set();
   normalizedPartialReasons(task).forEach(reason => {
     if (reason.partial === false || reason.operation) {
-      const item = (task.affected || []).find(row => comparableUrl(row?.url) === comparableUrl(reason.url));
+      const item = (task.affected || []).find(row => ogosSourceIdentityV3140(row?.url) === ogosSourceIdentityV3140(reason.url));
       if (!item) return;
       const operation = String(reason.operation || '').toLowerCase();
       if (operation && item.changes?.[operation] !== undefined) operationalChangeKeys({ ...item, changes:{ [operation]:item.changes[operation] } }, task).forEach(k => keys.add(k));
@@ -3953,7 +3959,7 @@ const exchangeWordPressPairCodeV160 = exchangeWordPressPairCode;
 exchangeWordPressPairCode = async function(code,stateValue){const ok=await exchangeWordPressPairCodeV160(code,stateValue);if(ok&&wpPairingFinishV160){wpPairingFinishV160();wpPairingFinishV160=null}return ok};
 syncWordPress = async function() { const button=$('#wpSyncBtn');if(button){button.disabled=true;button.textContent='Sincronizzazione…'}try{const {items}=await wpCurrentAuditCollection();let added=0,updated=0;items.forEach(item=>{const path=comparableUrl(item.path||item.url);if(!path)return;const current=(state.pages||[]).find(p=>String(p.wpId)===String(item.id))||(state.pages||[]).find(p=>comparableUrl(p.url)===path);const values={url:path,wpId:item.id,wpType:item.type,wpBuilder:item.builder||'',wpStatus:'publish',wpTitle:item.title||'',status:item.indexed===false?'Non indicizzata':'Da verificare',canonical:item.canonical&&comparableUrl(item.canonical)===path?'Corretta':'Da verificare'};if(current){Object.assign(current,values);updated++}else{state.pages.push({id:Date.now()+Math.random(),keyword:'',intent:'Da definire',...values});added++}});state.wordpress.lastSync=new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(new Date());save(true);renderShell();renderPages();toast(`WordPress sincronizzato: ${added} nuove, ${updated} aggiornate su ${items.length}`)}catch(e){toast(`Sincronizzazione non riuscita: ${e.message}`,'error')}finally{if(button){button.disabled=false;button.textContent='Sincronizza pagine e articoli'}} };
 disconnectWordPress = async function(){if(window.OGOS_EMBEDDED){toast('La connessione è integrata nel plugin e usa la sessione WordPress corrente.');return}if(wpSecret&&state.wordpress.url){try{const{response,data}=await ogosFetchJsonV1617(`${wpBase()}/wp-json/organic-growth-os/v1/auth/revoke`,{method:'POST',headers:{Accept:'application/json','X-OGOS-Token':wpSecret},mode:'cors',cache:'no-store'},20000);if(!response.ok||data.revoked!==true)throw new Error(data.message||`WordPress ha risposto ${response.status}`)}catch(e){toast(`Token non revocato: ${e.message}. La connessione locale resta attiva.`, 'error');return}}wpSecret='';wpPendingState='';state.wordpress={url:state.wordpress.url||'',username:'',connected:false,userName:'',userId:null,lastError:null,lastTest:null,pluginDetected:false,pluginVersion:'',capabilities:[],tokenExpiresAt:null,authMethod:null};save(true);renderSettings();toast('Connettore WordPress disconnesso e token revocato')};
-runWordPressCrawl = async function(){const el=$('#ogosCrawlResult'),btn=$('#ogosCrawlBtn');if(!state.wordpress.connected||!wpSecret){toast('Collega WordPress prima di eseguire il crawl','error');return false}if(!state.wordpress.capabilities.includes('crawl')){toast('Il connettore non espone il crawl reale','error');return false}if(btn){btn.disabled=true;btn.textContent='Crawl in corso…'}try{const byId={},byUrl={};let sitewide=null,page=1,totalPages=1,total=0;do{const data=await wpRequest(`/wp-json/organic-growth-os/v1/crawl/current?per_page=10&page=${page}`);(data.items||[]).forEach(item=>{if(item.id!=null)byId[String(item.id)]=item;byUrl[comparableUrl(item.path||item.url)]=item});if(data.sitewide)sitewide=data.sitewide;totalPages=Number(data.total_pages)||1;total=Number(data.total)||0;if(totalPages>1000)throw new Error(`Sito troppo grande per il crawl interattivo (${total} URL): usa una scansione server-side`);page++}while(page<=totalPages);let matched=0;state.pages.forEach(p=>{const c=(p.wpId!=null&&byId[String(p.wpId)])||byUrl[comparableUrl(p.url)];if(!c)return;matched++;p.crawl={httpStatus:c.http_status,redirectHops:c.redirect_hops,h1Count:c.h1_count,h1Text:c.h1_text||'',titleText:c.title_text||'',headings:Array.isArray(c.headings_text)?c.headings_text:[],contentExcerpt:c.content_excerpt||'',robotsMeta:[c.robots_meta,c.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!c.robots_blocked,soft404:!!c.soft_404,canonicalHtml:c.canonical_html,hreflang:c.hreflang,imagesTotal:c.images_total,imagesMissingAlt:c.images_missing_alt,imagesAltEmptyReview:c.images_alt_empty_review||0,checkedAt:new Date().toISOString()};if(Array.isArray(c.internal_links)){p.live=p.live&&typeof p.live==='object'?p.live:{};const saved=Array.isArray(p.live.internalLinkDetails)?p.live.internalLinkDetails:[];const rendered=Array.isArray(c.internal_link_details)?c.internal_link_details:[];p.live.internalLinks=c.internal_links.slice();p.live.internalLinkDetails=rendered.map(detail=>{const old=saved.find(old=>comparableUrl(old?.href)===comparableUrl(detail?.href)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase()&&(!old?.occurrence||!detail?.occurrence||Number(old.occurrence)===Number(detail.occurrence)));return old?{...old,...detail,editable:old.editable??detail.editable,builder:old.builder||detail.builder}:detail});p.live.internalLinkSource='rendered-html';p.live.internalLinkObservedAt=new Date().toISOString()}});state.crawlSitewide=sitewide;save(true);renderShell();renderPages();renderAudit();if(el)el.innerHTML=crawlResultHtml(sitewide,matched,total);toast(`Crawl reale completato: ${matched} pagine analizzate, contenuto e link renderizzati acquisiti`);return true}catch(e){toast(`Crawl non riuscito: ${e.message}`,'error');if(el)el.innerHTML=`<p class="empty">Crawl non riuscito: ${esc(e.message)}</p>`;return false}finally{if(btn){btn.disabled=false;btn.textContent='Esegui crawl reale (status, robots, sitemap, H1, contenuto e link…)'}}};
+runWordPressCrawl = async function(){const el=$('#ogosCrawlResult'),btn=$('#ogosCrawlBtn');if(!state.wordpress.connected||!wpSecret){toast('Collega WordPress prima di eseguire il crawl','error');return false}if(!state.wordpress.capabilities.includes('crawl')){toast('Il connettore non espone il crawl reale','error');return false}if(btn){btn.disabled=true;btn.textContent='Crawl in corso…'}try{const byId={},byUrl={};let sitewide=null,page=1,totalPages=1,total=0;do{const data=await wpRequest(`/wp-json/organic-growth-os/v1/crawl/current?per_page=10&page=${page}`);(data.items||[]).forEach(item=>{if(item.id!=null)byId[String(item.id)]=item;byUrl[comparableUrl(item.path||item.url)]=item});if(data.sitewide)sitewide=data.sitewide;totalPages=Number(data.total_pages)||1;total=Number(data.total)||0;if(totalPages>1000)throw new Error(`Sito troppo grande per il crawl interattivo (${total} URL): usa una scansione server-side`);page++}while(page<=totalPages);let matched=0;state.pages.forEach(p=>{const c=(p.wpId!=null&&byId[String(p.wpId)])||byUrl[comparableUrl(p.url)];if(!c)return;matched++;p.crawl={httpStatus:c.http_status,redirectHops:c.redirect_hops,h1Count:c.h1_count,h1Text:c.h1_text||'',titleText:c.title_text||'',headings:Array.isArray(c.headings_text)?c.headings_text:[],contentExcerpt:c.content_excerpt||'',robotsMeta:[c.robots_meta,c.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!c.robots_blocked,soft404:!!c.soft_404,canonicalHtml:c.canonical_html,dynamicRewriteMarker:c.ogos_dynamic_rewrite||'',cacheHeaders:c.cache_headers||{},hreflang:c.hreflang,imagesTotal:c.images_total,imagesMissingAlt:c.images_missing_alt,imagesAltEmptyReview:c.images_alt_empty_review||0,checkedAt:new Date().toISOString()};if(Array.isArray(c.internal_links)){p.live=p.live&&typeof p.live==='object'?p.live:{};const saved=Array.isArray(p.live.internalLinkDetails)?p.live.internalLinkDetails:[];const rendered=Array.isArray(c.internal_link_details)?c.internal_link_details:[];p.live.internalLinks=c.internal_links.slice();p.live.internalLinkDetails=rendered.map(detail=>{const old=saved.find(old=>ogosLinkIdentityV3139(old?.href||old?.raw_href,p.url)===ogosLinkIdentityV3139(detail?.href||detail?.raw_href,p.url)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase()&&(!old?.occurrence||!detail?.occurrence||Number(old.occurrence)===Number(detail.occurrence)));return old?{...old,...detail,editable:old.editable??detail.editable,builder:old.builder||detail.builder}:detail});p.live.internalLinkSource='rendered-html';p.live.internalLinkObservedAt=new Date().toISOString()}});state.crawlSitewide=sitewide;save(true);renderShell();renderPages();renderAudit();if(el)el.innerHTML=crawlResultHtml(sitewide,matched,total);toast(`Crawl reale completato: ${matched} pagine analizzate, contenuto e link renderizzati acquisiti`);return true}catch(e){toast(`Crawl non riuscito: ${e.message}`,'error');if(el)el.innerHTML=`<p class="empty">Crawl non riuscito: ${esc(e.message)}</p>`;return false}finally{if(btn){btn.disabled=false;btn.textContent='Esegui crawl reale (status, robots, sitemap, H1, contenuto e link…)'}}};
 runBulkIndexingVerification = async function(button){if(state.audit.running||state.indexing?.currentScan?.running){toast('Una verifica è già in corso','error');return}if(button){button.disabled=true;button.textContent='Verifica bulk in corso…'}closeActionDrawer();closeModal();go('indexing');try{const can=state.wordpress.connected&&wpSecret&&state.wordpress.capabilities.includes('crawl');if(can&&!(await runWordPressCrawl()))throw new Error('il crawl WordPress non è stato completato');await runIndexingAnalysis('all');toast(can?'Verifica bulk completata con dati tecnici aggiornati; lo stato attuale in Google richiede una fonte Google dedicata.':'Verifica completata sui dati disponibili.')}catch(e){toast(`Verifica bulk non completata: ${e.message}`,'error')}finally{if(button){button.disabled=false;button.textContent='Verifica sitemap e indicizzazione in bulk →'}}};
 renderKanban = function(){const statuses=['Da approvare','Da fare','In corso','Completata'],filter=$('#taskFilter').value,scope=state.ui.issueScope||'all',bulk=$('#gptBulkBtn');if(bulk){const count=gptEligibleTasks().length;bulk.hidden=state.integration.mode!=='gptsites';bulk.textContent=`Esporta ${count} approvate per GPTSites`;bulk.disabled=!count}$('#kanban').innerHTML=statuses.map(status=>{const items=(state.tasks||[]).filter(t=>(status==='Completata'?taskIsCompleted(t):t.status===status)&&(filter==='all'||t.priority===filter)&&(scope!=='critical'||isCriticalTask(t))&&(scope!=='high'||(t.priority==='Alta'&&!isCriticalTask(t))));return`<section class="column"><div class="column-head"><span>${status}</span><span class="count">${items.length}</span></div>${items.map(taskCard).join('')||'<div class="empty" style="padding:25px 8px">Nessuna attività</div>'}</section>`}).join('')};
 const KANBAN_SLIDES_V162=['Da approvare','Da fare','In corso','Completata'];
@@ -3973,7 +3979,7 @@ auditCategoryCount = function(index){if(index===1)return pendingAuditPagesV160('
 // Correzioni 1.16.1: URL REST portabile, storico completati condiviso e import robusti.
 function ogosRestUrlV161(path){const e=window.OGOS_EMBEDDED,base=e?.restUrl||state.wordpress?.restUrl||'';if(base){const suffix=String(path).replace(/^.*?organic-growth-os\/v1\/?/,'');return base.replace(/\/+$/,'')+'/'+suffix.replace(/^\/+/, '')}return`${wpBase()}${path}`}
 async function ogosFetchJsonV1617(url,options={},timeoutMs=30000){const controller=new AbortController(),external=options.signal,timer=setTimeout(()=>controller.abort(new DOMException('Timeout','TimeoutError')),timeoutMs),abort=()=>controller.abort(external?.reason);if(external){if(external.aborted)abort();else external.addEventListener('abort',abort,{once:true})}try{const response=await fetch(url,{...options,signal:controller.signal}),text=await response.text();let data=null;if(text.trim()){try{data=JSON.parse(text)}catch{throw Object.assign(new Error('WordPress ha restituito una risposta JSON non valida'),{status:response.status,code:'ogos_invalid_json'})}}else if(response.status!==204){throw Object.assign(new Error('WordPress ha restituito una risposta vuota'),{status:response.status,code:'ogos_empty_response'})}return{response,data:data||{}}}catch(error){if(controller.signal.aborted&&!external?.aborted)throw Object.assign(new Error(`WordPress non ha risposto entro ${Math.round(timeoutMs/1000)} secondi`),{status:0,code:'ogos_timeout'});throw error}finally{clearTimeout(timer);external?.removeEventListener?.('abort',abort)}}
-wpRequest=async function(path,options={}){const e=window.OGOS_EMBEDDED;if(!wpSecret)restoreConnectorToken();if(!state.wordpress.connected||(!wpSecret&&!e))throw Object.assign(new Error('Connettore non autenticato'),{status:401});const{response,data}=await ogosFetchJsonV1617(ogosRestUrlV161(path),{...options,headers:{...(e?{'X-OGOS-Embedded':'1','X-WP-Nonce':e.nonce}:{'X-OGOS-Token':wpSecret}),Accept:'application/json',...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})},mode:'cors',cache:'no-store'},Number(options.timeoutMs)||30000);if(!response.ok){if(response.status===401||response.status===403){state.wordpress.connected=false;state.wordpress.lastError=e?'Sessione WordPress scaduta: ricarica la pagina.':'Collegamento scaduto: riconnetti WordPress.'}const details=data&&typeof data.data==='object'?data.data:{};throw Object.assign(new Error(data?.message||state.wordpress.lastError||`WordPress ha risposto ${response.status}`),{status:Number(details.status)||response.status,code:data?.code||'',failures:Array.isArray(data?.failures)?data.failures:(Array.isArray(details.failures)?details.failures:[])})}return data};
+wpRequest=async function(path,options={}){const e=window.OGOS_EMBEDDED;if(!wpSecret)restoreConnectorToken();if(!state.wordpress.connected||(!wpSecret&&!e))throw Object.assign(new Error('Connettore non autenticato'),{status:401});const{response,data}=await ogosFetchJsonV1617(ogosRestUrlV161(path),{...options,headers:{...(e?{'X-OGOS-Embedded':'1','X-WP-Nonce':e.nonce}:{'X-OGOS-Token':wpSecret}),Accept:'application/json',...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})},mode:'cors',cache:'no-store'},Number(options.timeoutMs)||30000);if(!response.ok){if(response.status===401||response.status===403){state.wordpress.connected=false;state.wordpress.lastError=e?'Sessione WordPress scaduta: ricarica la pagina.':'Collegamento scaduto: riconnetti WordPress.'}const details=data&&typeof data.data==='object'?data.data:{};throw Object.assign(new Error(data?.message||state.wordpress.lastError||`WordPress ha risposto ${response.status}`),{status:Number(details.status)||response.status,code:data?.code||'',failures:Array.isArray(data?.failures)?data.failures:(Array.isArray(details.failures)?details.failures:[]),diagnostics:data?.diagnostics&&typeof data.diagnostics==='object'?data.diagnostics:(details.diagnostics&&typeof details.diagnostics==='object'?details.diagnostics:null)})}return data};
 function hardenStateV161(){const statuses=new Set(['Da approvare','Da fare','In corso','Completata','Verificata','Superata','Risolta']),priorities=new Set(['Alta','Media','Bassa']),domain=normalizeProjectDomain(window.OGOS_EMBEDDED?.domain||state.project?.domain);state.ui=state.ui&&typeof state.ui==='object'?state.ui:{view:'dashboard'};if(window.OGOS_EMBEDDED){/* BUG corretto (3.11.3): qui si riscriveva SEMPRE il dominio del progetto con quello del sito WordPress che ospita il plugin, tenendo pero' il nome e i dati del progetto precedente. Aprendo l'app integrata su un secondo sito si vedeva cosi' l'intestazione di un altro progetto (nome di un sito, dominio di un altro) e, molto peggio, le sue pagine e attivita' restavano caricate come se appartenessero a questo sito. La riscrittura mascherava inoltre la differenza a restoreConnectorToken(), che proprio da quel confronto capisce quando ripartire da un progetto vuoto. Ora, se il progetto salvato appartiene a un altro dominio, lo lasciamo intatto: sara' restoreConnectorToken() a sostituirlo con un progetto pulito per il sito corrente. */const ogosStoredDomain3113=normalizeProjectDomain(state.project?.domain||'');if(!ogosStoredDomain3113||ogosStoredDomain3113===domain)state.project={...state.project,domain,name:state.project?.name||window.OGOS_EMBEDDED.siteName||domain,dataOrigin:'user'};state.wordpress={...state.wordpress,url:window.OGOS_EMBEDDED.siteUrl,restUrl:window.OGOS_EMBEDDED.restUrl,connected:true,pluginDetected:true,pluginVersion:window.OGOS_EMBEDDED.pluginVersion,capabilities:window.OGOS_EMBEDDED.capabilities||[]}}state.pages=(Array.isArray(state.pages)?state.pages:[]).filter(p=>p&&typeof p==='object').map((p,i)=>({...p,id:Number.isFinite(Number(p.id))?Number(p.id):Date.now()+i,url:String(p.url||'').slice(0,2048)}));state.tasks=(Array.isArray(state.tasks)?state.tasks:[]).filter(t=>t&&typeof t==='object').map((t,i)=>({...t,id:Number.isFinite(Number(t.id))?Number(t.id):Date.now()+10000+i,title:String(t.title||'Attività').slice(0,300),detail:String(t.detail||'').slice(0,5000),priority:priorities.has(t.priority)?t.priority:'Media',status:statuses.has(t.status)?t.status:'Da approvare',affected:(Array.isArray(t.affected)?t.affected:[]).filter(Boolean)}));state.clusters=(Array.isArray(state.clusters)?state.clusters:[]).filter(c=>c&&typeof c==='object').map(c=>({...c,name:String(c.name||''),type:String(c.type||''),coverage:Math.max(0,Math.min(100,Number(c.coverage)||0)),items:Math.max(0,Number(c.items)||0)}));state.opportunities=Array.isArray(state.opportunities)?state.opportunities.filter(o=>o&&typeof o==='object'):[]}
 renderMap=function(){hardenStateV161();$('#mapGrid').innerHTML=state.clusters.map((c,i)=>`<article class="tool-card" style="display:block"><div style="display:flex;justify-content:space-between;gap:8px"><span class="tag">${esc(c.type)}</span><b>${c.coverage}%</b></div><h3 style="margin-top:14px">${esc(c.name)}</h3><p>${c.items} contenuti collegati</p><div class="bar" style="margin-top:15px"><i style="width:${c.coverage}%"></i></div><button class="btn ghost edit-cluster" data-id="${i}" style="margin-top:14px">Apri cluster →</button></article>`).join('')};
 const taskCardV161=taskCard;taskCard=function(task){const safe={...task,priority:['Alta','Media','Bassa'].includes(task?.priority)?task.priority:'Media'};let html=taskCardV161(safe);const extra=['Superata','Risolta'].filter(s=>!html.includes(`>${s}</option>`)).map(s=>`<option ${safe.status===s?'selected':''}>${s}</option>`).join('');return html.replace('</select>',extra+'</select>')};
@@ -8149,7 +8155,7 @@ runWordPressCrawl=async function() {
       if(++guard>10000)throw new Error('Crawl interrotto: troppe richieste consecutive');
     }
     const observedAt=new Date().toISOString();let matched=0;
-    (state.pages||[]).forEach(page=>{const crawl=(page.wpId!=null&&byId[String(page.wpId)])||byUrl[comparableUrl(page.url)];if(!crawl)return;matched++;page.crawl={httpStatus:crawl.http_status,redirectHops:crawl.redirect_hops,finalUrl:crawl.final_url||'',redirectChain:Array.isArray(crawl.redirect_chain)?crawl.redirect_chain:[],h1Count:crawl.h1_count,h1Text:crawl.h1_text||'',titleText:crawl.title_text||'',metaDescriptionText:crawl.meta_description_html||'',renderedText:crawl.rendered_text||'',renderedHtml:crawl.rendered_html===true,headings:Array.isArray(crawl.headings_text)?crawl.headings_text:[],contentExcerpt:crawl.content_excerpt||'',robotsMeta:[crawl.robots_meta,crawl.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!crawl.robots_blocked,soft404:!!crawl.soft_404,canonicalHtml:crawl.canonical_html,hreflang:crawl.hreflang,imagesTotal:crawl.images_total,imagesMissingAlt:crawl.images_missing_alt,imagesAltEmptyReview:crawl.images_alt_empty_review||0,checkedAt:observedAt};page.live=page.live&&typeof page.live==='object'?page.live:{};if(crawl.rendered_html===true&&Array.isArray(crawl.internal_links)){const saved=Array.isArray(page.live.internalLinkDetails)?page.live.internalLinkDetails:[],rendered=Array.isArray(crawl.internal_link_details)?crawl.internal_link_details:[];page.live.internalLinks=crawl.internal_links.slice();page.live.internalLinkDetails=rendered.map(detail=>{const old=saved.find(old=>comparableUrl(old?.href)===comparableUrl(detail?.href)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase()&&(!old?.occurrence||!detail?.occurrence||Number(old.occurrence)===Number(detail.occurrence)));return old?{...old,...detail,editable:old.editable??detail.editable,builder:old.builder||detail.builder}:detail});page.live.internalLinkSource='rendered-html';page.live.internalLinkObservedAt=observedAt;}else{page.live.internalLinks=[];page.live.internalLinkDetails=[];page.live.internalLinkSource='unavailable';page.live.internalLinkObservedAt=observedAt;}});
+    (state.pages||[]).forEach(page=>{const crawl=(page.wpId!=null&&byId[String(page.wpId)])||byUrl[comparableUrl(page.url)];if(!crawl)return;matched++;page.crawl={httpStatus:crawl.http_status,redirectHops:crawl.redirect_hops,finalUrl:crawl.final_url||'',redirectChain:Array.isArray(crawl.redirect_chain)?crawl.redirect_chain:[],h1Count:crawl.h1_count,h1Text:crawl.h1_text||'',titleText:crawl.title_text||'',metaDescriptionText:crawl.meta_description_html||'',renderedText:crawl.rendered_text||'',renderedHtml:crawl.rendered_html===true,headings:Array.isArray(crawl.headings_text)?crawl.headings_text:[],contentExcerpt:crawl.content_excerpt||'',robotsMeta:[crawl.robots_meta,crawl.x_robots_tag].filter(Boolean).join(', '),robotsBlocked:!!crawl.robots_blocked,soft404:!!crawl.soft_404,canonicalHtml:crawl.canonical_html,hreflang:crawl.hreflang,imagesTotal:crawl.images_total,imagesMissingAlt:crawl.images_missing_alt,imagesAltEmptyReview:crawl.images_alt_empty_review||0,checkedAt:observedAt};page.live=page.live&&typeof page.live==='object'?page.live:{};if(crawl.rendered_html===true&&Array.isArray(crawl.internal_links)){const saved=Array.isArray(page.live.internalLinkDetails)?page.live.internalLinkDetails:[],rendered=Array.isArray(crawl.internal_link_details)?crawl.internal_link_details:[];page.live.internalLinks=crawl.internal_links.slice();page.live.internalLinkDetails=rendered.map(detail=>{const old=saved.find(old=>ogosLinkIdentityV3139(old?.href||old?.raw_href,page.url)===ogosLinkIdentityV3139(detail?.href||detail?.raw_href,page.url)&&String(old?.anchor||'').trim().toLowerCase()===String(detail?.anchor||'').trim().toLowerCase()&&(!old?.occurrence||!detail?.occurrence||Number(old.occurrence)===Number(detail.occurrence)));return old?{...old,...detail,editable:old.editable??detail.editable,builder:old.builder||detail.builder}:detail});page.live.internalLinkSource='rendered-html';page.live.internalLinkObservedAt=observedAt;}else{page.live.internalLinks=[];page.live.internalLinkDetails=[];page.live.internalLinkSource='unavailable';page.live.internalLinkObservedAt=observedAt;}});
     state.crawlSitewide=sitewide;state.crawlCoverage={domain:normalizeProjectDomain(state.project?.domain),total,received:seen.size,matched,inventory:(state.pages||[]).length,observedAt};
     save(true);renderShell();renderPages();renderAudit();const reconciliation=ogosRiconciliaProblemiApertiV343();if(reconciliation.changed){renderKanban();renderVerify();}
     if(el)el.innerHTML=crawlResultHtml(sitewide,matched,total);toast(`Crawl reale completato: ${matched} di ${total} pagine abbinate`);return true;
@@ -8197,8 +8203,8 @@ function ogosDashboardTaskKeysV349(task){
   const keys=new Set(),family=operationalFamily(task),type=String(task?.operation?.type||'').toLowerCase();
   (Array.isArray(task?.affected)&&task.affected.length?task.affected:[{}]).forEach(item=>{
     const url=comparableUrl(item?.url||''),changes=item?.changes&&typeof item.changes==='object'?item.changes:{};
-    if(changes.internal_link?.target)keys.add(`internal_link|${comparableUrl(changes.internal_link.target)}`);
-    if(changes.replace_link?.to)keys.add(`replace_link|${url}|${comparableUrl(changes.replace_link.from||'')}|${comparableUrl(changes.replace_link.to)}`);
+    if(changes.internal_link?.target){const target=ogosLinkIdentityV3139(changes.internal_link.target,item?.url||'');if(target)keys.add(`internal_link|${target}`);}
+    if(changes.replace_link?.to){const from=ogosLinkIdentityV3139(changes.replace_link.from||'',item?.url||''),to=ogosLinkIdentityV3139(changes.replace_link.to,item?.url||'');if(to)keys.add(`replace_link|${url}|${from}|${to}`);}
     Object.keys(changes).forEach(field=>{const mapped=field==='post_title'?'h1':field;if(['title','h1','meta_description','canonical','keyword','intent'].includes(mapped)&&url)keys.add(`${mapped}|${url}`)});
     if(!Object.keys(changes).length&&url){
       if(/index|sitemap|robots|crawl/.test(`${family} ${type}`))keys.add(`indexing|${url}`);
@@ -9046,14 +9052,14 @@ function ogosReplacementClassV356(item){
   if(targetKnown)return{kind:'review-required',from,to,redirect:null};
   return{kind:'unverified',from,to,redirect:null};
 }
-function ogosSourceRedirectedV356(value){const key=comparableUrl(value);if(!key)return false;const page=(state.pages||[]).find(row=>comparableUrl(row.url)===key);return Number(page?.crawl?.redirectHops||0)>0;}
+function ogosSourceRedirectedV356(value){const key=ogosSourceIdentityV3140(value);if(!key)return false;const page=ogosPageForSourceV3140(value);return Number(page?.crawl?.redirectHops||0)>0;}
 function ogosGroupReplacementRowsV356(rows){
   const groups=new Map();
   (rows||[]).forEach(raw=>{const item=clone(raw);item.url=item.url||item.source;if(ogosSourceRedirectedV356(item.url))return;const classification=ogosReplacementClassV356(item),source=comparableUrl(item.url||item.source||''),key=`${source}|${classification.from}|${classification.to}`,current=groups.get(key);if(current){current.occurrenceCount=(current.occurrenceCount||1)+(Number(item.occurrenceCount)||1);return;}item.source=item.source||item.url;item.occurrenceCount=Number(item.occurrenceCount)||1;item.linkClassification=classification.kind;item.changes=item.changes&&typeof item.changes==='object'?item.changes:{};item.changes.replace_link={...(item.changes.replace_link||{}),from:classification.from||item.changes.replace_link?.from||'',to:classification.to||item.changes.replace_link?.to||'',classification:classification.kind};if(classification.kind==='redirect-cleanup'){item.issue=`Link obsoleto verso ${classification.from}: redirect funzionante in ${classification.redirect.hops} ${classification.redirect.hops===1?'passaggio':'passaggi'}`;item.fix=`Aggiorna l’href direttamente a ${classification.to}`;}else if(classification.kind==='review-required'){item.issue=`URL interna probabilmente errata: ${classification.from}`;item.fix=`Verifica anchor e contesto, poi sostituisci singolarmente con ${classification.to}`;}else{item.issue=`Destinazione non confermata: ${classification.from||'URL non disponibile'}`;item.fix=classification.to?`Verifica manualmente prima di usare ${classification.to}`:'Trova manualmente la destinazione corretta';}groups.set(key,item);});
   return[...groups.values()];
 }
 function ogosReplacementTaskMetaV356(kind,rows){
-  const occurrences=rows.reduce((sum,row)=>sum+(Number(row.occurrenceCount)||1),0),pages=new Set(rows.map(row=>comparableUrl(row.url))).size;
+  const occurrences=rows.reduce((sum,row)=>sum+(Number(row.occurrenceCount)||1),0),pages=new Set(rows.map(row=>ogosSourceIdentityV3140(row.url))).size;
   if(kind==='redirect-cleanup')return{title:'Aggiorna link interni che passano da redirect',detail:`${occurrences} ${occurrences===1?'occorrenza obsoleta':'occorrenze obsolete'} su ${pages} ${pages===1?'pagina':'pagine'}; il redirect funziona, ma il collegamento diretto è preferibile.`,priority:'Media',individual:false};
   if(kind==='review-required')return{title:rows.length===1?'Verifica una sostituzione di URL interna':'Verifica sostituzioni di URL interne',detail:`${occurrences} ${occurrences===1?'collegamento richiede':'collegamenti richiedono'} controllo di anchor, contesto e intento prima dell’approvazione.`,priority:'Media',individual:true};
   return{title:'Verifica link interni non raggiungibili',detail:`${occurrences} ${occurrences===1?'destinazione non è confermata':'destinazioni non sono confermate'} dal crawl: nessuna sostituzione multipla automatica.`,priority:'Alta',individual:true};
@@ -9464,8 +9470,8 @@ onPageAuditContentV1510=function(){const blocked=ogosOnPageCandidatePagesV366().
 
 const OGOS_APPLY_BATCH_V3611=5;
 function ogosPageForUrlV3611(url){return(state.pages||[]).find(page=>comparableUrl(page.url)===comparableUrl(url));}
-function ogosRetryMapV3611(task){const map=new Map(),reasons=normalizedPartialReasons(task);if(!task?.partialApply||!reasons.length)return map;reasons.forEach(reason=>{const url=comparableUrl(reason.url),operation=String(reason.operation||'').trim();if(!url)return;if(!map.has(url))map.set(url,new Set());if(operation)map.get(url).add(operation);});return map;}
-function ogosKeepRetryChangesV3611(item,retry){if(!retry.size)return item;const key=comparableUrl(item.url),allowed=retry.get(key);if(!allowed)return null;const copy=clone(item),changes={...(copy.changes||{})};if(allowed.size)Object.keys(changes).forEach(operation=>{if(!allowed.has(operation))delete changes[operation];});copy.changes=changes;return Object.keys(changes).length?copy:null;}
+function ogosRetryMapV3611(task){const map=new Map(),reasons=normalizedPartialReasons(task);if(!task?.partialApply||!reasons.length)return map;reasons.forEach(reason=>{const url=ogosSourceIdentityV3140(reason.url),operation=String(reason.operation||'').trim();if(!url)return;if(!map.has(url))map.set(url,new Set());if(operation)map.get(url).add(operation);});return map;}
+function ogosKeepRetryChangesV3611(item,retry){if(!retry.size)return item;const key=ogosSourceIdentityV3140(item.url),allowed=retry.get(key);if(!allowed)return null;const copy=clone(item),changes={...(copy.changes||{})};if(allowed.size)Object.keys(changes).forEach(operation=>{if(!allowed.has(operation))delete changes[operation];});copy.changes=changes;return Object.keys(changes).length?copy:null;}
 
 pluginTaskPayload=function(task){const name=String(task?.title||'').toLowerCase(),operation=task?.operation||{},retry=ogosRetryMapV3611(task),affected=(task?.affected||[]).map(item=>{const copy=clone(item),page=ogosPageForUrlV3611(item.url),proposal=page?seoProposalForPage(page):null;copy.changes={...(copy.changes||{})};if(operation.seoTitle)copy.changes.title=operation.seoTitle;if(operation.metaDescription)copy.changes.meta_description=operation.metaDescription;if(operation.canonical)copy.changes.canonical=operation.canonical;if(operation.type==='redirect'&&operation.redirect)copy.changes.redirect={from:operation.redirect.from,to:operation.redirect.to,code:operation.redirect.code};if(operation.type==='internal_link'&&operation.internalLink)copy.changes.internal_link={target:operation.internalLink.target,anchor:operation.internalLink.anchor,position:operation.internalLink.position};if(!copy.changes.title&&name.includes('title')&&proposal)copy.changes.title=proposal.title;if(!copy.changes.meta_description&&name.includes('meta description')&&proposal)copy.changes.meta_description=proposal.meta;return ogosKeepRetryChangesV3611(copy,retry);}).filter(Boolean);return{id:task.id,title:task.title,detail:task.detail,affected};};
 
@@ -9475,13 +9481,13 @@ requiredCapabilities=function(task){const capabilities=[];pluginTaskPayload(task
 function ogosChunksV3611(items,size=OGOS_APPLY_BATCH_V3611){const chunks=[];for(let index=0;index<items.length;index+=size)chunks.push(items.slice(index,index+size));return chunks;}
 function ogosFailureV3611(row,fallback='Verifica manuale richiesta'){return{url:row?.url||'',reason:row?.reason||fallback,operation:row?.operation||row?.field||row?.key||'',code:row?.code||'',partial:false};}
 function ogosProgressV3611(resultBox,label,current,total,detail=''){if(!resultBox)return;const percent=total?Math.round(current/total*100):0;resultBox.innerHTML=`<div class="safe-note"><b>${esc(label)}</b><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" style="margin-top:8px"><i style="width:${percent}%"></i></div><small>${current} di ${total}${detail?` · ${esc(detail)}`:''}</small></div>`;}
-function ogosSyncAppliedRowsV3611(rows,changedUrls){const changed=new Set((changedUrls||[]).map(comparableUrl));rows.forEach(item=>{if(!changed.has(comparableUrl(item.url)))return;const page=ogosPageForUrlV3611(item.url);if(!page)return;page.live=page.live&&typeof page.live==='object'?page.live:{};page.live.internalLinks=Array.isArray(page.live.internalLinks)?page.live.internalLinks.slice():[];const changes=item.changes||{};if(changes.title)page.live.seoTitle=changes.title;if(changes.meta_description)page.live.metaDescription=changes.meta_description;if(changes.post_title){page.crawl=page.crawl&&typeof page.crawl==='object'?page.crawl:{};page.crawl.h1Text=changes.post_title;page.crawl.h1Count=1;page.wpTitle=changes.post_title;}if(changes.canonical)page.live.canonical=changes.canonical;if(changes.internal_link?.target&&!page.live.internalLinks.some(href=>comparableUrl(href)===comparableUrl(changes.internal_link.target)))page.live.internalLinks.push(changes.internal_link.target);if(changes.replace_link?.to){page.live.internalLinks=page.live.internalLinks.filter(href=>comparableUrl(href)!==comparableUrl(changes.replace_link.from));if(!page.live.internalLinks.some(href=>comparableUrl(href)===comparableUrl(changes.replace_link.to)))page.live.internalLinks.push(changes.replace_link.to);}});}
+function ogosSyncAppliedRowsV3611(rows,changedUrls){const changed=new Set((changedUrls||[]).map(ogosSourceIdentityV3140));rows.forEach(item=>{if(!changed.has(ogosSourceIdentityV3140(item.url)))return;const page=ogosPageForSourceV3140(item.url);if(!page)return;page.live=page.live&&typeof page.live==='object'?page.live:{};page.live.internalLinks=Array.isArray(page.live.internalLinks)?page.live.internalLinks.slice():[];const changes=item.changes||{};if(changes.title)page.live.seoTitle=changes.title;if(changes.meta_description)page.live.metaDescription=changes.meta_description;if(changes.post_title){page.crawl=page.crawl&&typeof page.crawl==='object'?page.crawl:{};page.crawl.h1Text=changes.post_title;page.crawl.h1Count=1;page.wpTitle=changes.post_title;}if(changes.canonical)page.live.canonical=changes.canonical;if(changes.internal_link?.target){const targetId=ogosLinkIdentityV3139(changes.internal_link.target,page.url);if(targetId&&!page.live.internalLinks.some(href=>ogosLinkIdentityV3139(href,page.url)===targetId))page.live.internalLinks.push(changes.internal_link.target);}if(changes.replace_link?.to){const fromId=ogosLinkIdentityV3139(changes.replace_link.from,page.url),toId=ogosLinkIdentityV3139(changes.replace_link.to,page.url);page.live.internalLinks=page.live.internalLinks.filter(href=>!fromId||ogosLinkIdentityV3139(href,page.url)!==fromId);if(toId&&!page.live.internalLinks.some(href=>ogosLinkIdentityV3139(href,page.url)===toId))page.live.internalLinks.push(changes.replace_link.to);}});}
 
 applyPluginTaskSingle=async function(id,triggerButton=null){const task=state.tasks.find(item=>String(item.id)===String(id)),button=triggerButton||ogosVisibleEl('.apply-plugin-task-single');if(!task||!button)return;const host=button.closest?.('#modalForm, #view-keyword-proposal, #actionDrawer')||document,resultBox=host.querySelector?.('#pluginPreviewResult, #keywordProposalResult')||null,original=button.textContent,payload=pluginTaskPayload(task);if(!payload.affected.length){toast('Nessuna modifica irrisolta da applicare','error');button.textContent='Niente da applicare';return;}const offenders=[];payload.affected.forEach(item=>{const changes=item.changes||{};if(changes.canonical&&!isSameSiteUrlClient(changes.canonical))offenders.push(`${item.url} → canonical esterna`);if(changes.redirect?.to&&!isSameSiteUrlClient(changes.redirect.to))offenders.push(`${item.url} → redirect esterno`);if(changes.internal_link?.target&&!isSameSiteUrlClient(changes.internal_link.target))offenders.push(`${item.url} → link interno esterno`);if(changes.replace_link?.to&&!isSameSiteUrlClient(changes.replace_link.to))offenders.push(`${item.url} → sostituzione esterna`);});if(offenders.length){toast(`Bloccato prima dell'invio: ${offenders.slice(0,2).join('; ')}`,'error');return;}button.disabled=true;const batches=ogosChunksV3611(payload.affected),previews=[],unresolved=[],satisfied=[];let planned=0;try{for(let index=0;index<batches.length;index++){button.textContent=`Verifica ${index+1}/${batches.length}…`;ogosProgressV3611(resultBox,'Controllo di fattibilità',index,batches.length);const batchTask={...payload,affected:batches[index]},preview=await wpRequest('/wp-json/organic-growth-os/v1/tasks/preview',{method:'POST',body:JSON.stringify({task:batchTask})});previews.push({task:batchTask,preview});planned+=Number(preview.planned_operations)||0;unresolved.push(...(preview.unresolved||[]));satisfied.push(...(preview.satisfied||[]));}ogosProgressV3611(resultBox,'Controllo completato',batches.length,batches.length,`${planned} automatiche · ${satisfied.length} già corrette · ${unresolved.length} manuali`);}catch(error){toast(`Verifica WordPress non riuscita: ${error.message}`,'error');button.disabled=false;button.textContent=original;return;}
 if(!planned){if(unresolved.length){recordTaskStatus(task,'In corso');task.approved=true;task.partialApply={skippedCount:unresolved.length,reasons:unresolved.map(row=>ogosFailureV3611(row)),at:new Date().toISOString()};save(true);renderKanban();renderShell();toast(`Solo verifica manuale: ${unresolved[0].reason}`,'error');button.disabled=false;button.textContent='Solo verifica manuale';return;}recordTaskStatus(task,'Verificata');task.approved=true;task.evidence={status:'confirmed',source:'wordpress-preflight',observedAt:new Date().toISOString()};delete task.partialApply;save(true);renderKanban();renderShell();renderVerify();button.textContent='✓ Già corretto';toast(`${satisfied.length} operazioni già corrette: nessuna scrittura necessaria.`);return;}
 if(isSimulationMode()){toast('Simulazione attiva: controllo completato senza scrivere su WordPress.','ok');button.disabled=false;button.textContent=original;return;}
 const changed=[],notNeeded=[],failures=[];let stopped=false;for(let index=0;index<previews.length;index++){const current=previews[index];if(!current.preview.can_apply)continue;button.textContent=`Applica ${index+1}/${previews.length}…`;ogosProgressV3611(resultBox,'Applicazione WordPress',index,previews.length);try{const result=await wpRequest('/wp-json/organic-growth-os/v1/tasks/apply',{method:'POST',body:JSON.stringify({task:current.task,preview_token:current.preview.preview_token}),timeoutMs:30000}),batchChanged=Array.isArray(result.changed_urls)?result.changed_urls:[],batchNotNeeded=Array.isArray(result.not_needed_urls)?result.not_needed_urls:[];changed.push(...batchChanged);notNeeded.push(...batchNotNeeded);if(batchNotNeeded.length&&typeof ogosMarkRowsForPublicVerificationV3123==='function')ogosMarkRowsForPublicVerificationV3123(current.task.affected,batchNotNeeded,id);failures.push(...(Array.isArray(result.failures)?result.failures:[]));if(batchChanged.length){if(!result.operation_id||!result.rollback_token)throw new Error('WordPress ha modificato il sito senza restituire un punto di ripristino valido');state.repairs.push({taskId:id,date:new Date().toISOString(),remote:true,operationId:result.operation_id,rollbackToken:result.rollback_token,changedUrls:batchChanged,undone:false,batch:index+1,batchCount:previews.length});ogosSyncAppliedRowsV3611(current.task.affected,batchChanged);save(true);}}catch(error){failures.push(...(error.failures?.length?error.failures:[{url:current.task.affected[0]?.url||'',operation:'',code:error.code||'',reason:error.message}]));previews.slice(index+1).forEach(pending=>pending.task.affected.forEach(row=>failures.push({url:row.url,operation:'',code:'ogos_batch_stopped',reason:'Non eseguita perché un blocco precedente non è riuscito.'})));stopped=true;break;}}
-const changedSet=new Set(changed.map(comparableUrl)),skipped=[...unresolved,...failures].map(row=>({...ogosFailureV3611(row),partial:changedSet.has(comparableUrl(row.url))}));task.approved=true;delete task.pluginPreview;if(skipped.length){recordTaskStatus(task,'In corso');task.partialApply={skippedCount:skipped.length,reasons:skipped,at:new Date().toISOString()};}else if(changed.length){recordTaskStatus(task,'Completata');delete task.partialApply;}else{recordTaskStatus(task,'Completata');task.evidence={status:'pending-public-crawl',source:'wordpress-storage-check',observedAt:new Date().toISOString()};delete task.partialApply;}save(true);renderKanban();renderShell();renderVerify();ogosProgressV3611(resultBox,stopped?'Applicazione interrotta':'Applicazione completata',previews.length,previews.length,`${changed.length} aggiornate · ${notNeeded.length+satisfied.length} presenti nello storage · ${skipped.length} da verificare`);button.disabled=false;button.textContent=skipped.length?'Riprova solo le modifiche non applicate':'✓ Scrittura controllata';toast(skipped.length?`${changed.length} pagine aggiornate; ${skipped.length} operazioni restano da verificare. ${skipped[0].reason}`:`Controllo WordPress completato. Esegui il crawl reale per confermare l’HTML pubblico.`,skipped.length?'error':'ok');};
+const changedSet=new Set(changed.map(ogosSourceIdentityV3140)),skipped=[...unresolved,...failures].map(row=>({...ogosFailureV3611(row),partial:changedSet.has(ogosSourceIdentityV3140(row.url))}));task.approved=true;delete task.pluginPreview;if(skipped.length){recordTaskStatus(task,'In corso');task.partialApply={skippedCount:skipped.length,reasons:skipped,at:new Date().toISOString()};}else if(changed.length){recordTaskStatus(task,'Completata');delete task.partialApply;}else{recordTaskStatus(task,'Completata');task.evidence={status:'pending-public-crawl',source:'wordpress-storage-check',observedAt:new Date().toISOString()};delete task.partialApply;}save(true);renderKanban();renderShell();renderVerify();ogosProgressV3611(resultBox,stopped?'Applicazione interrotta':'Applicazione completata',previews.length,previews.length,`${changed.length} aggiornate e verificate · ${notNeeded.length+satisfied.length} già presenti · ${skipped.length} non applicate`);button.disabled=false;button.textContent=skipped.length?'Riprova solo le modifiche non applicate':'✓ Scrittura pubblica verificata';toast(skipped.length?`${changed.length} pagine aggiornate; ${skipped.length} operazioni restano da verificare. ${skipped[0].reason}`:`Controllo WordPress completato: il connettore ha verificato anche l’HTML pubblico delle modifiche applicate. Il crawl reale aggiorna i dati locali dell’app.`,skipped.length?'error':'ok');};
 
 const ogosVerifyTaskV3611Base=verifyTask;
 verifyTask=async function(id,{silent=false}={}){const task=state.tasks.find(item=>String(item.id)===String(id));if(!task||task.status==='Verificata')return true;const repairs=(state.repairs||[]).filter(repair=>String(repair.taskId)===String(id)&&!repair.undone);if(!repairs.some(repair=>repair.remote))return ogosVerifyTaskV3611Base(id,{silent});try{if(!state.wordpress.connected||!state.wordpress.pluginDetected||!state.wordpress.capabilities.includes('verify'))throw new Error('Ricollega WordPress con una versione che supporti la verifica');for(const repair of repairs.filter(item=>item.remote)){const result=await wpRequest('/wp-json/organic-growth-os/v1/tasks/verify',{method:'POST',body:JSON.stringify({operation_id:repair.operationId})});repair.verification={date:new Date().toISOString(),...result};if(!result.all_verified)throw new Error((result.results||[]).flatMap(row=>row.problems||[]).join(', ')||`Il blocco ${repair.batch||''} non corrisponde più al piano`);}recordTaskStatus(task,'Verificata');task.evidence={status:'confirmed',source:'wordpress-verify',observedAt:new Date().toISOString()};save(true);renderVerify();renderKanban();renderShell();if(!silent)toast(`${repairs.length} blocchi verificati sul sito`);return true;}catch(error){recordTaskStatus(task,'In corso');save(true);renderVerify();renderKanban();renderShell();if(!silent)toast(`Verifica non riuscita: ${error.message}`,'error');return false;}};
@@ -9549,8 +9555,8 @@ addEventListener('storage',event=>{
 const ogosOpenModalV3612Base=openModal;
 openModal=function(type,data){const result=ogosOpenModalV3612Base.apply(this,arguments);if(type!=='task')return result;const form=$('#modalForm'),title=form?.querySelector('[name="seoTitle"]'),typeSelect=form?.querySelector('[name="operationType"]');const seoOption=typeSelect?.querySelector('option[value="seo"]');if(seoOption)seoOption.textContent='Title, H1 e meta description';if(title&&!form.querySelector('[name="h1"]')){const field=document.createElement('div');field.className='field';field.dataset.operationGroup='seo';field.innerHTML=`<label>H1 finale</label><input name="h1" maxlength="95" value="${esc(data?.operation?.h1||'')}"><small class="help">Viene applicato solo se il pre-check trova una sorgente H1 realmente modificabile.</small>`;title.closest('.field')?.after(field);ogosLabelFormControlsV355(form);field.hidden=!typeSelect||typeSelect.value!=='seo';if(typeSelect){const previous=typeSelect.onchange;typeSelect.onchange=event=>{previous?.call(typeSelect,event);field.hidden=typeSelect.value!=='seo';};}}return result;};
 const ogosPluginTaskPayloadV3612Base=pluginTaskPayload;
-function ogosChangeIdV3612(item){const text=`${comparableUrl(item?.url)}|${JSON.stringify(item?.changes||{})}`;let hash=2166136261;for(let index=0;index<text.length;index++){hash^=text.charCodeAt(index);hash=Math.imul(hash,16777619);}return`chg_${(hash>>>0).toString(16)}`;}
-pluginTaskPayload=function(task){const payload=ogosPluginTaskPayloadV3612Base(task),h1=String(task?.operation?.h1||'').trim();if(h1&&payload.affected.length===1)payload.affected[0].changes={...(payload.affected[0].changes||{}),post_title:h1};const reasons=normalizedPartialReasons(task),exact=new Set(reasons.map(reason=>String(reason.changeId||'')).filter(Boolean)),fallback=new Set(reasons.filter(reason=>!reason.changeId).map(reason=>`${comparableUrl(reason.url)}|${reason.operation||'*'}`)),seen=new Set();payload.affected=payload.affected.map(item=>{const copy=clone(item);copy.ogos_change_id=ogosChangeIdV3612(copy);return copy;}).filter(item=>{const key=comparableUrl(item.url),allowed=!task?.partialApply||!reasons.length||exact.has(item.ogos_change_id)||fallback.has(`${key}|*`)||Object.keys(item.changes||{}).some(operation=>fallback.has(`${key}|${operation}`)),inScope=!ogosAmbitoRigheV354||ogosAmbitoRigheV354.has(ogosChiaveRigaV354(item,task));return allowed&&inScope&&!seen.has(item.ogos_change_id)&&seen.add(item.ogos_change_id);});return payload;};
+function ogosChangeIdV3612(item){const text=`${ogosSourceIdentityV3140(item?.url)}|${JSON.stringify(item?.changes||{})}`;let hash=2166136261;for(let index=0;index<text.length;index++){hash^=text.charCodeAt(index);hash=Math.imul(hash,16777619);}return`chg_${(hash>>>0).toString(16)}`;}
+pluginTaskPayload=function(task){const payload=ogosPluginTaskPayloadV3612Base(task),h1=String(task?.operation?.h1||'').trim();if(h1&&payload.affected.length===1)payload.affected[0].changes={...(payload.affected[0].changes||{}),post_title:h1};const reasons=normalizedPartialReasons(task),exact=new Set(reasons.map(reason=>String(reason.changeId||'')).filter(Boolean)),fallback=new Set(reasons.filter(reason=>!reason.changeId).map(reason=>`${ogosSourceIdentityV3140(reason.url)}|${reason.operation||'*'}`)),seen=new Set();payload.affected=payload.affected.map(item=>{const copy=clone(item);copy.ogos_change_id=ogosChangeIdV3612(copy);return copy;}).filter(item=>{const key=ogosSourceIdentityV3140(item.url),allowed=!task?.partialApply||!reasons.length||exact.has(item.ogos_change_id)||fallback.has(`${key}|*`)||Object.keys(item.changes||{}).some(operation=>fallback.has(`${key}|${operation}`)),inScope=!ogosAmbitoRigheV354||ogosAmbitoRigheV354.has(ogosChiaveRigaV354(item,task));return allowed&&inScope&&!seen.has(item.ogos_change_id)&&seen.add(item.ogos_change_id);});return payload;};
 function ogosUnsafeMultiValueV3612(task){const count=(task?.affected||[]).length,operation=task?.operation||{};if(count<=1)return'';const fields=[];if(operation.seoTitle)fields.push('Title SEO');if(operation.h1)fields.push('H1');if(operation.metaDescription)fields.push('Meta description');if(operation.canonical)fields.push('Canonical');if(operation.type==='redirect'&&operation.redirect?.to)fields.push('Redirect');return fields.length?`${fields.join(', ')}: il task contiene ${count} URL ma un solo valore globale. Crea una proposta distinta per ogni pagina.`:'';}
 
 /* Snapshot locale minimo: consente al rollback di riallineare subito l'app
@@ -9561,8 +9567,8 @@ function ogosRestoreLocalSnapshotV3612(repair){
   repair.localSnapshot.forEach(snapshot=>{const page=ogosPageForUrlV3611(snapshot.url);if(!page)return;if(snapshot.live===null)delete page.live;else page.live=clone(snapshot.live);if(snapshot.crawl===null)delete page.crawl;else page.crawl=clone(snapshot.crawl);if(snapshot.wpTitle===undefined)delete page.wpTitle;else page.wpTitle=snapshot.wpTitle;if(snapshot.canonical===undefined)delete page.canonical;else page.canonical=snapshot.canonical;delete page.liveDataStale;if(String(page.pendingRemoteVerification?.taskId||'')===String(repair.taskId||''))delete page.pendingRemoteVerification;if(String(page.lastRemoteVerification?.taskId||'')===String(repair.taskId||''))delete page.lastRemoteVerification;});return true;
 }
 ogosSyncAppliedRowsV3611=function(rows,changedUrls){
-  const changed=new Set((changedUrls||[]).map(comparableUrl)),snapshots=[];(rows||[]).forEach(item=>{if(!changed.has(comparableUrl(item.url)))return;const page=ogosPageForUrlV3611(item.url);if(!page)return;snapshots.push(ogosLocalPageSnapshotV3612(page));page.live=page.live&&typeof page.live==='object'?page.live:{};page.live.internalLinks=Array.isArray(page.live.internalLinks)?page.live.internalLinks.slice():[];const changes=item.changes||{};if(changes.title){page.live.seoTitle=changes.title;page.crawl=page.crawl&&typeof page.crawl==='object'?page.crawl:{};page.crawl.titleText=changes.title;}if(changes.meta_description)page.live.metaDescription=changes.meta_description;if(changes.post_title){page.crawl=page.crawl&&typeof page.crawl==='object'?page.crawl:{};page.crawl.h1Text=changes.post_title;if(!Number.isFinite(Number(page.crawl.h1Count))||Number(page.crawl.h1Count)<1)page.crawl.h1Count=1;}if(changes.canonical){page.live.canonical=changes.canonical;if(page.crawl&&typeof page.crawl==='object')page.crawl.canonicalHtml=changes.canonical;page.canonical='Corretta';}if(changes.internal_link?.target&&!page.live.internalLinks.some(href=>comparableUrl(href)===comparableUrl(changes.internal_link.target)))page.live.internalLinks.push(changes.internal_link.target);if(changes.replace_link?.to){page.live.internalLinks=page.live.internalLinks.filter(href=>comparableUrl(href)!==comparableUrl(changes.replace_link.from));if(!page.live.internalLinks.some(href=>comparableUrl(href)===comparableUrl(changes.replace_link.to)))page.live.internalLinks.push(changes.replace_link.to);}});
-  const repair=[...(state.repairs||[])].reverse().find(item=>item.remote&&!item.undone&&!item.localSnapshot&&(item.changedUrls||[]).some(url=>changed.has(comparableUrl(url))));if(repair)repair.localSnapshot=snapshots;
+  const changed=new Set((changedUrls||[]).map(ogosSourceIdentityV3140)),snapshots=[];(rows||[]).forEach(item=>{if(!changed.has(ogosSourceIdentityV3140(item.url)))return;const page=ogosPageForSourceV3140(item.url);if(!page)return;snapshots.push(ogosLocalPageSnapshotV3612(page));page.live=page.live&&typeof page.live==='object'?page.live:{};page.live.internalLinks=Array.isArray(page.live.internalLinks)?page.live.internalLinks.slice():[];const changes=item.changes||{};if(changes.title){page.live.seoTitle=changes.title;page.crawl=page.crawl&&typeof page.crawl==='object'?page.crawl:{};page.crawl.titleText=changes.title;}if(changes.meta_description)page.live.metaDescription=changes.meta_description;if(changes.post_title){page.crawl=page.crawl&&typeof page.crawl==='object'?page.crawl:{};page.crawl.h1Text=changes.post_title;if(!Number.isFinite(Number(page.crawl.h1Count))||Number(page.crawl.h1Count)<1)page.crawl.h1Count=1;}if(changes.canonical){page.live.canonical=changes.canonical;if(page.crawl&&typeof page.crawl==='object')page.crawl.canonicalHtml=changes.canonical;page.canonical='Corretta';}if(changes.internal_link?.target){const targetId=ogosLinkIdentityV3139(changes.internal_link.target,page.url);if(targetId&&!page.live.internalLinks.some(href=>ogosLinkIdentityV3139(href,page.url)===targetId))page.live.internalLinks.push(changes.internal_link.target);}if(changes.replace_link?.to){const fromId=ogosLinkIdentityV3139(changes.replace_link.from,page.url),toId=ogosLinkIdentityV3139(changes.replace_link.to,page.url);page.live.internalLinks=page.live.internalLinks.filter(href=>!fromId||ogosLinkIdentityV3139(href,page.url)!==fromId);if(toId&&!page.live.internalLinks.some(href=>ogosLinkIdentityV3139(href,page.url)===toId))page.live.internalLinks.push(changes.replace_link.to);}});
+  const repair=[...(state.repairs||[])].reverse().find(item=>item.remote&&!item.undone&&!item.localSnapshot&&(item.changedUrls||[]).some(url=>changed.has(ogosSourceIdentityV3140(url))));if(repair)repair.localSnapshot=snapshots;
 };
 
 const ogosProgressV3612Base=ogosProgressV3611;
@@ -9572,7 +9578,7 @@ ogosProgressV3611=function(resultBox,label,current,total,detail=''){if(resultBox
 /* request_id rende sicuro il recupero della stessa risposta se il sito ha
    scritto ma la rete ha perso la risposta. */
 const ogosWpRequestV3612Base=wpRequest;
-function ogosAnnotateRowsV3612(rows,affected){const queues=new Map();(affected||[]).forEach(item=>Object.keys(item.changes||{}).forEach(operation=>{const key=`${comparableUrl(item.url)}|${operation}`;if(!queues.has(key))queues.set(key,[]);queues.get(key).push(item.ogos_change_id||ogosChangeIdV3612(item));}));return(rows||[]).map(row=>{const key=`${comparableUrl(row.url)}|${row.operation||row.field||row.key||''}`,queue=queues.get(key)||[];return{...row,changeId:row.changeId||queue.shift()||''};});}
+function ogosAnnotateRowsV3612(rows,affected){const queues=new Map();(affected||[]).forEach(item=>Object.keys(item.changes||{}).forEach(operation=>{const key=`${ogosSourceIdentityV3140(item.url)}|${operation}`;if(!queues.has(key))queues.set(key,[]);queues.get(key).push(item.ogos_change_id||ogosChangeIdV3612(item));}));return(rows||[]).map(row=>{const key=`${ogosSourceIdentityV3140(row.url)}|${row.operation||row.field||row.key||''}`,queue=queues.get(key)||[];return{...row,changeId:row.changeId||queue.shift()||''};});}
 const ogosFailureV3612Base=ogosFailureV3611;
 ogosFailureV3611=function(row,fallback){return{...ogosFailureV3612Base(row,fallback),changeId:String(row?.changeId||row?.ogos_change_id||'')};};
 wpRequest=async function(path,options={}){let parsed={};try{parsed=JSON.parse(options.body||'{}');}catch{}if(path==='/wp-json/organic-growth-os/v1/tasks/preview'){const result=await ogosWpRequestV3612Base(path,options),affected=parsed.task?.affected||[];result.unresolved=ogosAnnotateRowsV3612(result.unresolved,affected);result.satisfied=ogosAnnotateRowsV3612(result.satisfied,affected);return result;}if(path!=='/wp-json/organic-growth-os/v1/tasks/apply')return ogosWpRequestV3612Base(path,options);parsed.request_id=parsed.request_id||`req_${Date.now()}_${Array.from(crypto.getRandomValues(new Uint32Array(2))).map(value=>value.toString(16)).join('')}`;const request={...options,body:JSON.stringify(parsed)};let error=null,maxAttempts=10;for(let attempt=0;attempt<maxAttempts;attempt++){try{const result=await ogosWpRequestV3612Base(path,{...request,timeoutMs:attempt?12000:(Number(options.timeoutMs)||30000)});result.failures=ogosAnnotateRowsV3612(result.failures,parsed.task?.affected||[]);return result;}catch(caught){error=caught;if(Array.isArray(caught.failures))caught.failures=ogosAnnotateRowsV3612(caught.failures,parsed.task?.affected||[]);const inProgress=caught.status===409&&caught.code==='ogos_apply_in_progress',temporaryStatus=[408,429,502,503,504].includes(Number(caught.status)),retryable=!caught.status||temporaryStatus||inProgress;if(!retryable)throw caught;if(attempt<maxAttempts-1){const delay=inProgress?Math.min(8000,1500+attempt*900):600+attempt*700;await new Promise(resolve=>setTimeout(resolve,delay));}}}throw error;};
@@ -11534,11 +11540,11 @@ taskChangesHtml = function(item) {
 const ogosSyncAppliedRowsV3121Base = ogosSyncAppliedRowsV3611;
 ogosSyncAppliedRowsV3611 = function(rows, changedUrls) {
   const result = ogosSyncAppliedRowsV3121Base.apply(this, arguments);
-  const changed = new Set((changedUrls || []).map(comparableUrl));
+  const changed = new Set((changedUrls || []).map(ogosSourceIdentityV3140));
   let refreshed = false;
   (rows || []).forEach(item => {
-    if (!changed.has(comparableUrl(item?.url)) || !item?.changes?.heading_hierarchy) return;
-    const page = ogosPageForUrlV3611(item.url);
+    if (!changed.has(ogosSourceIdentityV3140(item?.url)) || !item?.changes?.heading_hierarchy) return;
+    const page = ogosPageForSourceV3140(item.url);
     if (!page) return;
     page.crawl = page.crawl && typeof page.crawl === 'object' ? page.crawl : {};
     page.crawl.h1Count = 1;
@@ -11746,13 +11752,13 @@ wpRequest = async function(path, options = {}) {
    il punto di rollback e richiediamo un nuovo crawl prima di dichiarare il
    risultato verificato. */
 ogosSyncAppliedRowsV3611 = function(rows, changedUrls) {
-  const changed = new Set((changedUrls || []).map(comparableUrl));
+  const changed = new Set((changedUrls || []).map(ogosSourceIdentityV3140));
   const snapshots = [];
-  const repair = [...(state.repairs || [])].reverse().find(item => item.remote && !item.undone && !item.localSnapshot && (item.changedUrls || []).some(url => changed.has(comparableUrl(url))));
+  const repair = [...(state.repairs || [])].reverse().find(item => item.remote && !item.undone && !item.localSnapshot && (item.changedUrls || []).some(url => changed.has(ogosSourceIdentityV3140(url))));
   const appliedAt = new Date().toISOString();
   (rows || []).forEach(item => {
-    if (!changed.has(comparableUrl(item?.url))) return;
-    const page = ogosPageForUrlV3611(item.url);
+    if (!changed.has(ogosSourceIdentityV3140(item?.url))) return;
+    const page = ogosPageForSourceV3140(item.url);
     if (!page) return;
     snapshots.push(ogosLocalPageSnapshotV3612(page));
     page.liveDataStale = true;
@@ -11789,10 +11795,10 @@ function ogosPublicOperationKeysV3123(changes) {
 }
 
 function ogosMarkRowsForPublicVerificationV3123(rows, urls, taskId) {
-  const wanted = new Set((urls || []).map(comparableUrl)), at = new Date().toISOString();
+  const wanted = new Set((urls || []).map(ogosSourceIdentityV3140)), at = new Date().toISOString();
   (rows || []).forEach(item => {
-    if (!wanted.has(comparableUrl(item?.url))) return;
-    const page = ogosPageForUrlV3611(item.url);
+    if (!wanted.has(ogosSourceIdentityV3140(item?.url))) return;
+    const page = ogosPageForSourceV3140(item.url);
     if (!page) return;
     const previous = page.pendingRemoteVerification && String(page.pendingRemoteVerification.taskId ?? '') === String(taskId ?? '') ? page.pendingRemoteVerification : null;
     const changes = { ...(previous?.changes || {}), ...clone(item.changes || {}) };
@@ -11803,12 +11809,12 @@ function ogosMarkRowsForPublicVerificationV3123(rows, urls, taskId) {
 }
 
 function ogosRenderedLinkPresentV3123(page, target, anchor = '') {
-  const wanted = comparableUrl(target), wantedAnchor = ogosPublicTextV3123(anchor);
+  const wanted = ogosLinkIdentityV3139(target, page?.url), wantedAnchor = ogosPublicTextV3123(anchor);
   if (!wanted) return false;
   const details = Array.isArray(page?.live?.internalLinkDetails) ? page.live.internalLinkDetails : [];
-  const matches = details.filter(detail => comparableUrl(detail?.href || detail?.raw_href) === wanted);
+  const matches = details.filter(detail => ogosLinkIdentityV3139(detail?.href || detail?.raw_href, page?.url) === wanted);
   if (wantedAnchor) return matches.some(detail => ogosPublicTextV3123(detail?.anchor) === wantedAnchor);
-  return matches.length > 0 || (page?.live?.internalLinks || []).some(href => comparableUrl(href) === wanted);
+  return matches.length > 0 || (page?.live?.internalLinks || []).some(href => ogosLinkIdentityV3139(href, page?.url) === wanted);
 }
 
 function ogosCheckRenderedChangesV3123(page, changes, observedAt) {
@@ -11827,8 +11833,8 @@ function ogosCheckRenderedChangesV3123(page, changes, observedAt) {
   if (changes.intro_text && !ogosPublicTextV3123(page?.crawl?.renderedText || page?.crawl?.contentExcerpt).includes(ogosPublicTextV3123(changes.intro_text))) fail('intro_text', 'La frase introduttiva non compare nel contenuto pubblico acquisito.');
   if (changes.internal_link && !ogosRenderedLinkPresentV3123(page, changes.internal_link.target, changes.internal_link.anchor)) fail('internal_link', 'Il link con destinazione e anchor richieste non compare nell’HTML pubblico.');
   if (changes.replace_link) {
-    const from = comparableUrl(changes.replace_link.from), links = [...(page?.live?.internalLinks || []), ...(page?.live?.internalLinkDetails || []).flatMap(detail => [detail?.href, detail?.raw_href])];
-    if (from && links.some(href => comparableUrl(href) === from)) fail('replace_link', 'Il vecchio link compare ancora nell’HTML pubblico.');
+    const from = ogosLinkIdentityV3139(changes.replace_link.from, page?.url), links = [...(page?.live?.internalLinks || []), ...(page?.live?.internalLinkDetails || []).flatMap(detail => [detail?.href, detail?.raw_href])];
+    if (from && links.some(href => ogosLinkIdentityV3139(href, page?.url) === from)) fail('replace_link', 'Il vecchio link compare ancora nell’HTML pubblico.');
     if (!ogosRenderedLinkPresentV3123(page, changes.replace_link.to, changes.replace_link.anchor || '')) fail('replace_link', 'La nuova destinazione non compare nell’HTML pubblico.');
   }
   return { ok: failures.length === 0, operations, failures };
@@ -11839,13 +11845,13 @@ function ogosPendingContextV3123(page) {
   if (!pending) return null;
   let taskId = pending.taskId;
   if (taskId == null) {
-    const repair = [...(state.repairs || [])].reverse().find(item => item.remote && !item.undone && (item.changedUrls || []).some(url => comparableUrl(url) === comparableUrl(page.url)));
+    const repair = [...(state.repairs || [])].reverse().find(item => item.remote && !item.undone && (item.changedUrls || []).some(url => ogosSourceIdentityV3140(url) === ogosSourceIdentityV3140(page.url)));
     taskId = repair?.taskId ?? null;
   }
   let changes = pending.changes && typeof pending.changes === 'object' ? pending.changes : null;
   if (!changes || !Object.keys(changes).length) {
     const task = (state.tasks || []).find(item => String(item.id) === String(taskId));
-    const row = (task?.affected || []).find(item => comparableUrl(item?.url) === comparableUrl(page.url));
+    const row = (task?.affected || []).find(item => ogosSourceIdentityV3140(item?.url) === ogosSourceIdentityV3140(page.url));
     changes = clone(row?.changes || {});
   }
   return { ...pending, taskId, changes: changes || {} };
@@ -11944,9 +11950,9 @@ runWordPressCrawl = async function() {
 };
 
 function ogosTaskPublicRequirementsV3123(task, urls) {
-  const wanted = new Set((urls || []).map(comparableUrl)), requirements = new Map();
+  const wanted = new Set((urls || []).map(ogosSourceIdentityV3140)), requirements = new Map();
   (task?.affected || []).forEach(item => {
-    const url = comparableUrl(item?.url);
+    const url = ogosSourceIdentityV3140(item?.url);
     if (!url || (wanted.size && !wanted.has(url))) return;
     const operations = ogosPublicOperationKeysV3123(item?.changes || {});
     if (!operations.length) return;
@@ -11975,7 +11981,7 @@ verifyTask = async function(id, { silent = false, publicCrawlAttempted = false }
     return false;
   }
   requirements.forEach((operations, url) => {
-    const page = ogosPageForUrlV3611(url), newest = repairs.filter(repair => (repair.changedUrls || []).some(changed => comparableUrl(changed) === url)).map(repair => repair.date).filter(Boolean).sort().at(-1) || task.evidence?.observedAt || '';
+    const page = ogosPageForSourceV3140(url), newest = repairs.filter(repair => (repair.changedUrls || []).some(changed => ogosSourceIdentityV3140(changed) === url)).map(repair => repair.date).filter(Boolean).sort().at(-1) || task.evidence?.observedAt || '';
     if (!page || !ogosCurrentPublicProofV3123(page, task.id, [...operations], newest)) missing.push({ url, operations: [...operations] });
   });
   if (missing.length) {
@@ -11998,7 +12004,7 @@ verifyTask = async function(id, { silent = false, publicCrawlAttempted = false }
     return true;
   }
   const verified = await ogosVerifyTaskV3123Base(id, { silent });
-  const storageScoped = repairs.filter(repair => repair.remote).every(repair => repair.verification?.verification_scope === 'wordpress-storage');
+  const storageScoped = repairs.filter(repair => repair.remote).every(repair => ['wordpress-storage','wordpress-storage+public-html'].includes(repair.verification?.verification_scope));
   if (verified && repairs.length && !storageScoped) {
     recordTaskStatus(task, 'Completata');
     task.evidence = { status: 'pending-storage-contract', source: 'public-crawl', observedAt: task.publicVerification?.observedAt || new Date().toISOString() };
@@ -12537,7 +12543,7 @@ applyPluginTaskSingle = async function() {
   if(task&&scope){const saved=ogosAmbitoRigheV354;ogosAmbitoRigheV354=null;const all=pluginTaskPayload(task).affected;ogosAmbitoRigheV354=saved;const selected=new Set(pluginTaskPayload(task).affected.map(item=>item.ogos_change_id||ogosChangeIdV3612(item)));excluded=all.filter(item=>!selected.has(item.ogos_change_id||ogosChangeIdV3612(item)));}
   try {
     const result=await ogosApplyPluginTaskScopeV31217Base.apply(this, arguments);
-    if(task&&excluded.length){const kept=normalizedPartialReasons(task),added=[];excluded.forEach(item=>Object.keys(item.changes||{}).forEach(operation=>{const one={...item,changes:{[operation]:item.changes[operation]}};added.push({url:item.url,operation,code:'ogos_not_selected',reason:'Riga non selezionata: resta disponibile per la prossima applicazione.',changeId:ogosChangeIdV3612(one),partial:false});}));const merged=new Map([...kept,...added].map(reason=>[String(reason.changeId||`${comparableUrl(reason.url)}|${reason.operation}`),reason]));recordTaskStatus(task,'In corso');task.approved=true;task.partialApply={skippedCount:merged.size,reasons:[...merged.values()],at:new Date().toISOString()};save(true);renderShell();renderKanban();renderVerify();}
+    if(task&&excluded.length){const kept=normalizedPartialReasons(task),added=[];excluded.forEach(item=>Object.keys(item.changes||{}).forEach(operation=>{const one={...item,changes:{[operation]:item.changes[operation]}};added.push({url:item.url,operation,code:'ogos_not_selected',reason:'Riga non selezionata: resta disponibile per la prossima applicazione.',changeId:ogosChangeIdV3612(one),partial:false});}));const merged=new Map([...kept,...added].map(reason=>[String(reason.changeId||`${ogosSourceIdentityV3140(reason.url)}|${reason.operation}`),reason]));recordTaskStatus(task,'In corso');task.approved=true;task.partialApply={skippedCount:merged.size,reasons:[...merged.values()],at:new Date().toISOString()};save(true);renderShell();renderKanban();renderVerify();}
     return result;
   }
   finally { ogosAmbitoRigheV354 = null; ogosAmbitoCorrezione = null; ogosMantieniAmbito = false; }
@@ -12691,14 +12697,14 @@ function ogosPendingProofKeysV31221(task) {
     const pending = page?.pendingRemoteVerification;
     if (!pending || String(pending.taskId ?? '') !== String(task?.id ?? '')) return;
     const changes = pending.changes && typeof pending.changes === 'object' ? pending.changes : item?.changes || {};
-    ogosOperationKeysV3122(changes).forEach(operation => keys.add(`${comparableUrl(item.url)}|${operation}`));
+    ogosOperationKeysV3122(changes).forEach(operation => keys.add(`${ogosSourceIdentityV3140(item.url)}|${operation}`));
   });
   return keys;
 }
 function ogosReasonBelongsToPendingProofV31221(reason, keys) {
   const code = String(reason?.code || ''), operation = String(reason?.operation || '');
   if (code.startsWith('ogos_public_') || operation === 'public_verification') return true;
-  const key = `${comparableUrl(reason?.url)}|${operation}`;
+  const key = `${ogosSourceIdentityV3140(reason?.url)}|${operation}`;
   return !!operation && keys.has(key);
 }
 function ogosOnlyPublicProofPendingV31221(task) {
@@ -12819,8 +12825,8 @@ document.addEventListener('click', async event => {
   event.preventDefault(); event.stopImmediatePropagation();
   const task = (state.tasks||[]).find(t=>String(t.id)===String(choose.dataset.taskId));
   if (!task) return;
-  const url = comparableUrl(choose.dataset.url||'');
-  const row = (task.affected||[]).find(item=>comparableUrl(item?.url)===url && item?.changes?.replace_link);
+  const url = ogosSourceIdentityV3140(choose.dataset.url||'');
+  const row = (task.affected||[]).find(item=>ogosSourceIdentityV3140(item?.url)===url && item?.changes?.replace_link);
   if (!row) { toast('La riga del link non è più disponibile: riapri il task.','error'); return; }
   row.changes.replace_link = {...row.changes.replace_link, owner:{id:Number(choose.dataset.ownerId), kind:String(choose.dataset.ownerKind||'')}};
   delete task.partialApply;
@@ -13059,10 +13065,10 @@ pluginTaskPayload = function(task) {
   (payload.affected || []).forEach(item => {
     const replace = item?.changes?.replace_link;
     if (!replace?.from) return;
-    const page = typeof ogosPageForUrlV3611 === 'function' ? ogosPageForUrlV3611(item.url) : (state.pages||[]).find(p=>comparableUrl(p.url)===comparableUrl(item.url));
-    const from = comparableUrl(replace.from);
+    const page = ogosPageForSourceV3140(item.url);
+    const from = ogosLinkIdentityV3139(replace.from,item.url);
     const details = (Array.isArray(page?.live?.internalLinkDetails) ? page.live.internalLinkDetails : [])
-      .filter(detail => comparableUrl(detail?.href || detail?.raw_href) === from)
+      .filter(detail => ogosLinkIdentityV3139(detail?.href || detail?.raw_href,item.url) === from)
       .slice(0, 20)
       .map(detail => ({
         anchor: String(detail?.anchor || '').trim(),
@@ -13286,6 +13292,7 @@ runIndexingAnalysis=async function(){
 const ogosOwnerKindLabelV3133Base=ogosOwnerKindLabel3130;
 ogosOwnerKindLabel3130=function(kind=''){
   if(kind==='dynamic_permalink')return 'Permalink dinamico (archivio / Query Loop)';
+  if(kind==='dynamic_rendered')return 'Href dinamico renderizzato (Dynamic Tag / widget)';
   return ogosOwnerKindLabelV3133Base.apply(this,arguments);
 };
 
@@ -13294,7 +13301,7 @@ ogosDynamicOwnerHtml3132=function(task,reason){
   const resolution=reason?.ownerResolution||reason?.owner_resolution||{};
   if(resolution?.dynamic_candidate){
     const c=resolution.dynamic_candidate;
-    return `<div class="safe-note warn-note"><b>Generatore dinamico identificato.</b><br>Il vecchio href è prodotto dal permalink di <b>${esc(c.title||('contenuto #'+(c.id||'')))}</b> sulla pagina <code>${esc(reason?.url||task?.affected?.[0]?.url||'')}</code>. Riapri il task e premi “Approva e applica”: il connettore 3.13.4 userà una regola reversibile limitata a questa pagina, senza modificare il template o lo slug del contenuto.</div>${ogosSourceEvidenceHtml3132(reason?.sourceEvidence||reason?.source_evidence||{})}`;
+    return `<div class="safe-note warn-note"><b>Generatore dinamico identificato.</b><br>Il vecchio href è prodotto dal permalink di <b>${esc(c.title||('contenuto #'+(c.id||'')))}</b> sulla pagina <code>${esc(reason?.url||task?.affected?.[0]?.url||'')}</code>. Riapri il task e premi “Approva e applica”: il connettore 3.13.8 userà una regola reversibile limitata a questa pagina, senza modificare il template o lo slug del contenuto.</div>${ogosSourceEvidenceHtml3132(reason?.sourceEvidence||reason?.source_evidence||{})}`;
   }
   return ogosDynamicOwnerHtmlV3133Base.apply(this,arguments);
 };
@@ -13410,6 +13417,244 @@ init=function(){
 };
 
 window.OGOS_WP_FIX_BUILD="3.13.4-runtime-regression-hardening";
+
+
+
+/* ========================================================================== 
+   v3.13.5 — link dinamici verificabili + paginazione non è un link rotto
+   ========================================================================== */
+function ogosPaginationText3135(anchor='',context=''){
+  const text=`${anchor||''} ${context||''}`.normalize?.('NFKC')?.toLowerCase?.()||`${anchor||''} ${context||''}`.toLowerCase();
+  return /(?:^|\b)(successiv[oa]?|precedent[ea]?|next|previous|prev|older|newer|avanti|indietro)(?:\b|$)/i.test(text);
+}
+function ogosPaginationNumberAnchor3138(anchor=''){
+  const text=String(anchor||'').normalize?.('NFKC')?.trim?.().toLowerCase?.()||String(anchor||'').trim().toLowerCase();
+  return /^(?:pagina\s*)?[2-9]\d*$/i.test(text);
+}
+function ogosEscapeRegex3135(value=''){return String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function ogosIsPaginationLink3135(source,href,anchor='',context=''){
+  const src=typeof ogosUrlPathV356==='function'?ogosUrlPathV356(source):comparableUrl(source),dest=typeof ogosUrlPathV356==='function'?ogosUrlPathV356(href):comparableUrl(href),navigation=ogosPaginationText3135(anchor,context)||ogosPaginationNumberAnchor3138(anchor);
+  if(!navigation)return false;
+  try{
+    const base=`https://${state.project?.domain||'invalid.local'}`,url=new URL(String(href||''),base),sourceUrl=new URL(String(source||''),base),paged=Number(url.searchParams.get('paged')||url.searchParams.get('page')||0);
+    const samePath=url.pathname.replace(/\/+$/,'')===sourceUrl.pathname.replace(/\/+$/,'');
+    if(paged>1&&samePath){
+      for(const key of ['p','page_id','attachment_id'])if(sourceUrl.searchParams.has(key)&&sourceUrl.searchParams.get(key)!==url.searchParams.get(key))return false;
+      return true;
+    }
+  }catch{}
+  if(!src||!dest||src===dest)return false;
+  if(src==='/'&&/^\/page\/[2-9]\d*$/i.test(dest))return true;
+  if(new RegExp(`^${ogosEscapeRegex3135(src)}/(?:page/)?[2-9]\\d*$`,'i').test(dest))return true;
+  return false;
+}
+
+/* Il report finale possiede già anchor/contesto del crawl: filtra qui, dopo
+   tutti i wrapper precedenti, così la regola vale per dashboard, audit e task. */
+const ogosDetectBrokenLinksV3135Base=detectBrokenLinksReport;
+detectBrokenLinksReport=function(){
+  return ogosDetectBrokenLinksV3135Base.apply(this,arguments).filter(row=>!ogosIsPaginationLink3135(row?.source,row?.href||row?.brokenUrl,row?.anchor,row?.context));
+};
+
+/* Rete di sicurezza per i flussi di classificazione/migrazione che ricevono
+   righe già costruite da una versione precedente. */
+if(typeof ogosGroupReplacementRowsV356==='function'){
+  const ogosGroupReplacementRowsV3135Base=ogosGroupReplacementRowsV356;
+  ogosGroupReplacementRowsV356=function(rows){
+    const filtered=(rows||[]).filter(row=>!ogosIsPaginationLink3135(row?.url||row?.source,row?.href||row?.brokenUrl||row?.changes?.replace_link?.from,row?.anchor,row?.context));
+    return ogosGroupReplacementRowsV3135Base.call(this,filtered);
+  };
+}
+
+function ogosTaskPaginationRows3135(task){
+  return (task?.affected||[]).filter(row=>ogosIsPaginationLink3135(row?.url||row?.source,row?.href||row?.brokenUrl||row?.changes?.replace_link?.from,row?.anchor,row?.context));
+}
+function ogosPaginationRowKey3135(row){
+  const source=ogosSourceIdentityV3140(row?.url||row?.source||''),from=String(row?.href||row?.brokenUrl||row?.changes?.replace_link?.from||'').trim();
+  return `${source}|${from}`;
+}
+function ogosHasActiveRemoteRepair3135(task){return (state.repairs||[]).some(repair=>String(repair?.taskId)===String(task?.id)&&repair?.remote&&!repair?.undone);}
+function ogosReconcilePaginationTasks3135(){
+  let changed=false;
+  (state.tasks||[]).forEach(task=>{
+    if(!task||taskIsCompleted(task)||ogosHasActiveRemoteRepair3135(task))return;
+    const rows=Array.isArray(task.affected)?task.affected:[],pagination=ogosTaskPaginationRows3135(task);
+    if(!pagination.length)return;
+    const keys=new Set(pagination.map(ogosPaginationRowKey3135));
+    const kept=rows.filter(row=>!keys.has(ogosPaginationRowKey3135(row)));
+    if(kept.length){task.affected=kept;task.detail=`${kept.length} ${kept.length===1?'sostituzione ancora da verificare':'sostituzioni ancora da verificare'}`;changed=true;return;}
+    recordTaskStatus(task,'Superata');task.autoResolved=true;task.reconciledAt=new Date().toISOString();task.completedAt=task.reconciledAt;task.resolutionReason='Il collegamento rilevato è una paginazione reale del blog/archivio (Successivo/Precedente), non un URL interno da correggere.';task.evidence={status:'confirmed',source:'pagination-runtime-check',observedAt:task.reconciledAt};delete task.partialApply;changed=true;
+  });
+  return changed;
+}
+
+const ogosInitV3135Base=init;
+init=function(){
+  const changed=ogosReconcilePaginationTasks3135();
+  const result=ogosInitV3135Base.apply(this,arguments);
+  if(changed){save(true);renderShell();if(state.ui?.view==='audit')renderAudit();if(state.ui?.view==='fix')renderKanban();if(state.ui?.view==='verify')renderVerify();}
+  return result;
+};
+
+window.OGOS_WP_FIX_BUILD_HISTORY="3.13.7-owner-evidence-rendered-transaction";
+
+
+
+/* ==========================================================================
+   v3.13.8 — evidenza automatica per replace_link
+   ========================================================================== */
+function ogosReplaceNeedsEvidence3138(task){
+  try{
+    const payload=pluginTaskPayload(task);
+    return (payload?.affected||[]).some(item=>item?.changes?.replace_link&&!(item?.source_evidence?.occurrences||[]).length);
+  }catch{return false;}
+}
+const ogosApplyPluginTaskV3138Base=applyPluginTaskSingle;
+applyPluginTaskSingle=async function(id,triggerButton=null){
+  const task=(state.tasks||[]).find(item=>String(item.id)===String(id));
+  if(task&&ogosReplaceNeedsEvidence3138(task)&&state.wordpress?.connected&&state.wordpress?.capabilities?.includes('crawl')){
+    toast('Manca l’evidenza renderizzata del link: eseguo automaticamente un crawl reale prima del preflight…');
+    try{
+      await runWordPressCrawl();
+      if(taskIsCompleted(task)){renderShell();renderKanban();renderVerify();return true;}
+    }catch(error){
+      toast(`Crawl preliminare non completato: ${error?.message||error}. Il preflight continuerà in modalità prudente.`,'error');
+    }
+  }
+  return ogosApplyPluginTaskV3138Base.apply(this,arguments);
+};
+
+
+/* ========================================================================== 
+   v3.13.9 — link identity separata dalla page identity
+   ========================================================================== */
+function ogosLinkIdentityV3139(value, source=''){
+  try{
+    const projectHost=normalizeProjectDomain(state.project?.domain||state.wordpress?.url||'');
+    const root=state.wordpress?.url?new URL(String(state.wordpress.url)).href:`https://${projectHost||'invalid.local'}/`;
+    const base=source?new URL(String(source),root):new URL(root);
+    const url=new URL(String(value||''),base);
+    if(projectHost&&normalizeProjectDomain(url.hostname)!==projectHost)return '';
+    if(!isSameSiteUrlClient(url.href))return '';
+    const path=url.pathname.replace(/\/+$/,'')||'/';
+    return `${path}${url.search||''}${url.hash||''}`;
+  }catch{return'';}
+}
+function ogosLinkRawV3139(value){return String(value??'').trim();}
+
+/* Classificazione e grouping non devono più trasformare /catalogo?brand=nike
+   e /catalogo?brand=adidas nella stessa modifica. Il valore inviato al server
+   resta l'href approvato, mentre la chiave di dedup usa l'identità completa. */
+ogosReplacementClassV356=function(item){
+  const change=item?.changes?.replace_link||{},source=item?.url||item?.source||'';
+  const from=ogosLinkRawV3139(item?.href||item?.brokenUrl||change.from||''),to=ogosLinkRawV3139(item?.suggested||change.to||'');
+  const fromIdentity=ogosLinkIdentityV3139(from,source),toIdentity=ogosLinkIdentityV3139(to,source),redirectCandidate=ogosRedirectEvidenceV356(from);
+  const preciseFrom=/[?#]/.test(fromIdentity||'');
+  const redirect=redirectCandidate&&(!preciseFrom||ogosLinkIdentityV3139(redirectCandidate.source,source)===fromIdentity)?redirectCandidate:null;
+  if(redirect&&toIdentity&&ogosLinkIdentityV3139(redirect.target,source)===toIdentity)return{kind:'redirect-cleanup',from,to,fromIdentity,toIdentity,redirect};
+  const preciseTo=/[?#]/.test(toIdentity||'');
+  const targetPage=comparableUrl(to),targetKnown=!!toIdentity&&(state.pages||[]).some(page=>preciseTo?ogosLinkIdentityV3139(page.url,source)===toIdentity:(comparableUrl(page.url)===targetPage||ogosUrlPathV356(page.url)===ogosUrlPathV356(to)));
+  if(targetKnown)return{kind:'review-required',from,to,fromIdentity,toIdentity,redirect:null};
+  return{kind:'unverified',from,to,fromIdentity,toIdentity,redirect:null};
+};
+ogosGroupReplacementRowsV356=function(rows){
+  const groups=new Map();
+  (rows||[]).forEach(raw=>{
+    const item=clone(raw);item.url=item.url||item.source;if(ogosSourceRedirectedV356(item.url))return;
+    const rawFrom=item?.href||item?.brokenUrl||item?.changes?.replace_link?.from||'';
+    if(ogosIsPaginationLink3135(item.url||item.source,rawFrom,item.anchor,item.context))return;
+    const classification=ogosReplacementClassV356(item),source=comparableUrl(item.url||item.source||''),fromKey=classification.fromIdentity||ogosLinkIdentityV3139(classification.from,item.url),toKey=classification.toIdentity||ogosLinkIdentityV3139(classification.to,item.url),key=`${source}|${fromKey}|${toKey}`,current=groups.get(key);
+    if(current){current.occurrenceCount=(current.occurrenceCount||1)+(Number(item.occurrenceCount)||1);return;}
+    item.source=item.source||item.url;item.occurrenceCount=Number(item.occurrenceCount)||1;item.linkClassification=classification.kind;item.changes=item.changes&&typeof item.changes==='object'?item.changes:{};
+    item.changes.replace_link={...(item.changes.replace_link||{}),from:classification.from||item.changes.replace_link?.from||'',to:classification.to||item.changes.replace_link?.to||'',classification:classification.kind};
+    if(classification.kind==='redirect-cleanup'){item.issue=`Link obsoleto verso ${classification.from}: redirect funzionante in ${classification.redirect.hops} ${classification.redirect.hops===1?'passaggio':'passaggi'}`;item.fix=`Aggiorna l’href direttamente a ${classification.to}`;}
+    else if(classification.kind==='review-required'){item.issue=`URL interna probabilmente errata: ${classification.from}`;item.fix=`Verifica anchor e contesto, poi sostituisci singolarmente con ${classification.to}`;}
+    else{item.issue=`Destinazione non confermata: ${classification.from||'URL non disponibile'}`;item.fix=classification.to?`Verifica manualmente prima di usare ${classification.to}`:'Trova manualmente la destinazione corretta';}
+    groups.set(key,item);
+  });
+  return[...groups.values()];
+};
+ogosMergeReplacementArchiveV356=function(rows){
+  const merged=new Map();(rows||[]).forEach(item=>{const change=item?.changes?.replace_link||{},source=item?.url||item?.source||'',key=`${comparableUrl(source)}|${ogosLinkIdentityV3139(change.from,source)}|${ogosLinkIdentityV3139(change.to,source)}`;merged.set(key,clone(item));});return[...merged.values()];
+};
+
+/* Ricostruisce sempre l'evidenza dal crawl più recente usando href completo.
+   In questo modo una vecchia wrapper che usava comparableUrl() non può fondere
+   varianti di query/fragment prima del preflight. */
+const ogosPluginTaskPayloadV3139Base=pluginTaskPayload;
+pluginTaskPayload=function(task){
+  const payload=ogosPluginTaskPayloadV3139Base.apply(this,arguments);
+  (payload.affected||[]).forEach(item=>{
+    const replace=item?.changes?.replace_link;if(!replace?.from)return;
+    const page=typeof ogosPageForUrlV3611==='function'?ogosPageForUrlV3611(item.url):(state.pages||[]).find(p=>comparableUrl(p.url)===comparableUrl(item.url));
+    const wanted=ogosLinkIdentityV3139(replace.from,item.url);
+    const details=(Array.isArray(page?.live?.internalLinkDetails)?page.live.internalLinkDetails:[]).filter(detail=>ogosLinkIdentityV3139(detail?.href||detail?.raw_href,item.url)===wanted).slice(0,20).map(detail=>({anchor:String(detail?.anchor||'').trim(),context:String(detail?.context||'').trim().slice(0,320),occurrence:Number(detail?.occurrence)||null,document_index:Number(detail?.document_index||detail?.link_index)||null,raw_href:String(detail?.raw_href||detail?.href||replace.from||'')}));
+    if(!details.length&&(item.anchor||item.context))details.push({anchor:String(item.anchor||''),context:String(item.context||'').slice(0,320),occurrence:Number(item.occurrence)||null,document_index:Number(item.document_index||item.link_index)||null,raw_href:String(replace.from||'')});
+    item.source_evidence={source_url:item.url,observed_at:page?.live?.internalLinkObservedAt||page?.crawl?.checkedAt||state.audit?.observedAt||null,occurrence_count:Math.max(Number(item.occurrenceCount)||0,details.length),occurrences:details};
+  });
+  return payload;
+};
+
+
+/* 3.13.9 final hardening: gli identificatori operativi dei link non usano più
+   comparableUrl(), che elimina query/fragment. */
+const ogosDashboardAuditKeysV3139Base=ogosDashboardAuditKeysV349;
+ogosDashboardAuditKeysV349=function(index){
+  if(index!==3)return ogosDashboardAuditKeysV3139Base.apply(this,arguments);
+  const keys=new Set();
+  internalLinkProposals().forEach(row=>{const key=orphanProposalKey(row);if(key)keys.add(key);});
+  detectBrokenLinksReport().forEach(row=>{const key=brokenProposalKey(row);if(key)keys.add(key);});
+  return keys;
+};
+
+
+/* ========================================================================== 
+   v3.14.0 — source identity fail-closed + verification scope pubblico
+   ========================================================================== */
+function ogosRfc3986V3140(value){return encodeURIComponent(String(value??'')).replace(/[!'()*]/g,ch=>`%${ch.charCodeAt(0).toString(16).toUpperCase()}`);}
+function ogosSourceIdentityV3140(value){
+  try{
+    const projectHost=normalizeProjectDomain(state.project?.domain||state.wordpress?.url||'');
+    const root=state.wordpress?.url?new URL(String(state.wordpress.url)).href:`https://${projectHost||'invalid.local'}/`;
+    const url=new URL(String(value||''),root);
+    if(projectHost&&normalizeProjectDomain(url.hostname)!==projectHost)return'';
+    if(!isSameSiteUrlClient(url.href))return'';
+    const path=url.pathname.replace(/\/+$/,'')||'/';
+    const pairs=[];
+    for(const [key,val] of url.searchParams.entries()){
+      if(/^_ogos_/i.test(key))continue;
+      pairs.push([ogosRfc3986V3140(key),ogosRfc3986V3140(val)]);
+    }
+    pairs.sort((a,b)=>`${a[0]}=${a[1]}`.localeCompare(`${b[0]}=${b[1]}`));
+    return path+(pairs.length?`?${pairs.map(([k,v])=>`${k}${v!==''?`=${v}`:''}`).join('&')}`:'');
+  }catch{return'';}
+}
+function ogosPageForSourceV3140(url){
+  const wanted=ogosSourceIdentityV3140(url);
+  return (state.pages||[]).find(page=>ogosSourceIdentityV3140(page.url)===wanted)||ogosPageForUrlV3611(url);
+}
+linkChangeKey=function(item,forcedType=''){
+  if(!item)return'';const changes=item.changes||{},type=String(forcedType||'').toLowerCase(),sourceUrl=item.url||item.source||'';
+  if(changes.internal_link?.target||type==='internal_link'){const target=ogosLinkIdentityV3139(changes.internal_link?.target||'',sourceUrl);return target?`internal_link|${target}`:'';}
+  const replacement=changes.replace_link;if(replacement?.to||type==='replace_link'){const source=ogosSourceIdentityV3140(sourceUrl),from=ogosLinkIdentityV3139(replacement?.from||'',sourceUrl),to=ogosLinkIdentityV3139(replacement?.to||'',sourceUrl);return source&&to?`replace_link|${source}|${from}|${to}`:'';}
+  return'';
+};
+completedLinkChangeKeys=function(){
+  const keys=new Set();(Array.isArray(state.tasks)?state.tasks:[]).filter(taskIsCompleted).forEach(task=>{const type=task.operation?.type||'';(Array.isArray(task?.affected)?task.affected:[]).forEach(item=>{const reasons=Array.isArray(task?.partialApply?.reasons)?task.partialApply.reasons:[],source=ogosSourceIdentityV3140(item?.url);const skipped=reasons.find(reason=>ogosSourceIdentityV3140(reason?.url)===source&&!reason?.partial);if(skipped)return;const key=linkChangeKey(item,type);if(key)keys.add(key);});});return keys;
+};
+brokenProposalKey=function(row){const sourceUrl=row?.source||row?.url||'',source=ogosSourceIdentityV3140(sourceUrl),from=ogosLinkIdentityV3139(row?.href||row?.brokenUrl||'',sourceUrl),to=ogosLinkIdentityV3139(row?.suggested||'',sourceUrl);return source&&to?`replace_link|${source}|${from}|${to}`:'';};
+ogosGroupReplacementRowsV356=function(rows){
+  const groups=new Map();(rows||[]).forEach(raw=>{const item=clone(raw);item.url=item.url||item.source;if(ogosSourceRedirectedV356(item.url))return;const rawFrom=item?.href||item?.brokenUrl||item?.changes?.replace_link?.from||'';if(ogosIsPaginationLink3135(item.url||item.source,rawFrom,item.anchor,item.context))return;const classification=ogosReplacementClassV356(item),source=ogosSourceIdentityV3140(item.url||item.source||''),fromKey=classification.fromIdentity||ogosLinkIdentityV3139(classification.from,item.url),toKey=classification.toIdentity||ogosLinkIdentityV3139(classification.to,item.url),key=`${source}|${fromKey}|${toKey}`,current=groups.get(key);if(current){current.occurrenceCount=(current.occurrenceCount||1)+(Number(item.occurrenceCount)||1);return;}item.source=item.source||item.url;item.occurrenceCount=Number(item.occurrenceCount)||1;item.linkClassification=classification.kind;item.changes=item.changes&&typeof item.changes==='object'?item.changes:{};item.changes.replace_link={...(item.changes.replace_link||{}),from:classification.from||item.changes.replace_link?.from||'',to:classification.to||item.changes.replace_link?.to||'',classification:classification.kind};if(classification.kind==='redirect-cleanup'){item.issue=`Link obsoleto verso ${classification.from}: redirect funzionante in ${classification.redirect.hops} ${classification.redirect.hops===1?'passaggio':'passaggi'}`;item.fix=`Aggiorna l’href direttamente a ${classification.to}`;}else if(classification.kind==='review-required'){item.issue=`URL interna probabilmente errata: ${classification.from}`;item.fix=`Verifica anchor e contesto, poi sostituisci singolarmente con ${classification.to}`;}else{item.issue=`Destinazione non confermata: ${classification.from||'URL non disponibile'}`;item.fix=classification.to?`Verifica manualmente prima di usare ${classification.to}`:'Trova manualmente la destinazione corretta';}groups.set(key,item);});return[...groups.values()];
+};
+ogosMergeReplacementArchiveV356=function(rows){const merged=new Map();(rows||[]).forEach(item=>{const change=item?.changes?.replace_link||{},source=item?.url||item?.source||'',key=`${ogosSourceIdentityV3140(source)}|${ogosLinkIdentityV3139(change.from,source)}|${ogosLinkIdentityV3139(change.to,source)}`;merged.set(key,clone(item));});return[...merged.values()];};
+const ogosPluginTaskPayloadV3140Base=pluginTaskPayload;
+pluginTaskPayload=function(task){
+  const payload=ogosPluginTaskPayloadV3140Base.apply(this,arguments);
+  (payload.affected||[]).forEach(item=>{const replace=item?.changes?.replace_link;if(!replace?.from)return;const page=ogosPageForSourceV3140(item.url),wanted=ogosLinkIdentityV3139(replace.from,item.url);const details=(Array.isArray(page?.live?.internalLinkDetails)?page.live.internalLinkDetails:[]).filter(detail=>ogosLinkIdentityV3139(detail?.href||detail?.raw_href,item.url)===wanted).slice(0,20).map(detail=>({anchor:String(detail?.anchor||'').trim(),context:String(detail?.context||'').trim().slice(0,320),occurrence:Number(detail?.occurrence)||null,document_index:Number(detail?.document_index||detail?.link_index)||null,raw_href:String(detail?.raw_href||detail?.href||replace.from||'')}));if(!details.length&&(item.anchor||item.context))details.push({anchor:String(item.anchor||''),context:String(item.context||'').slice(0,320),occurrence:Number(item.occurrence)||null,document_index:Number(item.document_index||item.link_index)||null,raw_href:String(replace.from||'')});item.source_evidence={source_url:item.url,observed_at:page?.live?.internalLinkObservedAt||page?.crawl?.checkedAt||state.audit?.observedAt||null,occurrence_count:Math.max(Number(item.occurrenceCount)||0,details.length),occurrences:details};});
+  return payload;
+};
+window.OGOS_WP_FIX_BUILD="3.14.0-public-transactional-verification";
+
 
 
 /* API pubblica stabile dichiarata dal manifest. */
