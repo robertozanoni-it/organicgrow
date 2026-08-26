@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="RZ Organic Growth OS: gestione guidata e locale di progetti SEO.">
-  <title>RZ Organic Growth OS</title>
+  <title>RZ Organic Growth OS 3.12.8</title>
   <script>window.OGOS_EMBEDDED=null;</script>
   <style>
     :root{--bg:#f7f7f3;--surface:#fff;--surface-2:#f1f4ee;--text:#18211b;--muted:#687069;--line:#dde2da;--green:#194b31;--green-2:#2f6b45;--sage:#dce9d7;--sage-2:#edf4e9;--warn:#b75531;--warn-bg:#fbede6;--amber:#98651a;--amber-bg:#fff3d8;--danger:#a13939;--danger-bg:#fbe8e8;--shadow:0 12px 35px rgba(24,49,32,.07);--radius:18px;--sidebar:250px;--top:76px}
@@ -163,11 +163,11 @@ main{padding:calc(var(--top) + 24px) 24px 50px}.view{max-width:1320px}.page-head
       <button type="button" id="sidebarCompletedTasksBtn">✓ Task superati</button>
       <button type="button" id="sidebarGlobalReportBtn">↓ Scarica report globale</button>
     </div>
-    <div class="project-mini"><small>Progetto attivo</small><strong id="miniName">Sano in Tavola</strong><span id="miniDomain">sanointavola.it</span><button data-view="start">Modifica progetto →</button></div>
+    <div class="project-mini"><small>Progetto attivo</small><strong id="miniName">—</strong><span id="miniDomain">—</span><button data-view="start">Modifica progetto →</button></div>
   </aside>
   <header class="topbar">
     <button class="icon-btn mobile-head" id="menuBtn" aria-label="Apri menu" aria-controls="sidebar" aria-expanded="false"><svg data-icon="menu"></svg></button>
-    <div class="project-title"><strong id="headName">Sano in Tavola</strong><span id="headDomain">sanointavola.it</span></div>
+    <div class="project-title"><strong id="headName">—</strong><span id="headDomain">—</span></div>
     <div class="top-actions"><button class="btn" id="themeBtn"><svg data-icon="sun"></svg><span id="themeText">Automatico</span></button><button class="btn" id="exportBtn"><svg data-icon="download"></svg><span>Esporta backup</span></button></div>
   </header>
   <main>
@@ -178,8 +178,8 @@ main{padding:calc(var(--top) + 24px) 24px 50px}.view{max-width:1320px}.page-head
         <div class="steps" id="steps"></div>
       </div>
       <div class="dashboard-grid">
-        <article class="panel health"><h2>Salute SEO</h2><div class="health-row"><div class="score"><div class="ring" id="healthRing"><b id="healthScore">78</b></div><span id="healthLabel">Buono</span></div><div class="metric"><small>Pagine analizzate</small><b id="metricPages">24</b><small>Inventario locale</small></div><div class="metric"><small>Problemi aperti</small><b class="bad" id="metricIssues">7</b><small>Da risolvere</small></div><div class="metric"><small>Task completati</small><b class="good" id="metricDone">3</b><small>Interventi verificati</small></div><div class="metric"><small>Keyword abbinate</small><b id="metricKeywords">18</b><small>Intento identificato</small></div><div class="trend" id="healthTrend"><svg viewBox="0 0 600 82" preserveAspectRatio="none"><polyline id="healthTrendLine" points="" fill="none" stroke="var(--green-2)" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg><small class="trend-empty" id="healthTrendEmpty">Il grafico compare dalla seconda scansione.</small></div></div></article>
-        <aside class="panel progress-panel"><h2 class="section-title">Il tuo progresso</h2><div class="progress-total"><div class="mini-ring"><span id="overallProgress">52%</span></div><div><b>Completamento generale</b><br><small id="doneCount">11 di 21 attività completate</small></div></div><div id="progressBars"></div></aside>
+        <article class="panel health"><h2>Salute SEO</h2><div class="health-row"><div class="score"><div class="ring" id="healthRing"><b id="healthScore">—</b></div><span id="healthLabel">Caricamento…</span></div><div class="metric"><small>Pagine analizzate</small><b id="metricPages">—</b><small>Inventario locale</small></div><div class="metric"><small>Problemi aperti</small><b class="bad" id="metricIssues">—</b><small>Da risolvere</small></div><div class="metric"><small>Task completati</small><b class="good" id="metricDone">—</b><small>Interventi verificati</small></div><div class="metric"><small>Keyword abbinate</small><b id="metricKeywords">—</b><small>Intento identificato</small></div><div class="trend" id="healthTrend"><svg viewBox="0 0 600 82" preserveAspectRatio="none"><polyline id="healthTrendLine" points="" fill="none" stroke="var(--green-2)" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg><small class="trend-empty" id="healthTrendEmpty">Il grafico compare dalla seconda scansione.</small></div></div></article>
+        <aside class="panel progress-panel"><h2 class="section-title">Il tuo progresso</h2><div class="progress-total"><div class="mini-ring"><span id="overallProgress">—</span></div><div><b>Completamento generale</b><br><small id="doneCount">Caricamento…</small></div></div><div id="progressBars"></div></aside>
         <div class="lower-grid">
           <article class="panel list-panel"><h2>Attività prioritarie</h2><ul class="data-list" id="priorityList"></ul></article>
           <article class="panel list-panel"><h2>Opportunità</h2><ul class="data-list" id="opportunityList"></ul></article>
@@ -245,7 +245,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.12.6',OGOS_SCHEMA_VERSION=1;
+const APP_VERSION='3.12.8',OGOS_SCHEMA_VERSION=1;
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -12425,7 +12425,381 @@ init=function(){
   }
   return risultato;
 };
-window.OGOS_WP_FIX_BUILD="3.12.6-no-silent-close";
+window.OGOS_WP_FIX_BUILD="3.12.8-auto-links-fix";
+
+/* ==========================================================================
+   v3.12.8 — i link automatici devono potersi applicare
+   Problemi corretti:
+   1) isSameSiteUrlClient rifiutava path relativi o www vs non-www → blocco
+      "link interno esterno" prima dell'invio a WordPress
+   2) openRepair seguiva solo integration.mode; con WP già collegato ma modalità
+      ancora "local" i task link restavano piano manuale
+   3) ensureStructuredTask non ricostruiva changes.internal_link / replace_link
+   4) findBlockingTask bloccava TUTTI i task "link interni" se esisteva un 404
+      sullo stesso URL, anche quando la correzione era indipendente
+   5) requiredCapabilities non riconosceva "link interno" (singolare)
+   6) payload senza changes strutturati → ogos_empty_change_payload
+   ========================================================================== */
+(function ogosPatch3128AutoLinks(){
+  'use strict';
+
+  function ogosNormPath3128(value){
+    try{
+      const base = state.wordpress?.url || (state.project?.domain ? `https://${state.project.domain}` : 'https://invalid.local');
+      const url = new URL(String(value || ''), base);
+      const path = (url.pathname || '/').replace(/\/+$/,'') || '/';
+      return path + (url.search || '');
+    }catch{
+      const raw = String(value || '').trim();
+      if(!raw) return '';
+      if(raw.startsWith('/')) return raw.replace(/\/+$/,'') || '/';
+      return raw;
+    }
+  }
+
+  function ogosIsSameSiteUrl3128(url){
+    const raw = String(url || '').trim();
+    if(!raw) return false;
+    // Path relativo del sito: sempre stesso sito
+    if(raw.startsWith('/') && !raw.startsWith('//')) return true;
+    try{
+      const siteRaw = state.wordpress?.url || (state.project?.domain ? `https://${state.project.domain}` : '');
+      if(!siteRaw) return false;
+      const site = new URL(siteRaw);
+      const u = new URL(raw, site);
+      const hostA = (typeof normalizeProjectDomain === 'function' ? normalizeProjectDomain(u.hostname) : String(u.hostname || '').replace(/^www\./i,'').toLowerCase());
+      const hostB = (typeof normalizeProjectDomain === 'function' ? normalizeProjectDomain(site.hostname) : String(site.hostname || '').replace(/^www\./i,'').toLowerCase());
+      if(!hostA || hostA !== hostB) return false;
+      // Porta: considera equivalenti default vuote
+      const portA = u.port || (u.protocol === 'https:' ? '443' : u.protocol === 'http:' ? '80' : '');
+      const portB = site.port || (site.protocol === 'https:' ? '443' : site.protocol === 'http:' ? '80' : '');
+      return portA === portB;
+    }catch{
+      return false;
+    }
+  }
+
+  if(typeof isSameSiteUrlClient === 'function'){
+    isSameSiteUrlClient = ogosIsSameSiteUrl3128;
+  }
+
+  // Capabilities: riconosce anche "link interno" singolare e titoli Correggi link
+  if(typeof requiredCapabilities === 'function'){
+    const baseCaps = requiredCapabilities;
+    requiredCapabilities = function(t){
+      const caps = baseCaps(t) || [];
+      const name = String(t?.title || '').toLowerCase();
+      const type = String(t?.operation?.type || '').toLowerCase();
+      const set = new Set(caps);
+      if(type === 'internal_link' || type === 'replace_link' || /link intern|link rott|link non valid|\b404\b/.test(name)){
+        set.add('internal_links');
+      }
+      return [...set];
+    };
+  }
+
+  // Ricostruisce changes.internal_link / replace_link se mancano
+  if(typeof ensureStructuredTask === 'function'){
+    const baseEnsure = ensureStructuredTask;
+    ensureStructuredTask = function(task){
+      const result = baseEnsure(task);
+      if(!task || !Array.isArray(task.affected)) return result;
+      const type = String(task.operation?.type || '').toLowerCase();
+      const opLink = task.operation?.internalLink || task.operation?.internal_link || null;
+      task.affected.forEach(item => {
+        if(!item) return;
+        item.changes = item.changes && typeof item.changes === 'object' ? item.changes : {};
+        if((type === 'internal_link' || /link intern/i.test(task.title || '')) && !item.changes.internal_link?.target){
+          const target = item.changes?.internal_link?.target || opLink?.target || item.target || item.fixTarget || '';
+          const anchor = item.changes?.internal_link?.anchor || opLink?.anchor || item.anchor || item.keyword || '';
+          if(target && anchor){
+            item.changes.internal_link = {
+              target: ogosNormPath3128(target),
+              anchor: String(anchor).slice(0, 120),
+              position: item.changes?.internal_link?.position || opLink?.position || 'after_first_paragraph'
+            };
+            if(!item.fix) item.fix = `Inserisci “${anchor}” verso ${ogosNormPath3128(target)}`;
+            task.operation = { ...(task.operation || {}), type: 'internal_link' };
+            task.autoPossible = true;
+          }
+        }
+        if((type === 'replace_link' || /link rott|sostituisci/i.test(task.title || '')) && !item.changes.replace_link?.to){
+          const from = item.changes?.replace_link?.from || item.brokenUrl || item.href || '';
+          const to = item.changes?.replace_link?.to || item.suggested || '';
+          if(from && to){
+            item.changes.replace_link = {
+              from: String(from),
+              to: ogosNormPath3128(to),
+              anchor: item.changes?.replace_link?.anchor || item.anchor || '',
+              context: item.changes?.replace_link?.context || item.context || ''
+            };
+            task.operation = { ...(task.operation || {}), type: 'replace_link' };
+            task.autoPossible = true;
+          }
+        }
+        // Normalizza target già presenti
+        if(item.changes.internal_link?.target){
+          item.changes.internal_link.target = ogosNormPath3128(item.changes.internal_link.target);
+        }
+        if(item.changes.replace_link?.to){
+          item.changes.replace_link.to = ogosNormPath3128(item.changes.replace_link.to);
+        }
+      });
+      return task;
+    };
+  }
+
+  // pluginTaskPayload: non perdere mai i changes per-riga di link
+  if(typeof pluginTaskPayload === 'function'){
+    const basePayload = pluginTaskPayload;
+    pluginTaskPayload = function(task){
+      try{ if(typeof ensureStructuredTask === 'function') ensureStructuredTask(task); }catch(e){}
+      const payload = basePayload(task);
+      if(!payload || !Array.isArray(payload.affected)) return payload;
+      payload.affected = payload.affected.map((item, index) => {
+        const original = (task.affected || [])[index] || item;
+        const changes = { ...(item.changes || {}) };
+        if(!changes.internal_link?.target && original?.changes?.internal_link?.target){
+          changes.internal_link = {
+            ...original.changes.internal_link,
+            target: ogosNormPath3128(original.changes.internal_link.target)
+          };
+        }
+        if(!changes.replace_link?.to && original?.changes?.replace_link?.to){
+          changes.replace_link = {
+            ...original.changes.replace_link,
+            to: ogosNormPath3128(original.changes.replace_link.to)
+          };
+        }
+        if(changes.internal_link?.target){
+          changes.internal_link.target = ogosNormPath3128(changes.internal_link.target);
+        }
+        if(changes.replace_link?.to){
+          changes.replace_link.to = ogosNormPath3128(changes.replace_link.to);
+        }
+        return { ...item, changes };
+      }).filter(item => {
+        const c = item.changes || {};
+        return !!(c.internal_link?.target || c.replace_link?.to || c.title || c.meta_description || c.canonical || c.redirect || c.heading_hierarchy || c.post_title);
+      });
+      return payload;
+    };
+  }
+
+  // openRepair: se WordPress è collegato, applica via plugin anche con mode local
+  if(typeof openRepair === 'function'){
+    const baseOpen = openRepair;
+    openRepair = function(task){
+      try{ if(typeof ensureStructuredTask === 'function') ensureStructuredTask(task); }catch(e){}
+      const wpReady = !!(state.wordpress?.connected && state.wordpress?.pluginDetected && (typeof wpSecret !== 'undefined' ? wpSecret : true));
+      if(wpReady && state.integration?.mode === 'local'){
+        const prev = state.integration.mode;
+        state.integration.mode = 'wordpress-plugin';
+        try{
+          return baseOpen(task);
+        }finally{
+          // lascia wordpress-plugin se il plugin è davvero pronto
+          if(state.wordpress?.pluginDetected) state.integration.mode = 'wordpress-plugin';
+          else state.integration.mode = prev;
+        }
+      }
+      return baseOpen(task);
+    };
+  }
+
+  // findBlockingTask: non bloccare link interni se i broken link non condividono la STESSA pagina sorgente
+  if(typeof findBlockingTask === 'function'){
+    findBlockingTask = function(t){
+      if(!/link intern/i.test(String(t?.title || ''))) return null;
+      const sourceUrls = new Set((t.affected || []).map(a => {
+        try{ return typeof comparableUrl === 'function' ? comparableUrl(a.url) : String(a.url || ''); }
+        catch{ return String(a.url || ''); }
+      }).filter(Boolean));
+      return (state.tasks || []).find(other => {
+        if(!other || other.id === t.id) return false;
+        if(typeof taskIsCompleted === 'function' ? taskIsCompleted(other) : ['Completata','Verificata'].includes(other.status)) return false;
+        if(!/404|link rott|link non valid/i.test(String(other.title || ''))) return false;
+        return (other.affected || []).some(a => {
+          const key = typeof comparableUrl === 'function' ? comparableUrl(a.url) : String(a.url || '');
+          return sourceUrls.has(key);
+        });
+      }) || null;
+    };
+  }
+
+  // Migrazione: marca autoPossible sui task link aperti e ricostruisce changes
+  function ogosMigrateLinkTasks3128(){
+    let n = 0;
+    (state.tasks || []).forEach(task => {
+      if(!task) return;
+      if(typeof taskIsCompleted === 'function' && taskIsCompleted(task)) return;
+      const type = String(task.operation?.type || '');
+      const title = String(task.title || '');
+      if(!(type === 'internal_link' || type === 'replace_link' || /link intern|link rott/i.test(title))) return;
+      try{ if(typeof ensureStructuredTask === 'function') ensureStructuredTask(task); }catch(e){}
+      const has = (task.affected || []).some(item => item?.changes?.internal_link?.target || item?.changes?.replace_link?.to);
+      if(has){
+        if(task.autoPossible !== true){ task.autoPossible = true; n++; }
+        if(!task.operation?.type){
+          task.operation = { ...(task.operation || {}), type: /link rott/i.test(title) ? 'replace_link' : 'internal_link' };
+          n++;
+        }
+      }
+    });
+    return n;
+  }
+
+  const baseInit = init;
+  init = function(){
+    const result = baseInit.apply(this, arguments);
+    state.ui = state.ui && typeof state.ui === 'object' ? state.ui : {};
+    if(state.ui.autoLinksFixVersion !== '3.12.8'){
+      const n = ogosMigrateLinkTasks3128();
+      state.ui.autoLinksFixVersion = '3.12.8';
+      state.appVersion = typeof APP_VERSION !== 'undefined' ? APP_VERSION : '3.12.8';
+      try{ save(true); }catch(e){}
+      try{ if(typeof renderKanban === 'function') renderKanban(); }catch(e){}
+      if(n){
+        try{ toast('Task link aggiornati: le correzioni automatiche sono di nuovo applicabili.'); }catch(e){}
+      }
+    }
+    return result;
+  };
+})();
+
+
+/* ==========================================================================
+   v3.12.7 — correzioni stabilita UI e coerenza operativa
+   - niente flash di metriche demo nel markup
+   - un solo punteggio salute SEO sulla dashboard (computeSeoScore)
+   - task chiusi senza scrittura remota restano/vengono riaperti in modo piu' ampio
+   - etichette neutre finche' i dati non sono pronti
+   ========================================================================== */
+(function ogosPatch3127(){
+  'use strict';
+
+  function ogosUnifyDashboardScore3127(){
+    const scoreEl = document.getElementById('healthScore');
+    const ring = document.getElementById('healthRing');
+    const label = document.getElementById('healthLabel');
+    if (!scoreEl || !ring || !label) return;
+    const hasAnalysis = !!(state?.audit?.last && Array.isArray(state.pages) && state.pages.length);
+    if (!hasAnalysis) {
+      scoreEl.textContent = '—';
+      ring.style.setProperty('--p', 0);
+      label.textContent = 'Non analizzato';
+      return;
+    }
+    let score = null;
+    try {
+      if (typeof computeSeoScore === 'function') {
+        const result = computeSeoScore();
+        if (result && result.score != null && Number.isFinite(Number(result.score))) {
+          score = Math.max(0, Math.min(100, Math.round(Number(result.score))));
+        }
+      }
+    } catch (e) { /* fallback sotto */ }
+    if (score == null) {
+      const open = (state.tasks || []).filter(t => typeof taskIsCompleted === 'function' ? !taskIsCompleted(t) : !['Completata','Verificata'].includes(t.status)).length;
+      const explicitNotIndexed = (state.pages || []).filter(p => p.status === 'Non indicizzata').length;
+      const unknownIndexing = (state.pages || []).filter(p => p.status === 'Da verificare').length;
+      score = Math.max(0, Math.min(100, 100 - open * 5 - explicitNotIndexed * 4 - unknownIndexing * 2));
+    }
+    scoreEl.textContent = String(score);
+    ring.style.setProperty('--p', score);
+    label.textContent = score >= 80 ? 'Ottimo' : score >= 65 ? 'Buono' : 'Da migliorare';
+  }
+
+  const baseRenderDashboard = typeof renderDashboardMetrics === 'function' ? renderDashboardMetrics : null;
+  if (baseRenderDashboard) {
+    renderDashboardMetrics = function() {
+      const result = baseRenderDashboard.apply(this, arguments);
+      try { ogosUnifyDashboardScore3127(); } catch (e) {}
+      return result;
+    };
+  }
+
+  const baseRenderShell = typeof renderShell === 'function' ? renderShell : null;
+  if (baseRenderShell) {
+    renderShell = function() {
+      const result = baseRenderShell.apply(this, arguments);
+      try { ogosUnifyDashboardScore3127(); } catch (e) {}
+      return result;
+    };
+  }
+
+  /** Riapre task dichiarati verificati/completati senza alcuna scrittura remota confermata. */
+  function ogosRiapriChiusureSenzaScrittura3127() {
+    let n = 0;
+    const tasks = state.tasks || [];
+    const repairs = state.repairs || [];
+    tasks.forEach(task => {
+      if (!task || typeof task !== 'object') return;
+      const status = String(task.status || '');
+      if (status !== 'Verificata' && status !== 'Completata') return;
+      const evidence = task.evidence || {};
+      const source = String(evidence.source || '');
+      const hasRemoteWrite = repairs.some(r =>
+        String(r.taskId) === String(task.id) &&
+        r.remote && !r.undone &&
+        Array.isArray(r.changedUrls) && r.changedUrls.length
+      );
+      if (hasRemoteWrite) return;
+      // Chiavi di chiusura "non provate": preflight, claim wordpress senza repair, autoResolved locale
+      const suspicious =
+        source === 'wordpress-preflight' ||
+        source === 'legacy-or-demo' ||
+        (source.startsWith('wordpress-') && !source.includes('public-crawl') && !source.includes('storage')) ||
+        (!!task.autoResolved && !hasRemoteWrite) ||
+        (evidence.status === 'confirmed' && !source);
+      if (!suspicious) return;
+      task.completionHistory = Array.isArray(task.completionHistory) ? task.completionHistory : [];
+      task.completionHistory.push({
+        status: task.status,
+        completedAt: task.completedAt || null,
+        verifiedAt: task.verifiedAt || null,
+        evidence: JSON.parse(JSON.stringify(evidence || {})),
+        reopenedBy: '3.12.7'
+      });
+      task.status = 'Da approvare';
+      task.approved = false;
+      task.reopenedAt = new Date().toISOString();
+      task.evidence = { status: 'unverified', source: 'operational-proposal', observedAt: new Date().toISOString() };
+      task.detail = `${task.detail || ''} Riaperta (3.12.7): chiusura precedente senza scrittura confermata su WordPress.`.trim();
+      delete task.completedAt;
+      delete task.verifiedAt;
+      delete task.autoResolved;
+      delete task.resolutionReason;
+      delete task.partialApply;
+      n++;
+    });
+    return n;
+  }
+
+  const baseInit = init;
+  init = function() {
+    const result = baseInit.apply(this, arguments);
+    state.ui = state.ui && typeof state.ui === 'object' ? state.ui : {};
+    if (state.ui.repairNoWriteVersion !== '3.12.7') {
+      const n = ogosRiapriChiusureSenzaScrittura3127();
+      state.ui.repairNoWriteVersion = '3.12.7';
+      state.appVersion = typeof APP_VERSION !== 'undefined' ? APP_VERSION : '3.12.7';
+      try { save(true); } catch (e) {}
+      try { renderShell(); } catch (e) {}
+      try { if (typeof renderKanban === 'function') renderKanban(); } catch (e) {}
+      try { if (typeof renderVerify === 'function') renderVerify(); } catch (e) {}
+      if (n) {
+        try {
+          toast(`${n} ${n === 1 ? 'attività riaperta' : 'attività riaperte'}: chiusura senza scrittura confermata su WordPress.`, 'error');
+        } catch (e) {}
+      }
+    } else {
+      try { ogosUnifyDashboardScore3127(); } catch (e) {}
+    }
+    return result;
+  };
+})();
+
 init();
 setTimeout(()=>{ogosBindWordPressEntrypoints3100();if(state.ui?.view==='settings')ogosEnsureWpConnectionControls3100();},0);
 })();
