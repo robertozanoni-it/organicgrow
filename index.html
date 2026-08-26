@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="RZ Organic Growth OS: gestione guidata e locale di progetti SEO.">
-  <title>RZ Organic Growth OS 3.12.8</title>
+  <title>RZ Organic Growth OS 3.12.9</title>
   <script>window.OGOS_EMBEDDED=null;</script>
   <style>
     :root{--bg:#f7f7f3;--surface:#fff;--surface-2:#f1f4ee;--text:#18211b;--muted:#687069;--line:#dde2da;--green:#194b31;--green-2:#2f6b45;--sage:#dce9d7;--sage-2:#edf4e9;--warn:#b75531;--warn-bg:#fbede6;--amber:#98651a;--amber-bg:#fff3d8;--danger:#a13939;--danger-bg:#fbe8e8;--shadow:0 12px 35px rgba(24,49,32,.07);--radius:18px;--sidebar:250px;--top:76px}
@@ -245,7 +245,7 @@ var ogosStorageRecoveryV3612={blocked:false,raw:'',reason:'',backupKey:''};
 var ogosStorageConflictV3612=false;
 var ogosLoadedProjectRevisionV3612=0;
 var ogosWriterIdV3612=`tab-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-const APP_VERSION='3.12.8',OGOS_SCHEMA_VERSION=1;
+const APP_VERSION='3.12.9',OGOS_SCHEMA_VERSION=1;
 /* 3.10.1 — Origine reale dell'app per il pairing WordPress.
    Chrome espone location.origin === "file://" quando la web app viene aperta
    come file locale, ma l'header Origin che il browser invia nelle richieste
@@ -12425,7 +12425,322 @@ init=function(){
   }
   return risultato;
 };
-window.OGOS_WP_FIX_BUILD="3.12.8-auto-links-fix";
+window.OGOS_WP_FIX_BUILD="3.12.9-editable-link-insert";
+
+/* ==========================================================================
+   v3.12.9 — inserimento link solo su contenuto davvero modificabile
+
+   Il connettore risponde:
+   "Il link non compare nel contenuto modificabile: è prodotto dal tema,
+   dal menu o da un widget dinamico."
+   quando la pagina sorgente scelta non ha corpo post/Elementor editabile
+   (tipico: homepage, template, sole voci di menu).
+
+   Fix:
+   - sceglie la sorgente per editabilità reale (excerpt/contenuto), non solo
+     pertinenza testuale; penalizza hard la homepage
+   - nel payload marca scope=post_content e prefer_editable
+   - se il preview fallisce per "non modificabile", prova automaticamente
+     fino a 4 pagine sorgente alternative prima di arrendersi
+   - i replace_link su menu/template non vengono più proposti come automatici
+   ========================================================================== */
+(function ogosPatch3129EditableLinks(){
+  'use strict';
+
+  const NON_EDITABLE_RE = /non compare nel contenuto modificabile|tema|menu|widget dinamico|template globale|non modificabile|nav-menu|builder non support/i;
+
+  function ogosPageExcerptLen3129(page){
+    const parts = [
+      page?.live?.contentExcerpt,
+      page?.crawl?.contentExcerpt,
+      page?.live?.excerpt,
+      page?.crawl?.renderedText,
+      page?.wpTitle
+    ];
+    return parts.reduce((n, v) => n + String(v || '').trim().length, 0);
+  }
+
+  function ogosSourceEditScore3129(page){
+    if(!page) return -100;
+    const path = typeof comparableUrl === 'function' ? comparableUrl(page.url) : String(page.url || '');
+    let score = 0;
+    const excerpt = ogosPageExcerptLen3129(page);
+    if(excerpt >= 400) score += 8;
+    else if(excerpt >= 160) score += 5;
+    else if(excerpt >= 40) score += 2;
+    else score -= 4;
+    // Homepage e archivi: quasi sempre template/menu
+    if(path === '/') score -= 12;
+    if(/^\/(category|tag|author|page)\b/i.test(path)) score -= 8;
+    const builder = String(page.wpBuilder || page.live?.builder || '').toLowerCase();
+    if(/elementor|gutenberg|block|classic|editor/i.test(builder)) score += 3;
+    if(/theme|template|widget|menu/i.test(builder)) score -= 6;
+    const type = String(page.wpType || '').toLowerCase();
+    if(type === 'post' || type === 'page') score += 2;
+    // Già ha link interni in uscita nel contenuto: buon segnale di corpo editabile
+    const out = Array.isArray(page.live?.internalLinks) ? page.live.internalLinks.length : 0;
+    if(out >= 2) score += 2;
+    // Dettagli con editable=true dal connettore
+    const details = Array.isArray(page.live?.internalLinkDetails) ? page.live.internalLinkDetails : [];
+    if(details.some(d => d && d.editable === true)) score += 5;
+    if(details.length && details.every(d => d && d.editable === false)) score -= 5;
+    return score;
+  }
+
+  function ogosRankSourcesForTarget3129(targetUrl){
+    const target = typeof comparableUrl === 'function' ? comparableUrl(targetUrl) : String(targetUrl || '');
+    const targetPage = (state.pages || []).find(p => (typeof comparableUrl === 'function' ? comparableUrl(p.url) : p.url) === target);
+    const words = targetPage && typeof pageWords === 'function' ? pageWords(targetPage) : [];
+    return (state.pages || [])
+      .filter(source => {
+        const sp = typeof comparableUrl === 'function' ? comparableUrl(source.url) : String(source.url || '');
+        return sp && sp !== target;
+      })
+      .map(source => {
+        const topical = (typeof gscJaccard === 'function' && words.length)
+          ? gscJaccard(words, pageWords(source))
+          : 0;
+        const edit = ogosSourceEditScore3129(source);
+        return {
+          source,
+          url: source.url,
+          score: edit * 1.4 + topical * 6,
+          edit,
+          topical
+        };
+      })
+      .filter(row => row.edit > -3) // scarta sorgenti chiaramente non editabili
+      .sort((a, b) => b.score - a.score);
+  }
+
+  function ogosEnrichInternalLink3129(link, sourcePage){
+    const out = { ...(link || {}) };
+    out.target = typeof ogosNormPath3128 === 'function' ? ogosNormPath3128(out.target) : out.target;
+    out.position = out.position || 'after_first_paragraph';
+    out.scope = 'post_content';
+    out.prefer_editable = true;
+    out.insert_mode = 'wrap_existing_or_append';
+    if(sourcePage){
+      out.source_builder = sourcePage.wpBuilder || sourcePage.live?.builder || '';
+      out.source_type = sourcePage.wpType || '';
+      out.source_has_excerpt = ogosPageExcerptLen3129(sourcePage) >= 40;
+    }
+    return out;
+  }
+
+  // Preferisci sorgenti editabili nelle proposte orfane
+  if(typeof internalLinkProposals === 'function'){
+    const baseProposals = internalLinkProposals;
+    internalLinkProposals = function(){
+      const rows = baseProposals.apply(this, arguments) || [];
+      return rows.map(row => {
+        const ranked = ogosRankSourcesForTarget3129(row.target);
+        if(!ranked.length) return row;
+        const best = ranked[0];
+        // Cambia sorgente solo se quella attuale è scarsa e ne esiste una migliore
+        const current = (state.pages || []).find(p => (typeof comparableUrl === 'function' ? comparableUrl(p.url) : p.url) === (typeof comparableUrl === 'function' ? comparableUrl(row.source) : row.source));
+        const currentScore = ogosSourceEditScore3129(current);
+        if(best.edit >= 2 && best.edit > currentScore + 1){
+          return {
+            ...row,
+            source: best.url,
+            alternateSources: ranked.slice(1, 5).map(r => r.url),
+            confidence: (row.confidence || '') + ' · sorgente scelta per contenuto editabile'
+          };
+        }
+        return {
+          ...row,
+          alternateSources: ranked.slice(0, 5).map(r => r.url).filter(u => u !== row.source)
+        };
+      });
+    };
+  }
+
+  // Payload: arricchisci internal_link e scarta replace non editabili
+  if(typeof pluginTaskPayload === 'function'){
+    const basePayload = pluginTaskPayload;
+    pluginTaskPayload = function(task){
+      const payload = basePayload(task);
+      if(!payload || !Array.isArray(payload.affected)) return payload;
+      payload.affected = payload.affected.map(item => {
+        const changes = { ...(item.changes || {}) };
+        if(changes.internal_link?.target){
+          const page = typeof ogosPageForUrlV3611 === 'function'
+            ? ogosPageForUrlV3611(item.url)
+            : (state.pages || []).find(p => p.url === item.url);
+          changes.internal_link = ogosEnrichInternalLink3129(changes.internal_link, page);
+        }
+        if(changes.replace_link){
+          // Se la riga è esplicitamente non editabile, non inviarla come auto
+          if(item.editable === false || item.sourceType === 'nav-menu' || item.source === 'nav-menu'){
+            return null;
+          }
+          changes.replace_link = {
+            ...changes.replace_link,
+            scope: 'post_content',
+            prefer_editable: true
+          };
+        }
+        return { ...item, changes };
+      }).filter(Boolean);
+      return payload;
+    };
+  }
+
+  function ogosIsNonEditableReason3129(reason){
+    return NON_EDITABLE_RE.test(String(reason || ''));
+  }
+
+  async function ogosTryInternalLinkAlternates3129(task, payload, firstPreview){
+    const unresolved = firstPreview?.unresolved || [];
+    if(!unresolved.length || !unresolved.every(u => ogosIsNonEditableReason3129(u.reason))) return null;
+    const linkItems = (payload.affected || []).filter(a => a?.changes?.internal_link?.target);
+    if(!linkItems.length) return null;
+
+    // Per ogni riga, prova sorgenti alternative
+    const newAffected = [];
+    let tried = 0;
+    for(const item of linkItems){
+      const target = item.changes.internal_link.target;
+      const ranked = ogosRankSourcesForTarget3129(target);
+      const currentPath = typeof comparableUrl === 'function' ? comparableUrl(item.url) : item.url;
+      const alternates = ranked.filter(r => {
+        const p = typeof comparableUrl === 'function' ? comparableUrl(r.url) : r.url;
+        return p !== currentPath && r.edit >= 2;
+      }).slice(0, 4);
+      if(!alternates.length){
+        newAffected.push(item);
+        continue;
+      }
+      let placed = null;
+      for(const alt of alternates){
+        tried++;
+        const trialItem = {
+          ...item,
+          url: alt.url,
+          changes: {
+            internal_link: ogosEnrichInternalLink3129({
+              ...item.changes.internal_link,
+              target
+            }, alt.source)
+          }
+        };
+        try{
+          const trialTask = { ...payload, affected: [trialItem] };
+          const preview = await wpRequest('/wp-json/organic-growth-os/v1/tasks/preview', {
+            method: 'POST',
+            body: JSON.stringify({ task: trialTask })
+          });
+          const planned = Number(preview?.planned_operations) || 0;
+          const stillBad = (preview?.unresolved || []).some(u => ogosIsNonEditableReason3129(u.reason));
+          if(preview?.can_apply && planned > 0 && !stillBad){
+            placed = trialItem;
+            break;
+          }
+        }catch(e){ /* prova la prossima */ }
+      }
+      newAffected.push(placed || item);
+    }
+    if(!tried) return null;
+    return { ...payload, affected: newAffected };
+  }
+
+  // Avvolge applyPluginTaskSingle: se fallisce per non-editabile, ritenta con altre sorgenti
+  if(typeof applyPluginTaskSingle === 'function'){
+    const baseApply = applyPluginTaskSingle;
+    applyPluginTaskSingle = async function(id, triggerButton){
+      const task = (state.tasks || []).find(t => String(t.id) === String(id));
+      if(!task) return baseApply.apply(this, arguments);
+
+      // Pre-flight: se internal_link su sorgente scarsa, riassegna prima di inviare
+      try{
+        if(typeof ensureStructuredTask === 'function') ensureStructuredTask(task);
+        let reassigned = 0;
+        (task.affected || []).forEach(item => {
+          const link = item?.changes?.internal_link;
+          if(!link?.target) return;
+          const current = typeof ogosPageForUrlV3611 === 'function' ? ogosPageForUrlV3611(item.url) : null;
+          const score = ogosSourceEditScore3129(current);
+          if(score >= 3) {
+            item.changes.internal_link = ogosEnrichInternalLink3129(link, current);
+            return;
+          }
+          const ranked = ogosRankSourcesForTarget3129(link.target);
+          const best = ranked.find(r => r.edit >= 3) || ranked[0];
+          if(best && best.edit > score){
+            item.url = best.url;
+            item.changes.internal_link = ogosEnrichInternalLink3129(link, best.source);
+            item.issue = (item.issue || '') + ` · sorgente spostata su contenuto editabile (${best.url})`;
+            reassigned++;
+          }else if(current){
+            item.changes.internal_link = ogosEnrichInternalLink3129(link, current);
+          }
+        });
+        if(reassigned){
+          task.detail = `${task.detail || ''} Sorgente riassegnata su pagine con contenuto modificabile.`.trim();
+          try{ save(true); }catch(e){}
+        }
+      }catch(e){}
+
+      // Intercetta il percorso di apply sostituendo temporaneamente wpRequest sul preview
+      const originalWpRequest = typeof wpRequest === 'function' ? wpRequest : null;
+      if(!originalWpRequest) return baseApply.apply(this, arguments);
+
+      let previewAttempts = 0;
+      wpRequest = async function(path, options = {}){
+        const result = await originalWpRequest(path, options);
+        if(path === '/wp-json/organic-growth-os/v1/tasks/preview' && previewAttempts < 1){
+          previewAttempts++;
+          const unresolved = result?.unresolved || [];
+          const nonEditable = unresolved.length && unresolved.every(u => ogosIsNonEditableReason3129(u.reason));
+          if(nonEditable){
+            let payload = {};
+            try{ payload = JSON.parse(options.body || '{}'); }catch(e){}
+            const taskBody = payload.task || payload;
+            const alt = await ogosTryInternalLinkAlternates3129(task, taskBody, result);
+            if(alt){
+              const retry = await originalWpRequest(path, {
+                ...options,
+                body: JSON.stringify({ task: alt })
+              });
+              // Se il retry è migliore, usalo e aggiorna il task locale
+              const retryPlanned = Number(retry?.planned_operations) || 0;
+              const retryBad = (retry?.unresolved || []).some(u => ogosIsNonEditableReason3129(u.reason));
+              if(retry?.can_apply && retryPlanned > 0 && !retryBad){
+                task.affected = alt.affected;
+                try{ save(true); }catch(e){}
+                return retry;
+              }
+            }
+          }
+        }
+        return result;
+      };
+
+      try{
+        return await baseApply.apply(this, arguments);
+      }finally{
+        wpRequest = originalWpRequest;
+      }
+    };
+  }
+
+  // UI: messaggi più chiari quando resta solo manuale
+  if(typeof toast === 'function'){
+    const baseToast = toast;
+    toast = function(msg, type){
+      const text = String(msg || '');
+      if(NON_EDITABLE_RE.test(text)){
+        return baseToast(
+          'Il connettore non può scrivere su tema/menu/widget. Ho cercato pagine con contenuto editabile; se resta questo messaggio, apri la pagina in WordPress e inserisci il link nel blocco di testo.',
+          type || 'error'
+        );
+      }
+      return baseToast(msg, type);
+    };
+  }
+})();
+
 
 /* ==========================================================================
    v3.12.8 — i link automatici devono potersi applicare
